@@ -1,8 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Home from "./pages/Home";
-import Projects from "./pages/Projects";
-import Contact from "./pages/Contact";
+import Home from "\.\\pages\\Home";
+import Projects from "\.\\pages\\Projects";
+import Contact from "\.\\pages\\Contact";
 
 const App: React.FC = () => {
   return (
