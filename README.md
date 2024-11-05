@@ -1,3 +1,22 @@
+# Running Code Instructions:
+
+To run local frontend dev server:
+
+```
+
+yarn vite dev
+
+```
+
+To run local backend dev server:
+
+```
+
+yarn vite 
+
+```
+
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
