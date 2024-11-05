@@ -4,6 +4,7 @@ To run local frontend dev server:
 
 ```
 
+cd frontend
 yarn vite dev
 
 ```
@@ -12,7 +13,8 @@ To run local backend dev server:
 
 ```
 
-yarn vite 
+cd backend
+yarn dev 
 
 ```
 
