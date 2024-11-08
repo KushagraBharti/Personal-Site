@@ -18,11 +18,26 @@ const Projects: React.FC = () => {
     fetchProjects();
   }, []);
 
-  const ProjectCard: React.FC<ProjectData> = ({ title, description, tags, githubLink }) => {
+  const ProjectCard: React.FC<ProjectData> = ({ title, summary, description, tags, githubLink }) => {
     return (
       <div className="border p-4 rounded-lg shadow-lg">
-        <h3 className="text-xl font-semibold">{title}</h3>
-        <p className="mt-2 text-gray-600">{description}</p>
+        <h3 className="text-xl font-semibold">
+          <a 
+            href={githubLink}
+            className="text-blue-500 hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+
+            >{title}
+          </a>
+        </h3>
+        <p className="text-gray-600 mt-2">{summary}</p>
+        <ul className="mt-2 list-disc list-inside">
+          {description.map((item, index) => (
+            <li key={index} className="text-gray-600 mt-1">
+              {item}
+            </li>
+          ))}</ul>
         <div className="flex flex-wrap mt-4 space-x-2">
           {tags.map((tag, index) => (
             <span key={index} className="px-2 py-1 bg-gray-200 rounded-full text-sm text-gray-700">

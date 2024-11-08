@@ -10,6 +10,6 @@ export const getExperienceById = (req: Request, res: Response) => {
     if (!isNaN(experienceId) && experienceId >= 0 && experienceId < experiencesData.length) {
       res.json(experiencesData[experienceId]);
     } else {
-      res.status(404).json({ message: "Project not found" });
+      res.status(404).json({ message: "Experience not found" });
     }
   };

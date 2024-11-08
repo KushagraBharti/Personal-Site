@@ -18,26 +18,36 @@ const Experiences: React.FC = () => {
     fetchExperiences();
   }, []);
 
-  const ExperienceCard: React.FC<ExperienceData> = ({ position, description, tags, companyLink }) => {
+  const ExperienceCard: React.FC<ExperienceData> = ({ position, summary, description, tags, companyLink }) => {
     return (
       <div className="border p-4 rounded-lg shadow-lg">
-        <h3 className="text-xl font-semibold">{position}</h3>
-        <p className="mt-2 text-gray-600">{description}</p>
+        <h3 className="text-xl font-semibold">
+          <a 
+            href={companyLink}
+            className="text-blue-500 hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+
+            >{position}
+          </a>
+        </h3>
+        <p className="text-gray-600 mt-2">{summary}</p>
+        <ul className="mt-2 list-disc list-inside"> {}
+          
+          {description.map((item, index) => ( 
+            <li key={index} className="text-gray-600 mt-1">{item}</li>
+           ))}
+
+        </ul>
         <div className="flex flex-wrap mt-4 space-x-2">
+
           {tags.map((tag, index) => (
             <span key={index} className="px-2 py-1 bg-gray-200 rounded-full text-sm text-gray-700">
               {tag}
             </span>
           ))}
+
         </div>
-        <a
-          href={companyLink}
-          className="inline-block mt-4 text-blue-500 hover:underline"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          View Company
-        </a>
       </div>
     );
   };
