@@ -10,12 +10,11 @@ const Contact: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form submitted:", form);
-    // Add functionality to send data to backend here
   };
 
   return (
     <section className="mt-10">
-      <h2 className="text-2xl font-semibold mb-4">Contact Me</h2>
+      <h2 className="section-heading">Contact Me</h2>
       <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
         <input
           type="text"
@@ -37,7 +36,7 @@ const Contact: React.FC = () => {
           onChange={handleChange}
           className="w-full p-2 border rounded-md"
         />
-        <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-md">
+        <button type="submit" className="btn-primary w-full">
           Send
         </button>
       </form>

@@ -6,18 +6,29 @@
 /* Custom styles */
 @layer components {
   .navbar {
-    background-color: theme('colors.background'); /* Use theme background color */
-    color: theme('colors.secondary'); /* Use theme secondary color for text */
-    padding: 1rem;
-    border-bottom: 1px solid theme('colors.secondary'); /* Light border for separation */
+    @apply bg-background text-secondary border-b border-secondary p-4;
   }
 
-  /* Add a button style for consistency */
   .btn-primary {
-    @apply px-4 py-2 bg-primary text-white font-semibold rounded-md;
-    transition: background-color 0.2s;
+    @apply px-4 py-2 bg-primary text-white font-semibold rounded-md transition duration-200;
   }
+
   .btn-primary:hover {
-    background-color: theme('colors.primary', '700'); /* Darker shade on hover */
+    background-color: theme('colors.primary', '700');
+  }
+
+  /* Add any additional global styling if needed */
+  body {
+    @apply font-sans bg-background text-secondary;
+  }
+
+  /* Add section heading style */
+  .section-heading {
+    @apply text-3xl font-bold mb-10 text-secondary;
+  }
+
+  /* Style for card components like Education, Experience, Projects */
+  .card {
+    @apply border p-4 rounded-lg shadow-lg bg-white hover:shadow-xl transition-shadow;
   }
 }

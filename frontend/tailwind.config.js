@@ -9,7 +9,7 @@ export default {
       colors: {
         primary: '#1E90FF', // Dodger Blue for accent colors
         secondary: '#343A40', // Dark Gray for main text
-        background: '#F8F9FA', // Light Gray for backgrounds
+        background: '#f0f4f8', // Light Gray for backgrounds
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
