@@ -7,12 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#1E90FF', // Dodger Blue for accent colors
-        secondary: '#343A40', // Dark Gray for main text
+        primary: '#5291ff', // Dodger Blue for accent colors
+        secondary: '#5291ff',
+        links: '#5291ff',
         background: '#f0f4f8', // Light Gray for backgrounds
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        'ibm-plex-mono': ['IBM Plex Mono', 'monospace'], // IBM Plex Mono for monospace
+        'quattrocento-sans': ['Quattrocento Sans', 'sans-serif'], // Quattrocento Sans as primary sans-serif
+        'quattrocento': ['Quattrocento', 'serif'], // Quattrocento for serif
       },
     },
   },

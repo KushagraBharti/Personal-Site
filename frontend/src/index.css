@@ -1,34 +1,42 @@
 /* index.css */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Quattrocento+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Quattrocento:wght@400;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+
 /* Custom styles */
+
 @layer components {
+  body {
+    @apply bg-background;
+  }
+  
+  .heading {
+    @apply text-4xl font-bold font-quattrocento text-primary;
+  }
+
+  .summary {
+    @apply text-lg font-semibold text-secondary font-quattrocento-sans;
+  }
+  
   .navbar {
-    @apply bg-background text-secondary border-b border-secondary p-4;
+    @apply text-secondary border-b border-black p-3 font-quattrocento-sans; /* Apply Quattrocento Sans in navbar */
   }
 
   .btn-primary {
-    @apply px-4 py-2 bg-primary text-white font-semibold rounded-md transition duration-200;
+    @apply px-4 py-2 bg-primary text-white font-semibold rounded-md transition duration-200 font-quattrocento-sans; /* Use Quattrocento Sans in button */
   }
 
   .btn-primary:hover {
     background-color: theme('colors.primary', '700');
   }
 
-  /* Add any additional global styling if needed */
-  body {
-    @apply font-sans bg-background text-secondary;
-  }
-
-  /* Add section heading style */
   .section-heading {
-    @apply text-3xl font-bold mb-10 text-secondary;
+    @apply text-3xl font-bold mb-10 text-secondary font-quattrocento;
   }
 
-  /* Style for card components like Education, Experience, Projects */
   .card {
-    @apply border p-4 rounded-lg shadow-lg bg-white hover:shadow-xl transition-shadow;
+    @apply border p-4 rounded-lg shadow-lg bg-white hover:shadow-xl transition-shadow font-['ibm-plex-mono']; /* Use IBM Plex Mono for cards */
   }
 }
