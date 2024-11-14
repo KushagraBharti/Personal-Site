@@ -8,7 +8,7 @@ const Education: React.FC = () => {
   useEffect(() => {
     const fetchEducation = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/education");
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/education`);
         setEducation(response.data);
       } catch (error) {
         console.error("Error fetching education:", error);
