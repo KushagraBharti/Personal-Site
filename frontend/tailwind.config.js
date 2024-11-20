@@ -7,15 +7,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#5291ff', // Dodger Blue for accent colors
-        secondary: '#5291ff',
-        links: '#5291ff',
-        background: '#f0f4f8', // Light Gray for backgrounds
+        primary: "#3B82F6",
+        "primary-dark": "#2563EB",
+        gray: {
+          50: "#F9FAFB",
+          100: "#F3F4F6",
+          800: "#1F2937",
+          900: "#111827",
+        },
       },
       fontFamily: {
-        'ibm-plex-mono': ['IBM Plex Mono', 'monospace'], // IBM Plex Mono for monospace
-        'quattrocento-sans': ['Quattrocento Sans', 'sans-serif'], // Quattrocento Sans as primary sans-serif
-        'quattrocento': ['Quattrocento', 'serif'], // Quattrocento for serif
+        inter: ['Inter', 'sans-serif'],
+        playfair: ['Playfair Display', 'serif'],
       },
     },
   },
