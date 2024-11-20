@@ -41,7 +41,7 @@ const Education: React.FC = () => {
   };
 
   return (
-    <section className="flex flex-col items-center mt-10 px-4 md:px-10 lg:px-24">
+    <section className="flex flex-col mt-10 px-4 md:px-10 lg:px-24">
       <h2 className="section-heading">Education</h2>
       <div className="w-full max-w-2xl">
         {education.map((education, index) => (
