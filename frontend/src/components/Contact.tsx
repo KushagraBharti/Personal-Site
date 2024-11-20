@@ -13,9 +13,9 @@ const Contact: React.FC = () => {
   };//work
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-16">
       <div className="container mx-auto">
-        <h2 className="section-heading text-center">Contact Me</h2>
+        <h2 className="section-heading">Contact Me</h2>
         <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4">
           <input
             type="text"

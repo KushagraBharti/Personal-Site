@@ -10,7 +10,7 @@ const Home: React.FC = () => {
   return (
     <div>
       <Navbar />
-      <main className="px-4 mx-auto max-w-screen-xl">
+      <main className="text-center py-16 bg-gradient-to-b from-gray-50 to-gray-500">
         <Introduction />
         <Education />
         <Experiences />

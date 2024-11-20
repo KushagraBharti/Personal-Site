@@ -19,9 +19,9 @@ const Education: React.FC = () => {
   }, []);
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16">
       <div className="container mx-auto">
-        <h2 className="text-3xl font-playfair text-center text-dark mb-10">
+        <h2 className="section-heading">
           Education
         </h2>
         <div className="grid gap-8 md:grid-cols-2">

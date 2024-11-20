@@ -30,7 +30,7 @@ const Projects: React.FC = () => {
   };
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16">
       <div className="container mx-auto">
         <h2 className="section-heading">Projects</h2>
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">

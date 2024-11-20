@@ -13,7 +13,7 @@
   }
 
   .section-heading {
-    @apply text-3xl font-bold text-gray-800 mb-8;
+    @apply text-3xl font-playfair text-center mb-10;
   }
 
   .card {
