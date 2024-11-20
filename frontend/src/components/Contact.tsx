@@ -10,7 +10,7 @@ const Contact: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form submitted:", form);
-  };
+  };//work
 
   return (
     <section className="py-16 bg-gray-50">
