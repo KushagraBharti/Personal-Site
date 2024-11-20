@@ -9,7 +9,7 @@ const Experiences: React.FC = () => {
   useEffect(() => {
     const fetchExperiences = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/experiences`);
+        const response = await axios.get("http://localhost:5000/api/experiences");
         setExperiences(response.data);
       } catch (error) {
         console.error("Error fetching experiences:", error);
