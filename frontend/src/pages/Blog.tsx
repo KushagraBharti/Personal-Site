@@ -1,11 +1,11 @@
 import React from "react";
 
-const Home: React.FC = () => {
+const Blog: React.FC = () => {
   return (
-    <div className="container mx-auto px-6">
-        <h1 className="text-center font-semibold ">Blog, coming soon!</h1>
-</div>
+    <div className="container mx-auto px-6 py-16">
+      <h1 className="text-center text-3xl font-bold text-gray-800">Blog, coming soon!</h1>
+    </div>
   );
 };
 
-export default Home;
+export default Blog;

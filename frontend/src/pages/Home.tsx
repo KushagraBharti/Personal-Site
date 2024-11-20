@@ -8,13 +8,15 @@ import Contact from "../components/Contact";
 
 const Home: React.FC = () => {
   return (
-    <div className="container mx-auto px-4">
+    <div>
       <Navbar />
-      <Introduction />
-      <Education />
-      <Experiences />
-      <Projects />
-      <Contact />
+      <main className="px-4 mx-auto max-w-screen-xl">
+        <Introduction />
+        <Education />
+        <Experiences />
+        <Projects />
+        <Contact />
+      </main>
     </div>
   );
 };
