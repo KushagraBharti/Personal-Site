@@ -10,7 +10,7 @@ const Home: React.FC = () => {
   return (
     <div>
       <Navbar />
-      <main className="text-center py-16 bg-gradient-to-b from-gray-50 to-gray-500">
+      <main className="text-center min-h-screen flex flex-col bg-gradient-to-b from-gray-50 to-gray-500">
         <Introduction />
         <Education />
         <Experiences />

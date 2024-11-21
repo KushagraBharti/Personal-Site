@@ -26,7 +26,7 @@ const Education: React.FC = () => {
           {education.map((edu, index) => (
             <div key={index} className="card flex flex-col items-center text-center">
               <div className="flex items-center justify-center space-x-2">
-                <h3 className="text-lg font-bold text-primary">{edu.position}</h3>
+                <h3 className="text-xl text-primary font-sans" >{edu.position}</h3>
                 <a
                   href={edu.schoolLink}
                   target="_blank"

@@ -41,7 +41,7 @@ const Experiences: React.FC = () => {
               onClick={() => handleCardClick(experience)}
             >
               <div className="flex items-center space-x-2 justify-center">
-                <h3 className="text-lg font-bold text-primary">{experience.position}</h3>
+                <h3 className="text-xl text-primary font-sans">{experience.position}</h3>
                 <a
                   href={experience.companyLink}
                   target="_blank"

@@ -41,7 +41,7 @@ const Projects: React.FC = () => {
               onClick={() => handleCardClick(project)}
             >
               <div className="flex items-center justify-center space-x-2">
-                <h3 className="text-lg font-bold text-primary text-center">{project.title}</h3>
+                <h3 className="text-xl text-primary font-sans">{project.title}</h3>
                 {project.githubLink && (
                   <a
                     href={project.githubLink}
