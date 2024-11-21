@@ -10,20 +10,30 @@ const experienceRoutes_1 = __importDefault(require("./routes/experienceRoutes"))
 const educationRoutes_1 = __importDefault(require("./routes/educationRoutes"));
 const app = (0, express_1.default)();
 const allowedOrigins = [
-    'http://localhost:5173', // Local development frontend
-    'https://personal-site-frontend-navy.vercel.app' // Replace with your deployed frontend URL
+    'http://localhost:5173', // Local frontend
+    'https://personal-site-frontend-navy.vercel.app', // Correct deployed frontend URL
 ];
-app.use((0, cors_1.default)({
+/*
+app.use(
+  cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        }
-        else {
-            callback(new Error('Not allowed by CORS'));
-        }
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
     },
+  })
+);
+*/
+app.use((0, cors_1.default)({
+    origin: '*',
 }));
 app.use(express_1.default.json());
+app.use((req, res, next) => {
+    console.log(`Origin: ${req.headers.origin}`);
+    next();
+});
 // Routes
 app.use('/api', projectRoutes_1.default);
 app.use('/api', experienceRoutes_1.default);

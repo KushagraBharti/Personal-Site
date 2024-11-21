@@ -11,6 +11,7 @@ const allowedOrigins = [
   'https://personal-site-frontend-navy.vercel.app', // Correct deployed frontend URL
 ];
 
+/*
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -22,8 +23,21 @@ app.use(
     },
   })
 );
+*/
+
+app.use(
+  cors({
+    origin: '*',
+  })
+);
+
 
 app.use(express.json());
+
+app.use((req, res, next) => {
+  console.log(`Origin: ${req.headers.origin}`);
+  next();
+});
 
 // Routes
 app.use('/api', projectRoutes);
