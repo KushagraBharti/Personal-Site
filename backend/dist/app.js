@@ -11,27 +11,33 @@ const educationRoutes_1 = __importDefault(require("./routes/educationRoutes"));
 const app = (0, express_1.default)();
 const allowedOrigins = [
     'http://localhost:5173', // Local frontend
-    'https://personal-site-frontend-navy.vercel.app', // Correct deployed frontend URL
+    'https://personal-site-frontend-navy.vercel.app', // Deployed frontend URL
+    'https://personal-site-frontend-kushagras-projects-5d330ca5.vercel.app', // Alternative frontend
+    'https://personal-site-frontend-git-main-kushagras-projects-5d330ca5.vercel.app' // Branch frontend
 ];
+app.use((0, cors_1.default)({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        }
+        else {
+            console.error(`CORS error: Origin ${origin} not allowed`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+}));
 /*
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: '*',
   })
 );
 */
-app.use((0, cors_1.default)({
-    origin: '*',
-}));
 app.use(express_1.default.json());
 app.use((req, res, next) => {
-    console.log(`Origin: ${req.headers.origin}`);
+    console.log(`Request Origin: ${req.headers.origin}`);
+    console.log(`Request Path: ${req.path}`);
+    console.log(`Request Method: ${req.method}`);
     next();
 });
 // Routes

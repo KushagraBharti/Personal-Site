@@ -9,11 +9,10 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:5173', // Local frontend
   'https://personal-site-frontend-navy.vercel.app', // Deployed frontend URL
-  'https://personal-site-frontend-kushagras-projects-5d330ca5.vercel.app', // Alternative deployed frontend
-  'https://personal-site-frontend-git-main-kushagras-projects-5d330ca5.vercel.app' // Deployed branch frontend
+  'https://personal-site-frontend-kushagras-projects-5d330ca5.vercel.app', // Alternative frontend
+  'https://personal-site-frontend-git-main-kushagras-projects-5d330ca5.vercel.app' // Branch frontend
 ];
 
-/*
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -26,20 +25,20 @@ app.use(
     },
   })
 );
-*/
 
+/*
 app.use(
   cors({
     origin: '*',
   })
 );
-
+*/
 
 app.use(express.json());
 
 app.use((req, res, next) => {
-  console.log(`Request URL: ${req.url}`);
   console.log(`Request Origin: ${req.headers.origin}`);
+  console.log(`Request Path: ${req.path}`);
   console.log(`Request Method: ${req.method}`);
   next();
 });
