@@ -7,8 +7,8 @@ import educationRoutes from './routes/educationRoutes';
 const app = express();
 
 const allowedOrigins = [
-  'http://localhost:5173', // Local development frontend
-  'https://personal-site-frontend-navy.vercel.app/', // Replace with your deployed frontend URL
+  'http://localhost:5173', // Local frontend
+  'https://personal-site-frontend-navy.vercel.app/', // Deployed frontend
 ];
 
 app.use(
