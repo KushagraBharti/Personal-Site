@@ -5,14 +5,14 @@ import { EducationData } from "../../../backend/src/data/education";
 const Education: React.FC = () => {
   const [education, setEducation] = useState<EducationData[]>([]);
 
-  console.log(import.meta.env.VITE_API_BASE_URL);
+  //console.log(import.meta.env.VITE_API_BASE_URL);
 
   useEffect(() => {
     const fetchEducation = async () => {
       try {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "");
         const response = await axios.get(`${apiBaseUrl}/api/education`); // Safe concatenation
-        console.log("API RESPONSE:", response.data);
+        //console.log("API RESPONSE:", response.data);
         setEducation(response.data);
       } catch (error) {
         console.error("Error fetching education:", error);

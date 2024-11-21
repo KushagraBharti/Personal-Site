@@ -9,7 +9,8 @@ const Projects: React.FC = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/projects");
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "");
+        const response = await axios.get(`${apiBaseUrl}/api/projects`);
         setProjects(response.data);
       } catch (error) {
         console.error("Error fetching projects:", error);
