@@ -5,11 +5,24 @@ import experienceRoutes from './routes/experienceRoutes';
 import educationRoutes from './routes/educationRoutes';
 
 const app = express();
-const FRONTPORT = process.env.FRONTPORT || 5173;
 
-app.use(cors({
-  origin: `http://localhost:${FRONTPORT}`,
-}));
+const allowedOrigins = [
+  'http://localhost:5173', // Local development frontend
+  'https://personal-site-frontend-navy.vercel.app/', // Replace with your deployed frontend URL
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+  })
+);
+
 app.use(express.json());
 
 // Routes
