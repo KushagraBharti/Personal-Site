@@ -36,47 +36,55 @@ const Experiences: React.FC = () => {
         <h2 className="section-heading">Experiences</h2>
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
           {experiences.map((experience, index) => (
-            <div
-              key={index}
-              className="card cursor-pointer"
-              onClick={() => handleCardClick(experience)}
-            >
-              <div className="flex items-center space-x-2 justify-center">
-                <h3 className="text-xl text-primary font-sans">{experience.position}</h3>
-                <a
-                  href={experience.companyLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:text-primary-dark"
+          <div
+            key={index}
+            className="card group cursor-pointer relative overflow-hidden"
+            onClick={() => handleCardClick(experience)}
+          >
+            {/* Title and Icon */}
+            <div className="flex items-center space-x-2 justify-center">
+              <h3 className="text-xl text-primary font-sans">{experience.position}</h3>
+              <a
+                href={experience.companyLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:text-primary-dark"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 2 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="w-5 h-5"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 2 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    className="w-5 h-5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
-                    />
-                  </svg>
-                </a>
-              </div>
-              <p className="text-gray-600 mt-2 text-center">{experience.summary}</p>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                  />
+                </svg>
+              </a>
             </div>
+            {/* Summary */}
+            <p className="text-gray-600 mt-2 text-center">{experience.summary}</p>
+
+            {/* Hover Overlay */}
+            <div className="overlay absolute inset-0 bg-black bg-opacity-30 flex justify-center items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <p className="text-white font-medium">Click for Details</p>
+            </div>
+          </div>
           ))}
         </div>
       </div>
-  
+
+      {/* Popup */}
       {selectedExperience && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
           onClick={handleOverlayClick}
         >
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl z-50">
             <button
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
               onClick={closePopup}
@@ -107,6 +115,6 @@ const Experiences: React.FC = () => {
       )}
     </section>
   );
-};  
+};
 
 export default Experiences;

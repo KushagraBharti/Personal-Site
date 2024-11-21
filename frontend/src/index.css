@@ -17,7 +17,23 @@
   }
 
   .card {
-    @apply bg-white border border-gray-200 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow;
+    @apply bg-white border border-gray-400 p-6 rounded-lg shadow-sm transition-transform transform hover:shadow-lg hover:scale-105 cursor-pointer relative;
+  }
+
+  .card:hover {
+    @apply border-primary; /* Highlight border color on hover */
+  }
+
+  .card .overlay {
+    @apply absolute inset-0 bg-black bg-opacity-30 flex justify-center items-center opacity-0 transition-opacity duration-300;
+  }
+
+  .card:hover .overlay {
+    @apply opacity-100;
+  }
+  
+  .overlay p {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
   }
 
   .btn-primary {
