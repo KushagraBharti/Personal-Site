@@ -16,7 +16,7 @@ const allowedOrigins = [
   'https://personal-site-frontend-git-main-kushagras-projects-5d330ca5.vercel.app/' // Correct deployed frontend URL
 ];
 
-
+/*
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -28,14 +28,14 @@ app.use(
     },
   })
 );
+*/
 
-/*
 app.use(
   cors({
     origin: '*',
   })
 );
-*/
+
 
 app.use(express.json());
 
