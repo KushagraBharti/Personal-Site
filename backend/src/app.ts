@@ -8,10 +8,15 @@ const app = express();
 
 const allowedOrigins = [
   'http://localhost:5173', // Local frontend
-  'https://personal-site-frontend-navy.vercel.app', // Correct deployed frontend URL
+  'https://personal-site-frontend-navy.vercel.app/',
+  'https://personal-site-frontend-navy.vercel.app',
+  'https://personal-site-frontend-kushagras-projects-5d330ca5.vercel.app/',
+  'https://personal-site-frontend-kushagras-projects-5d330ca5.vercel.app',
+  'https://personal-site-frontend-git-main-kushagras-projects-5d330ca5.vercel.app/',
+  'https://personal-site-frontend-git-main-kushagras-projects-5d330ca5.vercel.app/' // Correct deployed frontend URL
 ];
 
-/*
+
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -23,18 +28,19 @@ app.use(
     },
   })
 );
-*/
 
+/*
 app.use(
   cors({
     origin: '*',
   })
 );
-
+*/
 
 app.use(express.json());
 
 app.use((req, res, next) => {
+  console.log(`Request URL: ${req.url}`);
   console.log(`Origin: ${req.headers.origin}`);
   next();
 });
