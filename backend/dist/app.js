@@ -11,7 +11,7 @@ const educationRoutes_1 = __importDefault(require("./routes/educationRoutes"));
 const app = (0, express_1.default)();
 const allowedOrigins = [
     'http://localhost:5173', // Local development frontend
-    'https://personal-site-frontend-navy.vercel.app/', // Replace with your deployed frontend URL
+    'https://personal-site-frontend-navy.vercel.app' // Replace with your deployed frontend URL
 ];
 app.use((0, cors_1.default)({
     origin: (origin, callback) => {

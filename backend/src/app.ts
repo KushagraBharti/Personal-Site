@@ -8,7 +8,7 @@ const app = express();
 
 const allowedOrigins = [
   'http://localhost:5173', // Local development frontend
-  'https://personal-site-frontend-navy.vercel.app/', // Replace with your deployed frontend URL
+  'https://personal-site-frontend-navy.vercel.app' // Replace with your deployed frontend URL
 ];
 
 app.use(
