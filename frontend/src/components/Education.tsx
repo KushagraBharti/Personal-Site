@@ -10,7 +10,7 @@ const Education: React.FC = () => {
   useEffect(() => {
     const fetchEducation = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/education`);
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}api/education`);
         const url = `${import.meta.env.VITE_API_BASE_URL}/api/education`;
         console.log("API RESPONSE:", response.data);
         console.log("API URL:", url);
