@@ -5,15 +5,10 @@ import { EducationData } from "../../../backend/src/data/education";
 const Education: React.FC = () => {
   const [education, setEducation] = useState<EducationData[]>([]);
 
-  const BASE_URL = import.meta.env.DEV
-  ? import.meta.env.VITE_API_BASE_URL_DEV
-  : import.meta.env.VITE_API_BASE_URL;
-
-
   useEffect(() => {
     const fetchEducation = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/api/education`);
+        const response = await axios.get("http://localhost:5000/api/education");
         setEducation(response.data);
       } catch (error) {
         console.error("Error fetching education:", error);
