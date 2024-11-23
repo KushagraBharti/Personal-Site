@@ -14,8 +14,8 @@ const allowedOrigins = [
     'https://personal-site-frontend-navy.vercel.app', // Deployed frontend URL
     'https://personal-site-frontend-kushagras-projects-5d330ca5.vercel.app', // Alternative frontend
     'https://personal-site-frontend-git-main-kushagras-projects-5d330ca5.vercel.app', // Branch frontend
-    'https://www.kushagrabharti.com/',
-    'https://kushagrabharti.com/'
+    'https://www.kushagrabharti.com',
+    'https://kushagrabharti.com'
 ];
 app.use((0, cors_1.default)({
     origin: (origin, callback) => {
