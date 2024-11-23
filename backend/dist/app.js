@@ -13,7 +13,9 @@ const allowedOrigins = [
     'http://localhost:5173', // Local frontend
     'https://personal-site-frontend-navy.vercel.app', // Deployed frontend URL
     'https://personal-site-frontend-kushagras-projects-5d330ca5.vercel.app', // Alternative frontend
-    'https://personal-site-frontend-git-main-kushagras-projects-5d330ca5.vercel.app' // Branch frontend
+    'https://personal-site-frontend-git-main-kushagras-projects-5d330ca5.vercel.app', // Branch frontend
+    'https://www.kushagrabharti.com/',
+    'https://kushagrabharti.com/'
 ];
 app.use((0, cors_1.default)({
     origin: (origin, callback) => {
@@ -34,12 +36,14 @@ app.use(
 );
 */
 app.use(express_1.default.json());
+/*
 app.use((req, res, next) => {
-    console.log(`Request Origin: ${req.headers.origin}`);
-    console.log(`Request Path: ${req.path}`);
-    console.log(`Request Method: ${req.method}`);
-    next();
+  console.log(`Request Origin: ${req.headers.origin}`);
+  console.log(`Request Path: ${req.path}`);
+  console.log(`Request Method: ${req.method}`);
+  next();
 });
+*/
 // Routes
 app.use('/api', projectRoutes_1.default);
 app.use('/api', experienceRoutes_1.default);
