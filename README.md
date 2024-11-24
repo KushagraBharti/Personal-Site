@@ -15,8 +15,8 @@ A dynamic, full-stack portfolio website to showcase my professional experience, 
 
 ## **Tech Stack**
 - **Frontend**: React, TypeScript, TailwindCSS, Vite
-- **Backend**: Node.js, Express.js
-- **Deployment**: Vercel (Frontend), Localhost for Backend
+- **Backend**: Node.js, Typescript, Express.js
+- **Deployment**: Vercel
 - **APIs**: Axios for API communication
 
 ---
