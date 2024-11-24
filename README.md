@@ -1,71 +1,67 @@
-# Running Code Instructions:
+# Personal Portfolio Website
 
-To run local frontend dev server:
+## **Demo**
+[Live Site](https://www.kushagrabharti.com)
 
+A dynamic, full-stack portfolio website to showcase my professional experience, education, and projects. This project features a responsive frontend built with React and TailwindCSS, a backend API built with Node.js and Express.js, and seamless integration for serving dynamic content.
+
+## **Features**
+- Interactive UI showcasing education, projects, and work experiences.
+- Reusable and modular React components.
+- Dynamic data served from a Node.js backend via RESTful APIs.
+- Responsive design using TailwindCSS for modern styling.
+- Stateful modals for detailed project and experience descriptions.
+- Secure API communication with CORS middleware.
+
+## **Tech Stack**
+- **Frontend**: React, TypeScript, TailwindCSS, Vite
+- **Backend**: Node.js, Express.js
+- **Deployment**: Vercel (Frontend), Localhost for Backend
+- **APIs**: Axios for API communication
+
+---
+
+## **Getting Started**
+
+### **Prerequisites**
+- Node.js, npm, and yarn installed on your system
+- Basic knowledge of JavaScript, TypeScript, and React
+
+### **Setup**
+
+#### Clone the repository:
+```bash
+git clone https://github.com/KushagraBharti/personal-portfolio.git
+cd personal-portfolio
 ```
 
+### Frontend Setup
+```bash
+cd frontend
+touch .env.local
+yarn install
+```
+
+### Add the following code to the .env.local file
+
+```VITE_API_BASE_URL=http://localhost:5000```
+
+### Backend Setup
+```bash
+cd backend
+yarn install
+```
+
+## **Initializing Local Environment**
+
+### Frontend Server
+```bash
 cd frontend
 yarn vite dev
-
 ```
 
-To run local backend dev server:
-
-```
-
+### Backend Server
+```bash
 cd backend
-yarn dev 
-
-```
-
-
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
-
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+yarn dev
 ```
