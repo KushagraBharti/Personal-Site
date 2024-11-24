@@ -1,6 +1,6 @@
 # Personal Portfolio Website
 
-## **Demo**
+## Demo
 [Live Site](https://www.kushagrabharti.com)
 
 A dynamic, full-stack portfolio website to showcase my professional experience, education, and projects. This project features a responsive frontend built with React and TailwindCSS, a backend API built with Node.js and Express.js, and seamless integration for serving dynamic content.
