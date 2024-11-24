@@ -3,9 +3,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html {
+    font-family: "Inter", system-ui, sans-serif;
+  }
+}
+
 @layer components {
   body {
-    @apply bg-gray-50 text-gray-800 font-inter;
+    @apply bg-gray-50 text-gray-800;
   }
 
   .navbar {
@@ -17,11 +23,11 @@
   }
 
   .card {
-    @apply bg-white border border-gray-400 p-6 rounded-lg shadow-sm transition-transform transform hover:shadow-lg hover:scale-105 cursor-pointer relative;
+    @apply bg-white border border-gray-400 p-6 rounded-lg shadow-sm transition-transform transform hover:shadow-lg hover:scale-105 cursor-pointer relative font-playfair;
   }
 
   .card:hover {
-    @apply border-primary; /* Highlight border color on hover */
+    @apply border-primary;
   }
 
   .card .overlay {

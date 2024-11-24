@@ -1,9 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
@@ -68,14 +65,15 @@ export default {
         success: "#10B981", // Green
         danger: "#EF4444", // Red
         info: "#3B82F6", // Blue
+        tiramisu: "f4f3ee",
       },
 
       // Typography
       fontFamily: {
-        inter: ['Inter', 'sans-serif'], // Modern and clean
-        playfair: ['Playfair Display', 'serif'], // Elegant
-        roboto: ['Roboto', 'sans-serif'], // Minimalist sans-serif
-        montserrat: ['Montserrat', 'sans-serif'], // Clean geometric sans-serif
+        sans: ["Inter", "sans-serif"], // Modern and clean
+        playfair: ["Playfair Display", "serif"], // Elegant
+        roboto: ["Roboto", "sans-serif"], // Minimalist sans-serif
+        montserrat: ["Montserrat", "sans-serif"], // Clean geometric sans-serif
       },
     },
   },
