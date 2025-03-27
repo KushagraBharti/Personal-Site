@@ -104,28 +104,7 @@ const Projects: React.FC = () => {
                   <div className="flex items-center justify-center space-x-2 mb-2">
                     <h3 className="text-xl font-semibold text-gray-50 break-words">
                       {project.title}
-                    </h3>
-                    {/* Optional GitHub icon link */}
-                    <a
-                      href={project.githubLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:text-primary-dark transition-colors cursor-pointer"
-                    >
-                      {/* Example GitHub icon */}
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        className="w-5 h-5"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.263.82-.58v-2.026c-3.338.726-4.043-1.416-4.043-1.416-.546-1.387-1.334-1.757-1.334-1.757-1.091-.745.082-.73.082-.73 1.205.084 1.84 1.236 1.84 1.236 1.07 1.835 2.807 1.304 3.495.997.108-.776.417-1.305.76-1.606-2.665-.3-5.466-1.333-5.466-5.93 0-1.31.469-2.381 1.236-3.221-.124-.303-.535-1.523.117-3.176 0 0 1.007-.322 3.3 1.23.958-.266 1.983-.398 3.003-.404 1.02.006 2.045.138 3.003.404 2.29-1.552 3.295-1.23 3.295-1.23.653 1.653.242 2.873.118 3.176.77.84 1.235 1.91 1.235 3.221 0 4.61-2.807 5.626-5.48 5.92.43.371.81 1.102.81 2.222v3.293c0 .319.22.697.825.58C20.565 21.796 24 17.299 24 12c0-6.63-5.373-12-12-12z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </a>
+                    </h3>                    
                   </div>
                   {/* Summary */}
                   <p className="text-gray-200 font-medium">
@@ -137,15 +116,7 @@ const Projects: React.FC = () => {
                     (blue left side, red right side)
                   */}
                   <div className="absolute inset-0 flex opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {/* Left half: View Site (GitHub link) */}
-                    <div
-                      className="w-1/2 h-full bg-blue-600 bg-opacity-40 flex items-center justify-center cursor-pointer"
-                      onClick={() => handleViewSite(project.githubLink)}
-                    >
-                      <span className="text-lg font-bold text-white drop-shadow-md">
-                        View Site
-                      </span>
-                    </div>
+                    
                     {/* Right half: Click for Details */}
                     <div
                       className="w-1/2 h-full bg-red-600 bg-opacity-40 flex items-center justify-center cursor-pointer"
@@ -155,6 +126,16 @@ const Projects: React.FC = () => {
                         Click for Details
                       </span>
                     </div>
+                    {/* Left half: View Site (GitHub link) */}
+                    <div
+                      className="w-1/2 h-full bg-blue-600 bg-opacity-40 flex items-center justify-center cursor-pointer"
+                      onClick={() => handleViewSite(project.githubLink)}
+                    >
+                      <span className="text-lg font-bold text-white drop-shadow-md">
+                        View Site
+                      </span>
+                    </div>
+                    
                   </div>
                 </GlassCard>
               </motion.div>
@@ -179,8 +160,27 @@ const Projects: React.FC = () => {
             >
               ✖
             </button>
-            <h3 className="text-2xl font-bold text-white mb-4">
-              {selectedProject.title}
+            <h3 className="flex items-center text-2xl font-bold text-white mb-2 space-x-2">
+              <span>{selectedProject.title}</span>
+              <a
+                href={selectedProject.githubLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-primary-dark transition-colors cursor-pointer"
+              >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="w-5 h-5"
+              >
+              <path
+                fillRule="evenodd"
+                d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.263.82-.58v-2.026c-3.338.726-4.043-1.416-4.043-1.416-.546-1.387-1.334-1.757-1.334-1.757-1.091-.745.082-.73.082-.73 1.205.084 1.84 1.236 1.84 1.236 1.07 1.835 2.807 1.304 3.495.997.108-.776.417-1.305.76-1.606-2.665-.3-5.466-1.333-5.466-5.93 0-1.31.469-2.381 1.236-3.221-.124-.303-.535-1.523.117-3.176 0 0 1.007-.322 3.3 1.23.958-.266 1.983-.398 3.003-.404 1.02.006 2.045.138 3.003.404 2.29-1.552 3.295-1.23 3.295-1.23.653 1.653.242 2.873.118 3.176.77.84 1.235 1.91 1.235 3.221 0 4.61-2.807 5.626-5.48 5.92.43.371.81 1.102.81 2.222v3.293c0 .319.22.697.825.58C20.565 21.796 24 17.299 24 12c0-6.63-5.373-12-12-12z"
+                clipRule="evenodd"
+              />
+              </svg>
+              </a>
             </h3>
             <p className="text-white/80 mb-4">{selectedProject.summary}</p>
             {/* Detailed bullet points */}

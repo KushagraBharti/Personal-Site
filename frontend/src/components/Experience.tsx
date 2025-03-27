@@ -100,27 +100,6 @@ const Experiences: React.FC = () => {
                     <h3 className="text-xl font-semibold text-gray-50 whitespace-nowrap">
                       {exp.position}
                     </h3>
-                    <a
-                      href={exp.companyLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:text-primary-dark transition-colors cursor-pointer"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 2 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="w-5 h-5"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
-                        />
-                      </svg>
-                    </a>
                   </div>
                   {/* Summary */}
                   <p className="text-gray-200 font-medium">{exp.summary}</p>
@@ -130,15 +109,6 @@ const Experiences: React.FC = () => {
                     (blue left side, red right side)
                   */}
                   <div className="absolute inset-0 flex opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {/* Left half: View Site */}
-                    <div
-                      className="w-1/2 h-full bg-blue-600 bg-opacity-40 flex items-center justify-center cursor-pointer"
-                      onClick={() => handleViewSite(exp.companyLink)}
-                    >
-                      <span className="text-lg font-bold text-white drop-shadow-md">
-                        View Site
-                      </span>
-                    </div>
                     {/* Right half: Click for Details */}
                     <div
                       className="w-1/2 h-full bg-red-600 bg-opacity-40 flex items-center justify-center cursor-pointer"
@@ -148,6 +118,17 @@ const Experiences: React.FC = () => {
                         Click for Details
                       </span>
                     </div>
+                    
+                    {/* Left half: View Site */}
+                    <div
+                      className="w-1/2 h-full bg-blue-600 bg-opacity-40 flex items-center justify-center cursor-pointer"
+                      onClick={() => handleViewSite(exp.companyLink)}
+                    >
+                      <span className="text-lg font-bold text-white drop-shadow-md">
+                        View Site
+                      </span>
+                    </div>
+                    
                   </div>
                 </GlassCard>
               </motion.div>
@@ -172,8 +153,29 @@ const Experiences: React.FC = () => {
             >
               ✖
             </button>
-            <h3 className="text-2xl font-bold text-white mb-4">
-              {selectedExperience.position}
+            <h3 className="flex items-center text-2xl font-bold text-white mb-2 space-x-2">
+              <span>{selectedExperience.position}</span>
+              <a
+                href={selectedExperience.companyLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-primary-dark transition-colors cursor-pointer"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="2 2 20 20"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                  />
+                </svg>
+              </a>
             </h3>
             <p className="text-white/80 mb-4">{selectedExperience.summary}</p>
             {/* Detailed bullet points */}
