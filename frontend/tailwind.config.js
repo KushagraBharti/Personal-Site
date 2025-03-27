@@ -6,78 +6,42 @@ export default {
   ],
   theme: {
     extend: {
-      colors: {
-        // Primary and secondary accent colors
-        primary: "#3B82F6", // Blue
-        "primary-dark": "#2563EB", // Darker Blue
-        secondary: "#F43F5E", // Pink-Red
-        "secondary-dark": "#E11D48", // Darker Pink-Red
-        tertiary: "#10B981", // Green
-
-        // Neutral grays
-        gray: {
-          50: "#F9FAFB", // Almost White
-          100: "#F3F4F6", // Light Gray
-          200: "#E5E7EB", // Lighter Gray
-          300: "#D1D5DB", // Soft Gray
-          400: "#9CA3AF", // Medium Gray
-          500: "#6B7280", // Neutral Gray
-          600: "#4B5563", // Dark Gray
-          700: "#374151", // Deeper Gray
-          800: "#1F2937", // Almost Black
-          900: "#111827", // Black-like Gray
-        },
-
-        // Complementary accents
-        teal: {
-          50: "#F0FDFA",
-          100: "#CCFBF1",
-          200: "#99F6E4",
-          300: "#5EEAD4",
-          400: "#2DD4BF",
-          500: "#14B8A6",
-          600: "#0D9488",
-          700: "#0F766E",
-          800: "#115E59",
-          900: "#134E4A",
-        },
-        amber: {
-          50: "#FFFBEB",
-          100: "#FEF3C7",
-          200: "#FDE68A",
-          300: "#FCD34D",
-          400: "#FBBF24",
-          500: "#F59E0B",
-          600: "#D97706",
-          700: "#B45309",
-          800: "#92400E",
-          900: "#78350F",
-        },
-
-        // Pastel accents
-        pastel: {
-          pink: "#F9A8D4",
-          purple: "#C084FC",
-          green: "#86EFAC",
-          blue: "#93C5FD",
-          yellow: "#FDE68A",
-        },
-
-        // Other useful colors
-        warning: "#F59E0B", // Amber
-        success: "#10B981", // Green
-        danger: "#EF4444", // Red
-        info: "#3B82F6", // Blue
-      },
-
-      // Typography
       fontFamily: {
-        inter: ['Inter', 'sans-serif'], // Modern and clean
-        playfair: ['Playfair Display', 'serif'], // Elegant
-        roboto: ['Roboto', 'sans-serif'], // Minimalist sans-serif
-        montserrat: ['Montserrat', 'sans-serif'], // Clean geometric sans-serif
+        poppins: ['Poppins', 'sans-serif'],
+        // or you can rename 'sans' to 'poppins' if you like
+      },
+      colors: {
+        // Core colors for your design
+        primary: "#3B82F6",
+        "primary-dark": "#2563EB",
+        secondary: "#F43F5E",
+        "secondary-dark": "#E11D48",
+        tertiary: "#10B981",
+        // A custom color for glass elements (if needed)
+        glass: "rgba(255, 255, 255, 0.2)",
+      },
+      backdropBlur: {
+        xs: '2px',
+      },
+      boxShadow: {
+        // Custom shadow for glass cards
+        glass: '0 4px 30px rgba(0, 0, 0, 0.1)',
+      },
+      borderRadius: {
+        // Custom border radius for glass elements
+        glass: '15px'
+      },
+      keyframes: {
+        // Floating animation for cards or other elements
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+      },
+      animation: {
+        float: 'float 3s ease-in-out infinite',
       },
     },
   },
   plugins: [],
-};
+}

@@ -19,6 +19,6 @@ export interface EducationData {
       position: "Student at St. Stephen's Episcopal School", 
       focus: "High School Diploma with focus on Computer Science and Mathematics.",
       description: "Learnt computer science and math",
-      schoolLink: "https://www.sstx.org/"
+      schoolLink: "https://www.sstx.org/boarding/boarding-student-support"
     }
   ];

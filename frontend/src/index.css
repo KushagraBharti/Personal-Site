@@ -1,42 +1,112 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
-  body {
-    @apply bg-gray-50 text-gray-800 font-inter;
+/* Register the Inter font class so @apply can see it */
+@layer base {
+  .font-inter {
+    font-family: 'Inter', sans-serif;
   }
+}
 
-  .navbar {
-    @apply bg-white shadow-md;
-  }
+/* 1. Global Styles - Enhanced gradient */
+body {
+  /* Increased contrast from lighter gray (#f3f4f6) to darker (#4b5563) */
+  @apply bg-gradient-to-b from-gray-100 to-gray-600 text-gray-800 font-inter;
+}
 
-  .section-heading {
-    @apply text-3xl font-playfair text-center mb-10;
-  }
+/* 2. Custom Glassmorphism Utility - More pronounced blur & slightly more opaque background */
+.glass {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 15px;
+}
 
-  .card {
-    @apply bg-white border border-gray-400 p-6 rounded-lg shadow-sm transition-transform transform hover:shadow-lg hover:scale-105 cursor-pointer relative;
-  }
-
-  .card:hover {
-    @apply border-primary; /* Highlight border color on hover */
-  }
-
-  .card .overlay {
-    @apply absolute inset-0 bg-black bg-opacity-30 flex justify-center items-center opacity-0 transition-opacity duration-300;
-  }
-
-  .card:hover .overlay {
-    @apply opacity-100;
-  }
+/* 3. Glass Card Component */
+.card {
+  @apply p-6 rounded-glass shadow-glass transition-transform transform hover:scale-105;
   
-  .overlay p {
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  /* Subtle text shadow for readability */
+  h1, p {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
   }
+}
 
-  .btn-primary {
-    @apply bg-primary text-white px-6 py-2 rounded-lg shadow-md hover:bg-primary-dark transition-all;
+/* 4. Glass Button Component */
+.btn-glass {
+  @apply px-6 py-2 rounded-lg text-white font-semibold transition-all;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  /* Hover & Active States for better interaction feedback */
+}
+.btn-glass:hover {
+  @apply scale-105;
+  background: rgba(255, 255, 255, 0.4);
+}
+.btn-glass:active {
+  @apply scale-95;
+}
+
+/* 5. Floating Animation for elements (optional) */
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+/* 6. Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+/* 7. Full Screen Background Utility */
+.full-screen-bg {
+  @apply min-h-screen flex items-center justify-center;
+}
+
+/* 8. Icon Hover Effects */
+.icon-hover {
+  @apply transition-transform duration-300;
+}
+.icon-hover:hover {
+  @apply scale-110 text-primary; /* Scale up and change color to primary */
+}
+
+/* 9. Responsive Tweaks for .card */
+@layer base {
+  @screen sm {
+    .card {
+      @apply max-w-sm mx-auto;
+    }
   }
+  @screen md {
+    .card {
+      @apply max-w-md mx-auto;
+    }
+  }
+  @screen lg {
+    .card {
+      @apply max-w-lg mx-auto;
+    }
+  }
+}
+
+/* 10. Custom Cursor Example */
+body, button, a {
+  cursor: url('custom-cursor.png'), auto;
 }

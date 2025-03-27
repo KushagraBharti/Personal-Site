@@ -1,3 +1,25 @@
+// src/pages/Home.tsx
+import React from "react";
+import Intro from "../components/Intro";
+import Education from "../components/Education";
+import Experiences from "../components/Experience";
+import Projects from "../components/Projects";
+
+
+const Home: React.FC = () => {
+  return (
+    <div>
+      <Intro />
+      <Education />
+      <Experiences />
+      <Projects />
+    </div>
+  );
+};
+
+export default Home;
+
+/* 
 import React from "react";
 import Navbar from "../components/Navbar";
 import Introduction from "../components/Intro";
@@ -22,3 +44,4 @@ const Home: React.FC = () => {
 };
 
 export default Home;
+*/
