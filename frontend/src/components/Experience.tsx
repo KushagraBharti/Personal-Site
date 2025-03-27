@@ -191,7 +191,19 @@ const Experiences: React.FC = () => {
               {selectedExperience.tags.map((tag, idx) => (
                 <span
                   key={idx}
-                  className="px-2 py-1 bg-gray-200 text-sm text-gray-700 rounded"
+                  className="
+                    px-2 
+                    py-1 
+                    text-sm 
+                    font-semibold 
+                    text-white 
+                    bg-white/20 
+                    backdrop-blur-md 
+                    border 
+                    border-white/30 
+                    rounded 
+                    shadow-sm
+                  "
                 >
                   {tag}
                 </span>
