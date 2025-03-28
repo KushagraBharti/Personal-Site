@@ -19,7 +19,7 @@ export const projectsData: ProjectData[] = [
       "Integrated with AWS paper trading endpoints to simulate near-real-time execution, placing automated market orders, verifying fills, and bridging historical simulations with practical execution scenarios."
     ], 
     tags: ["Python", "Alpaca API", "Pandas", "NumPy", "Matplotlib", "scikit-learn"], 
-    githubLink: "#" 
+    githubLink: "https://github.com/KushagraBharti/Quant-Test-Environment" 
   },
   {
     "title": "Personal Portfolio Website",
@@ -38,7 +38,7 @@ export const projectsData: ProjectData[] = [
     ],
     "tags": ["TypeScript", "Node.js", "Express.js", "React", "Tailwind CSS", "Vite"
     ],
-    "githubLink": "#"
+    "githubLink": "https://github.com/KushagraBharti/Personal-Site"
   },
   {
     "title": "DataDrive: Unified Insights for Data & Fuel Optimization",
@@ -56,7 +56,7 @@ export const projectsData: ProjectData[] = [
     "Ultimately delivered a unified, AI-driven solution blending ML predictions, cluster-based insights, secure logging, and intuitive visualizations to guide effective fuel optimization strategies."
     ],
     "tags": ["Flask", "React", "TypeScript", "TailwindCSS", "D3.js", "scikit-learn", "APScheduler", "IPFS", "OpenAI", "Docker", "AWS"],
-    "githubLink": "#"
+    "githubLink": "https://github.com/KushagraBharti/HACKUTD-Data-Drive"
   },  
   { 
     title: "Circuit Seer (Circuit Solver)", 
@@ -66,7 +66,7 @@ export const projectsData: ProjectData[] = [
       "Developed a Python-based application using YOLOv5, PyTorch, and image processing techniques to efficiently analyze and solve circuits for resistance and capacitance."
     ], 
     tags: ["Python", "YOLOv5", "PyTorch", "OpenCV", "matplotlib", "Computer Vision"], 
-    githubLink: "#" 
+    githubLink: "https://github.com/Hteam121/circuit-seer" 
   },
   { 
     title: "To Do List App", 

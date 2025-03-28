@@ -135,12 +135,12 @@ const Education: React.FC = () => {
       {/* Modal: GlassCard for detailed info with higher text contrast */}
       {selectedEducation && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
+          className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50 p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) closeDetails();
           }}
         >
-          <GlassCard className="relative w-full max-w-3xl mx-auto p-6 text-left">
+          <GlassCard className="relative w-full max-w-3xl mx-auto p-6 text-left modal-glass-card">
             <button
               className="absolute top-4 right-4 text-gray-200 hover:text-gray-400"
               onClick={closeDetails}

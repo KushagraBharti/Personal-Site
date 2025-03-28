@@ -114,6 +114,10 @@ body {
   }
 }
 
+.modal-glass-card:hover {
+  transform: none !important;
+}
+
 /* 10. Custom Cursor Example */
 body, button, a {
   cursor: url('custom-cursor.png'), auto;

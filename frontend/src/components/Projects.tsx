@@ -147,15 +147,15 @@ const Projects: React.FC = () => {
       {/* Glass-styled modal for Detailed View */}
       {selectedProject && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
+          className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50 p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) closeDetails();
           }}
         >
           {/* Reuse GlassCard for consistent styling */}
-          <GlassCard className="relative w-full max-w-3xl mx-auto p-6 text-left">
+          <GlassCard className="relative w-full max-w-3xl mx-auto p-6 text-left modal-glass-card">
             <button
-              className="absolute top-4 right-4 text-gray-200 hover:text-gray-400"
+              className="absolute top-4 right-4 text-gray-200 hover:text-red-600"
               onClick={closeDetails}
             >
               ✖
@@ -166,7 +166,7 @@ const Projects: React.FC = () => {
                 href={selectedProject.githubLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-primary-dark transition-colors cursor-pointer"
+                className="text-white hover:text-[#6e40c9] transition-colors cursor-pointer"
               >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

@@ -9,10 +9,18 @@ import Projects from "../components/Projects";
 const Home: React.FC = () => {
   return (
     <div>
-      <Intro />
-      <Education />
-      <Experiences />
-      <Projects />
+      <section id="intro">
+        <Intro />
+      </section>
+      <section id="education">
+        <Education />
+      </section>
+      <section id="experiences">
+        <Experiences />
+      </section>
+      <section id="projects">
+        <Projects />
+      </section>
     </div>
   );
 };
