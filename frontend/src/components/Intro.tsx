@@ -170,9 +170,9 @@ const Intro: React.FC = () => {
           <GlassCard className="p-4 w-60 text-center">
             <h4 className="text-s font-bold text-white mb-1">AI Projects</h4>
             <p className="text-s text-gray-200">
-              GPT-based Chatbot <br />
-              LLM Fine-tuning <br />
-              Neural Style Transfer
+              Pseudo-Lawyer <br />
+              CircuitSeer <br />
+              DataDrive <br />
             </p>
           </GlassCard>
         </div>
@@ -184,7 +184,7 @@ const Intro: React.FC = () => {
           <GlassCard className="p-4 w-60 text-center">
             <h4 className="text-s font-bold text-white mb-1">Travel Plans</h4>
             <p className="text-s text-gray-200">
-              Attending a hackathon in SF next month—excited for the networking!
+              Visiting Home for summer break! <br />
             </p>
           </GlassCard>
         </div>
