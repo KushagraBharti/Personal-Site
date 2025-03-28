@@ -7,7 +7,7 @@ import GlassCard from "./ui/GlassCard";
 import GlassButton from "./ui/GlassButton";
 import { FaEnvelope, FaMediumM, FaGithub, FaLinkedin } from "react-icons/fa";
 
-import selfPic from "../assets/selfpic.jpg";
+import selfPic from "../assets/SelfPic.jpg";
 
 const Intro: React.FC = () => {
   return (
