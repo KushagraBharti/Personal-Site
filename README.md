@@ -38,7 +38,7 @@ cd personal-portfolio
 ### Frontend Setup
 ```bash
 cd frontend
-touch .env.local
+New-Item -Path . -Name ".env.local" -ItemType "File"
 yarn install
 ```
 
