@@ -13,8 +13,23 @@
 
 /* 1. Global Styles - Enhanced gradient */
 body {
-  @apply bg-gradient-to-r from-gray-600 via-gray-700 to-gray-800 bg-[length:200%_200%];
+  /* Remove any Tailwind bg-gradient classes if present */
+  background: linear-gradient(45deg, #6c88ae, #2c3d59, #4b76b1, #111827);
+  background-size: 400% 400%;
+  animation: gradientAnimation 12s ease infinite;
 }
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 
 /* 2. Custom Glassmorphism Utility - More pronounced blur & slightly more opaque background */
 .glass {
