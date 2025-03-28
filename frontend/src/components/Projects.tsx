@@ -41,7 +41,7 @@ const Projects: React.FC = () => {
     loop: false,
     typeSpeed: 120,
     deleteSpeed: 60,
-    delaySpeed: 5000,
+    delaySpeed: 1000,
   });
 
   // Modal handlers
