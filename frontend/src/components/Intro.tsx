@@ -5,6 +5,7 @@ import GlassCard from "./ui/GlassCard";
 import GlassButton from "./ui/GlassButton"; 
 import { FaEnvelope, FaMediumM, FaGithub, FaLinkedin } from "react-icons/fa";
 
+
 const Intro: React.FC = () => {
   return (
     <section className="full-screen-bg relative">
