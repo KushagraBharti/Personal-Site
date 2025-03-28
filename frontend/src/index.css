@@ -17,6 +17,8 @@ body {
   background: linear-gradient(45deg, #6c88ae, #2c3d59, #4b76b1, #16223a);
   background-size: 400% 400%;
   animation: gradientAnimation 12s ease infinite;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 @keyframes gradientAnimation {
   0% {
@@ -78,14 +80,7 @@ body {
 
 /* 6. Custom Scrollbar Styling */
 ::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-}
-::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
+  display: none;
 }
 
 /* 7. Full Screen Background Utility */
@@ -124,3 +119,4 @@ body {
 body, button, a {
   cursor: url('custom-cursor.png'), auto;
 }
+
