@@ -54,6 +54,8 @@ const defaultIntroData: IntroResponse = {
 const Intro: React.FC = () => {
   const [introData, setIntroData] = useState<IntroResponse>(defaultIntroData);
 
+  const [isAtTop, setIsAtTop] = useState(true);
+
   useEffect(() => {
     const fetchIntroData = async () => {
       try {
@@ -66,6 +68,14 @@ const Intro: React.FC = () => {
       }
     };
     fetchIntroData();
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsAtTop(window.scrollY === 0);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Use fetched data if available, otherwise fallback
@@ -232,6 +242,14 @@ const Intro: React.FC = () => {
           </GlassCard>
         </div>
       </Draggable>
+      
+      {isAtTop && (
+        <div className="fixed bottom-4 w-full flex justify-center z-50 pointer-events-none">
+          <p className="text-sm text-white/80 animate-bounce pointer-events-auto">
+            Scroll for More
+          </p>
+        </div>
+      )}
     </section>
   );
 };
