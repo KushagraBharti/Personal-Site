@@ -81,8 +81,8 @@ const Projects: React.FC = () => {
           2) gap-8 for spacing 
         */}
         {/* Projects grid */}
-        <div className="grid md:grid-cols-2 gap-10 items-stretch">
-          {projects.map((project, index) => {
+        <div className="grid md:grid-cols-2 gap-8 items-stretch">
+        {projects.map((project, index) => {
             const variants = index % 2 === 0 ? leftColumnVariants : rightColumnVariants;
             return (
               <motion.div
@@ -94,24 +94,22 @@ const Projects: React.FC = () => {
                 className="h-full"
               >
                   <GlassCard className="group relative flex flex-col justify-center items-center text-center hover:shadow-lg transition-shadow w-full h-full px-6 py-6 overflow-hidden">
-                  {/* Render thumbnail if available */}
+                  {/* If thumbnail exists, render it with lazy loading */}
                   {project.thumbnail && (
                     <img
                       src={project.thumbnail}
                       alt={project.title}
                       loading="lazy"
-                      className="w-full h-auto object-cover rounded mb-4"
+                      className="w-full h-full object-cover rounded mb-4"
                     />
                   )}
                   {/* Title and summary container (always visible) */}
-                  <div className="relative z-20 flex flex-col items-center">
-                    <h3 className="text-xl font-semibold text-gray-50 break-words group-hover:hidden">
+                  <div className="flex items-center justify-center space-x-2 mb-2">
+                    <h3 className="text-xl font-semibold text-gray-50 break-words">
                       {project.title}
                     </h3>
-                    <p className="text-gray-200 font-medium group-hover:hidden">
-                      {project.summary}
-                    </p>
                   </div>
+                  <p className="text-gray-200 font-medium">{project.summary}</p>
                   {/* Background gradient overlay (appears on hover) */}
                   <div
                     className="
