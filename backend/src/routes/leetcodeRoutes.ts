@@ -4,7 +4,7 @@ import { getLeetCodeStats } from "../controllers/leetcodeController";
 
 const router = express.Router();
 
-// GET /api/leetcode/stats returns the LeetCode statistics
+// GET /api/leetcode/stats
 router.get("/stats", getLeetCodeStats);
 
 export default router;

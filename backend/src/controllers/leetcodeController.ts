@@ -1,15 +1,15 @@
-// backend/src/controllers/leetCodeController.ts
+// backend/src/controllers/leetcodeController.ts
 import { Request, Response, RequestHandler } from "express";
 import axios from "axios";
 
 export const getLeetCodeStats: RequestHandler = async (req: Request, res: Response): Promise<void> => {
-  // Here, we're using a community API endpoint.
-  // Replace the URL below with your chosen LeetCode API endpoint.
+  // Use the environment variable LEETCODE_USERNAME or fallback to a default.
   const leetUsername = process.env.LEETCODE_USERNAME || "your_leetcode_username";
+  const url = `https://leetcode-stats-api.herokuapp.com/${leetUsername}`;
+
   try {
-    const url = `https://leetcode-stats-api.herokuapp.com/${leetUsername}`;
     const response = await axios.get(url);
-    // Adjust the response data if needed:
+    // Adjust the returned data if necessary. Here we assume the API returns these fields:
     const data = {
       totalSolved: response.data.totalSolved,
       easySolved: response.data.easySolved,
