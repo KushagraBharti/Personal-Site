@@ -37,45 +37,44 @@ interface IntroResponse {
   travelPlans: string;
 }
 
+// Fallback default data
+const defaultIntroData: IntroResponse = {
+  personalPhoto: "placeholder.jpg",
+  githubStats: { totalRepos: 17, totalCommits: 250 },
+  leetCodeStats: { totalSolved: 6, rank: "4/1/1" },
+  weather: { city: "N/A", temp: 0, description: "N/A" },
+  latestUpdate: "Currently applying for Summer 2025 internships and leetcoding!",
+  funFact: "A film I made was screened at AMC Theatres in Times Square!",
+  featuredBlog: { title: "How AI is Shaping the Future of Software Development", link: "https://news.mit.edu/2025/ai-tool-generates-high-quality-images-faster-0321" },
+  aiProjects: ["Placeholder project"],
+  travelPlans: "No travel plans yet",
+};
+
+
+
 const Intro: React.FC = () => {
-  const [introData, setIntroData] = useState<IntroResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [introData, setIntroData] = useState<IntroResponse>(defaultIntroData);
 
   useEffect(() => {
     const fetchIntroData = async () => {
       try {
         const res = await axios.get<IntroResponse>(
-          `${import.meta.env.VITE_API_BASE_URL}/api/intro`
+          `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")}/api/intro`
         );
         setIntroData(res.data);
       } catch (error) {
         console.error("Error fetching intro data:", error);
-      } finally {
-        setLoading(false);
       }
     };
     fetchIntroData();
   }, []);
 
-  if (loading) {
-    return (
-      <section className="full-screen-bg flex items-center justify-center">
-        <p className="text-white text-xl">Loading Intro Data...</p>
-      </section>
-    );
-  }
-
-  if (!introData) {
-    return (
-      <section className="full-screen-bg flex items-center justify-center">
-        <p className="text-red-400 text-xl">Failed to load intro data.</p>
-      </section>
-    );
-  }
+  // Use fetched data if available, otherwise fallback
+  const data = introData || defaultIntroData;
 
   return (
     <section className="full-screen-bg relative overflow-hidden">
-      {/* Main central card */}
+      {/* Main central card (always rendered first) */}
       <div className="absolute inset-0 flex items-center justify-center">
         <Tilt
           tiltMaxAngleX={15}
@@ -89,7 +88,7 @@ const Intro: React.FC = () => {
             <h1 className="text-5xl md:text-6xl font-playfair mb-4">
               Kushagra Bharti
             </h1>
-            <p className="text-lg md:text-lg font-mono mb-6">
+            <p className="text-lg font-mono mb-6">
               Student | Software Engineer | ML Enthusiast
             </p>
             <div className="flex justify-center space-x-6 mb-6">
@@ -141,9 +140,9 @@ const Intro: React.FC = () => {
         </Tilt>
       </div>
 
-      {/* Draggable smaller cards - dynamic data */}
+      {/* Draggable Cards in the desired order */}
 
-      {/* 1) Personal Photo */}
+      {/* 2) Photo Card */}
       <Draggable>
         <div className="absolute top-24 left-96 cursor-grab active:cursor-grabbing">
           <GlassCard className="p-2 w-60 text-center flex flex-col items-center">
@@ -157,37 +156,29 @@ const Intro: React.FC = () => {
         </div>
       </Draggable>
 
-      {/* 2) GitHub Stats */}
-      <Draggable>
-        <div className="absolute top-[45%] left-[10%] cursor-grab active:cursor-grabbing">
-          <GlassCard className="p-4 w-60 text-center">
-            <h4 className="text-sm font-bold text-white mb-1">Live GitHub Stats</h4>
-            {introData.githubStats ? (
-              <p className="text-sm text-gray-200">
-                <strong>Repositories:</strong> {introData.githubStats.totalRepos ?? "N/A"}
-                <br />
-                <strong>Total Commits:</strong> {introData.githubStats.totalCommits ?? "N/A"}
-              </p>
-            ) : (
-              <p className="text-sm text-red-300">GitHub stats unavailable</p>
-            )}
-          </GlassCard>
-        </div>
-      </Draggable>
-
-      {/* LeetCode Stats Card */}
-      <Draggable>
-        <div className="absolute top-[80%] left-[20%] cursor-grab active:cursor-grabbing">
-          <LeetCodeStatsCard />
-        </div>
-      </Draggable>
-
-      {/* 4) Latest Update */}
+      {/* 3) Latest Update */}
       <Draggable>
         <div className="absolute top-[68%] left-[45%] cursor-grab active:cursor-grabbing">
           <GlassCard className="p-4 w-64 text-center">
             <h4 className="text-sm font-bold text-white mb-1">Latest Update</h4>
-            <p className="text-sm text-gray-200">{introData.latestUpdate}</p>
+            <p className="text-sm text-gray-200">{data.latestUpdate}</p>
+          </GlassCard>
+        </div>
+      </Draggable>
+
+      {/* 4) My Recent Read */}
+      <Draggable>
+        <div className="absolute top-[5%] left-[55%] cursor-grab active:cursor-grabbing">
+          <GlassCard className="p-4 w-60 text-center">
+            <h4 className="text-sm font-bold text-white mb-1">My Recent Read</h4>
+            <a
+              href={data.featuredBlog.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-gray-200 hover:text-[#0A66C2]"
+            >
+              {data.featuredBlog.title}
+            </a>
           </GlassCard>
         </div>
       </Draggable>
@@ -197,29 +188,12 @@ const Intro: React.FC = () => {
         <div className="absolute top-[47%] left-[82%] cursor-grab active:cursor-grabbing">
           <GlassCard className="p-4 w-64 text-center">
             <h4 className="text-sm font-bold text-white mb-1">Fun Fact</h4>
-            <p className="text-sm text-gray-200">{introData.funFact}</p>
+            <p className="text-sm text-gray-200">{data.funFact}</p>
           </GlassCard>
         </div>
       </Draggable>
 
-      {/* 6) Featured Blog */}
-      <Draggable>
-        <div className="absolute top-[5%] left-[55%] cursor-grab active:cursor-grabbing">
-          <GlassCard className="p-4 w-60 text-center">
-            <h4 className="text-sm font-bold text-white mb-1">My Recent Read</h4>
-            <a
-              href={introData.featuredBlog.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-gray-200 hover:text-[#0A66C2]"
-            >
-              {introData.featuredBlog.title}
-            </a>
-          </GlassCard>
-        </div>
-      </Draggable>
-
-      {/* 7) Pong Game */}
+      {/* 6) Pong Game */}
       <Draggable>
         <div className="absolute top-[75%] left-[70%] cursor-grab active:cursor-grabbing">
           <GlassCard className="flex flex-col items-center p-8">
@@ -228,12 +202,37 @@ const Intro: React.FC = () => {
         </div>
       </Draggable>
 
+      {/* 7) Weather Card */}
       <Draggable>
         <div className="absolute top-[15%] left-[80%] cursor-grab active:cursor-grabbing">
           <WeatherCard />
         </div>
-      </Draggable>      
+      </Draggable>
 
+      {/* 8) LeetCode Stats Card */}
+      <Draggable>
+        <div className="absolute top-[80%] left-[20%] cursor-grab active:cursor-grabbing">
+          <LeetCodeStatsCard />
+        </div>
+      </Draggable>
+
+      {/* 9) GitHub Stats Card */}
+      <Draggable>
+        <div className="absolute top-[45%] left-[10%] cursor-grab active:cursor-grabbing">
+          <GlassCard className="p-4 w-60 text-center">
+            <h4 className="text-sm font-bold text-white mb-1">Live GitHub Stats</h4>
+            {data.githubStats ? (
+              <p className="text-sm text-gray-200">
+                <strong>Repositories:</strong> {data.githubStats.totalRepos ?? "N/A"}
+                <br />
+                <strong>Total Commits:</strong> {data.githubStats.totalCommits ?? "N/A"}
+              </p>
+            ) : (
+              <p className="text-sm text-red-300">GitHub stats unavailable</p>
+            )}
+          </GlassCard>
+        </div>
+      </Draggable>
     </section>
   );
 };
