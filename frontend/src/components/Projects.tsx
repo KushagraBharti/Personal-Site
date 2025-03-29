@@ -80,10 +80,10 @@ const Projects: React.FC = () => {
           1) items-stretch ensures each row has uniform height 
           2) gap-8 for spacing 
         */}
+        {/* Projects grid */}
         <div className="grid md:grid-cols-2 gap-8 items-stretch">
           {projects.map((project, index) => {
             const variants = index % 2 === 0 ? leftColumnVariants : rightColumnVariants;
-
             return (
               <motion.div
                 key={index}
@@ -93,31 +93,25 @@ const Projects: React.FC = () => {
                 viewport={{ once: true, amount: 0.2 }}
                 className="h-full"
               >
-                {/* 
-                  GlassCard: 
-                  - group & relative for overlay 
-                  - h-full so it stretches within the grid 
-                  - remove whitespace-nowrap from the title to allow wrapping 
-                */}
                 <GlassCard className="group relative flex flex-col justify-center items-center text-center hover:shadow-lg transition-shadow w-full h-full px-6 py-6 overflow-hidden">
-                  {/* Title & link icon */}
+                  {/* If thumbnail exists, render it with lazy loading */}
+                  {project.thumbnail && (
+                    <img
+                      src={project.thumbnail}
+                      alt={project.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover rounded mb-4"
+                    />
+                  )}
                   <div className="flex items-center justify-center space-x-2 mb-2">
                     <h3 className="text-xl font-semibold text-gray-50 break-words">
                       {project.title}
-                    </h3>                    
+                    </h3>
                   </div>
-                  {/* Summary */}
-                  <p className="text-gray-200 font-medium">
-                    {project.summary}
-                  </p>
-
-                  {/* 
-                    Split overlay with improved text visibility
-                    (blue left side, red right side)
-                  */}
+                  <p className="text-gray-200 font-medium">{project.summary}</p>
+                  {/* Overlay for interactions */}
                   <div className="absolute inset-0 flex opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    
-                    {/* Right half: Click for Details */}
+                    {/* Right half: Details */}
                     <div
                       className="w-1/2 h-full bg-red-600 bg-opacity-40 flex items-center justify-center cursor-pointer"
                       onClick={() => openDetails(project)}
@@ -126,7 +120,7 @@ const Projects: React.FC = () => {
                         Click for Details
                       </span>
                     </div>
-                    {/* Left half: View Site (GitHub link) */}
+                    {/* Left half: View Site */}
                     <div
                       className="w-1/2 h-full bg-blue-600 bg-opacity-40 flex items-center justify-center cursor-pointer"
                       onClick={() => handleViewSite(project.githubLink)}
@@ -135,7 +129,6 @@ const Projects: React.FC = () => {
                         View Site
                       </span>
                     </div>
-                    
                   </div>
                 </GlassCard>
               </motion.div>
@@ -144,79 +137,82 @@ const Projects: React.FC = () => {
         </div>
       </div>
 
-      {/* Glass-styled modal for Detailed View */}
+      {/* Modal for project details */}
       {selectedProject && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50 p-4"
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) closeDetails();
           }}
         >
-          {/* Reuse GlassCard for consistent styling */}
-          <GlassCard className="relative w-full max-w-3xl mx-auto p-6 text-left modal-glass-card">
+          {/* GlassCard with bigger max-width and height */}
+          <GlassCard
+            className="relative w-full max-w-[1850px] mx-auto p-8 bg-white/10 backdrop-blur-lg rounded-lg shadow-xl animate-fadeIn"
+            /* If your GlassCard supports 'style' prop, you can do: style={{ maxHeight: "90vh" }} */
+          >
+            {/* Close Button */}
             <button
-              className="absolute top-4 right-4 text-gray-200 hover:text-red-600"
+              className="absolute top-4 right-4 text-gray-200 hover:text-red-600 text-2xl"
               onClick={closeDetails}
             >
               ✖
             </button>
-            <h3 className="flex items-center text-2xl font-bold text-white mb-2 space-x-2">
-              <span>{selectedProject.title}</span>
-              <a
-                href={selectedProject.githubLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-[#6e40c9] transition-colors cursor-pointer"
+
+            {/* Main Flex Container: Two columns on md+ screens */}
+            <div className="flex flex-col md:flex-row" style={{ maxHeight: "90vh" }}>
+              {/* Left Column: Image */}
+              {selectedProject.thumbnail && (
+                <div className="md:w-1/2 flex items-center justify-center">
+                  <img
+                    src={selectedProject.thumbnail}
+                    alt={selectedProject.title}
+                    className="w-full h-auto object-contain rounded"
+                  />
+                </div>
+              )}
+
+              {/* Right Column: Project Details */}
+              <div
+                className="md:w-1/2 mt-4 md:mt-0 md:pl-6 overflow-y-auto"
+                style={{ maxHeight: "80vh" }}
               >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="w-5 h-5"
-              >
-              <path
-                fillRule="evenodd"
-                d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.263.82-.58v-2.026c-3.338.726-4.043-1.416-4.043-1.416-.546-1.387-1.334-1.757-1.334-1.757-1.091-.745.082-.73.082-.73 1.205.084 1.84 1.236 1.84 1.236 1.07 1.835 2.807 1.304 3.495.997.108-.776.417-1.305.76-1.606-2.665-.3-5.466-1.333-5.466-5.93 0-1.31.469-2.381 1.236-3.221-.124-.303-.535-1.523.117-3.176 0 0 1.007-.322 3.3 1.23.958-.266 1.983-.398 3.003-.404 1.02.006 2.045.138 3.003.404 2.29-1.552 3.295-1.23 3.295-1.23.653 1.653.242 2.873.118 3.176.77.84 1.235 1.91 1.235 3.221 0 4.61-2.807 5.626-5.48 5.92.43.371.81 1.102.81 2.222v3.293c0 .319.22.697.825.58C20.565 21.796 24 17.299 24 12c0-6.63-5.373-12-12-12z"
-                clipRule="evenodd"
-              />
-              </svg>
-              </a>
-            </h3>
-            <p className="text-white/80 mb-4">{selectedProject.summary}</p>
-            {/* Detailed bullet points */}
-            <ul className="list-disc list-inside mb-4 space-y-2">
-              {selectedProject.description.map((item, idx) => (
-                <li key={idx} className="text-white">
-                  {item}
-                </li>
-              ))}
-            </ul>
-            {/* Tags, if any */}
-            <div className="flex flex-wrap gap-2 mt-4">
-              {selectedProject.tags.map((tag, idx) => (
-                <span
-                  key={idx}
-                  className="
-                    px-2 
-                    py-1 
-                    text-sm 
-                    font-semibold 
-                    text-white 
-                    bg-white/20 
-                    backdrop-blur-md 
-                    border 
-                    border-white/30 
-                    rounded 
-                    shadow-sm
-                  "
-                >
-                  {tag}
-                </span>
-              ))}
+                <h3 className="text-3xl font-bold text-white mb-3">
+                  {selectedProject.title}
+                </h3>
+                <p className="text-white/80 mb-4 text-lg">
+                  {selectedProject.summary}
+                </p>
+                <ul className="list-disc list-outside pl-6 space-y-2 text-white">
+                  {selectedProject.description.map((item, idx) => (
+                    <li key={idx}>{item}</li>
+                  ))}
+                </ul>
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {selectedProject.tags.map((tag, idx) => (
+                    <span
+                      key={idx}
+                      className="px-3 py-1 text-base font-semibold text-white bg-white/20 backdrop-blur-md border border-white/30 rounded shadow-sm"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-6">
+                  <a
+                    href={selectedProject.githubLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block px-6 py-3 bg-blue-600 text-white text-lg font-semibold rounded hover:bg-blue-700 transition-colors"
+                  >
+                    View on GitHub
+                  </a>
+                </div>
+              </div>
             </div>
           </GlassCard>
         </div>
       )}
+
     </section>
   );
 };

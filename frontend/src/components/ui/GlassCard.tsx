@@ -4,13 +4,15 @@ interface GlassCardProps {
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
+  style?: React.CSSProperties;
 }
 
-const GlassCard: React.FC<GlassCardProps> = ({ children, className, onClick }) => {
+const GlassCard: React.FC<GlassCardProps> = ({ children, className, style, onClick }) => {
   return (
     <div
       className={`card glass ${className ? className : ""}`}
       onClick={onClick}
+      style={style}
     >
       {children}
     </div>
