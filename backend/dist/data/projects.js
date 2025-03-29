@@ -87,7 +87,7 @@ exports.projectsData = [
         description: [
             "Down sampled a 370,277-point cloud while maintaining shape, achieving a reduction of 300 or 40,000 points depending on pre-defined voxel size, by employing a mathematical model for Voxelization in Python."
         ],
-        tags: ["Python", "Pandas", "Data-driven", "Voxelization"],
+        tags: ["Python", "Pandas", "Data-driven", "Voxelization", "Math Modeling"],
         githubLink: "#"
     },
     {

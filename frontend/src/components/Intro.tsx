@@ -1,7 +1,6 @@
 // frontend/src/components/Intro.tsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { motion } from "framer-motion";
 import Tilt from "react-parallax-tilt";
 import Draggable from "react-draggable";
 import GlassCard from "./ui/GlassCard";
