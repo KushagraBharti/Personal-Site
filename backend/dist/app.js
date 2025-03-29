@@ -8,6 +8,9 @@ const cors_1 = __importDefault(require("cors"));
 const projectRoutes_1 = __importDefault(require("./routes/projectRoutes"));
 const experienceRoutes_1 = __importDefault(require("./routes/experienceRoutes"));
 const educationRoutes_1 = __importDefault(require("./routes/educationRoutes"));
+const introRoutes_1 = __importDefault(require("./routes/introRoutes"));
+const githubRoutes_1 = __importDefault(require("./routes/githubRoutes"));
+const weatherRoutes_1 = __importDefault(require("./routes/weatherRoutes"));
 const app = (0, express_1.default)();
 const allowedOrigins = [
     'http://localhost:5173', // Local frontend
@@ -48,6 +51,9 @@ app.use((req, res, next) => {
 app.use('/api', projectRoutes_1.default);
 app.use('/api', experienceRoutes_1.default);
 app.use('/api', educationRoutes_1.default);
+app.use('/api', introRoutes_1.default);
+app.use("/api/github", githubRoutes_1.default);
+app.use("/api/weather", weatherRoutes_1.default);
 app.get('/', (req, res) => {
     res.send('Backend server is running!');
 });

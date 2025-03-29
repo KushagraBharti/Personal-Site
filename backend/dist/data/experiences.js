@@ -28,6 +28,6 @@ exports.experiencesData = [
             "Went above and beyond to be a trusted resource for students, checking in regularly and addressing individual needs with empathy, fostering a positive and supportive community."
         ],
         tags: ["Mentorship", "Counseling", "Time Management", "Safety Training"],
-        companyLink: "https://www.sstx.org/"
+        companyLink: "https://www.sstx.org/boarding/boarding-student-support"
     }
 ];

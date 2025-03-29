@@ -3,6 +3,9 @@ import cors from 'cors';
 import projectRoutes from './routes/projectRoutes';
 import experienceRoutes from './routes/experienceRoutes';
 import educationRoutes from './routes/educationRoutes';
+import introRoutes from './routes/introRoutes';
+import githubRoutes from "./routes/githubRoutes";
+import weatherRoutes from "./routes/weatherRoutes";
 
 const app = express();
 
@@ -51,6 +54,10 @@ app.use((req, res, next) => {
 app.use('/api', projectRoutes);
 app.use('/api', experienceRoutes);
 app.use('/api', educationRoutes);
+app.use('/api', introRoutes);
+app.use("/api/github", githubRoutes);
+app.use("/api/weather", weatherRoutes);
+
 
 app.get('/', (req, res) => {
   res.send('Backend server is running!');
