@@ -7,6 +7,8 @@ import Draggable from "react-draggable";
 import GlassCard from "./ui/GlassCard";
 import GlassButton from "./ui/GlassButton";
 import WeatherCard from "./WeatherCard";
+import LeetCodeStatsCard from "./LeetCodeStatsCard";
+import PongGame from "./PongGame";
 import { FaEnvelope, FaMediumM, FaGithub, FaLinkedin } from "react-icons/fa";
 import selfPic from "../assets/SelfPic.jpg";
 
@@ -173,21 +175,10 @@ const Intro: React.FC = () => {
         </div>
       </Draggable>
 
-      {/* 3) LeetCode Stats */}
+      {/* LeetCode Stats Card */}
       <Draggable>
         <div className="absolute top-[80%] left-[20%] cursor-grab active:cursor-grabbing">
-          <GlassCard className="p-4 w-60 text-center">
-            <h4 className="text-sm font-bold text-white mb-1">LeetCode Stats</h4>
-            {introData.leetCodeStats ? (
-              <p className="text-sm text-gray-200">
-                <strong>Total Solved:</strong> {introData.leetCodeStats.totalSolved ?? "N/A"}
-                <br />
-                <strong>Rank:</strong> {introData.leetCodeStats.rank ?? "N/A"}
-              </p>
-            ) : (
-              <p className="text-sm text-red-300">LeetCode stats unavailable</p>
-            )}
-          </GlassCard>
+          <LeetCodeStatsCard />
         </div>
       </Draggable>
 
@@ -228,14 +219,11 @@ const Intro: React.FC = () => {
         </div>
       </Draggable>
 
-      {/* 7) AI Projects */}
+      {/* 7) Pong Game */}
       <Draggable>
         <div className="absolute top-[75%] left-[70%] cursor-grab active:cursor-grabbing">
-          <GlassCard className="p-4 w-60 text-center">
-            <h4 className="text-sm font-bold text-white mb-1">TO BE SNAKE</h4>
-            <p className="text-sm text-gray-200">
-              {introData.aiProjects.join(" | ")}
-            </p>
+          <GlassCard className="flex flex-col items-center p-8">
+            <PongGame />
           </GlassCard>
         </div>
       </Draggable>

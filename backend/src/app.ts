@@ -6,6 +6,7 @@ import educationRoutes from './routes/educationRoutes';
 import introRoutes from './routes/introRoutes';
 import githubRoutes from "./routes/githubRoutes";
 import weatherRoutes from "./routes/weatherRoutes";
+import leetcodeRoutes from "./routes/leetcodeRoutes";
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use('/api', educationRoutes);
 app.use('/api', introRoutes);
 app.use("/api/github", githubRoutes);
 app.use("/api/weather", weatherRoutes);
+app.use("/api/leetcode", leetcodeRoutes);
 
 
 app.get('/', (req, res) => {

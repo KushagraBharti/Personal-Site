@@ -11,6 +11,7 @@ const educationRoutes_1 = __importDefault(require("./routes/educationRoutes"));
 const introRoutes_1 = __importDefault(require("./routes/introRoutes"));
 const githubRoutes_1 = __importDefault(require("./routes/githubRoutes"));
 const weatherRoutes_1 = __importDefault(require("./routes/weatherRoutes"));
+const leetcodeRoutes_1 = __importDefault(require("./routes/leetcodeRoutes"));
 const app = (0, express_1.default)();
 const allowedOrigins = [
     'http://localhost:5173', // Local frontend
@@ -54,6 +55,7 @@ app.use('/api', educationRoutes_1.default);
 app.use('/api', introRoutes_1.default);
 app.use("/api/github", githubRoutes_1.default);
 app.use("/api/weather", weatherRoutes_1.default);
+app.use("/api/leetcode", leetcodeRoutes_1.default);
 app.get('/', (req, res) => {
     res.send('Backend server is running!');
 });
