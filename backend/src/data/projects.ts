@@ -115,7 +115,7 @@ export const projectsData: ProjectData[] = [
     thumbnail: "/kaggleTitanic.png",
   },
   { 
-    title: "To Do List App", 
+    title: "F1 Optimization Project", 
     summary: "Task management app using the PERN stack with user authentication.",
     description: [
       "Built a task management system using the PERN stack, featuring user authentication and an intuitive slider-style task completion, enhancing user experience and allowing progress to be saved through personal logins."
