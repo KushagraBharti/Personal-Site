@@ -34,7 +34,7 @@ const Projects: React.FC = () => {
     fetchProjects();
   }, []);
 
-  // For typed heading
+  // Typed heading setup
   const [startTyping, setStartTyping] = useState(false);
   const [typedText] = useTypewriter({
     words: startTyping ? ["Projects"] : [""],
@@ -52,14 +52,14 @@ const Projects: React.FC = () => {
     setSelectedProject(null);
   };
 
-  // "View Site" in new tab (here using githubLink)
+  // "View Site" opens the GitHub link (or site) in a new tab
   const handleViewSite = (url: string) => {
     window.open(url, "_blank");
   };
 
   return (
     <section className="py-16">
-      <div className="container mx-auto max-w-screen-xl px-16">
+      <div className="container mx-auto max-w-screen-xl px-4 md:px-16">
         {/* Typed heading */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -67,7 +67,7 @@ const Projects: React.FC = () => {
           onViewportEnter={() => setStartTyping(true)}
           viewport={{ once: true }}
           transition={{ duration: 1.5 }}
-          className="mb-10"
+          className="mb-10 text-center"
         >
           <h2 className="relative inline-block text-4xl font-bold text-gray-50">
             {typedText}
@@ -76,13 +76,9 @@ const Projects: React.FC = () => {
           </h2>
         </motion.div>
 
-        {/* 
-          1) items-stretch ensures each row has uniform height 
-          2) gap-8 for spacing 
-        */}
-        {/* Projects grid */}
-        <div className="grid md:grid-cols-2 gap-8 items-stretch">
-        {projects.map((project, index) => {
+        {/* --- Desktop/Tablet Layout (Draggable Grid) --- */}
+        <div className="hidden md:grid gap-8 md:grid-cols-2 items-stretch">
+          {projects.map((project, index) => {
             const variants = index % 2 === 0 ? leftColumnVariants : rightColumnVariants;
             return (
               <motion.div
@@ -93,76 +89,93 @@ const Projects: React.FC = () => {
                 viewport={{ once: true, amount: 0.2 }}
                 className="h-full"
               >
-                  <GlassCard className="group relative flex flex-col justify-center items-center text-center hover:shadow-lg transition-shadow w-full h-full px-6 py-6 overflow-hidden">
-                  {/* If thumbnail exists, render it with lazy loading */}
+                <GlassCard className="group relative flex flex-col items-center text-center w-full h-full px-6 py-6 overflow-hidden">
+                  {/* If thumbnail exists, render it */}
                   {project.thumbnail && (
                     <img
                       src={project.thumbnail}
                       alt={project.title}
                       loading="lazy"
-                      className="w-full h-full object-cover rounded mb-4"
+                      className="w-full h-auto object-cover rounded mb-4"
                     />
                   )}
-                  {/* Title and summary container (always visible) */}
-                  <div className="flex items-center justify-center space-x-2 mb-2">
+                  {/* Always-visible title and summary */}
+                  <div className="relative z-20 flex flex-col items-center">
                     <h3 className="text-xl font-semibold text-gray-50 break-words">
                       {project.title}
                     </h3>
+                    <p className="text-gray-200 font-medium">
+                      {project.summary}
+                    </p>
                   </div>
-                  <p className="text-gray-200 font-medium">{project.summary}</p>
                   {/* Background gradient overlay (appears on hover) */}
                   <div
-                    className="
-                      absolute inset-0 z-10 
-                      bg-gradient-to-r from-blue-500 to-purple-600 
-                      opacity-0 group-hover:opacity-80 transition-opacity duration-300
-                      pointer-events-none
-                    "
+                    className="absolute inset-0 z-10 bg-gradient-to-r from-blue-500 to-purple-600 opacity-0 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none"
                   />
-                  {/* Overlay container for title and buttons */}
+                  {/* Centered overlay: title at top and buttons below */}
                   <div
-                    className="
-                      absolute inset-0 z-20 flex flex-col justify-center items-center 
-                      opacity-0 group-hover:opacity-100 transition-opacity duration-300
-                      pointer-events-none"
+                    className="absolute inset-0 z-20 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                   >
-                    {/* Title at the top */}
-                    <div className="pointer-events-auto w-full text-center mt-4">
-                      <h3 className="text-xl font-semibold text-gray-50 break-words">
+                    <div className="pointer-events-auto text-center mt-4">
+                      <h3 className="text-xl font-semibold text-gray-50">
                         {project.title}
                       </h3>
                     </div>
-                    {/* Centered buttons container below the title */}
                     <div className="pointer-events-auto mt-6 flex flex-col sm:flex-row gap-4">
                       <button
                         onClick={() => openDetails(project)}
-                        className="
-                          w-28 px-4 py-2 text-white font-semibold 
-                          bg-black/40 rounded hover:bg-black/70 transition-colors
-                        "
+                        className="w-28 px-4 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
                       >
                         Details
                       </button>
                       <button
                         onClick={() => handleViewSite(project.githubLink)}
-                        className="
-                          w-28 px-4 py-2 text-white font-semibold 
-                          bg-black/40 rounded hover:bg-black/70 transition-colors
-                        "
+                        className="w-28 px-4 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
                       >
                         View Site
                       </button>
                     </div>
                   </div>
-
                 </GlassCard>
               </motion.div>
             );
           })}
         </div>
+
+        {/* --- Mobile Layout (Stacked Cards) --- */}
+        <div className="block md:hidden space-y-4">
+          {projects.map((project, index) => (
+            <GlassCard key={index} className="w-full text-center p-4">
+              {project.thumbnail && (
+                <img
+                  src={project.thumbnail}
+                  alt={project.title}
+                  loading="lazy"
+                  className="w-full h-auto object-cover rounded mb-4"
+                />
+              )}
+              <h3 className="text-lg font-semibold text-gray-50">{project.title}</h3>
+              <p className="text-gray-200 font-medium">{project.summary}</p>
+              <div className="flex justify-center gap-4 mt-4">
+                <button
+                  onClick={() => openDetails(project)}
+                  className="w-24 px-3 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
+                >
+                  Details
+                </button>
+                <button
+                  onClick={() => handleViewSite(project.githubLink)}
+                  className="w-24 px-3 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
+                >
+                  View Site
+                </button>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
       </div>
 
-      {/* Modal for project details */}
+      {/* Modal for Detailed Project Info */}
       {selectedProject && (
         <div
           className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
@@ -170,22 +183,17 @@ const Projects: React.FC = () => {
             if (e.target === e.currentTarget) closeDetails();
           }}
         >
-          {/* GlassCard with bigger max-width and height */}
           <GlassCard
             className="relative w-full max-w-[1850px] mx-auto p-8 bg-white/10 backdrop-blur-lg rounded-lg shadow-xl animate-fadeIn"
-            /* If your GlassCard supports 'style' prop, you can do: style={{ maxHeight: "90vh" }} */
           >
-            {/* Close Button */}
             <button
               className="absolute top-4 right-4 text-gray-200 hover:text-red-600 text-2xl"
               onClick={closeDetails}
             >
               ✖
             </button>
-
-            {/* Main Flex Container: Two columns on md+ screens */}
             <div className="flex flex-col md:flex-row" style={{ maxHeight: "90vh" }}>
-              {/* Left Column: Image */}
+              {/* Left Column: Project Thumbnail */}
               {selectedProject.thumbnail && (
                 <div className="md:w-1/2 flex items-center justify-center">
                   <img
@@ -195,7 +203,6 @@ const Projects: React.FC = () => {
                   />
                 </div>
               )}
-
               {/* Right Column: Project Details */}
               <div
                 className="md:w-1/2 mt-4 md:mt-0 md:pl-6 overflow-y-auto"
@@ -237,7 +244,6 @@ const Projects: React.FC = () => {
           </GlassCard>
         </div>
       )}
-
     </section>
   );
 };

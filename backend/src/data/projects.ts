@@ -95,6 +95,16 @@ export const projectsData: ProjectData[] = [
     thumbnail: "/pointCloud.png",
   },
   { 
+    title: "Pseudo Lawyer", 
+    summary: "Work in progress.",
+    description: [
+      "Built a task management system using the PERN stack, featuring user authentication and an intuitive slider-style task completion, enhancing user experience and allowing progress to be saved through personal logins."
+    ], 
+    tags: ["PostgreSQL", "SQL", "Express", "React", "Node.js", "Kinsta"], 
+    githubLink: "https://github.com/KushagraBharti/To-Do-App-v1",
+    thumbnail: "/pseudoLawyer.png",
+  },
+  { 
     title: "Maze Traversal", 
     summary: "Maze-solving algorithm using depth-first search in Python.",
     description: [
@@ -116,7 +126,7 @@ export const projectsData: ProjectData[] = [
   },
   { 
     title: "F1 Optimization Project", 
-    summary: "Task management app using the PERN stack with user authentication.",
+    summary: "Work in progress.",
     description: [
       "Built a task management system using the PERN stack, featuring user authentication and an intuitive slider-style task completion, enhancing user experience and allowing progress to be saved through personal logins."
     ], 
@@ -125,8 +135,8 @@ export const projectsData: ProjectData[] = [
     thumbnail: "/f1Optimization.png",
   },
   { 
-    title: "To Do List App", 
-    summary: "Task management app using the PERN stack with user authentication.",
+    title: "PCB Design Project", 
+    summary: "Work in progress.",
     description: [
       "Built a task management system using the PERN stack, featuring user authentication and an intuitive slider-style task completion, enhancing user experience and allowing progress to be saved through personal logins."
     ], 
@@ -135,8 +145,8 @@ export const projectsData: ProjectData[] = [
     thumbnail: "/pcbDesign.png",
   },
   { 
-    title: "To Do List App", 
-    summary: "Task management app using the PERN stack with user authentication.",
+    title: "Hacked Self Driving Car", 
+    summary: "Work in progress.",
     description: [
       "Built a task management system using the PERN stack, featuring user authentication and an intuitive slider-style task completion, enhancing user experience and allowing progress to be saved through personal logins."
     ], 
@@ -144,14 +154,5 @@ export const projectsData: ProjectData[] = [
     githubLink: "https://github.com/KushagraBharti/To-Do-App-v1",
     thumbnail: "/selfDrivingCar.png",
   },
-  { 
-    title: "To Do List App", 
-    summary: "Task management app using the PERN stack with user authentication.",
-    description: [
-      "Built a task management system using the PERN stack, featuring user authentication and an intuitive slider-style task completion, enhancing user experience and allowing progress to be saved through personal logins."
-    ], 
-    tags: ["PostgreSQL", "SQL", "Express", "React", "Node.js", "Kinsta"], 
-    githubLink: "https://github.com/KushagraBharti/To-Do-App-v1",
-    thumbnail: "/pseudoLawyer.png",
-  },
+  
 ];

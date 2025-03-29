@@ -1,3 +1,4 @@
+// frontend/src/components/Education.tsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion, Variants } from "framer-motion";
@@ -19,7 +20,7 @@ const Education: React.FC = () => {
   const [education, setEducation] = useState<EducationData[]>([]);
   const [selectedEducation, setSelectedEducation] = useState<EducationData | null>(null);
 
-  // Fetch education data
+  // Fetch education data on mount
   useEffect(() => {
     const fetchEducation = async () => {
       try {
@@ -43,22 +44,19 @@ const Education: React.FC = () => {
     delaySpeed: 1000,
   });
 
-  // Modal handlers
   const openDetails = (edu: EducationData) => {
     setSelectedEducation(edu);
   };
   const closeDetails = () => {
     setSelectedEducation(null);
   };
-
-  // "View Site" in new tab
   const handleViewSite = (url: string) => {
     window.open(url, "_blank");
   };
 
   return (
     <section className="py-16">
-      <div className="container mx-auto max-w-screen-xl px-16">
+      <div className="container mx-auto max-w-screen-xl px-4 md:px-16">
         {/* Typed heading */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -66,7 +64,7 @@ const Education: React.FC = () => {
           onViewportEnter={() => setStartTyping(true)}
           viewport={{ once: true }}
           transition={{ duration: 1.5 }}
-          className="mb-10"
+          className="mb-10 text-center"
         >
           <h2 className="relative inline-block text-4xl font-bold text-gray-50">
             {typedText}
@@ -75,10 +73,10 @@ const Education: React.FC = () => {
           </h2>
         </motion.div>
 
-        <div className="grid gap-8 md:grid-cols-2 items-stretch">
+        {/* --- Desktop/Tablet Layout (draggable grid) --- */}
+        <div className="hidden md:grid gap-8 md:grid-cols-2 items-stretch">
           {education.map((edu, index) => {
             const variants = index % 2 === 0 ? leftColumnVariants : rightColumnVariants;
-
             return (
               <motion.div
                 key={index}
@@ -89,53 +87,38 @@ const Education: React.FC = () => {
                 className="h-full"
               >
                 <GlassCard className="group relative flex flex-col items-center text-center w-full h-full px-6 py-6 overflow-hidden">
-                  {/* Title & text at a higher z-index */}
-                  {/* Title & Focus Text Container */}
+                  {/* Always visible title & focus text */}
                   <div className="relative z-20 flex flex-col items-center">
                     <div className="flex items-center justify-center space-x-2 mb-2">
                       <h3 className="text-xl font-semibold text-gray-50 whitespace-nowrap">
                         {edu.position}
                       </h3>
                     </div>
-                    {/* Focus text will vanish on hover */}
                     <p className="text-gray-200 font-medium group-hover:hidden">
                       {edu.focus}
                     </p>
                   </div>
 
-                  {/* Overlay with gradient background and centered buttons */}
-                  <div
-                    className="
-                      absolute inset-0 z-10 bg-gradient-to-r from-blue-500 to-purple-600
-                      opacity-0 group-hover:opacity-70 transition-opacity duration-300
-                      pointer-events-none
-                    "
-                  />
+                  {/* Background gradient overlay on hover */}
+                  <div className="absolute inset-0 z-10 bg-gradient-to-r from-blue-500 to-purple-600 opacity-0 group-hover:opacity-70 transition-opacity duration-300 pointer-events-none" />
 
-                  {/* Centered buttons container, lowered by adding margin-top */}
-                  <div
-                    className="
-                      absolute inset-0 z-20 flex items-center justify-center
-                      opacity-0 group-hover:opacity-100 transition-opacity duration-300
-                      pointer-events-none
-                    "
-                  >
-                    <div className="pointer-events-auto flex flex-col sm:flex-row mt-10 space-y-2 sm:space-y-0 sm:space-x-4">
+                  {/* Overlay with centered buttons */}
+                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                    {/* Title always on top */}
+                    <div className="pointer-events-auto text-center mt-4">
+                      <h3 className="text-xl font-semibold text-gray-50 group-hover:opacity-0">{edu.position}</h3>
+                    </div>
+                    {/* Buttons container */}
+                    <div className="pointer-events-auto mt-6 flex flex-col sm:flex-row gap-4">
                       <button
                         onClick={() => openDetails(edu)}
-                        className="
-                          w-28 px-4 py-2 text-white font-semibold bg-black/40 rounded
-                          hover:bg-black/70 transition-colors
-                        "
+                        className="w-28 px-4 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
                       >
                         Details
                       </button>
                       <button
                         onClick={() => handleViewSite(edu.schoolLink)}
-                        className="
-                          w-28 px-4 py-2 text-white font-semibold bg-black/40 rounded
-                          hover:bg-black/70 transition-colors
-                        "
+                        className="w-28 px-4 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
                       >
                         View Site
                       </button>
@@ -146,9 +129,33 @@ const Education: React.FC = () => {
             );
           })}
         </div>
+
+        {/* --- Mobile Layout (Stacked cards) --- */}
+        <div className="block md:hidden space-y-4">
+          {education.map((edu, index) => (
+            <GlassCard key={index} className="w-full text-center p-4">
+              <h3 className="text-lg font-semibold text-gray-50">{edu.position}</h3>
+              <p className="text-gray-200 font-medium">{edu.focus}</p>
+              <div className="flex justify-center gap-4 mt-4">
+                <button
+                  onClick={() => openDetails(edu)}
+                  className="w-24 px-3 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
+                >
+                  Details
+                </button>
+                <button
+                  onClick={() => handleViewSite(edu.schoolLink)}
+                  className="w-24 px-3 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
+                >
+                  View Site
+                </button>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
       </div>
 
-      {/* Modal: GlassCard for detailed info with higher text contrast */}
+      {/* Modal for detailed info */}
       {selectedEducation && (
         <div
           className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50 p-4"
@@ -158,7 +165,7 @@ const Education: React.FC = () => {
         >
           <GlassCard className="relative w-full max-w-3xl mx-auto p-6 text-left modal-glass-card">
             <button
-              className="absolute top-4 right-4 text-gray-200 hover:text-gray-400"
+              className="absolute top-4 right-4 text-gray-200 hover:text-red-600 text-2xl"
               onClick={closeDetails}
             >
               ✖
