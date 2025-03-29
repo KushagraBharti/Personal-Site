@@ -67,7 +67,7 @@ const Projects: React.FC = () => {
           onViewportEnter={() => setStartTyping(true)}
           viewport={{ once: true }}
           transition={{ duration: 1.5 }}
-          className="mb-10 text-center"
+          className="mb-10"
         >
           <h2 className="relative inline-block text-4xl font-bold text-gray-50">
             {typedText}
