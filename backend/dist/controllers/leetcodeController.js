@@ -15,13 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getLeetCodeStats = void 0;
 const axios_1 = __importDefault(require("axios"));
 const getLeetCodeStats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // Here, we're using a community API endpoint.
-    // Replace the URL below with your chosen LeetCode API endpoint.
+    // Use the environment variable LEETCODE_USERNAME or fallback to a default.
     const leetUsername = process.env.LEETCODE_USERNAME || "your_leetcode_username";
+    const url = `https://leetcode-stats-api.herokuapp.com/${leetUsername}`;
     try {
-        const url = `https://leetcode-stats-api.herokuapp.com/${leetUsername}`;
         const response = yield axios_1.default.get(url);
-        // Adjust the response data if needed:
+        // Adjust the returned data if necessary. Here we assume the API returns these fields:
         const data = {
             totalSolved: response.data.totalSolved,
             easySolved: response.data.easySolved,

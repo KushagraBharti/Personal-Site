@@ -7,6 +7,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const leetcodeController_1 = require("../controllers/leetcodeController");
 const router = express_1.default.Router();
-// GET /api/leetcode/stats returns the LeetCode statistics
+// GET /api/leetcode/stats
 router.get("/stats", leetcodeController_1.getLeetCodeStats);
 exports.default = router;
