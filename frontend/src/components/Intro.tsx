@@ -9,7 +9,7 @@ import WeatherCard from "./WeatherCard";
 import LeetCodeStatsCard from "./LeetCodeStatsCard";
 import PongGame from "./PongGame";
 import { FaEnvelope, FaMediumM, FaGithub, FaLinkedin } from "react-icons/fa";
-import selfPic from "../assets/SelfPic.jpg";
+import selfPic from "/SelfPic.jpg";
 
 interface IntroResponse {
   personalPhoto: string;
