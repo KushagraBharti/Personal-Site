@@ -68,7 +68,7 @@ const Experiences: React.FC = () => {
           onViewportEnter={() => setStartTyping(true)}
           viewport={{ once: true }}
           transition={{ duration: 1.5 }}
-          className="mb-10 text-center"
+          className="mb-10"
         >
           <h2 className="relative inline-block text-4xl font-bold text-gray-50">
             {typedText}
@@ -110,7 +110,7 @@ const Experiences: React.FC = () => {
                   <div className="absolute inset-0 z-20 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                     <div className="pointer-events-auto text-center mt-4">
                       {/* Title fades on hover if desired (or keep it visible) */}
-                      <h3 className="text-xl font-semibold text-gray-50 opacity-0 group-hover:hidden">
+                      <h3 className="text-xl font-semibold text-gray-50 opacity-0 group-hover:hidden justify-">
                         {exp.position}
                       </h3>
                     </div>

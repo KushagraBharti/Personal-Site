@@ -64,7 +64,7 @@ const Education: React.FC = () => {
           onViewportEnter={() => setStartTyping(true)}
           viewport={{ once: true }}
           transition={{ duration: 1.5 }}
-          className="mb-10 text-center"
+          className="mb-10"
         >
           <h2 className="relative inline-block text-4xl font-bold text-gray-50">
             {typedText}
@@ -102,13 +102,14 @@ const Education: React.FC = () => {
                   {/* Background gradient overlay on hover */}
                   <div className="absolute inset-0 z-10 bg-gradient-to-r from-blue-500 to-purple-600 opacity-0 group-hover:opacity-70 transition-opacity duration-300 pointer-events-none" />
 
-                  {/* Overlay with centered buttons */}
+                  {/* Centered overlay: Buttons appear on hover */}
                   <div className="absolute inset-0 z-20 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                    {/* Title always on top */}
                     <div className="pointer-events-auto text-center mt-4">
-                      <h3 className="text-xl font-semibold text-gray-50 group-hover:opacity-0">{edu.position}</h3>
+                      {/* Title fades on hover if desired (or keep it visible) */}
+                      <h3 className="text-xl font-semibold text-gray-50 opacity-0 group-hover:hidden justify-">
+                        {edu.position}
+                      </h3>
                     </div>
-                    {/* Buttons container */}
                     <div className="pointer-events-auto mt-6 flex flex-col sm:flex-row gap-4">
                       <button
                         onClick={() => openDetails(edu)}

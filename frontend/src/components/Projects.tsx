@@ -101,10 +101,10 @@ const Projects: React.FC = () => {
                   )}
                   {/* Always-visible title and summary */}
                   <div className="relative z-20 flex flex-col items-center">
-                    <h3 className="text-xl font-semibold text-gray-50 break-words">
+                    <h3 className="text-xl font-semibold text-gray-50 break-words opacity-100 group-hover:opacity-0"> 
                       {project.title}
                     </h3>
-                    <p className="text-gray-200 font-medium">
+                    <p className="text-gray-200 font-medium opacity-100 group-hover:opacity-0">
                       {project.summary}
                     </p>
                   </div>
