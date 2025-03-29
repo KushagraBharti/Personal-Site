@@ -115,7 +115,7 @@ const Projects: React.FC = () => {
                     className="
                       absolute inset-0 z-10 
                       bg-gradient-to-r from-blue-500 to-purple-600 
-                      opacity-0 group-hover:opacity-70 transition-opacity duration-300
+                      opacity-0 group-hover:opacity-80 transition-opacity duration-300
                       pointer-events-none
                     "
                   />
