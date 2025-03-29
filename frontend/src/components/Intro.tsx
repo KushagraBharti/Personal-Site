@@ -69,7 +69,7 @@ const Intro: React.FC = () => {
 
   return (
     <section className="full-screen-bg relative overflow-hidden">
-      {/* Main central card – always visible */}
+      {/* Main central card – always rendered */}
       <div className="absolute inset-0 flex items-center justify-center">
         <Tilt
           tiltMaxAngleX={15}
@@ -79,7 +79,7 @@ const Intro: React.FC = () => {
           transitionSpeed={2500}
           className="max-w-2xl mx-auto"
         >
-          <GlassCard className="flex flex-col items-center text-center p-10">
+          <GlassCard className="flex flex-col items-center text-center p-10 hidden md:block">
             <h1 className="text-5xl md:text-6xl font-playfair mb-4">
               Kushagra Bharti
             </h1>
@@ -87,7 +87,6 @@ const Intro: React.FC = () => {
               Student | Software Engineer | ML Enthusiast
             </p>
             <div className="flex justify-center space-x-6 mb-6">
-              {/* Social Icons */}
               <a
                 href="mailto:kushagrabharti@gmail.com"
                 target="_blank"
@@ -135,8 +134,9 @@ const Intro: React.FC = () => {
         </Tilt>
       </div>
 
-      {/* Draggable Cards for Medium and Larger Screens */}
+      {/* --- Interactive Layout for Medium and Larger Screens --- */}
       <div className="hidden md:block">
+        {/* Draggable Cards in desired order */}
         {/* Photo Card */}
         <Draggable>
           <div className="absolute top-24 left-96 cursor-grab active:cursor-grabbing">
@@ -155,9 +155,7 @@ const Intro: React.FC = () => {
         <Draggable>
           <div className="absolute top-[68%] left-[45%] cursor-grab active:cursor-grabbing">
             <GlassCard className="p-4 w-64 text-center">
-              <h4 className="text-sm font-bold text-white mb-1">
-                Latest Update
-              </h4>
+              <h4 className="text-sm font-bold text-white mb-1">Latest Update</h4>
               <p className="text-sm text-gray-200">{data.latestUpdate}</p>
             </GlassCard>
           </div>
@@ -167,9 +165,7 @@ const Intro: React.FC = () => {
         <Draggable>
           <div className="absolute top-[5%] left-[55%] cursor-grab active:cursor-grabbing">
             <GlassCard className="p-4 w-60 text-center">
-              <h4 className="text-sm font-bold text-white mb-1">
-                My Recent Read
-              </h4>
+              <h4 className="text-sm font-bold text-white mb-1">My Recent Read</h4>
               <a
                 href={data.featuredBlog.link}
                 target="_blank"
@@ -236,17 +232,73 @@ const Intro: React.FC = () => {
         </Draggable>
       </div>
 
-      {/* Mobile Fallback: Static layout for smaller screens */}
+      {/* --- Static Mobile Layout for Small Screens --- */}
       <div className="block md:hidden p-4 space-y-4">
-        {/* Here you can stack the cards vertically in a simplified layout */}
         <GlassCard className="w-full text-center">
-          <img
-            src={selfPic}
-            alt="Personal"
-            className="rounded-lg object-cover w-full h-48"
-          />
-          <p className="text-sm text-gray-200 mt-2">Your Photo</p>
+          <Tilt
+            tiltMaxAngleX={15}
+            tiltMaxAngleY={15}
+            perspective={800}
+            scale={1.05}
+            transitionSpeed={2500}
+            className="mx-auto max-w-2xl"
+          >
+            <GlassCard className="flex flex-col items-center text-center p-10">
+              <h1 className="text-5xl font-playfair mb-4">
+                Kushagra Bharti
+              </h1>
+              <p className="text-lg font-mono mb-6">
+                Student | Software Engineer | ML Enthusiast
+              </p>
+              <div className="flex justify-center space-x-6 mb-6">
+                <a
+                  href="mailto:kushagrabharti@gmail.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition-transform duration-300 hover:scale-110 hover:text-[#D44638]"
+                >
+                  <FaEnvelope size={24} />
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/kushagra-bharti/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition-transform duration-300 hover:scale-110 hover:text-[#0A66C2]"
+                >
+                  <FaLinkedin size={24} />
+                </a>
+                <a
+                  href="https://github.com/kushagrabharti"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition-transform duration-300 hover:scale-110 hover:text-[#6e40c9]"
+                >
+                  <FaGithub size={24} />
+                </a>
+                <a
+                  href="https://medium.com/@kushagrabharti"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition-transform duration-300 hover:scale-110 hover:text-[#00ab6c]"
+                >
+                  <FaMediumM size={24} />
+                </a>
+              </div>
+              <GlassButton
+                onClick={() =>
+                  window.scrollTo({
+                    top: window.innerHeight,
+                    behavior: "smooth",
+                  })
+                }
+              >
+                Explore
+              </GlassButton>
+            </GlassCard>
+          </Tilt>
         </GlassCard>
+
+        {/* Stacked mini-cards */}
         <GlassCard className="w-full text-center p-4">
           <h4 className="text-sm font-bold text-white mb-1">Latest Update</h4>
           <p className="text-sm text-gray-200">{data.latestUpdate}</p>
@@ -266,7 +318,18 @@ const Intro: React.FC = () => {
           <h4 className="text-sm font-bold text-white mb-1">Fun Fact</h4>
           <p className="text-sm text-gray-200">{data.funFact}</p>
         </GlassCard>
-        {/* For mobile, you might choose to hide Pong and some stats, or render simplified versions */}
+        <GlassCard className="w-full text-center p-4">
+          <h4 className="text-sm font-bold text-white mb-1">Live GitHub Stats</h4>
+          {data.githubStats ? (
+            <p className="text-sm text-gray-200">
+              <strong>Repositories:</strong> {data.githubStats.totalRepos ?? "N/A"}
+              <br />
+              <strong>Total Commits:</strong> {data.githubStats.totalCommits ?? "N/A"}
+            </p>
+          ) : (
+            <p className="text-sm text-red-300">GitHub stats unavailable</p>
+          )}
+        </GlassCard>
       </div>
 
       {/* "Scroll for More" indicator – only visible when at the top */}
