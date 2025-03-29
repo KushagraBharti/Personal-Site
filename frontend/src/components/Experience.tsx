@@ -94,41 +94,58 @@ const Experiences: React.FC = () => {
                   relative + overflow-hidden on the card
                   so the overlay matches the glass card's shape
                 */}
-                <GlassCard className="group relative flex flex-col justify-center items-center text-center hover:shadow-lg transition-shadow w-full h-full px-6 py-6 overflow-hidden">
-                  {/* Title & link icon */}
-                  <div className="flex items-center justify-center space-x-2 mb-2">
-                    <h3 className="text-xl font-semibold text-gray-50 whitespace-nowrap">
-                      {exp.position}
-                    </h3>
+                <GlassCard className="group relative flex flex-col items-center text-center w-full h-full px-6 py-6 overflow-hidden">
+                  {/* Title & text at a higher z-index */}
+                  {/* Title & Focus Text Container */}
+                  <div className="relative z-20 flex flex-col items-center">
+                    <div className="flex items-center justify-center space-x-2 mb-2">
+                      <h3 className="text-xl font-semibold text-gray-50 whitespace-nowrap">
+                        {exp.position}
+                      </h3>
+                    </div>
+                    {/* Focus text will vanish on hover */}
+                    <p className="text-gray-200 font-medium group-hover:hidden">
+                      {exp.summary}
+                    </p>
                   </div>
-                  {/* Summary */}
-                  <p className="text-gray-200 font-medium">{exp.summary}</p>
 
-                  {/* 
-                    Split overlay with improved text visibility
-                    (blue left side, red right side)
-                  */}
-                  <div className="absolute inset-0 flex opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {/* Right half: Click for Details */}
-                    <div
-                      className="w-1/2 h-full bg-red-600 bg-opacity-40 flex items-center justify-center cursor-pointer"
-                      onClick={() => openDetails(exp)}
-                    >
-                      <span className="text-lg font-bold text-white drop-shadow-md">
-                        Click for Details
-                      </span>
-                    </div>
-                    
-                    {/* Left half: View Site */}
-                    <div
-                      className="w-1/2 h-full bg-blue-600 bg-opacity-40 flex items-center justify-center cursor-pointer"
-                      onClick={() => handleViewSite(exp.companyLink)}
-                    >
-                      <span className="text-lg font-bold text-white drop-shadow-md">
+                  {/* Overlay with gradient background and centered buttons */}
+                  <div
+                    className="
+                      absolute inset-0 z-10 bg-gradient-to-r from-blue-500 to-purple-600
+                      opacity-0 group-hover:opacity-70 transition-opacity duration-300
+                      pointer-events-none
+                    "
+                  />
+
+                  {/* Centered buttons container, lowered by adding margin-top */}
+                  <div
+                    className="
+                      absolute inset-0 z-20 flex items-center justify-center
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-300
+                      pointer-events-none
+                    "
+                  >
+                    <div className="pointer-events-auto flex flex-col sm:flex-row mt-10 space-y-2 sm:space-y-0 sm:space-x-4">
+                      <button
+                        onClick={() => openDetails(exp)}
+                        className="
+                          w-28 px-4 py-2 text-white font-semibold bg-black/40 rounded
+                          hover:bg-black/70 transition-colors
+                        "
+                      >
+                        Details
+                      </button>
+                      <button
+                        onClick={() => handleViewSite(exp.companyLink)}
+                        className="
+                          w-28 px-4 py-2 text-white font-semibold bg-black/40 rounded
+                          hover:bg-black/70 transition-colors
+                        "
+                      >
                         View Site
-                      </span>
+                      </button>
                     </div>
-                    
                   </div>
                 </GlassCard>
               </motion.div>

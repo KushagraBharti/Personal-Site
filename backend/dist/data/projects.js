@@ -137,4 +137,14 @@ exports.projectsData = [
         githubLink: "https://github.com/KushagraBharti/To-Do-App-v1",
         thumbnail: "/selfDrivingCar.png",
     },
+    {
+        title: "To Do List App",
+        summary: "Task management app using the PERN stack with user authentication.",
+        description: [
+            "Built a task management system using the PERN stack, featuring user authentication and an intuitive slider-style task completion, enhancing user experience and allowing progress to be saved through personal logins."
+        ],
+        tags: ["PostgreSQL", "SQL", "Express", "React", "Node.js", "Kinsta"],
+        githubLink: "https://github.com/KushagraBharti/To-Do-App-v1",
+        thumbnail: "/pseudoLawyer.png",
+    },
 ];

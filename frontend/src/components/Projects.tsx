@@ -81,7 +81,7 @@ const Projects: React.FC = () => {
           2) gap-8 for spacing 
         */}
         {/* Projects grid */}
-        <div className="grid md:grid-cols-2 gap-8 items-stretch">
+        <div className="grid md:grid-cols-2 gap-10 items-stretch">
           {projects.map((project, index) => {
             const variants = index % 2 === 0 ? leftColumnVariants : rightColumnVariants;
             return (
@@ -93,43 +93,70 @@ const Projects: React.FC = () => {
                 viewport={{ once: true, amount: 0.2 }}
                 className="h-full"
               >
-                <GlassCard className="group relative flex flex-col justify-center items-center text-center hover:shadow-lg transition-shadow w-full h-full px-6 py-6 overflow-hidden">
-                  {/* If thumbnail exists, render it with lazy loading */}
+                  <GlassCard className="group relative flex flex-col justify-center items-center text-center hover:shadow-lg transition-shadow w-full h-full px-6 py-6 overflow-hidden">
+                  {/* Render thumbnail if available */}
                   {project.thumbnail && (
                     <img
                       src={project.thumbnail}
                       alt={project.title}
                       loading="lazy"
-                      className="w-full h-full object-cover rounded mb-4"
+                      className="w-full h-auto object-cover rounded mb-4"
                     />
                   )}
-                  <div className="flex items-center justify-center space-x-2 mb-2">
-                    <h3 className="text-xl font-semibold text-gray-50 break-words">
+                  {/* Title and summary container (always visible) */}
+                  <div className="relative z-20 flex flex-col items-center">
+                    <h3 className="text-xl font-semibold text-gray-50 break-words group-hover:hidden">
                       {project.title}
                     </h3>
+                    <p className="text-gray-200 font-medium group-hover:hidden">
+                      {project.summary}
+                    </p>
                   </div>
-                  <p className="text-gray-200 font-medium">{project.summary}</p>
-                  {/* Overlay for interactions */}
-                  <div className="absolute inset-0 flex opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {/* Right half: Details */}
-                    <div
-                      className="w-1/2 h-full bg-red-600 bg-opacity-40 flex items-center justify-center cursor-pointer"
-                      onClick={() => openDetails(project)}
-                    >
-                      <span className="text-lg font-bold text-white drop-shadow-md">
-                        Click for Details
-                      </span>
+                  {/* Background gradient overlay (appears on hover) */}
+                  <div
+                    className="
+                      absolute inset-0 z-10 
+                      bg-gradient-to-r from-blue-500 to-purple-600 
+                      opacity-0 group-hover:opacity-70 transition-opacity duration-300
+                      pointer-events-none
+                    "
+                  />
+                  {/* Overlay container for title and buttons */}
+                  <div
+                    className="
+                      absolute inset-0 z-20 flex flex-col justify-center items-center 
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-300
+                      pointer-events-none"
+                  >
+                    {/* Title at the top */}
+                    <div className="pointer-events-auto w-full text-center mt-4">
+                      <h3 className="text-xl font-semibold text-gray-50 break-words">
+                        {project.title}
+                      </h3>
                     </div>
-                    {/* Left half: View Site */}
-                    <div
-                      className="w-1/2 h-full bg-blue-600 bg-opacity-40 flex items-center justify-center cursor-pointer"
-                      onClick={() => handleViewSite(project.githubLink)}
-                    >
-                      <span className="text-lg font-bold text-white drop-shadow-md">
+                    {/* Centered buttons container below the title */}
+                    <div className="pointer-events-auto mt-6 flex flex-col sm:flex-row gap-4">
+                      <button
+                        onClick={() => openDetails(project)}
+                        className="
+                          w-28 px-4 py-2 text-white font-semibold 
+                          bg-black/40 rounded hover:bg-black/70 transition-colors
+                        "
+                      >
+                        Details
+                      </button>
+                      <button
+                        onClick={() => handleViewSite(project.githubLink)}
+                        className="
+                          w-28 px-4 py-2 text-white font-semibold 
+                          bg-black/40 rounded hover:bg-black/70 transition-colors
+                        "
+                      >
                         View Site
-                      </span>
+                      </button>
                     </div>
                   </div>
+
                 </GlassCard>
               </motion.div>
             );
