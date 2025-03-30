@@ -132,7 +132,7 @@ const Projects: React.FC = () => {
                         onClick={() => handleViewSite(project.githubLink)}
                         className="w-28 px-4 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
                       >
-                        View Site
+                        View Github
                       </button>
                     </div>
                   </div>
@@ -167,7 +167,7 @@ const Projects: React.FC = () => {
                   onClick={() => handleViewSite(project.githubLink)}
                   className="w-24 px-3 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
                 >
-                  View Site
+                  View Github
                 </button>
               </div>
             </GlassCard>
