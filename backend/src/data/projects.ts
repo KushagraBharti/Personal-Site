@@ -10,149 +10,178 @@ export interface ProjectData {
 export const projectsData: ProjectData[] = [ 
   { 
     title: "Algorithmic Trading Quantitative Test Environment", 
-    summary: "A fully modular, end-to-end algorithmic trading environment for historical data analysis, strategy simulation, and performance evaluation.",
+    summary: "A modular platform for automated trading strategy development, backtesting, and paper trading.", 
     description: [
-      "Engineered an end-to-end trading environment leveraging the Alpaca API to fetch, process, and analyze 1-year of historical stock market data (AAPL), enabling quantitative strategy development and validation.",
-      "Implemented a dynamic Moving Average Crossover strategy (20-day & 50-day windows) that generated seamless buy/sell signals and trade logs, facilitating iterative strategy refinements.",
-      "Performed robust backtesting using a custom Backtester class, accounting for transaction costs and computing comprehensive KPIs (Sharpe Ratio, Max Drawdown, Final Return), resulting in a measurable performance baseline.",
-      "Executed advanced feature engineering, including rolling-window computations for moving averages and returns, reducing signal noise and improving predictive capabilities.",
-      "Developed comprehensive visualization pipelines with Matplotlib, including equity curves and annotated signal plots, enhancing interpretability and accelerating strategy optimization.",
-      "Integrated with AWS paper trading endpoints to simulate near-real-time execution, placing automated market orders, verifying fills, and bridging historical simulations with practical execution scenarios."
+      "Fetched 1-year historical AAPL data (2022–2023) via the Alpaca API, saving both raw and processed datasets for reproducibility.",
+      "Engineered advanced features like rolling moving averages and returns to drive a dynamic 20/50-day Moving Average Crossover strategy.",
+      "Performed rigorous backtesting with transaction cost modeling to compute key performance metrics (Sharpe Ratio, Max Drawdown, Final Return) and generate detailed trade logs.",
+      "Integrated with Alpaca's paper trading system to simulate real-time order placement, monitor execution, and validate strategy performance.",
+      "Developed visualization tools for plotting equity curves and annotating buy/sell signals, enhancing the interpretability of trading insights."
     ], 
-    tags: ["Python", "Alpaca API", "Pandas", "NumPy", "Matplotlib", "scikit-learn"], 
+    tags: ["Python", "Alpaca API", "Pandas", "NumPy", "Matplotlib", "scikit-learn", "Algorithmic Trading", "Backtesting", "Paper Trading"], 
     githubLink: "https://github.com/KushagraBharti/Quant-Test-Environment",
     thumbnail: "/quantTestEnv.png",
   },
-  {
-    title: "Personal Portfolio Website",
-    summary: "A TypeScript-based Node.js/Express and React single-page application for showcasing projects, experiences, and education.",
-    description: [
-      "Developed a full-stack personal portfolio website featuring a TypeScript-based Node.js/Express backend and a React frontend, dynamically rendering data-driven sections with <40ms average response times.",
-      "Implemented a modular RESTful API with 3 primary resource endpoints and 7 total routes, facilitating efficient data retrieval and reducing code complexity by ~30%.",
-      "Structured backend code into controllers, routes, and typed data models to enhance scalability, readability, and maintainability.",
-      "Leveraged TypeScript interfaces for strict type-checking, minimizing runtime errors and accelerating development speed by ~10%.",
-      "Utilized Axios and async React hooks to fetch and render data seamlessly, reducing frontend load time by ~25% and enabling real-time updates without full page reloads.",
-      "Configured CORS policies to securely allow requests from ~6 trusted domains, enabling smooth CI/CD workflows across multiple deployment environments.",
-      "Adopted Tailwind CSS for rapid UI prototyping and a responsive design, cutting UI development time by ~50% and ensuring a cohesive brand aesthetic across all devices.",
-      "Integrated modal-based user interactions for viewing detailed project and experience information, improving user engagement and retention by ~10%.",
-      "Applied environment variables (e.g., VITE_API_BASE_URL) to simplify production deployments and support environment-specific configurations.",
-      "Implemented graceful error handling, including 404 responses for invalid IDs, enhancing reliability and reducing user drop-offs by ~20%."
-    ],
-    tags: ["TypeScript", "Node.js", "Express.js", "React", "Tailwind CSS", "Vite"
-    ],
-    githubLink: "https://github.com/KushagraBharti/Personal-Site",
-    thumbnail: "/personalPortfolio.png",
-  },
-  {
-    title: "DataDrive: Unified Insights for Data & Fuel Optimization",
-    summary: "A full-stack AI-driven data analytics and prediction platform integrating ML models, data observability, and interactive visualizations.",
-    description: [
-    "Developed an end-to-end data analytics platform integrating a Flask-based backend and a Vite (React+TypeScript) frontend to predict and visualize vehicle fuel efficiency and environmental impact metrics.",
-    "Implemented a trained Linear Regression model (scikit-learn) with scaled input features (engine displacement, cylinders, city/highway fuel efficiency, CO2 emissions), achieving stable predictive performance and enabling data-driven maintenance recommendations.",
-    "Leveraged a K-Means clustering model with PCA-driven dimensionality reduction to categorize vehicles into distinct efficiency groups and displayed these clusters via interactive D3.js scatter plots, improving interpretability and enabling targeted optimization strategies.",
-    "Employed SHAP-based explanations to highlight key model-driving features, increasing transparency and fostering user trust in the ML insights.",
-    "Set up real-time anomaly detection using APScheduler-based periodic tasks and logging for data observability, proactively identifying unusual consumption patterns and ensuring long-term system reliability.",
-    "Integrated IPFS (Pinata) endpoints for secure, decentralized logging of predictions and reports, maintaining immutable data records and facilitating robust auditability.",
-    "Enhanced frontend interaction with a 3D car model (React-Three-Fiber) and TailwindCSS styling, improving the UI/UX for both technical and non-technical stakeholders.",
-    "Incorporated OpenAI-driven prompt-based explanations, automatically generating accessible narrative summaries of complex model outputs, streamlining stakeholder decision-making.",
-    "Implemented containerization (Docker) and Git-based version control, ensuring reproducible deployments and scalable infrastructure for evolving datasets and models.",
-    "Ultimately delivered a unified, AI-driven solution blending ML predictions, cluster-based insights, secure logging, and intuitive visualizations to guide effective fuel optimization strategies."
-    ],
-    tags: ["Flask", "React", "TypeScript", "TailwindCSS", "D3.js", "scikit-learn", "APScheduler", "IPFS", "OpenAI", "Docker", "AWS"],
-    githubLink: "https://github.com/KushagraBharti/HACKUTD-Data-Drive",
-    thumbnail: "/dataDrive.png",
-  },  
+
   { 
-    title: "Circuit Seer (Circuit Solver)", 
-    summary: "A computer vision-based circuit solver using a fine-tuned YOLOv5 model.",
+    title: "Pseudo Lawyer", 
+    summary: "A full-stack legal tech platform that leverages AI to generate legal contracts and provides secure user authentication.", 
     description: [
-      "Fine-tuned a YOLOv5 model on a custom dataset over 10 epochs, achieving 84% object detection accuracy to enable precise circuit mapping using a Hough transform algorithm.",
-      "Developed a Python-based application using YOLOv5, PyTorch, and image processing techniques to efficiently analyze and solve circuits for resistance and capacitance."
+      "Built a modern Next.js frontend with engaging UI/UX using Framer Motion and React Tilt, enabling intuitive registration, login, and profile management via AWS Amplify and Cognito.",
+      "Developed a robust Flask backend offering RESTful API endpoints for AI-driven legal contract drafting using AWS Bedrock and Langchain, with persistent chat storage in SQLite.",
+      "Integrated AWS S3 for secure contract uploads and implemented role-based access control to ensure data confidentiality and integrity.",
+      "Orchestrated seamless communication between frontend and backend with CORS and error handling, delivering a scalable and secure legal contract generation solution."
     ], 
-    tags: ["Python", "YOLOv5", "PyTorch", "OpenCV", "matplotlib", "Computer Vision"], 
-    githubLink: "https://github.com/Hteam121/circuit-seer",
-    thumbnail: "/circuitSeer.png",
+    tags: ["Next.js", "Flask", "AWS", "Cognito", "Amplify", "Bedrock", "Langchain", "SQLite", "S3", "Legal Tech", "Full-Stack"], 
+    githubLink: "https://github.com/KushagraBharti/PseudoLawyer", 
+    thumbnail: "/pseudoLawyer.png",
   },
   
   { 
-    title: "Age & Gender Recognition", 
-    summary: "Face detection model with age and gender prediction using OpenCV.",
+    title: "Personal Portfolio Website", 
+    summary: "A dynamic, full-stack portfolio website showcasing professional experience, education, and projects.", 
     description: [
-      "Implemented face detection with machine learning model, achieving 71% gender and 62% age prediction accuracy using OpenCV’s confidence matrix in Python after extensive testing."
+      "Developed a responsive single-page application using a TypeScript-based Node.js/Express backend and a React/TailwindCSS frontend, ensuring fast load times and seamless navigation.",
+      "Implemented modular RESTful API endpoints to serve dynamic content (projects, education, experiences, intro) with secure CORS configurations and environment-based settings.",
+      "Integrated external APIs for live updates, including GitHub stats, weather data, and LeetCode challenges, to reflect real-time achievements.",
+      "Enhanced user experience through interactive UI elements such as draggable cards, parallax tilt effects, custom cursors, and animated transitions.",
+      "Deployed the application on Vercel, optimizing for both development and production environments with robust TypeScript tooling."
     ], 
-    tags: ["Python", "OpenCV", "Computer Vision", "Machine Learning"], 
+    tags: ["TypeScript", "Node.js", "Express", "React", "TailwindCSS", "Vite", "REST API", "Full-Stack Development", "API Integration"], 
+    githubLink: "https://github.com/KushagraBharti/Personal-Site",
+    thumbnail: "/personalPortfolio.png",
+  },  
+
+  { 
+    title: "DataDrive: Unified Insights for Data & Fuel Optimization", 
+    summary: "A full-stack AI-driven analytics platform that integrates advanced ML models, real-time data observability, and interactive visualizations for fuel optimization.", 
+    description: [
+      "Developed a modular Flask backend with multiple API endpoints for fuel efficiency prediction, car details retrieval, and clustering analysis using pre-trained Linear Regression and K-Means models.",
+      "Implemented robust services including scheduled anomaly detection with APScheduler, SHAP-based interpretability, and comprehensive data observability with automated logging.",
+      "Integrated advanced external services such as GPT-4 powered explanation generation for model outputs and Pinata for decentralized file storage, enhancing transparency and auditability.",
+      "Engineered end-to-end training pipelines for both regression (evaluated via MAE and R² metrics) and clustering models (using PCA for visualization), ensuring actionable insights.",
+      "Built a modern React dashboard featuring interactive D3.js charts, real-time fuel efficiency predictions, a 3D car model viewer via react-three-fiber, and dynamic cluster visualizations."
+    ], 
+    tags: ["Flask", "Python", "Machine Learning", "Linear Regression", "KMeans", "APScheduler", "SHAP", "OpenAI", "Pinata", "React", "D3.js", "Three.js", "Data Analytics"], 
+    githubLink: "https://github.com/KushagraBharti/HACKUTD-Data-Drive",
+    thumbnail: "/dataDrive.png",
+  },
+
+  {
+    title: "Kaggle Titanic ML",
+    summary: "Predicted Titanic survival using machine learning. This project involved extensive data cleaning, feature engineering, and model evaluation using various algorithms, with a comprehensive PDF outlining all my learnings.",
+    description: [
+      "Acquired the Titanic dataset from Kaggle and performed detailed data cleaning with Pandas—handling missing values, extracting titles from names, and engineering new features such as FamilySize and IsAlone.",
+      "Conducted exploratory data analysis (EDA) using Seaborn and Matplotlib to reveal key insights about passenger demographics and survival correlations.",
+      "Built and evaluated multiple models (Logistic Regression, SVM, KNN, Decision Tree, Random Forest, Naive Bayes, Perceptron, and SGD) with scikit-learn, achieving the best training accuracy (~86.76%) with Decision Tree and Random Forest models.",
+      "Included a comprehensive PDF report that critically documents all the steps, challenges, and learnings throughout the project."
+    ],
+    tags: [
+      "Machine Learning", "Kaggle", "Titanic", "Data Analysis", "Python",
+      "Pandas", "scikit-learn", "EDA", "Feature Engineering", "Random Forest"
+    ],
+    githubLink: "https://github.com/KushagraBharti/Kaggle-Titanic-Solution",
+    thumbnail: "/kaggle_titanic.png"
+  },
+
+  {
+    title: "F1 Optimization Project",
+    summary: "A simulation-based F1 race optimization project using reinforcement learning. Built for HackTX-2024, it integrates a custom Pygame-based race environment with a SAC agent from Ray RLlib to optimize driving strategies on a realistic race track.",
+    description: [
+      "Developed a custom Gymnasium environment ('Race') that simulates an F1 track using Pygame and OpenCV for track extraction.",
+      "Implemented a Car class with sensor-based perception (echo sensors) to inform both heuristic and RL-based control strategies.",
+      "Integrated Ray Tune and RLlib’s SACTrainer for training an RL agent, with functionality to restore from checkpoints and export training artifacts.",
+      "Provided both manual control mode (via keyboard input) and an echo-heuristic agent for testing and debugging.",
+      "Although the codebase contains extra legacy and experimental code snippets, the core functionality demonstrates effective application of RL in a simulated racing context."
+    ],
+    tags: ["Reinforcement Learning", "Ray RLlib", "Pygame", "OpenCV", "Simulation", "F1", "Optimization", "HackTX 2024","Gymnasium"
+    ],
+    githubLink: "https://github.com/KushagraBharti/HackTX-2024---F1-Optimization",
+    thumbnail: "/f1_optimization.png"
+  },
+  
+  {
+    title: "CircuitSeer (Circuit Solver)",
+    summary: "An AI-powered circuit analysis tool that automates the identification and schematic analysis of electronic circuits for both educational and practical use.",
+    description: [
+      "Developed under the AI Mentorship Program at the University of Texas at Dallas, CircuitSeer automatically analyzes circuit diagrams by accurately detecting and classifying electronic components.",
+      "Utilizes a fine-tuned YOLOv5 model for fast and precise object detection to identify components such as resistors, capacitors, and more within complex layouts.",
+      "Integrates classical computer vision techniques—namely Canny Edge Detection and Hough Transform—to trace wiring and delineate circuit structures.",
+      "Built using Python and Flask, it seamlessly bridges backend processing with a user-friendly web interface, allowing users to upload diagrams and receive detailed, step-by-step schematic insights.",
+      "Designed to support students and professionals alike in understanding circuit design, troubleshooting, and exam preparation."
+    ],
+    tags: ["Python", "YOLOv5", "Flask", "OpenCV", "Computer Vision", "Canny Edge Detection", "Hough Transform"],
+    githubLink: "https://github.com/Hteam121/circuit-seer",
+    thumbnail: "/circuitSeer.png",
+  },
+    
+  { 
+    title: "Age & Gender Recognition", 
+    summary: "Real-time face detection with age and gender prediction using OpenCV and Caffe models.", 
+    description: [
+      "Developed a real-time system that leverages OpenCV’s dnn module to detect faces in live video streams and dynamically annotate them.",
+      "Utilized pre-trained Caffe models for age and gender classification, achieving approximately 71% accuracy for gender and 62% for age predictions.",
+      "Optimized detection by fine-tuning confidence thresholds and applying padding to accurately extract facial regions.",
+      "Integrated a robust pipeline that draws bounding boxes and overlays prediction labels on faces for intuitive visual feedback."
+    ], 
+    tags: ["Python", "OpenCV", "DNN", "Caffe", "Face Detection", "Real-Time Processing"], 
     githubLink: "https://github.com/KushagraBharti/Gender-Age-Detection",
     thumbnail: "/ageGenderRec.png",
   },
+  
   { 
     title: "Point Cloud Down Sampler", 
-    summary: "Down-sampling tool for point clouds with voxelization techniques.",
+    summary: "A dual-approach tool for reducing dense point clouds via custom voxelization and Open3D’s high-performance voxel grid method.", 
     description: [
-      "Down sampled a 370,277-point cloud while maintaining shape, achieving a reduction of 300 or 40,000 points depending on pre-defined voxel size, by employing a mathematical model for Voxelization in Python."
+      "Developed a custom algorithm that groups 3D points into discrete voxels using mathematical flooring, significantly reducing dataset size while preserving shape integrity.",
+      "Leveraged Open3D’s built-in voxel_down_sample() for rapid, efficient downsampling and interactive 3D visualization, showcasing superior performance and ease-of-use.",
+      "Engineered a complete pipeline that converts CSV point cloud data into PCD format, applies both methods, and exports downsampled outputs for further analysis.",
+      "Demonstrated versatility by comparing a from-scratch implementation with a state-of-the-art library approach to optimize for both accuracy and processing speed."
     ], 
-    tags: ["Python", "Pandas", "Data-driven", "Voxelization", "Math Modeling"], 
-    githubLink: "#",
+    tags: ["Python", "Pandas", "Open3D", "Voxelization", "Point Cloud", "Downsampling", "Math Modeling"], 
+    githubLink: "https://github.com/KushagraBharti/PointCloud-DownSampler",
     thumbnail: "/pointCloud.png",
-  },
-  { 
-    title: "Pseudo Lawyer", 
-    summary: "Work in progress.",
+  },  
+
+  {
+    title: "Maze Traversal",
+    summary: "A recursive depth-first search maze-solving algorithm in Python.",
     description: [
-      "Built a task management system using the PERN stack, featuring user authentication and an intuitive slider-style task completion, enhancing user experience and allowing progress to be saved through personal logins."
-    ], 
-    tags: ["PostgreSQL", "SQL", "Express", "React", "Node.js", "Kinsta"], 
-    githubLink: "https://github.com/KushagraBharti/To-Do-App-v1",
-    thumbnail: "/pseudoLawyer.png",
-  },
-  { 
-    title: "Maze Traversal", 
-    summary: "Maze-solving algorithm using depth-first search in Python.",
-    description: [
-      "Achieved a maze-solving time of 0.1279 by developing a depth-first search (DFS) traversal algorithm in Python, efficiently solving a 12x12 nested list maze."
-    ], 
-    tags: ["Python", "Depth-First Search Algorithm"], 
+      "Implemented a Maze_Crawler class that solves a maze represented as a nested list using recursion and DFS.",
+      "The algorithm marks the solution path with directional arrows (v, ^, >, <) to visually trace the route from the start ('S') to the exit ('E').",
+      "Includes functionality to load maze configurations from a text file, identify the starting point, and print intermediate maze states for real-time progress tracking.",
+      "Measures execution time to evaluate performance, offering a concise and efficient educational tool for understanding recursive algorithms."
+    ],
+    tags: ["Python", "Depth-First Search", "Recursion", "Maze Solving"],
     githubLink: "#",
     thumbnail: "/mazeTraversal.png",
-  },
-  { 
-    title: "Kaggle Titanic Machine Learning Model", 
-    summary: "Machine learning models for the Titanic dataset with data preprocessing.",
-    description: [
-      "Achieved an 86.76% accuracy by implementing and comparing multiple machine learning models (Random Forest, Decision Tree, KNN, Logistic Regression, etc.) on the Titanic dataset after extensive data preprocessing and feature engineering using Python, Pandas, and Scikit-learn."
-    ], 
-    tags: ["Python", "Pandas", "Scikit-learn", "Seaborn", "Matplotlib"], 
-    githubLink: "https://github.com/KushagraBharti/Kaggle-Titanic-Solution",
-    thumbnail: "/kaggleTitanic.png",
-  },
-  { 
-    title: "F1 Optimization Project", 
-    summary: "Work in progress.",
-    description: [
-      "Built a task management system using the PERN stack, featuring user authentication and an intuitive slider-style task completion, enhancing user experience and allowing progress to be saved through personal logins."
-    ], 
-    tags: ["PostgreSQL", "SQL", "Express", "React", "Node.js", "Kinsta"], 
-    githubLink: "https://github.com/KushagraBharti/To-Do-App-v1",
-    thumbnail: "/f1Optimization.png",
-  },
+  },  
+  
   { 
     title: "PCB Design Project", 
-    summary: "Work in progress.",
+    summary: "A Senior Independent Project in 2023 that provided hands-on experience in designing, ordering, and assembling custom PCBs.", 
     description: [
-      "Built a task management system using the PERN stack, featuring user authentication and an intuitive slider-style task completion, enhancing user experience and allowing progress to be saved through personal logins."
+      "Designed and ordered multiple PCBs using EasyEDA, experiencing the entire workflow from schematic capture to layout and manufacturing.",
+      "Sourced and selected electrical components from integrated platforms like LCSC and JLCPCB, balancing cost, availability, and performance.",
+      "Developed a deep understanding of key PCB parameters, including size, thermal management, component placement, power and signal integrity, and manufacturing constraints.",
+      "Addressed design challenges such as handling multiple ATmega328 variants, integrating both SMD and THT components, and implementing capacitive touch buttons.",
+      "Gained practical soldering and testing skills, ensuring reliable assembly and real-world functionality."
     ], 
-    tags: ["PostgreSQL", "SQL", "Express", "React", "Node.js", "Kinsta"], 
-    githubLink: "https://github.com/KushagraBharti/To-Do-App-v1",
+    tags: ["PCB Design", "Circuit Design", "EasyEDA", "JLCPCB", "Electronics", "Hardware", "Soldering"], 
+    githubLink: "https://github.com/KushagraBharti/PCB-Design-Project", 
     thumbnail: "/pcbDesign.png",
   },
-  { 
-    title: "Hacked Self Driving Car", 
-    summary: "Work in progress.",
+
+  {
+    title: "Self-Driving Car Project",
+    summary: "Repurposed an RC car into a self-driving vehicle using Arduino hardware and a custom obstacle avoidance algorithm.",
     description: [
-      "Built a task management system using the PERN stack, featuring user authentication and an intuitive slider-style task completion, enhancing user experience and allowing progress to be saved through personal logins."
-    ], 
-    tags: ["PostgreSQL", "SQL", "Express", "React", "Node.js", "Kinsta"], 
-    githubLink: "https://github.com/KushagraBharti/To-Do-App-v1",
-    thumbnail: "/selfDrivingCar.png",
+      "Tore apart an RC car, rebuilt its interior with an Arduino Uno and motor shield, and rewired all components (including integrating ultrasonic sensors and new soldering) for improved functionality.",
+      "Developed C++ code that reads ultrasonic sensor data to implement an obstacle detection and avoidance algorithm, enabling autonomous navigation through complex environments."
+    ],
+    tags: ["Arduino", "C++", "Self-Driving", "Autonomous Vehicle", "RC Car", "Electronics", "Ultrasonic Sensors", "Hardware"],
+    githubLink: "",
+    thumbnail: "/selfDrivingCar.png"
   },
   
 ];
