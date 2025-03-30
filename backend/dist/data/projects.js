@@ -71,7 +71,7 @@ exports.projectsData = [
             "Pandas", "scikit-learn", "EDA", "Feature Engineering", "Random Forest"
         ],
         githubLink: "https://github.com/KushagraBharti/Kaggle-Titanic-Solution",
-        thumbnail: "/kaggle_titanic.png"
+        thumbnail: "/kaggleTitanic.png"
     },
     {
         title: "F1 Optimization Project",
@@ -86,7 +86,7 @@ exports.projectsData = [
         tags: ["Reinforcement Learning", "Ray RLlib", "Pygame", "OpenCV", "Simulation", "F1", "Optimization", "HackTX 2024", "Gymnasium"
         ],
         githubLink: "https://github.com/KushagraBharti/HackTX-2024---F1-Optimization",
-        thumbnail: "/f1_optimization.png"
+        thumbnail: "/f1Optimization.png"
     },
     {
         title: "CircuitSeer (Circuit Solver)",

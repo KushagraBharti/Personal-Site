@@ -81,7 +81,7 @@ export const projectsData: ProjectData[] = [
       "Pandas", "scikit-learn", "EDA", "Feature Engineering", "Random Forest"
     ],
     githubLink: "https://github.com/KushagraBharti/Kaggle-Titanic-Solution",
-    thumbnail: "/kaggle_titanic.png"
+    thumbnail: "/kaggleTitanic.png"
   },
 
   {
@@ -97,7 +97,7 @@ export const projectsData: ProjectData[] = [
     tags: ["Reinforcement Learning", "Ray RLlib", "Pygame", "OpenCV", "Simulation", "F1", "Optimization", "HackTX 2024","Gymnasium"
     ],
     githubLink: "https://github.com/KushagraBharti/HackTX-2024---F1-Optimization",
-    thumbnail: "/f1_optimization.png"
+    thumbnail: "/f1Optimization.png"
   },
   
   {
