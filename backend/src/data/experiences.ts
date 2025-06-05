@@ -8,6 +8,26 @@ export interface ExperienceData {
 
   export const experiencesData: ExperienceData[] = [
     { 
+      position: "Undergraduate Researcher at The University of Texas at Dallas", 
+      summary: "Working under Dr. Daescu on applying ML to classical optimization problems.",
+      description: [
+        "Working under Dr. Daescu on ML extensions to classical optimization problems. Research includes drone routing and spanner graph optimization using reinforcement learning, GNNs, and hybrid models.",
+      ], 
+      tags: ["ML", "Python", "Graph Neural Networks", "Optimization"], 
+      companyLink: "https://personal.utdallas.edu/~daescu/"
+    },
+    { 
+      position: "Consultant at Consult Your Community (Club)", 
+      summary: "Led data analytics to transform multi-source data into actionable insights.",
+      description: [
+        "Led data strategy for Made2Polish, architecting & deploying an end-to-end analytics solution (React, Flask, Python, Looker Studio) translating raw multi-source data (sales, inventory, social) into actionable business insights.",
+        "Delivered strategic recommendations based on data analysis (e.g., content performance, customer segmentation, inventory forecasting), directly informing client decisions on retail expansion, production scaling, and competitive pricing.",        
+        "Engineered and presented a \"Data Source Strategy Map\" and interactive dashboards that centralized multi-platform KPIs, enabling the client to identify key revenue drivers and optimize marketing spend."
+      ], 
+      tags: ["Data Analytics", "Python", "Flask", "Looker Studio"], 
+      companyLink: "https://www.utdcyc.com/" 
+    },
+    { 
       position: "Machine Learning Intern at Abilitie", 
       summary: "Developed and optimized AI chatbot performance and cost-efficiency strategies.",
       description: [

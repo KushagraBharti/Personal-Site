@@ -90,15 +90,16 @@ const Experiences: React.FC = () => {
                 viewport={{ once: true, amount: 0.2 }}
                 className="h-full"
               >
-                <GlassCard className="group relative flex flex-col items-center text-center w-full h-full px-6 py-6 overflow-hidden">
-                  {/* Always-visible content */}
-                  <div className="relative z-20 flex flex-col items-center">
-                    <div className="flex items-center justify-center space-x-2 mb-2">
-                      <h3 className="text-xl font-semibold text-gray-50 opacity-100 whitespace-nowrap">
+                {/* Fixed-height GlassCard so that all cards align and hover overlay positions correctly. */}
+                <GlassCard className="group relative flex flex-col items-center text-center w-full h-48 px-6 py-6 overflow-hidden">
+                  {/* Always-visible content (title + summary). Hidden on hover. */}
+                  <div className="relative z-20 flex flex-col items-center justify-center h-full group-hover:hidden">
+                    <div className="mb-2 w-full">
+                      <h3 className="text-xl font-semibold text-gray-50 break-words">
                         {exp.position}
                       </h3>
                     </div>
-                    <p className="text-gray-200 font-medium group-hover:hidden">
+                    <p className="text-gray-200 font-medium">
                       {exp.summary}
                     </p>
                   </div>
@@ -106,24 +107,27 @@ const Experiences: React.FC = () => {
                   {/* Background gradient overlay on hover */}
                   <div className="absolute inset-0 z-10 bg-gradient-to-r from-blue-500 to-purple-600 opacity-0 group-hover:opacity-70 transition-opacity duration-300 pointer-events-none" />
 
-                  {/* Centered overlay: Buttons appear on hover */}
-                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                    <div className="pointer-events-auto text-center mt-4">
-                      {/* Title fades on hover if desired (or keep it visible) */}
-                      <h3 className="text-xl font-semibold text-gray-50 opacity-0 group-hover:hidden justify-">
-                        {exp.position}
-                      </h3>
-                    </div>
-                    <div className="pointer-events-auto mt-6 flex flex-col sm:flex-row gap-4">
+                  {/*
+                    Hover overlay:
+                    - flex-col with justify-center so title + buttons stay together, centered vertically.
+                    - space-y-3 creates a small gap between the title and the buttons.
+                  */}
+                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center space-y-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto">
+                    {/* Centered title */}
+                    <h3 className="text-xl font-semibold text-white px-2 text-center">
+                      {exp.position}
+                    </h3>
+                    {/* Buttons appear right below the title, both centered */}
+                    <div className="flex space-x-4">
                       <button
                         onClick={() => openDetails(exp)}
-                        className="w-28 px-4 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
+                        className="px-4 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
                       >
                         Details
                       </button>
                       <button
                         onClick={() => handleViewSite(exp.companyLink)}
-                        className="w-28 px-4 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
+                        className="px-4 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
                       >
                         View Site
                       </button>
@@ -139,7 +143,9 @@ const Experiences: React.FC = () => {
         <div className="block md:hidden space-y-4">
           {experiences.map((exp, index) => (
             <GlassCard key={index} className="w-full text-center p-4">
-              <h3 className="text-lg font-semibold text-gray-50">{exp.position}</h3>
+              <h3 className="text-lg font-semibold text-gray-50 break-words">
+                {exp.position}
+              </h3>
               <p className="text-gray-200 font-medium">{exp.summary}</p>
               <div className="flex justify-center gap-4 mt-4">
                 <button
