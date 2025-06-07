@@ -14,7 +14,7 @@ const sectionVariants = {
 
 const AboutMe: React.FC = () => {
   const [startTyping, setStartTyping] = useState(false);
-  const [videoOpen, setVideoOpen] = useState(false);
+  const [openVideo, setOpenVideo] = useState<string | null>(null);
   const [typedText] = useTypewriter({
     words: startTyping ? ["About Me"] : [""],
     loop: false,
@@ -23,7 +23,7 @@ const AboutMe: React.FC = () => {
     delaySpeed: 1000,
   });
 
-  const videoId = "dQw4w9WgXcQ";
+  const videoIds = ["dQw4w9WgXcQ", "oHg5SJYRHA0"];
 
   return (
     <section className="py-16" id="about">
@@ -42,8 +42,8 @@ const AboutMe: React.FC = () => {
             <span className="block w-16 h-1 bg-primary mx-auto mt-2 rounded"></span>
           </h2>
         </motion.div>
-        <GlassCard className="p-6 text-white space-y-8 md:flex md:space-x-8">
-          <div className="md:w-1/2 space-y-6">
+        <GlassCard className="w-full p-6 text-white space-y-8 md:grid md:grid-cols-2 md:gap-8">
+          <div className="space-y-6">
             <motion.p
               variants={sectionVariants}
               initial="hidden"
@@ -168,45 +168,52 @@ const AboutMe: React.FC = () => {
               .
             </motion.p>
           </div>
-          <div className="md:w-1/2 flex flex-col items-center mt-8 md:mt-0">
-            <motion.div
-              variants={sectionVariants}
-              initial="hidden"
-              whileInView="visible"
-              custom={6}
-              viewport={{ once: true }}
-              className="cursor-pointer relative group"
-              onClick={() => setVideoOpen(!videoOpen)}
-            >
-              {videoOpen ? (
-                <iframe
-                  className="w-full aspect-video rounded-lg"
-                  src={`https://www.youtube.com/embed/${videoId}`}
-                  title="Meta-Mind Film"
-                  allowFullScreen
-                ></iframe>
-              ) : (
-                <img
-                  src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
-                  alt="Meta-Mind thumbnail"
-                  className="w-full rounded-lg group-hover:shadow-lg group-hover:scale-105 transition-transform"
-                />
-              )}
-              {!videoOpen && (
-                <span className="absolute inset-0 rounded-lg ring-2 ring-primary animate-pulse group-hover:animate-none"></span>
-              )}
-            </motion.div>
-            <motion.p
-              variants={sectionVariants}
-              initial="hidden"
-              whileInView="visible"
-              custom={7}
-              viewport={{ once: true }}
-              className="mt-2 text-sm text-gray-200 text-center"
-            >
-              🎥 Check out my latest short film: “Meta-Mind” (All American HS
-              Film Festival ’23).
-            </motion.p>
+          <div className="flex flex-col items-center mt-8 md:mt-0 space-y-6">
+            {videoIds.map((id, idx) => (
+              <React.Fragment key={id}>
+                <motion.div
+                  variants={sectionVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  custom={6 + idx * 2}
+                  viewport={{ once: true }}
+                  className="cursor-pointer relative group w-full"
+                  onClick={() =>
+                    setOpenVideo(openVideo === id ? null : id)
+                  }
+                >
+                  {openVideo === id ? (
+                    <iframe
+                      className="w-full aspect-video rounded-lg"
+                      src={`https://www.youtube.com/embed/${id}`}
+                      title="Showreel"
+                      allowFullScreen
+                    ></iframe>
+                  ) : (
+                    <img
+                      src={`https://img.youtube.com/vi/${id}/hqdefault.jpg`}
+                      alt="Video thumbnail"
+                      className="w-full rounded-lg group-hover:shadow-lg group-hover:scale-105 transition-transform"
+                    />
+                  )}
+                  {openVideo !== id && (
+                    <span className="absolute inset-0 rounded-lg ring-2 ring-primary animate-pulse group-hover:animate-none"></span>
+                  )}
+                </motion.div>
+                <motion.p
+                  variants={sectionVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  custom={7 + idx * 2}
+                  viewport={{ once: true }}
+                  className="mt-2 text-sm text-gray-200 text-center"
+                >
+                  {idx === 0
+                    ? "🎥 Check out my latest short film: “Meta-Mind” (All American HS Film Festival ’23)."
+                    : "🎞️ Watch my other short film."}
+                </motion.p>
+              </React.Fragment>
+            ))}
           </div>
         </GlassCard>
       </div>
