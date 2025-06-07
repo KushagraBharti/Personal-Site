@@ -25,7 +25,7 @@ const WeatherCard: React.FC = () => {
           `${import.meta.env.VITE_API_BASE_URL}/api/weather?q=${city}`
         );
         setWeather(weatherRes.data);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error fetching weather:", err);
         setError("Unable to load weather data");
       }
