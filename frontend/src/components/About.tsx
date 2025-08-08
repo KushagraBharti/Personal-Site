@@ -34,17 +34,34 @@ const About: React.FC = () => {
         <div className="grid gap-8 md:grid-cols-2">
           <GlassCard className="p-6 text-gray-200 space-y-4">
             <p>
-              Hey! I'm a CS major at UT Dallas who loves blending applied
-              machine learning with full-stack tinkering. These days I'm either
-              building routing models that mix reinforcement learning with
-              classic algorithms or exploring how brains react to real-world
-              stimuli.
+              Hey! I'm a CS major at
+              <a
+                href="https://www.utdallas.edu"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                UT Dallas
+              </a>
+              who loves blending applied machine learning with full-stack
+              tinkering. These days I'm either building routing models that mix
+              reinforcement learning with classic algorithms or exploring how
+              brains react to real-world stimuli.
             </p>
             <p>
-              Last summer I hopped on Abilitie's team to ship an
-              LLM-powered training product. I benchmarked deployment tricks to
-              shrink inference bills, spun up telemetry pipelines in TypeScript
-              and DynamoDB, and tweaked both fine-tuning and frontend UX.
+              Last summer I hopped on
+              <a
+                href="https://www.abilitie.com/ai-cases"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Abilitie's
+              </a>
+              team to ship an LLM-powered training product. I benchmarked
+              deployment tricks to shrink inference bills, spun up telemetry
+              pipelines in TypeScript and DynamoDB, and tweaked both fine-tuning
+              and frontend UX.
             </p>
             <p>
               I'm on the lookout for a Summer 2025 internship in ML, data, or
@@ -52,16 +69,35 @@ const About: React.FC = () => {
               around with React, Flask, Node.js, AWS, PyTorch, TensorFlow, and
               SQL.
             </p>
-            <ul className="list-disc list-inside space-y-1">
-              <li>Filmmaker with an All American High School Film Festival nod</li>
-              <li>Tennis & soccer junkie (Visca Barça!)</li>
-              <li>Food lover and experimental home cook</li>
-              <li>Traveller – lived in 3 countries, visited 10+</li>
-              <li>Gym regular and Formula 1 follower</li>
-            </ul>
+            <p>
+              Away from the keyboard, you'll catch me behind a camera—my dining
+              hall documentary was screened at the
+              <a
+                href="https://www.hsfilmfest.com/2023-official-selections"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                All American High School Film Festival
+              </a>
+              —or chasing tennis rallies and La Liga scores (Visca Barça!). I
+              love experimenting in the kitchen, traveling (I've lived in three
+              countries and visited ten-plus), hitting the gym, and keeping up
+              with Formula 1.
+            </p>
           </GlassCard>
 
           <div className="space-y-6">
+            <GlassCard className="p-4 text-center text-gray-200">
+              <a
+                href="https://www.hsfilmfest.com/2023-official-selections"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                Check out my film work
+              </a>
+            </GlassCard>
             <GlassCard className="overflow-hidden">
               <div className="aspect-video">
                 <iframe
