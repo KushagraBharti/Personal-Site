@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 
 const sections = [
   { id: "intro", label: "Home" },
+  { id: "about", label: "About" },
   { id: "education", label: "Education" },
   { id: "experiences", label: "Experiences" },
   { id: "projects", label: "Projects" },
@@ -29,7 +30,10 @@ const SectionSidebar: React.FC = () => {
         const element = document.getElementById(section.id);
         if (element) {
           const rect = element.getBoundingClientRect();
-          if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
+          if (
+            rect.top <= window.innerHeight / 2 &&
+            rect.bottom >= window.innerHeight / 2
+          ) {
             current = section.id;
           }
         }
