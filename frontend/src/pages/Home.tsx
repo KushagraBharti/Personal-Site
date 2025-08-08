@@ -1,16 +1,19 @@
 // src/pages/Home.tsx
 import React from "react";
 import Intro from "../components/Intro";
+import About from "../components/About";
 import Education from "../components/Education";
 import Experiences from "../components/Experience";
 import Projects from "../components/Projects";
-
 
 const Home: React.FC = () => {
   return (
     <div>
       <section id="intro">
         <Intro />
+      </section>
+      <section id="about">
+        <About />
       </section>
       <section id="education">
         <Education />
