@@ -34,31 +34,30 @@ const About: React.FC = () => {
         <div className="grid gap-8 md:grid-cols-2">
           <GlassCard className="p-6 text-gray-200 space-y-4">
             <p>
-              Computer Science student at UT Dallas focused on applied machine
-              learning and full-stack development. I explore hybrid optimization
-              combining reinforcement learning with classical algorithms and
-              model neural responses to real-world stimuli.
+              Hey! I'm a CS major at UT Dallas who loves blending applied
+              machine learning with full-stack tinkering. These days I'm either
+              building routing models that mix reinforcement learning with
+              classic algorithms or exploring how brains react to real-world
+              stimuli.
             </p>
             <p>
-              Previously helped launch an LLM-powered training product at
-              Abilitie—benchmarking deployment strategies to cut inference cost,
-              building telemetry pipelines in TypeScript and DynamoDB, and
-              polishing both fine-tuning and frontend UX.
+              Last summer I hopped on Abilitie's team to ship an
+              LLM-powered training product. I benchmarked deployment tricks to
+              shrink inference bills, spun up telemetry pipelines in TypeScript
+              and DynamoDB, and tweaked both fine-tuning and frontend UX.
             </p>
             <p>
-              Actively seeking Summer 2025 internships in machine learning, data
-              science, AI research, or full-stack development. Stack: Python,
-              TypeScript, React, Flask, Node.js, AWS (SageMaker, Bedrock, EC2),
-              PyTorch, TensorFlow, SQL.
+              I'm on the lookout for a Summer 2025 internship in ML, data, or
+              full-stack work. I mostly code in Python and TypeScript and mess
+              around with React, Flask, Node.js, AWS, PyTorch, TensorFlow, and
+              SQL.
             </p>
             <ul className="list-disc list-inside space-y-1">
-              <li>
-                Filmmaking – All American High School Film Festival nominee
-              </li>
-              <li>Tennis & soccer fan (Visca Barça!)</li>
-              <li>Foodie and home cook chasing new cuisines</li>
+              <li>Filmmaker with an All American High School Film Festival nod</li>
+              <li>Tennis & soccer junkie (Visca Barça!)</li>
+              <li>Food lover and experimental home cook</li>
               <li>Traveller – lived in 3 countries, visited 10+</li>
-              <li>Gym rat and Formula 1 enthusiast</li>
+              <li>Gym regular and Formula 1 follower</li>
             </ul>
           </GlassCard>
 
@@ -91,62 +90,6 @@ const About: React.FC = () => {
               <p className="text-sm text-gray-200 mt-2 text-center">
                 2023 – The PB&J Documentary
               </p>
-            </GlassCard>
-
-            <GlassCard className="p-4 text-center">
-              <h4 className="text-lg font-semibold text-gray-50 mb-2">
-                Photography Samples
-              </h4>
-              <div className="flex flex-wrap justify-center gap-4 text-sm">
-                <a
-                  href="https://drive.google.com/file/d/1C_NE9LsEFUwXJ8DoewZUHVWl14dthKvd/view?usp=sharing"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  Photo 1
-                </a>
-                <a
-                  href="https://drive.google.com/file/d/1qV96I87FDxwIqZnv5R8s7e09OOZEUs8o/view?usp=sharing"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  Photo 2
-                </a>
-                <a
-                  href="https://drive.google.com/file/d/1whFFNbwniIFgU1cQEcsD5PurugvdAIG4/view?usp=sharing"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  Photo 3
-                </a>
-                <a
-                  href="https://drive.google.com/file/d/1Jj5exsNTSntwkotpzE4tNWB-6x-TqKjC/view?usp=sharing"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  Photo 4
-                </a>
-                <a
-                  href="https://drive.google.com/file/d/16fi_GhyFVqD53qk8FON6OtSyE_w8TBBp/view?usp=sharing"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  Photo 5
-                </a>
-                <a
-                  href="https://drive.google.com/file/d/1zk4s_n8wQzZCcqwrilFXzv1yzMzB4jDJ/view?usp=sharing"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  Photo 6
-                </a>
-              </div>
             </GlassCard>
           </div>
         </div>
