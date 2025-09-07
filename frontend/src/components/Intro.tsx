@@ -29,7 +29,7 @@ const defaultIntroData: IntroResponse = {
   githubStats: { totalRepos: 17, totalCommits: 250 },
   leetCodeStats: { totalSolved: 6, rank: "4/1/1" },
   weather: { city: "N/A", temp: 0, description: "N/A" },
-  latestUpdate: "Currently applying for Summer 2025 internships and leetcoding!",
+  latestUpdate: "Currently applying for Summer 2026 internships and leetcoding!",
   funFact: "A film I made was screened at AMC Theatres in Times Square!",
   featuredBlog: {
     title: "How AI is Shaping the Future of Software Development",
