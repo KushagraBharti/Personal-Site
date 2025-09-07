@@ -47,7 +47,7 @@ const About: React.FC = () => {
               DynamoDB, and tweaked both fine-tuning and frontend UX.
             </p>
             <p>
-              I'm on the lookout for a Summer 2025 internship in ML, data, or
+              I'm on the lookout for a Summer 2026 internship in ML, data, or
               full-stack work. I mostly code in Python and TypeScript and mess
               around with React, Flask, Node.js, AWS, PyTorch, TensorFlow, and
               SQL.
