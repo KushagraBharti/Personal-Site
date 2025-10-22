@@ -50,6 +50,14 @@ yarn install
 ```bash
 cd backend
 yarn install
+New-Item -Path . -Name ".env" -ItemType "File"
+```
+
+### Add the following code to the .env file
+
+```
+GITHUB_USERNAME=KushagraBharti
+GITHUB_TOKEN=
 ```
 
 ## **Initializing Local Environment**
