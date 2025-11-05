@@ -1,11 +1,12 @@
 import clsx from "clsx";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { appRegistry } from "../../../app/routes/appRegistry";
-import { useTheme } from "../../../app/providers/ThemeProvider";
+import { useTheme, type AccentPreset } from "../../../app/providers/ThemeProvider";
 import { useWindowActions } from "../../../app/wm/hooks";
 import type { AppId } from "../../../app/wm/types";
 import { useProjectsQuery } from "../../../hooks/usePortfolioQueries";
 import { toSlug } from "../../../lib/utils";
+import { themePacks } from "../../../app/theme/themePacks";
 
 interface TerminalEntry {
   type: "command" | "output" | "system";
@@ -23,12 +24,18 @@ const appCommands: Array<{ id: AppId; label: string }> = [
   { id: "terminal", label: "Terminal" },
 ];
 
-const wallpaperCycle = ["default", "aurora", "galaxy"] as const;
+const wallpaperAliases: Record<string, string> = {
+  default: "default-nebula",
+  aurora: "aurora-veil",
+  galaxy: "noir-grid",
+};
+
+const wallpaperCycle = themePacks.map((pack) => pack.id);
 
 const TerminalApp: React.FC = () => {
   const { createWindow } = useWindowActions();
   const { data: projectsData } = useProjectsQuery();
-  const { theme, setTheme, wallpaper, setWallpaper, setAccent } = useTheme();
+  const { theme, setTheme, selectedThemePack, applyThemePack, setAccent } = useTheme();
 
   const [inputValue, setInputValue] = useState("");
   const [history, setHistory] = useState<TerminalEntry[]>([
@@ -90,7 +97,7 @@ const TerminalApp: React.FC = () => {
         { type: "output", text: "  theme <light|dark|system>" },
         { type: "output", text: "  accent <indigo|emerald|amber|rose>" },
         { type: "output", text: "  wallpaper next" },
-        { type: "output", text: "  wallpaper <default|aurora|galaxy>" },
+        { type: "output", text: "  wallpaper <default|aurora|galaxy|pack-id>" },
         { type: "output", text: "  resume" },
         { type: "output", text: "  about" },
         { type: "output", text: "  credits" },
@@ -164,7 +171,7 @@ const TerminalApp: React.FC = () => {
 
     if (primary === "accent" && secondary) {
       if (["indigo", "emerald", "amber", "rose"].includes(secondary)) {
-        setAccent(secondary as any);
+        setAccent(secondary as AccentPreset);
         appendEntries([{ type: "output", text: `Accent set to ${secondary}` }]);
       } else {
         appendEntries([{ type: "output", text: "Unknown accent. Try indigo, emerald, amber, rose." }]);
@@ -174,18 +181,38 @@ const TerminalApp: React.FC = () => {
 
     if (primary === "wallpaper") {
       if (secondary === "next") {
-        const currentIndex = wallpaperCycle.indexOf(wallpaper as (typeof wallpaperCycle)[number]);
-        const next = wallpaperCycle[(currentIndex + 1) % wallpaperCycle.length];
-        setWallpaper(next);
-        appendEntries([{ type: "output", text: `Wallpaper set to ${next}` }]);
+        const currentIndex = Math.max(0, wallpaperCycle.indexOf(selectedThemePack));
+        const nextPackId = wallpaperCycle[(currentIndex + 1) % wallpaperCycle.length];
+        const nextPack = themePacks.find((pack) => pack.id === nextPackId);
+        applyThemePack(nextPackId);
+        appendEntries([
+          {
+            type: "output",
+            text: `Theme pack set to ${nextPack?.name ?? nextPackId}`,
+          },
+        ]);
         return;
       }
-      if (secondary && wallpaperCycle.includes(secondary as (typeof wallpaperCycle)[number])) {
-        setWallpaper(secondary as (typeof wallpaperCycle)[number]);
-        appendEntries([{ type: "output", text: `Wallpaper set to ${secondary}` }]);
-        return;
+      if (secondary) {
+        const normalized = wallpaperAliases[secondary] ?? secondary;
+        if (wallpaperCycle.includes(normalized)) {
+          const pack = themePacks.find((item) => item.id === normalized);
+          applyThemePack(normalized);
+          appendEntries([
+            {
+              type: "output",
+              text: `Theme pack set to ${pack?.name ?? normalized}`,
+            },
+          ]);
+          return;
+        }
       }
-      appendEntries([{ type: "output", text: "Usage: wallpaper next | wallpaper <default|aurora|galaxy>" }]);
+      appendEntries([
+        {
+          type: "output",
+          text: "Usage: wallpaper next | wallpaper <default|aurora|galaxy|pack-id>",
+        },
+      ]);
       return;
     }
 

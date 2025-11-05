@@ -8,7 +8,7 @@ export interface Viewport {
 const DEFAULT_MARGIN = 24;
 
 export function clampWindowToViewport(
-  window: WindowState,
+  window: Pick<WindowState, "x" | "y" | "width" | "height">,
   viewport: Viewport,
   margin: number = DEFAULT_MARGIN,
 ) {

@@ -11,10 +11,9 @@ type ResizeDirection =
   | "bottomRight";
 
 interface ResizersProps {
-  onResizeStart: (
-    direction: ResizeDirection,
-    event: React.PointerEvent<HTMLDivElement>,
-  ) => void;
+  onPointerResize: (direction: ResizeDirection, event: React.PointerEvent<HTMLDivElement>) => void;
+  onMouseResize: (direction: ResizeDirection, event: React.MouseEvent<HTMLDivElement>) => void;
+  onTouchResize: (direction: ResizeDirection, event: React.TouchEvent<HTMLDivElement>) => void;
 }
 
 const RESIZER_CONFIG: Array<{ direction: ResizeDirection; className: string; cursor: string }> = [
@@ -44,15 +43,17 @@ const RESIZER_CONFIG: Array<{ direction: ResizeDirection; className: string; cur
   },
 ];
 
-const Resizers: React.FC<ResizersProps> = ({ onResizeStart }) => {
+const Resizers: React.FC<ResizersProps> = ({ onPointerResize, onMouseResize, onTouchResize }) => {
   return (
     <>
       {RESIZER_CONFIG.map(({ direction, className, cursor }) => (
         <div
           key={direction}
-          className={`absolute ${className}`}
+          className={`absolute ${className} touch-none`}
           style={{ cursor }}
-          onPointerDown={(event) => onResizeStart(direction, event)}
+          onPointerDown={(event) => onPointerResize(direction, event)}
+          onMouseDown={(event) => onMouseResize(direction, event)}
+          onTouchStart={(event) => onTouchResize(direction, event)}
         />
       ))}
     </>

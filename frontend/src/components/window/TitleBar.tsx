@@ -4,10 +4,12 @@ import type { WindowState } from "../../app/wm/types";
 
 interface TitleBarProps {
   windowState: WindowState;
-  onDragStart?: (event: React.PointerEvent<HTMLDivElement>) => void;
+  onPointerDrag?: (event: React.PointerEvent<HTMLDivElement>) => void;
+  onMouseDrag?: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onTouchDrag?: (event: React.TouchEvent<HTMLDivElement>) => void;
 }
 
-const TitleBar: React.FC<TitleBarProps> = ({ windowState, onDragStart }) => {
+const TitleBar: React.FC<TitleBarProps> = ({ windowState, onPointerDrag, onMouseDrag, onTouchDrag }) => {
   const { minimizeWindow, maximizeWindow, restoreWindow, closeWindow } = useWindowActions();
 
   const toggleMaximize = () => {
@@ -20,9 +22,12 @@ const TitleBar: React.FC<TitleBarProps> = ({ windowState, onDragStart }) => {
 
   return (
     <div
-      className="flex cursor-move select-none items-center justify-between rounded-t-xl bg-slate-900/80 px-3 py-1.5 text-xs"
+      className="flex cursor-move select-none items-center justify-between rounded-t-xl bg-slate-900/80 px-3 py-1.5 text-xs touch-none"
       onDoubleClick={toggleMaximize}
-      onPointerDown={onDragStart}
+      onPointerDown={onPointerDrag}
+      onMouseDown={onMouseDrag}
+      onTouchStart={onTouchDrag}
+      draggable={false}
     >
       <div className="flex items-center gap-2 font-semibold tracking-wide text-slate-100/90">
         {windowState.icon && <span aria-hidden>{windowState.icon}</span>}

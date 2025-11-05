@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3200" height="1800" viewBox="0 0 3200 1800">
+  <defs>
+    <linearGradient id="noir" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1120" />
+      <stop offset="50%" stop-color="#111827" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <pattern id="grid" width="160" height="160" patternUnits="userSpaceOnUse">
+      <rect width="160" height="160" fill="none" stroke="#1f2937" stroke-width="1" opacity="0.22" />
+      <circle cx="0" cy="0" r="2" fill="#1f2937" opacity="0.4" />
+      <circle cx="160" cy="160" r="2" fill="#1f2937" opacity="0.4" />
+    </pattern>
+    <filter id="spot">
+      <feGaussianBlur stdDeviation="180" />
+    </filter>
+  </defs>
+  <rect width="3200" height="1800" fill="url(#noir)" />
+  <rect width="3200" height="1800" fill="url(#grid)" />
+  <circle cx="2600" cy="200" r="720" fill="#2563eb" opacity="0.18" filter="url(#spot)" />
+  <circle cx="600" cy="1500" r="560" fill="#f97316" opacity="0.12" filter="url(#spot)" />
+</svg>

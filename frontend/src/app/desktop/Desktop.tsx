@@ -9,17 +9,8 @@ import { appRegistry } from "../routes/appRegistry";
 import { useActiveWindowId, useOrderedWindows, useWindowActions } from "../wm/hooks";
 import type { WindowState } from "../wm/types";
 
-const wallpapers: Record<string, string> = {
-  default:
-    "radial-gradient(circle at 20% 20%, rgba(96, 165, 250, 0.4), transparent 55%), radial-gradient(circle at 80% 10%, rgba(192, 132, 252, 0.45), transparent 50%), linear-gradient(135deg, #0f172a 0%, #1e293b 45%, #020617 100%)",
-  aurora:
-    "linear-gradient(120deg, rgba(34, 197, 94, 0.35), transparent), linear-gradient(200deg, rgba(59, 130, 246, 0.4), transparent), radial-gradient(circle at 10% 80%, rgba(96, 165, 250, 0.35), transparent 60%), #020617",
-  galaxy:
-    "radial-gradient(circle at 50% 0%, rgba(186, 230, 253, 0.3), transparent 55%), radial-gradient(circle at 100% 80%, rgba(244, 114, 182, 0.3), transparent 55%), linear-gradient(180deg, #0b1120 0%, #1e1b4b 100%)",
-};
-
 const Desktop: React.FC = () => {
-  const { wallpaper } = useTheme();
+  const { wallpaperUrl } = useTheme();
   const [isStartOpen, setIsStartOpen] = useState(false);
   const startMenuRef = useRef<HTMLDivElement | null>(null);
   const startButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -28,9 +19,19 @@ const Desktop: React.FC = () => {
   const { focusWindow, closeWindow, createWindow } = useWindowActions();
 
   const wallpaperStyle = useMemo(() => {
-    const background = wallpapers[wallpaper] ?? wallpapers.default;
-    return { background };
-  }, [wallpaper]);
+    if (!wallpaperUrl) {
+      return {
+        background:
+          "radial-gradient(circle at 20% 20%, rgba(96, 165, 250, 0.35), transparent 55%), radial-gradient(circle at 80% 10%, rgba(192, 132, 252, 0.4), transparent 50%), linear-gradient(135deg, #0f172a 0%, #1e293b 45%, #020617 100%)",
+      };
+    }
+    return {
+      backgroundImage: `url(${wallpaperUrl})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+    } satisfies React.CSSProperties;
+  }, [wallpaperUrl]);
 
   useEffect(() => {
     if (!isStartOpen) return;
@@ -106,7 +107,7 @@ const Desktop: React.FC = () => {
     <div className="relative min-h-screen w-full overflow-hidden text-slate-100">
       <div
         aria-hidden
-        className="absolute inset-0 transition-all duration-500 ease-out"
+        className="absolute inset-0 transition-all duration-700 ease-out will-change-[background-image]"
         style={wallpaperStyle}
       />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_55%)] mix-blend-screen" />
