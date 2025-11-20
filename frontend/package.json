@@ -25,6 +25,9 @@
     "react-typed": "^2.0.12",
     "tailwind": "^4.0.0"
   },
+  "resolutions": {
+    "caniuse-lite": "^1.0.30001756"
+  },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
     "@types/express": "^5.0.0",
