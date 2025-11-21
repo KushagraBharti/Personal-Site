@@ -27,7 +27,7 @@ interface IntroResponse {
 
 // Fallback default data for instant load
 const defaultIntroData: IntroResponse = {
-  personalPhoto: "placeholder.jpg",
+  personalPhoto: "placeholder.svg",
   githubStats: null,
   leetCodeStats: null,
   weather: null,
