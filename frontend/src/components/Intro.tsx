@@ -1,5 +1,5 @@
 // frontend/src/components/Intro.tsx
-import React, { Suspense, useEffect, useRef, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import axios from "axios";
 import Tilt from "react-parallax-tilt";
 import Draggable from "react-draggable";
@@ -28,9 +28,9 @@ interface IntroResponse {
 // Fallback default data for instant load
 const defaultIntroData: IntroResponse = {
   personalPhoto: "placeholder.jpg",
-  githubStats: { totalRepos: 17, totalCommits: 250 },
-  leetCodeStats: { totalSolved: 6, rank: "4/1/1" },
-  weather: { city: "N/A", temp: 0, description: "N/A" },
+  githubStats: null,
+  leetCodeStats: null,
+  weather: null,
   latestUpdate: "Currently applying for Summer 2026 internships and leetcoding!",
   funFact: "A film I made was screened at AMC Theatres in Times Square!",
   featuredBlog: {
@@ -44,7 +44,6 @@ const defaultIntroData: IntroResponse = {
 const Intro: React.FC = () => {
   const [introData, setIntroData] = useState<IntroResponse>(defaultIntroData);
   const [isAtTop, setIsAtTop] = useState(true);
-  const hasFetched = useRef(false);
   const MiniCardLoader = ({ title }: { title: string }) => (
     <GlassCard className="p-4 w-60 text-center animate-pulse">
       <h4 className="text-sm font-bold text-white mb-1">{title}</h4>
@@ -53,9 +52,6 @@ const Intro: React.FC = () => {
   );
 
   useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
-
     const apiBase = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(
       /\/$/,
       ""

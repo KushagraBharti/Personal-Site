@@ -2,9 +2,8 @@
 import { Request, Response, RequestHandler } from "express";
 import axios from "axios";
 import { introStaticData } from "../data/intro";
-import { GITHUB_USERNAME, GITHUB_TOKEN } from "../config/github";
-
-const headers = GITHUB_TOKEN ? { Authorization: `token ${GITHUB_TOKEN}` } : {};
+import { GITHUB_USERNAME } from "../config/github";
+import { fetchGitHubStats } from "../services/githubStatsService";
 
 interface IntroResponse {
   personalPhoto: string;
@@ -16,35 +15,6 @@ interface IntroResponse {
   featuredBlog: { title: string; link: string };
   aiProjects: string[];
   travelPlans: string;
-}
-
-// Helper to fetch GitHub commit stats (reuse from githubController if desired)
-async function fetchGitHubCommitStats(): Promise<{ totalRepos: number; totalCommits: number }> {
-  const repos: any[] = [];
-  let page = 1;
-  while (true) {
-    const url = `https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100&page=${page}`;
-    const res = await axios.get(url, { headers });
-    console.log(`(Intro) Page ${page}: fetched ${res.data.length} repos`);
-    if (res.data.length === 0) break;
-    repos.push(...res.data);
-    page++;
-  }
-  const totalRepos = repos.length;
-  let totalCommits = 0;
-  for (const repo of repos) {
-    let count = 0;
-    let commitPage = 1;
-    while (true) {
-      const commitUrl = `https://api.github.com/repos/${repo.owner.login}/${repo.name}/commits?per_page=100&page=${commitPage}`;
-      const commitRes = await axios.get(commitUrl, { headers });
-      if (commitRes.data.length === 0) break;
-      count += commitRes.data.length;
-      commitPage++;
-    }
-    totalCommits += count;
-  }
-  return { totalRepos, totalCommits };
 }
 
 export const getIntroData: RequestHandler = async (req: Request, res: Response): Promise<void> => {
@@ -61,9 +31,11 @@ export const getIntroData: RequestHandler = async (req: Request, res: Response):
       weather: null,
     };
 
-    // Fetch live GitHub stats
-    const githubStats = await fetchGitHubCommitStats();
-    responseData.githubStats = githubStats;
+    // Fetch live GitHub stats (shared cached service)
+    if (GITHUB_USERNAME) {
+      const githubStats = await fetchGitHubStats(req.query.force === "true");
+      responseData.githubStats = { totalRepos: githubStats.totalRepos, totalCommits: githubStats.totalCommits };
+    }
 
     // Fetch LeetCode stats (using mock data)
     responseData.leetCodeStats = {
@@ -86,6 +58,8 @@ export const getIntroData: RequestHandler = async (req: Request, res: Response):
       console.warn("No OPENWEATHER_API_KEY provided");
     }
 
+    const ttlSeconds = Math.floor(Number(process.env.GITHUB_STATS_TTL_MS || 600000) / 1000);
+    res.set("Cache-Control", `public, max-age=${ttlSeconds}`);
     res.json(responseData);
   } catch (error) {
     console.error("Error in getIntroData:", error);

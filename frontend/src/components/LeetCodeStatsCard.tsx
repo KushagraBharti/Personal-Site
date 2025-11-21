@@ -1,5 +1,5 @@
 // frontend/src/components/LeetCodeStatsCard.tsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import GlassCard from "./ui/GlassCard";
 
@@ -21,12 +21,8 @@ const LeetCodeStatsCard: React.FC = () => {
     }
   });
   const [error, setError] = useState<string | null>(null);
-  const hasFetched = useRef(false);
 
   useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
-
     const baseUrl =
       (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/$/, "");
     const controller = new AbortController();
@@ -47,23 +43,10 @@ const LeetCodeStatsCard: React.FC = () => {
       }
     };
 
-    const idle = (window as any).requestIdleCallback;
-    let idleCallbackId: number | undefined;
-    const delayId = window.setTimeout(() => {
-      if (typeof idle === "function") {
-        idleCallbackId = idle(fetchLeetCodeStats, { timeout: 1200 }) as number;
-      }
-      if (!idleCallbackId) {
-        fetchLeetCodeStats();
-      }
-    }, 200);
+    fetchLeetCodeStats();
 
     return () => {
       controller.abort();
-      if (typeof idle === "function" && idleCallbackId) {
-        (window as any).cancelIdleCallback?.(idleCallbackId);
-      }
-      window.clearTimeout(delayId);
     };
   }, []);
 

@@ -1,5 +1,5 @@
 // src/components/Experiences.tsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { motion, Variants } from "framer-motion";
 import { useTypewriter, Cursor } from "react-simple-typewriter";
@@ -28,13 +28,9 @@ const Experiences: React.FC = () => {
     }
   });
   const [selectedExperience, setSelectedExperience] = useState<ExperienceData | null>(null);
-  const hasFetched = useRef(false);
 
   // Fetch experiences from backend
   useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
-
     const apiBaseUrl =
       (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/$/, "");
     const controller = new AbortController();

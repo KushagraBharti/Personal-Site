@@ -128,11 +128,11 @@ body {
 
 /* 10. Custom Cursor Example */
 body, button, a {
-  cursor: url('custom-cursor.png'), auto;
+  cursor: url('custom-cursor.svg'), auto;
 }
 
 .cursor-interactive,
 a:hover,
 button:hover {
-  cursor: url('custom-cursor-link.png'), pointer;
+  cursor: url('custom-cursor-link.svg'), pointer;
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import GlassCard from "./ui/GlassCard";
 
@@ -11,38 +11,19 @@ interface WeatherData {
 const WeatherCard: React.FC = () => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const hasFetched = useRef(false);
 
   useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
-
-    const baseUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
-    if (!baseUrl) {
-      setError("Weather service unavailable");
-      return;
-    }
-
-    const cachedCity = sessionStorage.getItem("weather-cache-city");
+    const baseUrl = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(
+      /\/$/,
+      ""
+    );
     const controller = new AbortController();
     const fallbackCity = "Austin";
 
     const fetchWeather = async () => {
       try {
-        let city = cachedCity || fallbackCity;
-
-        if (!cachedCity) {
-          const ipLocationRes = await axios.get("https://ipapi.co/json/", {
-            signal: controller.signal,
-            timeout: 3000,
-          });
-          city = ipLocationRes.data.city || fallbackCity;
-          sessionStorage.setItem("weather-cache-city", city);
-        }
-
-        const targetCity = city || fallbackCity;
         const weatherRes = await axios.get<WeatherData>(
-          `${baseUrl}/api/weather?q=${encodeURIComponent(targetCity)}`,
+          `${baseUrl}/api/weather?q=${encodeURIComponent(fallbackCity)}`,
           { signal: controller.signal, timeout: 4000 }
         );
         setWeather(weatherRes.data);
@@ -54,24 +35,8 @@ const WeatherCard: React.FC = () => {
       }
     };
 
-    const idle = (window as any).requestIdleCallback;
-    let idleCallbackId: number | undefined;
-    const delayId = window.setTimeout(() => {
-      if (typeof idle === "function") {
-        idleCallbackId = idle(fetchWeather, { timeout: 1500 }) as number;
-      }
-      if (!idleCallbackId) {
-        fetchWeather();
-      }
-    }, 350);
-
-    return () => {
-      controller.abort();
-      if (typeof idle === "function" && idleCallbackId) {
-        (window as any).cancelIdleCallback?.(idleCallbackId);
-      }
-      window.clearTimeout(delayId);
-    };
+    fetchWeather();
+    return () => controller.abort();
   }, []);
 
   if (error) {
