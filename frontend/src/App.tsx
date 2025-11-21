@@ -1,9 +1,10 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Home from "./pages/Home";
-import Blog from "./pages/Blog";
 import ScrollProgress from "./components/ScrollProgress";
 import SectionSidebar from "./components/SectionSidebar";
+
+const Home = lazy(() => import("./pages/Home"));
+const Blog = lazy(() => import("./pages/Blog"));
 
 
 
@@ -12,10 +13,18 @@ const App: React.FC = () => {
     <Router>
       <ScrollProgress />
       <SectionSidebar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/blog" element={<Blog />} />
-      </Routes>
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center text-white/80">
+            Loading experience...
+          </div>
+        }
+      >
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/blog" element={<Blog />} />
+        </Routes>
+      </Suspense>
     </Router>
   );
 };

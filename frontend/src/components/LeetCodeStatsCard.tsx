@@ -1,5 +1,5 @@
 // frontend/src/components/LeetCodeStatsCard.tsx
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import GlassCard from "./ui/GlassCard";
 
@@ -11,22 +11,60 @@ interface LeetCodeStats {
 }
 
 const LeetCodeStatsCard: React.FC = () => {
-  const [stats, setStats] = useState<LeetCodeStats | null>(null);
+  const [stats, setStats] = useState<LeetCodeStats | null>(() => {
+    const cached = sessionStorage.getItem("leetcode-stats-cache");
+    if (!cached) return null;
+    try {
+      return JSON.parse(cached) as LeetCodeStats;
+    } catch {
+      return null;
+    }
+  });
   const [error, setError] = useState<string | null>(null);
+  const hasFetched = useRef(false);
 
   useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
+    const baseUrl =
+      (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/$/, "");
+    const controller = new AbortController();
+
     const fetchLeetCodeStats = async () => {
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-        // Calling the backend endpoint for LeetCode stats
-        const res = await axios.get<LeetCodeStats>(`${baseUrl}/api/leetcode/stats`);
+        const res = await axios.get<LeetCodeStats>(`${baseUrl}/api/leetcode/stats`, {
+          signal: controller.signal,
+          timeout: 4000,
+        });
         setStats(res.data);
+        sessionStorage.setItem("leetcode-stats-cache", JSON.stringify(res.data));
       } catch (err) {
-        console.error("Error fetching LeetCode stats:", err);
-        setError("Failed to load LeetCode stats");
+        if (!controller.signal.aborted) {
+          console.error("Error fetching LeetCode stats:", err);
+          setError("Failed to load LeetCode stats");
+        }
       }
     };
-    fetchLeetCodeStats();
+
+    const idle = (window as any).requestIdleCallback;
+    let idleCallbackId: number | undefined;
+    const delayId = window.setTimeout(() => {
+      if (typeof idle === "function") {
+        idleCallbackId = idle(fetchLeetCodeStats, { timeout: 1200 }) as number;
+      }
+      if (!idleCallbackId) {
+        fetchLeetCodeStats();
+      }
+    }, 200);
+
+    return () => {
+      controller.abort();
+      if (typeof idle === "function" && idleCallbackId) {
+        (window as any).cancelIdleCallback?.(idleCallbackId);
+      }
+      window.clearTimeout(delayId);
+    };
   }, []);
 
   if (error) {

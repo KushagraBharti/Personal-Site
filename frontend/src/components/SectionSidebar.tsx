@@ -13,6 +13,7 @@ const SectionSidebar: React.FC = () => {
   const [activeSection, setActiveSection] = useState<string>("intro");
   const [isVisible, setIsVisible] = useState(true);
   const timeoutId = useRef<number | null>(null);
+  const hideDelay = 2200;
 
   // Reset the timeout when there's activity
   const resetTimer = () => {
@@ -20,48 +21,43 @@ const SectionSidebar: React.FC = () => {
     if (timeoutId.current) clearTimeout(timeoutId.current);
     timeoutId.current = window.setTimeout(() => {
       setIsVisible(false);
-    }, 1000); // 15 seconds
+    }, hideDelay);
   };
 
   useEffect(() => {
-    const handleScroll = () => {
-      let current = "intro";
-      sections.forEach((section) => {
-        const element = document.getElementById(section.id);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          if (
-            rect.top <= window.innerHeight / 2 &&
-            rect.bottom >= window.innerHeight / 2
-          ) {
-            current = section.id;
-          }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const topEntry = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+        if (topEntry?.target?.id) {
+          setActiveSection(topEntry.target.id);
         }
-      });
-      setActiveSection(current);
-      resetTimer();
-    };
+      },
+      {
+        threshold: [0.35, 0.6, 0.85],
+        rootMargin: "-10% 0px -10% 0px",
+      }
+    );
 
-    const handleMouseMove = () => {
-      resetTimer();
-    };
+    const elements = sections
+      .map((section) => document.getElementById(section.id))
+      .filter(Boolean) as HTMLElement[];
+    elements.forEach((element) => observer.observe(element));
 
-    const handleTouchStart = () => {
-      resetTimer();
-    };
+    const handleUserActivity = () => resetTimer();
+    window.addEventListener("mousemove", handleUserActivity);
+    window.addEventListener("touchstart", handleUserActivity);
+    window.addEventListener("scroll", handleUserActivity, { passive: true });
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("touchstart", handleTouchStart);
-
-    // Initial call
     resetTimer();
-    handleScroll();
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("touchstart", handleTouchStart);
+      observer.disconnect();
+      window.removeEventListener("mousemove", handleUserActivity);
+      window.removeEventListener("touchstart", handleUserActivity);
+      window.removeEventListener("scroll", handleUserActivity);
       if (timeoutId.current) clearTimeout(timeoutId.current);
     };
   }, []);
