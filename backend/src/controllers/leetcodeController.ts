@@ -4,7 +4,12 @@ import axios from "axios";
 
 export const getLeetCodeStats: RequestHandler = async (req: Request, res: Response): Promise<void> => {
   // Use the environment variable LEETCODE_USERNAME or fallback to a default.
-  const leetUsername = process.env.LEETCODE_USERNAME || "your_leetcode_username";
+  const leetUsername = process.env.LEETCODE_USERNAME;
+  if (!leetUsername) {
+    res.status(400).json({ error: "LEETCODE_USERNAME is not configured" });
+    return;
+  }
+
   const url = `https://leetcode-stats-api.herokuapp.com/${leetUsername}`;
 
   try {

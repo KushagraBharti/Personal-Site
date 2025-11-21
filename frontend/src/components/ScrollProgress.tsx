@@ -1,18 +1,35 @@
 // src/components/ScrollProgress.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 const ScrollProgress: React.FC = () => {
   const [progress, setProgress] = useState(0);
+  const frame = useRef<number | null>(null);
+  const lastValue = useRef(0);
 
   useEffect(() => {
     const updateProgress = () => {
       const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
       const scrolled = (scrollTop / (scrollHeight - clientHeight)) * 100;
-      setProgress(scrolled);
+      if (Math.abs(scrolled - lastValue.current) > 0.1) {
+        lastValue.current = scrolled;
+        setProgress(scrolled);
+      }
+      frame.current = null;
     };
 
-    window.addEventListener('scroll', updateProgress);
-    return () => window.removeEventListener('scroll', updateProgress);
+    const handleScroll = () => {
+      if (frame.current !== null) return;
+      frame.current = requestAnimationFrame(updateProgress);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (frame.current !== null) {
+        cancelAnimationFrame(frame.current);
+      }
+    };
   }, []);
 
   return (

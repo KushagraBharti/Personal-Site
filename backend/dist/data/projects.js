@@ -14,7 +14,7 @@ exports.projectsData = [
         ],
         tags: ["Python", "Alpaca API", "Pandas", "NumPy", "Matplotlib", "scikit-learn", "Algorithmic Trading", "Backtesting", "Paper Trading"],
         githubLink: "https://github.com/KushagraBharti/Quant-Test-Environment",
-        thumbnail: "/quantTestEnv.png",
+        thumbnail: "/quantTestEnv.svg",
     },
     {
         title: "Pseudo Lawyer",
@@ -27,7 +27,7 @@ exports.projectsData = [
         ],
         tags: ["Next.js", "Flask", "AWS", "Cognito", "Amplify", "Bedrock", "Langchain", "SQLite", "S3", "Legal Tech", "Full-Stack"],
         githubLink: "https://github.com/KushagraBharti/PseudoLawyer",
-        thumbnail: "/pseudoLawyer.png",
+        thumbnail: "/pseudoLawyer.svg",
     },
     {
         title: "Personal Portfolio Website",
@@ -41,7 +41,7 @@ exports.projectsData = [
         ],
         tags: ["TypeScript", "Node.js", "Express", "React", "TailwindCSS", "Vite", "REST API", "Full-Stack Development", "API Integration"],
         githubLink: "https://github.com/KushagraBharti/Personal-Site",
-        thumbnail: "/personalPortfolio.png",
+        thumbnail: "/personalPortfolio.svg",
     },
     {
         title: "DataDrive: Unified Insights for Data & Fuel Optimization",
@@ -55,7 +55,7 @@ exports.projectsData = [
         ],
         tags: ["Flask", "Python", "Machine Learning", "Linear Regression", "KMeans", "APScheduler", "SHAP", "OpenAI", "Pinata", "React", "D3.js", "Three.js", "Data Analytics"],
         githubLink: "https://github.com/KushagraBharti/HACKUTD-Data-Drive",
-        thumbnail: "/dataDrive.png",
+        thumbnail: "/dataDrive.svg",
     },
     {
         title: "Kaggle Titanic ML",
@@ -71,7 +71,7 @@ exports.projectsData = [
             "Pandas", "scikit-learn", "EDA", "Feature Engineering", "Random Forest"
         ],
         githubLink: "https://github.com/KushagraBharti/Kaggle-Titanic-Solution",
-        thumbnail: "/kaggleTitanic.png"
+        thumbnail: "/kaggleTitanic.svg"
     },
     {
         title: "F1 Optimization Project",
@@ -86,7 +86,7 @@ exports.projectsData = [
         tags: ["Reinforcement Learning", "Ray RLlib", "Pygame", "OpenCV", "Simulation", "F1", "Optimization", "HackTX 2024", "Gymnasium"
         ],
         githubLink: "https://github.com/KushagraBharti/HackTX-2024---F1-Optimization",
-        thumbnail: "/f1Optimization.png"
+        thumbnail: "/f1Optimization.svg"
     },
     {
         title: "CircuitSeer (Circuit Solver)",
@@ -100,7 +100,7 @@ exports.projectsData = [
         ],
         tags: ["Python", "YOLOv5", "Flask", "OpenCV", "Computer Vision", "Canny Edge Detection", "Hough Transform"],
         githubLink: "https://github.com/Hteam121/circuit-seer",
-        thumbnail: "/circuitSeer.png",
+        thumbnail: "/circuitSeer.svg",
     },
     {
         title: "Age & Gender Recognition",
@@ -113,7 +113,7 @@ exports.projectsData = [
         ],
         tags: ["Python", "OpenCV", "DNN", "Caffe", "Face Detection", "Real-Time Processing"],
         githubLink: "https://github.com/KushagraBharti/Gender-Age-Detection",
-        thumbnail: "/ageGenderRec.png",
+        thumbnail: "/ageGenderRec.svg",
     },
     {
         title: "Point Cloud Down Sampler",
@@ -126,7 +126,7 @@ exports.projectsData = [
         ],
         tags: ["Python", "Pandas", "Open3D", "Voxelization", "Point Cloud", "Downsampling", "Math Modeling"],
         githubLink: "https://github.com/KushagraBharti/PointCloud-DownSampler",
-        thumbnail: "/pointCloud.png",
+        thumbnail: "/pointCloud.svg",
     },
     {
         title: "Maze Traversal",
@@ -139,7 +139,7 @@ exports.projectsData = [
         ],
         tags: ["Python", "Depth-First Search", "Recursion", "Maze Solving"],
         githubLink: "#",
-        thumbnail: "/mazeTraversal.png",
+        thumbnail: "/mazeTraversal.svg",
     },
     {
         title: "PCB Design Project",
@@ -153,7 +153,7 @@ exports.projectsData = [
         ],
         tags: ["PCB Design", "Circuit Design", "EasyEDA", "JLCPCB", "Electronics", "Hardware", "Soldering"],
         githubLink: "https://github.com/KushagraBharti/PCB-Design-Project",
-        thumbnail: "/pcbDesign.png",
+        thumbnail: "/pcbDesign.svg",
     },
     {
         title: "Self-Driving Car Project",
@@ -164,6 +164,6 @@ exports.projectsData = [
         ],
         tags: ["Arduino", "C++", "Self-Driving", "Autonomous Vehicle", "RC Car", "Electronics", "Ultrasonic Sensors", "Hardware"],
         githubLink: "",
-        thumbnail: "/selfDrivingCar.png"
+        thumbnail: "/selfDrivingCar.svg"
     },
 ];

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import GlassCard from "./ui/GlassCard";
 
@@ -13,25 +13,30 @@ const WeatherCard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchLocationAndWeather = async () => {
+    const baseUrl = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(
+      /\/$/,
+      ""
+    );
+    const controller = new AbortController();
+    const fallbackCity = "Austin";
+
+    const fetchWeather = async () => {
       try {
-        // Get approximate location based on IP using ipapi.co
-        const ipLocationRes = await axios.get("https://ipapi.co/json/");
-        const city = ipLocationRes.data.city;
-        console.log("Detected city from IP:", city);
-        
-        // Call your backend weather endpoint using the detected city
         const weatherRes = await axios.get<WeatherData>(
-          `${import.meta.env.VITE_API_BASE_URL}/api/weather?q=${city}`
+          `${baseUrl}/api/weather?q=${encodeURIComponent(fallbackCity)}`,
+          { signal: controller.signal, timeout: 4000 }
         );
         setWeather(weatherRes.data);
       } catch (err: any) {
-        console.error("Error fetching weather:", err);
-        setError("Unable to load weather data");
+        if (!controller.signal.aborted) {
+          console.error("Error fetching weather:", err);
+          setError("Unable to load weather data");
+        }
       }
     };
 
-    fetchLocationAndWeather();
+    fetchWeather();
+    return () => controller.abort();
   }, []);
 
   if (error) {
@@ -56,7 +61,7 @@ const WeatherCard: React.FC = () => {
     <GlassCard className="p-4 w-60 text-center">
       <h4 className="text-sm font-bold text-white mb-1">Weather</h4>
       <p className="text-sm text-gray-200">
-        {weather.name}: {weather.main.temp}°F
+        {weather.name}: {weather.main.temp}&deg;F
         <br />
         {weather.weather[0].description}
       </p>

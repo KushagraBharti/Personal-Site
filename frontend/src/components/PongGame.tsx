@@ -3,7 +3,7 @@ import React, { useRef, useEffect, useState } from "react";
 
 const PongGame: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  let animationFrameId: number;
+  const animationFrameId = useRef<number | null>(null);
 
   // Canvas dimensions
   const canvasWidth = 275;
@@ -166,17 +166,10 @@ const PongGame: React.FC = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    if (isGameActive) {
-      update();
-    }
+    update();
     draw(ctx);
-    animationFrameId = requestAnimationFrame(gameLoop);
+    animationFrameId.current = requestAnimationFrame(gameLoop);
   };
-
-  useEffect(() => {
-    animationFrameId = requestAnimationFrame(gameLoop);
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [isGameActive, isGameOver, userScore, aiScore]);
 
   const isUpPressed = useRef(false);
   const isDownPressed = useRef(false);
@@ -215,6 +208,34 @@ const PongGame: React.FC = () => {
       startGame();
     }
   };
+
+  // Draw once when idle or after state changes to avoid running the loop unnecessarily
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    draw(ctx);
+  }, [isGameActive, isGameOver, userScore, aiScore]);
+
+  // Run animation loop only while the game is active
+  useEffect(() => {
+    if (!isGameActive) {
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+        animationFrameId.current = null;
+      }
+      return;
+    }
+
+    animationFrameId.current = requestAnimationFrame(gameLoop);
+    return () => {
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+        animationFrameId.current = null;
+      }
+    };
+  }, [isGameActive]);
 
   return (
     <canvas

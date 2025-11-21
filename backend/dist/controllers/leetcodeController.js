@@ -16,7 +16,11 @@ exports.getLeetCodeStats = void 0;
 const axios_1 = __importDefault(require("axios"));
 const getLeetCodeStats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // Use the environment variable LEETCODE_USERNAME or fallback to a default.
-    const leetUsername = process.env.LEETCODE_USERNAME || "your_leetcode_username";
+    const leetUsername = process.env.LEETCODE_USERNAME;
+    if (!leetUsername) {
+        res.status(400).json({ error: "LEETCODE_USERNAME is not configured" });
+        return;
+    }
     const url = `https://leetcode-stats-api.herokuapp.com/${leetUsername}`;
     try {
         const response = yield axios_1.default.get(url);

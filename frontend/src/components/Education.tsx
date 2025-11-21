@@ -1,5 +1,5 @@
 // frontend/src/components/Education.tsx
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { motion, Variants } from "framer-motion";
 import { useTypewriter, Cursor } from "react-simple-typewriter";
@@ -17,21 +17,43 @@ const rightColumnVariants: Variants = {
 };
 
 const Education: React.FC = () => {
-  const [education, setEducation] = useState<EducationData[]>([]);
+  const [education, setEducation] = useState<EducationData[]>(() => {
+    const cached = sessionStorage.getItem("education-cache");
+    if (!cached) return [];
+    try {
+      return JSON.parse(cached) as EducationData[];
+    } catch {
+      return [];
+    }
+  });
   const [selectedEducation, setSelectedEducation] = useState<EducationData | null>(null);
 
   // Fetch education data on mount
   useEffect(() => {
+    const apiBaseUrl =
+      (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/$/, "");
+    const controller = new AbortController();
+
     const fetchEducation = async () => {
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "");
-        const response = await axios.get(`${apiBaseUrl}/api/education`);
+        const response = await axios.get<EducationData[]>(`${apiBaseUrl}/api/education`, {
+          signal: controller.signal,
+          timeout: 5000,
+        });
         setEducation(response.data);
+        sessionStorage.setItem("education-cache", JSON.stringify(response.data));
       } catch (error) {
-        console.error("Error fetching education:", error);
+        if (!controller.signal.aborted) {
+          console.error("Error fetching education:", error);
+        }
       }
     };
-    fetchEducation();
+
+    const delayId = window.setTimeout(fetchEducation, 250);
+    return () => {
+      controller.abort();
+      window.clearTimeout(delayId);
+    };
   }, []);
 
   // Typed heading
@@ -62,7 +84,7 @@ const Education: React.FC = () => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           onViewportEnter={() => setStartTyping(true)}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.2, margin: "0px 0px -12% 0px" }}
           transition={{ duration: 1.5 }}
           className="mb-10"
         >
@@ -83,7 +105,7 @@ const Education: React.FC = () => {
                 variants={variants}
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: true, amount: 0.2 }}
+                viewport={{ once: true, amount: 0.2, margin: "0px 0px -12% 0px" }}
                 className="h-full"
               >
                 {/* Each card has fixed height h-48 so they align */}
@@ -93,9 +115,7 @@ const Education: React.FC = () => {
                     <h3 className="text-xl font-semibold text-gray-50 break-words mb-1">
                       {edu.position}
                     </h3>
-                    <p className="text-gray-200 font-medium break-words">
-                      {edu.focus}
-                    </p>
+                    <p className="text-gray-200 font-medium break-words">{edu.focus}</p>
                   </div>
 
                   {/* Background gradient overlay on hover */}
@@ -103,11 +123,9 @@ const Education: React.FC = () => {
 
                   {/* Hover overlay: title + buttons, centered together */}
                   <div className="absolute inset-0 z-20 flex flex-col items-center justify-center space-y-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto">
-                    {/* Centered title */}
                     <h3 className="text-xl font-semibold text-white px-2 text-center">
                       {edu.position}
                     </h3>
-                    {/* Buttons right below the title */}
                     <div className="flex space-x-4">
                       <button
                         onClick={() => openDetails(edu)}
@@ -136,9 +154,7 @@ const Education: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-50 break-words mb-1">
                 {edu.position}
               </h3>
-              <p className="text-gray-200 font-medium break-words mb-2">
-                {edu.focus}
-              </p>
+              <p className="text-gray-200 font-medium break-words mb-2">{edu.focus}</p>
               <div className="flex justify-center gap-4 mt-4">
                 <button
                   onClick={() => openDetails(edu)}
@@ -170,8 +186,9 @@ const Education: React.FC = () => {
             <button
               className="absolute top-4 right-4 text-gray-200 hover:text-red-600 text-2xl"
               onClick={closeDetails}
+              aria-label="Close education details"
             >
-              ✖
+              ×
             </button>
             <h3 className="flex items-center text-2xl font-bold text-white mb-2 space-x-2">
               <span>{selectedEducation.position}</span>

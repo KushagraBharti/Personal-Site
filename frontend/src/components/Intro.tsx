@@ -1,15 +1,17 @@
 // frontend/src/components/Intro.tsx
-import React, { useState, useEffect } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import axios from "axios";
 import Tilt from "react-parallax-tilt";
 import Draggable from "react-draggable";
 import GlassCard from "./ui/GlassCard";
 import GlassButton from "./ui/GlassButton";
-import WeatherCard from "./WeatherCard";
-import LeetCodeStatsCard from "./LeetCodeStatsCard";
-import PongGame from "./PongGame";
 import { FaEnvelope, FaMediumM, FaGithub, FaLinkedin } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 import selfPic from "/SelfPic.jpg";
+
+const WeatherCard = React.lazy(() => import("./WeatherCard"));
+const LeetCodeStatsCard = React.lazy(() => import("./LeetCodeStatsCard"));
+const PongGame = React.lazy(() => import("./PongGame"));
 
 interface IntroResponse {
   personalPhoto: string;
@@ -25,10 +27,10 @@ interface IntroResponse {
 
 // Fallback default data for instant load
 const defaultIntroData: IntroResponse = {
-  personalPhoto: "placeholder.jpg",
-  githubStats: { totalRepos: 17, totalCommits: 250 },
-  leetCodeStats: { totalSolved: 6, rank: "4/1/1" },
-  weather: { city: "N/A", temp: 0, description: "N/A" },
+  personalPhoto: "placeholder.svg",
+  githubStats: null,
+  leetCodeStats: null,
+  weather: null,
   latestUpdate: "Currently applying for Summer 2026 internships and leetcoding!",
   funFact: "A film I made was screened at AMC Theatres in Times Square!",
   featuredBlog: {
@@ -42,19 +44,36 @@ const defaultIntroData: IntroResponse = {
 const Intro: React.FC = () => {
   const [introData, setIntroData] = useState<IntroResponse>(defaultIntroData);
   const [isAtTop, setIsAtTop] = useState(true);
+  const MiniCardLoader = ({ title }: { title: string }) => (
+    <GlassCard className="p-4 w-60 text-center animate-pulse">
+      <h4 className="text-sm font-bold text-white mb-1">{title}</h4>
+      <p className="text-sm text-gray-200">Loading...</p>
+    </GlassCard>
+  );
 
   useEffect(() => {
-    const fetchIntroData = async () => {
+    const apiBase = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(
+      /\/$/,
+      ""
+    );
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(async () => {
       try {
-        const res = await axios.get<IntroResponse>(
-          `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")}/api/intro`
-        );
+        const res = await axios.get<IntroResponse>(`${apiBase}/api/intro`, {
+          signal: controller.signal,
+        });
         setIntroData(res.data);
       } catch (error) {
-        console.error("Error fetching intro data:", error);
+        if (!controller.signal.aborted) {
+          console.error("Error fetching intro data:", error);
+        }
       }
+    }, 250);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeoutId);
     };
-    fetchIntroData();
   }, []);
 
   useEffect(() => {
@@ -92,6 +111,7 @@ const Intro: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="transition-transform duration-300 hover:scale-110 hover:text-[#D44638]"
+                aria-label="Email Kushagra"
               >
                 <FaEnvelope size={24} />
               </a>
@@ -100,6 +120,7 @@ const Intro: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="transition-transform duration-300 hover:scale-110 hover:text-[#0A66C2]"
+                aria-label="LinkedIn"
               >
                 <FaLinkedin size={24} />
               </a>
@@ -108,6 +129,7 @@ const Intro: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="transition-transform duration-300 hover:scale-110 hover:text-[#6e40c9]"
+                aria-label="GitHub"
               >
                 <FaGithub size={24} />
               </a>
@@ -116,8 +138,18 @@ const Intro: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="transition-transform duration-300 hover:scale-110 hover:text-[#00ab6c]"
+                aria-label="Medium"
               >
                 <FaMediumM size={24} />
+              </a>
+              <a
+                href="https://x.com/IamKushagraB"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-transform duration-300 hover:scale-110 hover:text-[#1D9BF0]"
+                aria-label="X (Twitter)"
+              >
+                <FaXTwitter size={24} />
               </a>
             </div>
             <GlassButton
@@ -145,6 +177,7 @@ const Intro: React.FC = () => {
                 src={selfPic}
                 alt="Personal"
                 className="rounded-lg object-cover w-60 h-64"
+                decoding="async"
               />
               <p className="text-sm text-gray-200 mt-3">Drag Me Around!</p>
             </GlassCard>
@@ -192,7 +225,9 @@ const Intro: React.FC = () => {
         <Draggable>
           <div className="absolute top-[75%] left-[70%] cursor-grab active:cursor-grabbing">
             <GlassCard className="flex flex-col items-center p-8">
-              <PongGame />
+              <Suspense fallback={<div className="h-[180px] w-[275px] animate-pulse bg-black/30 rounded" />}>
+                <PongGame />
+              </Suspense>
             </GlassCard>
           </div>
         </Draggable>
@@ -200,14 +235,18 @@ const Intro: React.FC = () => {
         {/* Weather Card */}
         <Draggable>
           <div className="absolute top-[15%] left-[80%] cursor-grab active:cursor-grabbing">
-            <WeatherCard />
+            <Suspense fallback={<MiniCardLoader title="Weather" />}>
+              <WeatherCard />
+            </Suspense>
           </div>
         </Draggable>
 
         {/* LeetCode Stats Card */}
         <Draggable>
           <div className="absolute top-[80%] left-[20%] cursor-grab active:cursor-grabbing">
-            <LeetCodeStatsCard />
+            <Suspense fallback={<MiniCardLoader title="LeetCode Stats" />}>
+              <LeetCodeStatsCard />
+            </Suspense>
           </div>
         </Draggable>
 
@@ -251,11 +290,12 @@ const Intro: React.FC = () => {
                 Student | Software Engineer | ML Enthusiast
               </p>
               <div className="flex justify-center space-x-6 mb-6">
-                <a
+              <a
                   href="mailto:kushagrabharti@gmail.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="transition-transform duration-300 hover:scale-110 hover:text-[#D44638]"
+                  aria-label="Email Kushagra"
                 >
                   <FaEnvelope size={24} />
                 </a>
@@ -264,6 +304,7 @@ const Intro: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="transition-transform duration-300 hover:scale-110 hover:text-[#0A66C2]"
+                  aria-label="LinkedIn"
                 >
                   <FaLinkedin size={24} />
                 </a>
@@ -272,6 +313,7 @@ const Intro: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="transition-transform duration-300 hover:scale-110 hover:text-[#6e40c9]"
+                  aria-label="GitHub"
                 >
                   <FaGithub size={24} />
                 </a>
@@ -280,8 +322,18 @@ const Intro: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="transition-transform duration-300 hover:scale-110 hover:text-[#00ab6c]"
+                  aria-label="Medium"
                 >
                   <FaMediumM size={24} />
+                </a>
+                <a
+                  href="https://x.com/IamKushagraB"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition-transform duration-300 hover:scale-110 hover:text-[#1D9BF0]"
+                  aria-label="X (Twitter)"
+                >
+                  <FaXTwitter size={24} />
                 </a>
               </div>
               <GlassButton

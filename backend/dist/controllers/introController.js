@@ -16,39 +16,7 @@ exports.getIntroData = void 0;
 const axios_1 = __importDefault(require("axios"));
 const intro_1 = require("../data/intro");
 const github_1 = require("../config/github");
-const headers = github_1.GITHUB_TOKEN ? { Authorization: `token ${github_1.GITHUB_TOKEN}` } : {};
-// Helper to fetch GitHub commit stats (reuse from githubController if desired)
-function fetchGitHubCommitStats() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const repos = [];
-        let page = 1;
-        while (true) {
-            const url = `https://api.github.com/users/${github_1.GITHUB_USERNAME}/repos?per_page=100&page=${page}`;
-            const res = yield axios_1.default.get(url, { headers });
-            console.log(`(Intro) Page ${page}: fetched ${res.data.length} repos`);
-            if (res.data.length === 0)
-                break;
-            repos.push(...res.data);
-            page++;
-        }
-        const totalRepos = repos.length;
-        let totalCommits = 0;
-        for (const repo of repos) {
-            let count = 0;
-            let commitPage = 1;
-            while (true) {
-                const commitUrl = `https://api.github.com/repos/${repo.owner.login}/${repo.name}/commits?per_page=100&page=${commitPage}`;
-                const commitRes = yield axios_1.default.get(commitUrl, { headers });
-                if (commitRes.data.length === 0)
-                    break;
-                count += commitRes.data.length;
-                commitPage++;
-            }
-            totalCommits += count;
-        }
-        return { totalRepos, totalCommits };
-    });
-}
+const githubStatsService_1 = require("../services/githubStatsService");
 const getIntroData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const responseData = {
@@ -62,9 +30,11 @@ const getIntroData = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             leetCodeStats: null,
             weather: null,
         };
-        // Fetch live GitHub stats
-        const githubStats = yield fetchGitHubCommitStats();
-        responseData.githubStats = githubStats;
+        // Fetch live GitHub stats (shared cached service)
+        if (github_1.GITHUB_USERNAME) {
+            const githubStats = yield (0, githubStatsService_1.fetchGitHubStats)(req.query.force === "true");
+            responseData.githubStats = { totalRepos: githubStats.totalRepos, totalCommits: githubStats.totalCommits };
+        }
         // Fetch LeetCode stats (using mock data)
         responseData.leetCodeStats = {
             totalSolved: 350,
@@ -83,6 +53,8 @@ const getIntroData = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         else {
             console.warn("No OPENWEATHER_API_KEY provided");
         }
+        const ttlSeconds = Math.floor(Number(process.env.GITHUB_STATS_TTL_MS || 600000) / 1000);
+        res.set("Cache-Control", `public, max-age=${ttlSeconds}`);
         res.json(responseData);
     }
     catch (error) {

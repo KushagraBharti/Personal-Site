@@ -1,5 +1,5 @@
 // src/components/Projects.tsx
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { motion, Variants } from "framer-motion";
 import { useTypewriter, Cursor } from "react-simple-typewriter";
@@ -17,21 +17,43 @@ const rightColumnVariants: Variants = {
 };
 
 const Projects: React.FC = () => {
-  const [projects, setProjects] = useState<ProjectData[]>([]);
+  const [projects, setProjects] = useState<ProjectData[]>(() => {
+    const cached = sessionStorage.getItem("projects-cache");
+    if (!cached) return [];
+    try {
+      return JSON.parse(cached) as ProjectData[];
+    } catch {
+      return [];
+    }
+  });
   const [selectedProject, setSelectedProject] = useState<ProjectData | null>(null);
 
   // Fetch projects from backend
   useEffect(() => {
+    const apiBaseUrl =
+      (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/$/, "");
+    const controller = new AbortController();
+
     const fetchProjects = async () => {
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "");
-        const response = await axios.get(`${apiBaseUrl}/api/projects`);
+        const response = await axios.get<ProjectData[]>(`${apiBaseUrl}/api/projects`, {
+          signal: controller.signal,
+          timeout: 5000,
+        });
         setProjects(response.data);
+        sessionStorage.setItem("projects-cache", JSON.stringify(response.data));
       } catch (error) {
-        console.error("Error fetching projects:", error);
+        if (!controller.signal.aborted) {
+          console.error("Error fetching projects:", error);
+        }
       }
     };
-    fetchProjects();
+
+    const delayId = window.setTimeout(fetchProjects, 250);
+    return () => {
+      controller.abort();
+      window.clearTimeout(delayId);
+    };
   }, []);
 
   // Typed heading setup
@@ -65,7 +87,7 @@ const Projects: React.FC = () => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           onViewportEnter={() => setStartTyping(true)}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.2, margin: "0px 0px -12% 0px" }}
           transition={{ duration: 1.5 }}
           className="mb-10"
         >
@@ -86,7 +108,7 @@ const Projects: React.FC = () => {
                 variants={variants}
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: true, amount: 0.2 }}
+                viewport={{ once: true, amount: 0.2, margin: "0px 0px -12% 0px" }}
                 className="h-full"
               >
                 <GlassCard className="group relative flex flex-col items-center text-center w-full h-full px-6 py-6 overflow-hidden">
@@ -96,12 +118,13 @@ const Projects: React.FC = () => {
                       src={project.thumbnail}
                       alt={project.title}
                       loading="lazy"
+                      decoding="async"
                       className="w-full h-auto object-cover rounded mb-4"
                     />
                   )}
                   {/* Always-visible title and summary */}
                   <div className="relative z-20 flex flex-col items-center">
-                    <h3 className="text-xl font-semibold text-gray-50 break-words opacity-100 group-hover:opacity-0"> 
+                    <h3 className="text-xl font-semibold text-gray-50 break-words opacity-100 group-hover:opacity-0">
                       {project.title}
                     </h3>
                     <p className="text-gray-200 font-medium opacity-100 group-hover:opacity-0">
@@ -109,13 +132,9 @@ const Projects: React.FC = () => {
                     </p>
                   </div>
                   {/* Background gradient overlay (appears on hover) */}
-                  <div
-                    className="absolute inset-0 z-10 bg-gradient-to-r from-blue-500 to-purple-600 opacity-0 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none"
-                  />
+                  <div className="absolute inset-0 z-10 bg-gradient-to-r from-blue-500 to-purple-600 opacity-0 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none" />
                   {/* Centered overlay: title at top and buttons below */}
-                  <div
-                    className="absolute inset-0 z-20 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                  >
+                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                     <div className="pointer-events-auto text-center mt-4">
                       <h3 className="text-xl font-semibold text-gray-50">
                         {project.title}
@@ -151,6 +170,7 @@ const Projects: React.FC = () => {
                   src={project.thumbnail}
                   alt={project.title}
                   loading="lazy"
+                  decoding="async"
                   className="w-full h-auto object-cover rounded mb-4"
                 />
               )}
@@ -183,14 +203,13 @@ const Projects: React.FC = () => {
             if (e.target === e.currentTarget) closeDetails();
           }}
         >
-          <GlassCard
-            className="relative w-full max-w-[1850px] mx-auto p-8 bg-white/10 backdrop-blur-lg rounded-lg shadow-xl animate-fadeIn"
-          >
+          <GlassCard className="relative w-full max-w-[1850px] mx-auto p-8 bg-white/10 backdrop-blur-lg rounded-lg shadow-xl animate-fadeIn">
             <button
               className="absolute top-4 right-4 text-gray-200 hover:text-red-600 text-2xl"
               onClick={closeDetails}
+              aria-label="Close project details"
             >
-              ✖
+              ×
             </button>
             <div className="flex flex-col md:flex-row" style={{ maxHeight: "90vh" }}>
               {/* Left Column: Project Thumbnail */}
@@ -211,9 +230,7 @@ const Projects: React.FC = () => {
                 <h3 className="text-3xl font-bold text-white mb-3">
                   {selectedProject.title}
                 </h3>
-                <p className="text-white/80 mb-4 text-lg">
-                  {selectedProject.summary}
-                </p>
+                <p className="text-white/80 mb-4 text-lg">{selectedProject.summary}</p>
                 <ul className="list-disc list-outside pl-6 space-y-2 text-white">
                   {selectedProject.description.map((item, idx) => (
                     <li key={idx}>{item}</li>

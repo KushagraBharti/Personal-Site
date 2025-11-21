@@ -13,7 +13,7 @@ export interface IntroData {
   // Local data that doesn’t need an external API
   export const introStaticData: IntroData = {
     
-    personalPhoto: "/selfpic.jpg",
+    personalPhoto: "/SelfPic.jpg",
     
     latestUpdate: "Currently applying for Summer 2025 internships and leetcoding!",
     

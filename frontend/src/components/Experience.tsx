@@ -1,5 +1,5 @@
 // src/components/Experiences.tsx
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { motion, Variants } from "framer-motion";
 import { useTypewriter, Cursor } from "react-simple-typewriter";
@@ -18,21 +18,43 @@ const rightColumnVariants: Variants = {
 };
 
 const Experiences: React.FC = () => {
-  const [experiences, setExperiences] = useState<ExperienceData[]>([]);
+  const [experiences, setExperiences] = useState<ExperienceData[]>(() => {
+    const cached = sessionStorage.getItem("experiences-cache");
+    if (!cached) return [];
+    try {
+      return JSON.parse(cached) as ExperienceData[];
+    } catch {
+      return [];
+    }
+  });
   const [selectedExperience, setSelectedExperience] = useState<ExperienceData | null>(null);
 
   // Fetch experiences from backend
   useEffect(() => {
+    const apiBaseUrl =
+      (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/$/, "");
+    const controller = new AbortController();
+
     const fetchExperiences = async () => {
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "");
-        const response = await axios.get(`${apiBaseUrl}/api/experiences`);
+        const response = await axios.get<ExperienceData[]>(`${apiBaseUrl}/api/experiences`, {
+          signal: controller.signal,
+          timeout: 5000,
+        });
         setExperiences(response.data);
+        sessionStorage.setItem("experiences-cache", JSON.stringify(response.data));
       } catch (error) {
-        console.error("Error fetching experiences:", error);
+        if (!controller.signal.aborted) {
+          console.error("Error fetching experiences:", error);
+        }
       }
     };
-    fetchExperiences();
+
+    const delayId = window.setTimeout(fetchExperiences, 250);
+    return () => {
+      controller.abort();
+      window.clearTimeout(delayId);
+    };
   }, []);
 
   // Typed heading setup
@@ -66,7 +88,7 @@ const Experiences: React.FC = () => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           onViewportEnter={() => setStartTyping(true)}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.2, margin: "0px 0px -12% 0px" }}
           transition={{ duration: 1.5 }}
           className="mb-10"
         >
@@ -87,7 +109,7 @@ const Experiences: React.FC = () => {
                 variants={variants}
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: true, amount: 0.2 }}
+                viewport={{ once: true, amount: 0.2, margin: "0px 0px -12% 0px" }}
                 className="h-full"
               >
                 {/* Fixed-height GlassCard so that all cards align and hover overlay positions correctly. */}
@@ -99,25 +121,17 @@ const Experiences: React.FC = () => {
                         {exp.position}
                       </h3>
                     </div>
-                    <p className="text-gray-200 font-medium">
-                      {exp.summary}
-                    </p>
+                    <p className="text-gray-200 font-medium">{exp.summary}</p>
                   </div>
 
                   {/* Background gradient overlay on hover */}
                   <div className="absolute inset-0 z-10 bg-gradient-to-r from-blue-500 to-purple-600 opacity-0 group-hover:opacity-70 transition-opacity duration-300 pointer-events-none" />
 
-                  {/*
-                    Hover overlay:
-                    - flex-col with justify-center so title + buttons stay together, centered vertically.
-                    - space-y-3 creates a small gap between the title and the buttons.
-                  */}
+                  {/* Hover overlay */}
                   <div className="absolute inset-0 z-20 flex flex-col items-center justify-center space-y-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto">
-                    {/* Centered title */}
                     <h3 className="text-xl font-semibold text-white px-2 text-center">
                       {exp.position}
                     </h3>
-                    {/* Buttons appear right below the title, both centered */}
                     <div className="flex space-x-4">
                       <button
                         onClick={() => openDetails(exp)}
@@ -178,8 +192,9 @@ const Experiences: React.FC = () => {
             <button
               className="absolute top-4 right-4 text-gray-200 hover:text-red-600"
               onClick={closeDetails}
+              aria-label="Close experience details"
             >
-              ✖
+              ×
             </button>
             <h3 className="flex items-center text-2xl font-bold text-white mb-2 space-x-2">
               <span>{selectedExperience.position}</span>
