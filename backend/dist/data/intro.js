@@ -4,7 +4,7 @@ exports.introStaticData = void 0;
 // Local data that doesn’t need an external API
 exports.introStaticData = {
     personalPhoto: "/SelfPic.jpg",
-    latestUpdate: "Currently applying for Summer 2025 internships and leetcoding!",
+    latestUpdate: "Currently applying for Summer 2026 internships and leetcoding!",
     funFact: "A film I made was screened at AMC Theatres in Times Square!",
     featuredBlog: {
         title: "The Trillion Dollar AI Software Development Stack",
