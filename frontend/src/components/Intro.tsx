@@ -34,8 +34,8 @@ const defaultIntroData: IntroResponse = {
   latestUpdate: "Currently applying for Summer 2026 internships and leetcoding!",
   funFact: "A film I made was screened at AMC Theatres in Times Square!",
   featuredBlog: {
-    title: "How AI is Shaping the Future of Software Development",
-    link: "https://news.mit.edu/2025/ai-tool-generates-high-quality-images-faster-0321",
+    title: "The Trillion Dollar AI Software Development Stack",
+    link: "https://a16z.com/the-trillion-dollar-ai-software-development-stack/",
   },
   aiProjects: ["Placeholder project"],
   travelPlans: "No travel plans yet",
@@ -264,7 +264,7 @@ const Intro: React.FC = () => {
                   <strong>Total Commits:</strong> {data.githubStats.totalCommits ?? "N/A"}
                 </p>
               ) : (
-                <p className="text-sm text-red-300">GitHub stats unavailable</p>
+                <p className="text-sm text-gray-200">GitHub stats loading...</p>
               )}
             </GlassCard>
           </div>
@@ -290,7 +290,7 @@ const Intro: React.FC = () => {
                 Student | Software Engineer | ML Enthusiast
               </p>
               <div className="flex justify-center space-x-6 mb-6">
-              <a
+                <a
                   href="mailto:kushagrabharti@gmail.com"
                   target="_blank"
                   rel="noopener noreferrer"

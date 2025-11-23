@@ -7,8 +7,8 @@ exports.introStaticData = {
     latestUpdate: "Currently applying for Summer 2025 internships and leetcoding!",
     funFact: "A film I made was screened at AMC Theatres in Times Square!",
     featuredBlog: {
-        title: "How AI is Shaping the Future of Software Development",
-        link: "https://news.mit.edu/2025/ai-tool-generates-high-quality-images-faster-0321",
+        title: "The Trillion Dollar AI Software Development Stack",
+        link: "https://a16z.com/the-trillion-dollar-ai-software-development-stack/",
     },
     aiProjects: ["Pseudo-Lawyer", "CircuitSeer", "DataDrive"],
     travelPlans: "Visiting Home for summer break!",
