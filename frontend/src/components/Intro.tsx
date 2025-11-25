@@ -146,7 +146,7 @@ const Intro: React.FC = () => {
                 href="https://x.com/IamKushagraB"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-transform duration-300 hover:scale-110 hover:text-[#1D9BF0]"
+                className="transition-transform duration-300 hover:scale-110 hover:text-black"
                 aria-label="X (Twitter)"
               >
                 <FaXTwitter size={24} />
