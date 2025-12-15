@@ -1,4 +1,4 @@
-export type TabKey = "thisWeek" | "pipelines" | "proofVault" | "evidence";
+export type TabKey = "thisWeek" | "deals" | "wins";
 
 export interface TaskTemplate {
   id: string;
@@ -28,9 +28,12 @@ export interface WeeklySnapshot {
   paid_work_progress: string | null;
   traction_progress: string | null;
   next_week_focus: string | null;
+  build_outcome?: string | null;
+  internship_outcome?: string | null;
+  traction_outcome?: string | null;
 }
 
-export type PipelineType = "paid_work" | "relationship" | "traction";
+export type PipelineType = "internship" | "relationship" | "traction";
 
 export interface PipelineItem {
   id: string;
@@ -44,6 +47,7 @@ export interface PipelineItem {
   notes: string | null;
   created_at?: string;
   updated_at?: string;
+  archived?: boolean;
 }
 
 export interface ProofVaultItem {
@@ -59,8 +63,9 @@ export interface EvidenceLogItem {
   id: string;
   date: string;
   type: string;
-  link: string;
+  link: string | null;
   note: string | null;
+  proof_url?: string | null;
 }
 
 export interface MobilityRoute {

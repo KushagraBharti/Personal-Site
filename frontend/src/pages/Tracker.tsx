@@ -1,15 +1,13 @@
-
 import React, { useEffect, useMemo, useState } from "react";
 import { Session } from "@supabase/supabase-js";
-import GlassCard from "../components/ui/GlassCard";
 import GlassButton from "../components/ui/GlassButton";
+import GlassCard from "../components/ui/GlassCard";
 import supabase, { isSupabaseConfigured } from "../lib/supabaseClient";
 import {
   EvidenceLogItem,
   MobilityRoute,
   PipelineItem,
   PipelineType,
-  ProofVaultItem,
   TabKey,
   TaskStatus,
   TaskTemplate,
@@ -35,18 +33,21 @@ const startOfWeekMondayChicago = (date = new Date()) => {
   return toDateInputValue(chicago);
 };
 
+const earliestWeekStart = "2025-12-08";
+
 const shiftWeek = (weekStart: string, weeks: number) => {
   const d = new Date(`${weekStart}T00:00:00`);
   d.setDate(d.getDate() + weeks * 7);
   return toDateInputValue(d);
 };
 
+const clampWeekStart = (weekStart: string) => (weekStart < earliestWeekStart ? earliestWeekStart : weekStart);
+
 const formatWeekLabel = (weekStart: string) => {
   const start = new Date(`${weekStart}T00:00:00`);
   const end = new Date(start);
   end.setDate(end.getDate() + 6);
-  const fmt = (d: Date) =>
-    d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   return `${fmt(start)} - ${fmt(end)}`;
 };
 
@@ -54,6 +55,7 @@ const inputBase =
   "w-full rounded-lg bg-white/10 border border-white/20 px-3 py-2 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition";
 
 const sectionTitle = "text-lg font-semibold text-white";
+
 const Tracker: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -76,32 +78,49 @@ const Tracker: React.FC = () => {
     paid_work_progress: "",
     traction_progress: "",
     next_week_focus: "",
+    build_outcome: "",
+    internship_outcome: "",
+    traction_outcome: "",
   });
   const [manageTemplatesOpen, setManageTemplatesOpen] = useState(false);
+  const [showArchivedTemplates, setShowArchivedTemplates] = useState(false);
   const [newTemplate, setNewTemplate] = useState({ category: "", text: "" });
   const [savingTemplateId, setSavingTemplateId] = useState<string | null>(null);
 
   const [pipelineItems, setPipelineItems] = useState<PipelineItem[]>([]);
-  const [pipelineDrafts, setPipelineDrafts] = useState<Record<PipelineType, Partial<PipelineItem>>>(
-    {
-      paid_work: {},
-      relationship: {},
-      traction: {},
-    }
-  );
-  const [proofVault, setProofVault] = useState<ProofVaultItem[]>([]);
-  const [proofDraft, setProofDraft] = useState<Partial<ProofVaultItem>>({
-    title: "",
-    url: "",
-    tag: "",
-    pinned: false,
-    sort_order: 0,
+  const [pipelineDraft, setPipelineDraft] = useState<Partial<PipelineItem>>({
+    type: "internship",
+    next_action_date: toDateInputValue(toChicagoDate()),
   });
+  const [showPastDeals, setShowPastDeals] = useState(false);
+
   const [evidenceLog, setEvidenceLog] = useState<EvidenceLogItem[]>([]);
   const [mobilityRoutes, setMobilityRoutes] = useState<MobilityRoute[]>([]);
+  const [mobilityCollapsed, setMobilityCollapsed] = useState(true);
+
   const [loadingAll, setLoadingAll] = useState(false);
 
   const userId = session?.user?.id;
+
+  useEffect(() => {
+    const existing = snapshots[activeWeekStart];
+    if (existing) {
+      setSnapshotDraft({ ...existing, week_start: activeWeekStart });
+    } else {
+      setSnapshotDraft({
+        week_start: activeWeekStart,
+        build_milestone: "",
+        best_demo_hook_url: "",
+        best_demo_walkthrough_url: "",
+        paid_work_progress: "",
+        traction_progress: "",
+        next_week_focus: "",
+        build_outcome: "",
+        internship_outcome: "",
+        traction_outcome: "",
+      });
+    }
+  }, [activeWeekStart, snapshots]);
 
   useEffect(() => {
     if (!supabase) {
@@ -122,7 +141,7 @@ const Tracker: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !supabase) return;
     loadCoreData();
   }, [userId, activeWeekStart]);
 
@@ -134,7 +153,6 @@ const Tracker: React.FC = () => {
       fetchWeekStatuses(activeWeekStart),
       fetchSnapshot(activeWeekStart),
       fetchPipelines(),
-      fetchProofVault(),
       fetchEvidence(),
       fetchMobility(),
     ]);
@@ -161,9 +179,7 @@ const Tracker: React.FC = () => {
       .select("*")
       .eq("user_id", userId)
       .eq("week_start", week);
-    if (!error && data) {
-      setWeekStatuses((prev) => ({ ...prev, [week]: data }));
-    }
+    if (!error && data) setWeekStatuses((prev) => ({ ...prev, [week]: data }));
   };
 
   const fetchSnapshot = async (week: string) => {
@@ -176,7 +192,9 @@ const Tracker: React.FC = () => {
       .maybeSingle();
     if (!error) {
       setSnapshots((prev) => ({ ...prev, [week]: data ?? null }));
-      if (data) setSnapshotDraft({ ...data, week_start: week });
+      if (data) {
+        setSnapshotDraft({ ...data, week_start: week });
+      }
     }
   };
 
@@ -189,17 +207,6 @@ const Tracker: React.FC = () => {
       .order("next_action_date", { ascending: true })
       .order("created_at", { ascending: true });
     if (!error && data) setPipelineItems(data);
-  };
-
-  const fetchProofVault = async () => {
-    if (!userId || !supabase) return;
-    const { data, error } = await supabase
-      .from("proof_vault_items")
-      .select("*")
-      .eq("user_id", userId)
-      .order("pinned", { ascending: false })
-      .order("sort_order", { ascending: true });
-    if (!error && data) setProofVault(data);
   };
 
   const fetchEvidence = async () => {
@@ -222,6 +229,7 @@ const Tracker: React.FC = () => {
       .order("route_name", { ascending: true });
     if (!error && data) setMobilityRoutes(data);
   };
+
   const statusesForWeek = weekStatuses[activeWeekStart] || [];
   const statusByTask = useMemo(() => {
     const map: Record<string, TaskStatus> = {};
@@ -299,13 +307,19 @@ const Tracker: React.FC = () => {
       const sortOrder = categoryTemplates.length ? Math.max(...categoryTemplates.map((t) => t.sort_order)) + 1 : 1;
       payload = { ...payload, sort_order: sortOrder };
     }
-    await supabase!
+    await supabase
       .from("weekly_task_templates")
       .update({ ...payload })
       .eq("user_id", userId)
       .eq("id", template.id);
     setSavingTemplateId(null);
     fetchTemplates();
+  };
+
+  const handleTemplateDelete = async (template: TaskTemplate) => {
+    if (!userId || !supabase) return;
+    await supabase.from("weekly_task_templates").delete().eq("user_id", userId).eq("id", template.id);
+    setTemplates((prev) => prev.filter((t) => t.id !== template.id));
   };
 
   const handleTemplateMove = async (template: TaskTemplate, direction: "up" | "down") => {
@@ -344,6 +358,7 @@ const Tracker: React.FC = () => {
       ...item,
       user_id: userId,
       links: Array.isArray(links) ? links : (links as unknown as string[]),
+      archived: item.archived ?? false,
     };
     if (item.id) {
       await supabase!.from("pipeline_items").update(payload).eq("user_id", userId).eq("id", item.id);
@@ -359,26 +374,8 @@ const Tracker: React.FC = () => {
     setPipelineItems((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const saveProofItem = async (item: Partial<ProofVaultItem>) => {
-    if (!userId || !supabase || !item.title || !item.url) return;
-    const payload: any = { ...item, user_id: userId, pinned: item.pinned ?? false, sort_order: item.sort_order ?? 0 };
-    if (item.id) {
-      await supabase!.from("proof_vault_items").update(payload).eq("user_id", userId).eq("id", item.id);
-    } else {
-      await supabase!.from("proof_vault_items").insert(payload);
-      setProofDraft({ title: "", url: "", tag: "", pinned: false, sort_order: 0 });
-    }
-    fetchProofVault();
-  };
-
-  const deleteProofItem = async (id: string) => {
-    if (!userId || !supabase) return;
-    await supabase!.from("proof_vault_items").delete().eq("user_id", userId).eq("id", id);
-    setProofVault((prev) => prev.filter((p) => p.id !== id));
-  };
-
   const saveEvidenceItem = async (item: Partial<EvidenceLogItem>) => {
-    if (!userId || !supabase || !item.date || !item.type || !item.link) return;
+    if (!userId || !supabase || !item.date || !item.type) return;
     const payload: any = { ...item, user_id: userId };
     if (item.id) {
       await supabase!.from("evidence_log").update(payload).eq("user_id", userId).eq("id", item.id);
@@ -411,39 +408,28 @@ const Tracker: React.FC = () => {
     setMobilityRoutes((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const pipelineByType = useMemo(() => {
-    const map: Record<PipelineType, PipelineItem[]> = { paid_work: [], relationship: [], traction: [] };
-    pipelineItems.forEach((item) => {
-      map[item.type].push(item);
-    });
-    (Object.keys(map) as PipelineType[]).forEach((key) => {
-      map[key].sort((a, b) => {
-        const aDate = a.next_action_date ? new Date(a.next_action_date).getTime() : Infinity;
-        const bDate = b.next_action_date ? new Date(b.next_action_date).getTime() : Infinity;
-        return aDate - bDate;
-      });
-    });
-    return map;
-  }, [pipelineItems]);
   const renderTaskRow = (template: TaskTemplate) => {
     const status = statusByTask[template.id];
     return (
       <div
         key={template.id}
-        className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/5 p-3 md:flex-row md:items-center"
+        className="flex h-full flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-3 md:p-4 shadow-sm"
       >
-        <div className="flex items-start gap-3 md:w-1/3">
+        <div className="flex items-start gap-3">
           <input
             type="checkbox"
             className="mt-1 h-5 w-5 cursor-pointer rounded border-white/40 bg-white/10 text-primary focus:ring-primary"
             checked={!!status?.completed}
             onChange={(e) => upsertStatus(template.id, { completed: e.target.checked })}
           />
-          <span className={`text-sm ${template.active ? "text-white" : "text-white/50 line-through"}`}>
-            {template.text}
-          </span>
+          <div className="flex flex-col gap-1">
+            <span className={`text-sm ${template.active ? "text-white" : "text-white/50 line-through"}`}>
+              {template.text}
+            </span>
+            {!template.active && <span className="text-xs text-white/50">Archived</span>}
+          </div>
         </div>
-        <div className="grid flex-1 grid-cols-1 gap-2 md:grid-cols-2">
+        <div className="grid flex-1 gap-2 sm:grid-cols-2">
           <input
             className={inputBase}
             placeholder="Proof link"
@@ -461,161 +447,261 @@ const Tracker: React.FC = () => {
     );
   };
 
-  const renderTemplateManager = () => (
-    <div className="rounded-xl border border-white/15 bg-white/10 p-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end">
-        <div className="flex-1">
-          <label className="text-xs uppercase tracking-wide text-white/70">Category</label>
-          <input
-            className={inputBase}
-            placeholder="e.g. Build"
-            value={newTemplate.category}
-            onChange={(e) => setNewTemplate((t) => ({ ...t, category: e.target.value }))}
-          />
-        </div>
-        <div className="flex-[2]">
-          <label className="text-xs uppercase tracking-wide text-white/70">Task text</label>
-          <input
-            className={inputBase}
-            placeholder="Ship landing page polish"
-            value={newTemplate.text}
-            onChange={(e) => setNewTemplate((t) => ({ ...t, text: e.target.value }))}
-          />
-        </div>
-        <GlassButton className="px-4 py-2" onClick={handleTemplateCreate}>
-          Add Template
-        </GlassButton>
-      </div>
-      <div className="mt-4 grid gap-3">
-        {templates.map((template) => (
-          <div
-            key={template.id}
-            className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/5 p-3 md:flex-row md:items-center"
-          >
-            <div className="flex-1 space-y-2">
-              <input
-                className={inputBase}
-                value={template.text}
-                onChange={(e) => handleTemplateUpdate(template, { text: e.target.value })}
-              />
-              <input
-                className={inputBase}
-                value={template.category}
-                placeholder="Category"
-                onChange={(e) => handleTemplateUpdate(template, { category: e.target.value })}
-              />
-              <div className="flex flex-wrap items-center gap-2 text-xs text-white/70">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={template.active}
-                    onChange={(e) => handleTemplateUpdate(template, { active: e.target.checked })}
-                  />
-                  Active
-                </label>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                className="rounded bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20"
-                onClick={() => handleTemplateMove(template, "up")}
-                disabled={savingTemplateId === template.id}
-              >
-                Up
-              </button>
-              <button
-                className="rounded bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20"
-                onClick={() => handleTemplateMove(template, "down")}
-                disabled={savingTemplateId === template.id}
-              >
-                Down
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-  const renderPipelineSection = (type: PipelineType, title: string) => {
-    const list = pipelineByType[type];
-    const draft = pipelineDrafts[type] || {};
-    const updateDraft = (field: keyof PipelineItem, value: any) =>
-      setPipelineDrafts((prev) => ({ ...prev, [type]: { ...prev[type], [field]: value, type } }));
-
-    const linksText =
-      Array.isArray(draft.links) ? draft.links.join("\n") : typeof draft.links === "string" ? draft.links : "";
+  const renderTemplateManager = () => {
+    const activeCount = templates.filter((t) => t.active).length;
+    const archivedCount = templates.length - activeCount;
 
     return (
-      <div className="rounded-xl border border-white/15 bg-white/5 p-4">
-        <div className="flex items-center justify-between">
-          <h3 className={sectionTitle}>{title}</h3>
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-white/60">Manage weekly tasks</p>
+            <h3 className="text-2xl font-semibold text-white">Manage Tasks</h3>
+            <p className="text-sm text-white/70">Create, reorder, and archive your weekly task templates.</p>
+          </div>
+          <button
+            className="rounded-full bg-white/15 px-4 py-2 text-sm text-white hover:bg-white/25"
+            onClick={() => setManageTemplatesOpen(false)}
+          >
+            Close
+          </button>
         </div>
-        <div className="mt-3 grid gap-3">
-          <div className="grid gap-2 md:grid-cols-2">
+
+        <div className="grid items-end gap-3 md:grid-cols-[1fr_2fr_auto]">
+          <div className="space-y-1">
+            <label className="text-xs uppercase tracking-wide text-white/70">Category</label>
+            <input
+              className={inputBase}
+              placeholder="e.g. Build"
+              value={newTemplate.category}
+              onChange={(e) => setNewTemplate((t) => ({ ...t, category: e.target.value }))}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs uppercase tracking-wide text-white/70">Task text</label>
+            <input
+              className={inputBase}
+              placeholder="Ship landing page polish"
+              value={newTemplate.text}
+              onChange={(e) => setNewTemplate((t) => ({ ...t, text: e.target.value }))}
+            />
+          </div>
+          <GlassButton className="w-full px-4 py-2 md:w-auto" onClick={handleTemplateCreate}>
+            Add Task
+          </GlassButton>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-2 text-xs text-white/70">
+            <span className="rounded-full bg-white/10 px-2 py-1">Active: {activeCount}</span>
+            <span className="rounded-full bg-white/10 px-2 py-1">Archived: {archivedCount}</span>
+          </div>
+          <button
+            className="rounded bg-white/10 px-3 py-1 text-xs text-white hover:bg-white/20"
+            onClick={() => setShowArchivedTemplates((v) => !v)}
+          >
+            {showArchivedTemplates ? "Hide archived" : "Show archived"}
+          </button>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          {templates
+            .filter((t) => showArchivedTemplates || t.active)
+            .map((template) => (
+              <div
+                key={template.id}
+                className="flex h-full flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-3"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 space-y-2">
+                    <input
+                      className={inputBase}
+                      value={template.text}
+                      placeholder="Task name"
+                      onChange={(e) => handleTemplateUpdate(template, { text: e.target.value })}
+                    />
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <input
+                        className={inputBase}
+                        value={template.category}
+                        placeholder="Category"
+                        onChange={(e) => handleTemplateUpdate(template, { category: e.target.value })}
+                      />
+                      <label className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-xs text-white/70">
+                        <input
+                          type="checkbox"
+                          checked={template.active}
+                          onChange={(e) => handleTemplateUpdate(template, { active: e.target.checked })}
+                        />
+                        Active
+                      </label>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-white/70">
+                      <button
+                        className="rounded bg-white/10 px-3 py-1 text-white hover:bg-white/20"
+                        onClick={() => handleTemplateUpdate(template, { active: !template.active })}
+                      >
+                        {template.active ? "Archive" : "Restore"}
+                      </button>
+                      <button
+                        className="rounded bg-red-500/20 px-3 py-1 text-red-100 hover:bg-red-500/30"
+                        onClick={() => handleTemplateDelete(template)}
+                      >
+                        Delete
+                      </button>
+                      <span className="rounded-full bg-white/5 px-2 py-1">{template.category || "Uncategorized"}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      className="rounded-lg bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20 disabled:opacity-50"
+                      onClick={() => handleTemplateMove(template, "up")}
+                      disabled={savingTemplateId === template.id}
+                    >
+                      Up
+                    </button>
+                    <button
+                      className="rounded-lg bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20 disabled:opacity-50"
+                      onClick={() => handleTemplateMove(template, "down")}
+                      disabled={savingTemplateId === template.id}
+                    >
+                      Down
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          {!templates.length && <p className="text-sm text-white/60">No tasks yet.</p>}
+        </div>
+      </div>
+    );
+  };
+  const renderDeals = () => {
+    const now = toChicagoDate();
+    const cutoff = new Date(now);
+    cutoff.setDate(cutoff.getDate() + 14);
+
+    const sorted = [...pipelineItems].sort((a, b) => {
+      const aDate = a.next_action_date ? new Date(a.next_action_date).getTime() : Infinity;
+      const bDate = b.next_action_date ? new Date(b.next_action_date).getTime() : Infinity;
+      return aDate - bDate;
+    });
+
+    const current = sorted.filter((item) => {
+      if (item.archived) return false;
+      if (!item.next_action_date) return true;
+      const d = new Date(item.next_action_date);
+      return d <= cutoff;
+    });
+
+    const past = sorted.filter((item) => {
+      if (item.archived) return true;
+      if (!item.next_action_date) return false;
+      const d = new Date(item.next_action_date);
+      return d > cutoff;
+    });
+
+    const visible = showPastDeals ? past : current;
+
+    return (
+      <div className="space-y-4">
+        <GlassCard className="p-4">
+          <h3 className={sectionTitle}>Add Deal</h3>
+          <div className="mt-3 grid gap-2 md:grid-cols-2">
             <input
               className={inputBase}
               placeholder="Name"
-              value={draft.name || ""}
-              onChange={(e) => updateDraft("name", e.target.value)}
+              value={pipelineDraft.name || ""}
+              onChange={(e) => setPipelineDraft((d) => ({ ...d, name: e.target.value }))}
             />
+            <select
+              className={inputBase}
+              value={pipelineDraft.type || "internship"}
+              onChange={(e) => setPipelineDraft((d) => ({ ...d, type: e.target.value as PipelineType }))}
+            >
+              <option value="internship">Internship</option>
+              <option value="traction">Traction</option>
+              <option value="relationship">Relationship</option>
+            </select>
             <input
               className={inputBase}
               placeholder="Stage"
-              value={draft.stage || ""}
-              onChange={(e) => updateDraft("stage", e.target.value)}
+              value={pipelineDraft.stage || ""}
+              onChange={(e) => setPipelineDraft((d) => ({ ...d, stage: e.target.value }))}
             />
             <input
               className={inputBase}
               type="date"
-              placeholder="Last touch"
-              value={draft.last_touch || ""}
-              onChange={(e) => updateDraft("last_touch", e.target.value)}
-            />
-            <input
-              className={inputBase}
-              type="date"
-              placeholder="Next action date"
-              value={draft.next_action_date || ""}
-              onChange={(e) => updateDraft("next_action_date", e.target.value)}
+              value={pipelineDraft.next_action_date || ""}
+              onChange={(e) => setPipelineDraft((d) => ({ ...d, next_action_date: e.target.value }))}
             />
             <input
               className={inputBase}
               placeholder="Next action"
-              value={draft.next_action || ""}
-              onChange={(e) => updateDraft("next_action", e.target.value)}
-            />
-            <textarea
-              className={`${inputBase} min-h-[80px]`}
-              placeholder="Links (one per line)"
-              value={linksText}
-              onChange={(e) => updateDraft("links", e.target.value.split("\n").filter(Boolean))}
+              value={pipelineDraft.next_action || ""}
+              onChange={(e) => setPipelineDraft((d) => ({ ...d, next_action: e.target.value }))}
             />
             <textarea
               className={`${inputBase} min-h-[80px] md:col-span-2`}
               placeholder="Notes"
-              value={draft.notes || ""}
-              onChange={(e) => updateDraft("notes", e.target.value)}
+              value={pipelineDraft.notes || ""}
+              onChange={(e) => setPipelineDraft((d) => ({ ...d, notes: e.target.value }))}
+            />
+            <textarea
+              className={`${inputBase} min-h-[80px] md:col-span-2`}
+              placeholder="Links (one per line)"
+              value={Array.isArray(pipelineDraft.links) ? pipelineDraft.links.join("\n") : pipelineDraft.links || ""}
+              onChange={(e) =>
+                setPipelineDraft((d) => ({ ...d, links: e.target.value.split("\n").filter(Boolean) }))
+              }
             />
           </div>
           <GlassButton
-            className="px-4 py-2"
+            className="mt-3 px-4 py-2"
             onClick={() => {
-              savePipelineItem({ ...draft, type });
-              setPipelineDrafts((prev) => ({ ...prev, [type]: { type } }));
+              savePipelineItem(pipelineDraft as PipelineItem & { type: PipelineType });
+              setPipelineDraft({ type: pipelineDraft.type || "internship", next_action_date: toDateInputValue(toChicagoDate()) });
             }}
           >
-            Add
+            Add Deal
           </GlassButton>
+        </GlassCard>
+
+        <div className="flex items-center justify-between">
+          <h3 className={sectionTitle}>Active Deals</h3>
+          <div className="flex gap-2">
+            <button
+              className={`rounded-full px-3 py-2 text-sm ${!showPastDeals ? "bg-white text-gray-900" : "bg-white/10 text-white"}`}
+              onClick={() => setShowPastDeals(false)}
+            >
+              Current
+            </button>
+            <button
+              className={`rounded-full px-3 py-2 text-sm ${showPastDeals ? "bg-white text-gray-900" : "bg-white/10 text-white"}`}
+              onClick={() => setShowPastDeals(true)}
+            >
+              Past / Archive
+            </button>
+          </div>
         </div>
-        <div className="mt-4 grid gap-3">
-          {list.map((item) => (
+
+        <div className="grid gap-3">
+          {visible.map((item) => (
             <div key={item.id} className="rounded-lg border border-white/10 bg-white/5 p-3">
-              <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p className="text-white font-medium">{item.name}</p>
-                  <p className="text-xs text-white/60">{item.stage}</p>
+                  <p className="text-xs text-white/60">
+                    {item.type} • {item.stage || "Stage"}
+                  </p>
                 </div>
                 <div className="flex gap-2">
+                  <button
+                    className="rounded bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20"
+                    onClick={() => savePipelineItem({ ...item, archived: !item.archived })}
+                  >
+                    {item.archived ? "Unarchive" : "Archive"}
+                  </button>
                   <button
                     className="rounded bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20"
                     onClick={() => deletePipelineItem(item.id)}
@@ -625,22 +711,20 @@ const Tracker: React.FC = () => {
                 </div>
               </div>
               <div className="mt-3 grid gap-2 md:grid-cols-2">
+                <select
+                  className={inputBase}
+                  value={item.type}
+                  onChange={(e) => savePipelineItem({ ...item, type: e.target.value as PipelineType })}
+                >
+                  <option value="internship">Internship</option>
+                  <option value="traction">Traction</option>
+                  <option value="relationship">Relationship</option>
+                </select>
                 <input
                   className={inputBase}
-                  value={item.stage}
+                  placeholder="Stage"
+                  value={item.stage || ""}
                   onChange={(e) => savePipelineItem({ ...item, stage: e.target.value })}
-                />
-                <input
-                  className={inputBase}
-                  type="date"
-                  value={item.last_touch || ""}
-                  onChange={(e) => savePipelineItem({ ...item, last_touch: e.target.value })}
-                />
-                <input
-                  className={inputBase}
-                  placeholder="Next action"
-                  value={item.next_action || ""}
-                  onChange={(e) => savePipelineItem({ ...item, next_action: e.target.value })}
                 />
                 <input
                   className={inputBase}
@@ -648,143 +732,73 @@ const Tracker: React.FC = () => {
                   value={item.next_action_date || ""}
                   onChange={(e) => savePipelineItem({ ...item, next_action_date: e.target.value })}
                 />
+                <input
+                  className={inputBase}
+                  placeholder="Next action"
+                  value={item.next_action || ""}
+                  onChange={(e) => savePipelineItem({ ...item, next_action: e.target.value })}
+                />
                 <textarea
-                  className={`${inputBase} min-h-[80px] md:col-span-2`}
+                  className={`${inputBase} min-h-[70px] md:col-span-2`}
+                  placeholder="Notes"
+                  value={item.notes || ""}
+                  onChange={(e) => savePipelineItem({ ...item, notes: e.target.value })}
+                />
+                <textarea
+                  className={`${inputBase} min-h-[70px] md:col-span-2`}
+                  placeholder="Links (one per line)"
                   value={Array.isArray(item.links) ? item.links.join("\n") : ""}
                   onChange={(e) =>
                     savePipelineItem({ ...item, links: e.target.value.split("\n").filter(Boolean) })
                   }
-                  placeholder="Links (one per line)"
-                />
-                <textarea
-                  className={`${inputBase} min-h-[80px] md:col-span-2`}
-                  value={item.notes || ""}
-                  onChange={(e) => savePipelineItem({ ...item, notes: e.target.value })}
-                  placeholder="Notes"
                 />
               </div>
             </div>
           ))}
-          {!list.length && <p className="text-sm text-white/60">No items yet.</p>}
+          {!visible.length && <p className="text-sm text-white/60">Nothing here yet.</p>}
         </div>
       </div>
     );
   };
-  const renderProofVault = () => (
-    <div className="grid gap-4">
-      <div className="rounded-xl border border-white/15 bg-white/5 p-4">
-        <h3 className={sectionTitle}>Add Asset</h3>
-        <div className="mt-2 grid gap-2 md:grid-cols-2">
-          <input
-            className={inputBase}
-            placeholder="Title"
-            value={proofDraft.title || ""}
-            onChange={(e) => setProofDraft((d) => ({ ...d, title: e.target.value }))}
-          />
-          <input
-            className={inputBase}
-            placeholder="URL"
-            value={proofDraft.url || ""}
-            onChange={(e) => setProofDraft((d) => ({ ...d, url: e.target.value }))}
-          />
-          <input
-            className={inputBase}
-            placeholder="Tag"
-            value={proofDraft.tag || ""}
-            onChange={(e) => setProofDraft((d) => ({ ...d, tag: e.target.value }))}
-          />
-          <label className="flex items-center gap-2 text-sm text-white/80">
-            <input
-              type="checkbox"
-              checked={!!proofDraft.pinned}
-              onChange={(e) => setProofDraft((d) => ({ ...d, pinned: e.target.checked }))}
-            />
-            Pinned
-          </label>
-        </div>
-        <GlassButton className="mt-3 px-4 py-2" onClick={() => saveProofItem(proofDraft)}>
-          Add
-        </GlassButton>
-      </div>
-      <div className="grid gap-3">
-        {proofVault.map((item) => (
-          <div key={item.id} className="rounded-lg border border-white/10 bg-white/5 p-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <p className="font-medium text-white">{item.title}</p>
-                <p className="text-xs text-white/60">{item.url}</p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  className="rounded bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20"
-                  onClick={() => navigator.clipboard?.writeText(item.url)}
-                >
-                  Copy
-                </button>
-                <button
-                  className="rounded bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20"
-                  onClick={() => deleteProofItem(item.id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-            <div className="mt-2 grid gap-2 md:grid-cols-2">
-              <input
-                className={inputBase}
-                value={item.title}
-                onChange={(e) => saveProofItem({ ...item, title: e.target.value })}
-              />
-              <input
-                className={inputBase}
-                value={item.url}
-                onChange={(e) => saveProofItem({ ...item, url: e.target.value })}
-              />
-              <input
-                className={inputBase}
-                value={item.tag || ""}
-                onChange={(e) => saveProofItem({ ...item, tag: e.target.value })}
-              />
-              <label className="flex items-center gap-2 text-sm text-white/80">
-                <input
-                  type="checkbox"
-                  checked={item.pinned}
-                  onChange={(e) => saveProofItem({ ...item, pinned: e.target.checked })}
-                />
-                Pinned
-              </label>
-            </div>
-          </div>
-        ))}
-        {!proofVault.length && <p className="text-sm text-white/60">No assets yet.</p>}
-      </div>
-    </div>
-  );
 
-  const renderEvidenceMobility = () => (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <div className="rounded-xl border border-white/15 bg-white/5 p-4">
-        <h3 className={sectionTitle}>Evidence Log</h3>
+  const renderWeeklyWins = () => (
+    <div className="space-y-4">
+      <GlassCard className="p-4">
+        <h3 className={sectionTitle}>Log a Win</h3>
         <EvidenceForm onSave={saveEvidenceItem} />
+      </GlassCard>
+      <div className="rounded-xl border border-white/15 bg-white/5 p-4">
+        <h3 className={sectionTitle}>Recent Wins</h3>
         <div className="mt-3 grid gap-3">
           {evidenceLog.map((item) => (
             <EvidenceCard key={item.id} item={item} onSave={saveEvidenceItem} onDelete={deleteEvidenceItem} />
           ))}
-          {!evidenceLog.length && <p className="text-sm text-white/60">No evidence logged yet.</p>}
+          {!evidenceLog.length && <p className="text-sm text-white/60">No wins logged yet.</p>}
         </div>
       </div>
-      <div className="rounded-xl border border-white/15 bg-white/5 p-4">
-        <h3 className={sectionTitle}>Mobility Routes</h3>
-        <MobilityForm onSave={saveMobilityRoute} />
-        <div className="mt-3 grid gap-3">
-          {mobilityRoutes.map((route) => (
-            <MobilityCard key={route.id} route={route} onSave={saveMobilityRoute} onDelete={deleteMobilityRoute} />
-          ))}
-          {!mobilityRoutes.length && <p className="text-sm text-white/60">No routes yet.</p>}
-        </div>
+      <div className="rounded-xl border border-white/15 bg-white/5">
+        <button
+          className="flex w-full items-center justify-between px-4 py-3 text-left text-white"
+          onClick={() => setMobilityCollapsed((v) => !v)}
+        >
+          <span className="font-semibold">Mobility</span>
+          <span className="text-sm text-white/70">{mobilityCollapsed ? "Show" : "Hide"}</span>
+        </button>
+        {!mobilityCollapsed && (
+          <div className="border-t border-white/10 p-4">
+            <MobilityForm onSave={saveMobilityRoute} />
+            <div className="mt-3 grid gap-3">
+              {mobilityRoutes.map((route) => (
+                <MobilityCard key={route.id} route={route} onSave={saveMobilityRoute} onDelete={deleteMobilityRoute} />
+              ))}
+              {!mobilityRoutes.length && <p className="text-sm text-white/60">No routes yet.</p>}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
+
   const renderTabContent = () => {
     if (activeTab === "thisWeek") {
       const categories = Array.from(new Set(templates.filter((t) => t.active).map((t) => t.category)));
@@ -797,8 +811,9 @@ const Tracker: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <button
-                className="rounded bg-white/10 px-3 py-2 text-white hover:bg-white/20"
-                onClick={() => setActiveWeekStart((week) => shiftWeek(week, -1))}
+                className="rounded bg-white/10 px-3 py-2 text-white hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed"
+                onClick={() => setActiveWeekStart((week) => clampWeekStart(shiftWeek(week, -1)))}
+                disabled={activeWeekStart <= earliestWeekStart}
               >
                 Prev
               </button>
@@ -807,12 +822,14 @@ const Tracker: React.FC = () => {
                 className={inputBase}
                 value={activeWeekStart}
                 onChange={(e) =>
-                  setActiveWeekStart(startOfWeekMondayChicago(new Date(`${e.target.value}T00:00:00`)))
+                  setActiveWeekStart(
+                    clampWeekStart(startOfWeekMondayChicago(new Date(`${e.target.value}T00:00:00`)))
+                  )
                 }
               />
               <button
                 className="rounded bg-white/10 px-3 py-2 text-white hover:bg-white/20"
-                onClick={() => setActiveWeekStart((week) => shiftWeek(week, 1))}
+                onClick={() => setActiveWeekStart((week) => clampWeekStart(shiftWeek(week, 1)))}
               >
                 Next
               </button>
@@ -821,27 +838,39 @@ const Tracker: React.FC = () => {
               <GlassButton className="px-3 py-2" onClick={() => setIsSnapshotModalOpen(true)}>
                 Close Week
               </GlassButton>
-              <GlassButton className="px-3 py-2" onClick={() => setManageTemplatesOpen((v) => !v)}>
-                Manage Templates
+              <GlassButton className="px-3 py-2" onClick={() => setManageTemplatesOpen(true)}>
+                Manage Tasks
               </GlassButton>
             </div>
           </div>
+
           {snapshots[activeWeekStart] && (
             <GlassCard className="p-4">
               <h3 className={sectionTitle}>Snapshot saved</h3>
               <p className="text-sm text-white/70">{snapshots[activeWeekStart]?.next_week_focus}</p>
             </GlassCard>
           )}
-          <div className="grid gap-4">
+          {activeWeekStart <= earliestWeekStart && (
+            <GlassCard className="p-4">
+              <p className="text-sm text-white/70">
+                Earliest tracked week is Dec 8 - Dec 14. You can't go back further.
+              </p>
+            </GlassCard>
+          )}
+
+          <div className="grid gap-5 xl:gap-6 grid-cols-1 lg:grid-cols-[repeat(2,minmax(700px,1fr))]">
             {templatesLoading ? (
               <p className="text-sm text-white/60">Loading templates...</p>
             ) : categories.length ? (
               categories.map((category) => (
-                <GlassCard key={category} className="p-4">
-                  <div className="mb-3 flex items-center justify-between">
+                <GlassCard
+                  key={category}
+                  className="w-full max-w-none p-8 md:p-9"
+                >
+                  <div className="mb-4 flex items-center justify-between">
                     <h3 className={sectionTitle}>{category}</h3>
                   </div>
-                  <div className="grid gap-3">
+                  <div className="flex flex-col gap-3">
                     {templates
                       .filter((t) => t.category === category && t.active)
                       .sort((a, b) => a.sort_order - b.sort_order)
@@ -853,24 +882,17 @@ const Tracker: React.FC = () => {
               <p className="text-sm text-white/60">No templates yet. Add one to get started.</p>
             )}
           </div>
-          {manageTemplatesOpen && renderTemplateManager()}
         </div>
       );
     }
-    if (activeTab === "pipelines") {
-      return (
-        <div className="grid gap-4">
-          {renderPipelineSection("paid_work", "Paid Work")}
-          {renderPipelineSection("relationship", "Relationships")}
-          {renderPipelineSection("traction", "Traction")}
-        </div>
-      );
+
+    if (activeTab === "deals") {
+      return renderDeals();
     }
-    if (activeTab === "proofVault") {
-      return renderProofVault();
-    }
-    return renderEvidenceMobility();
+
+    return renderWeeklyWins();
   };
+
   if (!isSupabaseConfigured || !supabase) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
@@ -925,7 +947,7 @@ const Tracker: React.FC = () => {
 
   return (
     <div className="min-h-screen px-4 py-8 md:px-10 text-white">
-      <div className="mx-auto max-w-6xl space-y-6">
+      <div className="mx-auto w-full max-w-screen-2xl space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-wide text-white/70">Private</p>
@@ -936,15 +958,14 @@ const Tracker: React.FC = () => {
           </GlassButton>
         </div>
         <div className="flex flex-wrap gap-2">
-          {([
-            { key: "thisWeek", label: "This Week" },
-            { key: "pipelines", label: "Pipelines" },
-            { key: "proofVault", label: "Proof Vault" },
-            { key: "evidence", label: "Evidence & Mobility" },
-          ] as { key: TabKey; label: string }[]).map((tab) => (
+          {[
+            { key: "thisWeek", label: "Weekly" },
+            { key: "deals", label: "Active Deals" },
+            { key: "wins", label: "Weekly Wins" },
+          ].map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => setActiveTab(tab.key as TabKey)}
               className={`rounded-full px-4 py-2 text-sm ${
                 activeTab === tab.key ? "bg-white text-gray-900" : "bg-white/10 text-white hover:bg-white/20"
               }`}
@@ -956,6 +977,20 @@ const Tracker: React.FC = () => {
         {loadingAll && <p className="text-sm text-white/60">Syncing data...</p>}
         {renderTabContent()}
       </div>
+
+      {manageTemplatesOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 px-4 py-8"
+          onClick={() => setManageTemplatesOpen(false)}
+        >
+          <div
+            className="w-full max-w-5xl rounded-2xl border border-white/15 bg-white/10 p-6 shadow-2xl backdrop-blur-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {renderTemplateManager()}
+          </div>
+        </div>
+      )}
 
       {isSnapshotModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
@@ -991,7 +1026,7 @@ const Tracker: React.FC = () => {
               />
               <textarea
                 className={`${inputBase} min-h-[80px]`}
-                placeholder="Paid work progress"
+                placeholder="Internship progress"
                 value={snapshotDraft.paid_work_progress || ""}
                 onChange={(e) => setSnapshotDraft((d) => ({ ...d, paid_work_progress: e.target.value }))}
               />
@@ -1025,10 +1060,12 @@ const Tracker: React.FC = () => {
     </div>
   );
 };
+
 const EvidenceForm: React.FC<{ onSave: (item: Partial<EvidenceLogItem>) => void }> = ({ onSave }) => {
+  const today = toDateInputValue(toChicagoDate());
   const [draft, setDraft] = useState<Partial<EvidenceLogItem>>({
-    date: "",
-    type: "",
+    date: today,
+    type: "build",
     link: "",
     note: "",
   });
@@ -1036,39 +1073,43 @@ const EvidenceForm: React.FC<{ onSave: (item: Partial<EvidenceLogItem>) => void 
   return (
     <div className="mt-2 grid gap-2">
       <div className="grid gap-2 md:grid-cols-2">
+        <select
+          className={inputBase}
+          value={draft.type || "build"}
+          onChange={(e) => setDraft((d) => ({ ...d, type: e.target.value }))}
+        >
+          <option value="build">Build</option>
+          <option value="internship">Internship</option>
+          <option value="traction">Traction</option>
+          <option value="event">Event</option>
+        </select>
         <input
           className={inputBase}
           type="date"
-          value={draft.date || ""}
+          value={draft.date || today}
           onChange={(e) => setDraft((d) => ({ ...d, date: e.target.value }))}
         />
         <input
           className={inputBase}
-          placeholder="Type (demo, testimonial, OSS, event)"
-          value={draft.type || ""}
-          onChange={(e) => setDraft((d) => ({ ...d, type: e.target.value }))}
-        />
-        <input
-          className={inputBase}
-          placeholder="Link"
-          value={draft.link || ""}
-          onChange={(e) => setDraft((d) => ({ ...d, link: e.target.value }))}
-        />
-        <input
-          className={inputBase}
-          placeholder="Note"
+          placeholder="Win note"
           value={draft.note || ""}
           onChange={(e) => setDraft((d) => ({ ...d, note: e.target.value }))}
+        />
+        <input
+          className={inputBase}
+          placeholder="Proof link (optional)"
+          value={draft.link || ""}
+          onChange={(e) => setDraft((d) => ({ ...d, link: e.target.value }))}
         />
       </div>
       <GlassButton
         className="px-4 py-2"
         onClick={() => {
           onSave(draft);
-          setDraft({ date: "", type: "", link: "", note: "" });
+          setDraft({ date: today, type: "build", link: "", note: "" });
         }}
       >
-        Add
+        Add Win
       </GlassButton>
     </div>
   );
@@ -1094,8 +1135,18 @@ const EvidenceCard: React.FC<{
         onChange={(e) => onSave({ ...item, date: e.target.value })}
       />
       <input className={inputBase} value={item.type} onChange={(e) => onSave({ ...item, type: e.target.value })} />
-      <input className={inputBase} value={item.link} onChange={(e) => onSave({ ...item, link: e.target.value })} />
-      <input className={inputBase} value={item.note || ""} onChange={(e) => onSave({ ...item, note: e.target.value })} />
+      <input
+        className={inputBase}
+        value={item.note || ""}
+        onChange={(e) => onSave({ ...item, note: e.target.value })}
+        placeholder="Note"
+      />
+      <input
+        className={inputBase}
+        value={item.link || ""}
+        onChange={(e) => onSave({ ...item, link: e.target.value })}
+        placeholder="Proof link"
+      />
     </div>
   </div>
 );
@@ -1115,7 +1166,7 @@ const MobilityForm: React.FC<{ onSave: (route: Partial<MobilityRoute>) => void }
       <div className="grid gap-2 md:grid-cols-2">
         <input
           className={inputBase}
-          placeholder="Route name"
+          placeholder="Primary route"
           value={draft.route_name || ""}
           onChange={(e) => setDraft((d) => ({ ...d, route_name: e.target.value }))}
         />

@@ -33,6 +33,9 @@ create table if not exists weekly_snapshots (
   paid_work_progress text,
   traction_progress text,
   next_week_focus text,
+  build_outcome text,
+  internship_outcome text,
+  traction_outcome text,
   created_at timestamptz not null default now(),
   primary key (user_id, week_start)
 );
@@ -40,7 +43,7 @@ create table if not exists weekly_snapshots (
 create table if not exists pipeline_items (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id),
-  type text not null check (type in ('paid_work', 'relationship', 'traction')),
+  type text not null check (type in ('internship', 'relationship', 'traction')),
   name text not null,
   stage text,
   last_touch date,
@@ -48,6 +51,7 @@ create table if not exists pipeline_items (
   next_action_date date,
   links jsonb,
   notes text,
+  archived boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -68,8 +72,9 @@ create table if not exists evidence_log (
   user_id uuid not null references auth.users(id),
   date date not null,
   type text not null,
-  link text not null,
+  link text,
   note text,
+  proof_url text,
   created_at timestamptz not null default now()
 );
 

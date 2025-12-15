@@ -51,7 +51,11 @@ body {
 
 /* 3. Glass Card Component */
 .card {
-  @apply p-6 rounded-glass shadow-glass transition-transform transform hover:scale-105;
+  @apply p-6 rounded-glass shadow-glass transition-transform transform;
+  
+  &:hover {
+    transform: scale(1.02);
+  }
   
   /* Subtle text shadow for readability */
   h1, p {
@@ -69,7 +73,7 @@ body {
   /* Hover & Active States for better interaction feedback */
 }
 .btn-glass:hover {
-  @apply scale-105;
+  transform: scale(1.02);
   background: rgba(255, 255, 255, 0.4);
 }
 .btn-glass:active {
