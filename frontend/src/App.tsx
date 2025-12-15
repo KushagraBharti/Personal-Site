@@ -4,9 +4,7 @@ import ScrollProgress from "./components/ScrollProgress";
 import SectionSidebar from "./components/SectionSidebar";
 
 const Home = lazy(() => import("./pages/Home"));
-const Blog = lazy(() => import("./pages/Blog"));
-
-
+const Tracker = lazy(() => import("./pages/Tracker"));
 
 const App: React.FC = () => {
   return (
@@ -22,7 +20,7 @@ const App: React.FC = () => {
       >
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/blog" element={<Blog />} />
+          <Route path="/tracker" element={<Tracker />} />
         </Routes>
       </Suspense>
     </Router>
