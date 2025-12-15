@@ -1,7 +1,10 @@
+// frontend/src/types/tracker.ts
+
 export type TabKey = "thisWeek" | "deals" | "wins";
 
 export interface TaskTemplate {
   id: string;
+  user_id: string;
   category: string;
   text: string;
   sort_order: number;

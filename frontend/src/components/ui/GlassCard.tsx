@@ -1,3 +1,5 @@
+// frontend/src/components/ui/GlassCard.tsx
+
 import React from "react";
 
 interface GlassCardProps {

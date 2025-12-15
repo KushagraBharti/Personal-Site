@@ -14,6 +14,32 @@ import {
   WeeklySnapshot,
 } from "../types/tracker";
 
+type TemplateGroup = { category: string; tasks: TaskTemplate[]; order: number };
+
+const CATEGORY_STEP = 1000;
+
+const groupTemplatesByCategory = (templatesList: TaskTemplate[]): TemplateGroup[] => {
+  const sorted = [...templatesList].sort((a, b) => {
+    if (a.sort_order === b.sort_order) {
+      const catCompare = a.category.localeCompare(b.category);
+      if (catCompare !== 0) return catCompare;
+      return a.text.localeCompare(b.text);
+    }
+    return a.sort_order - b.sort_order;
+  });
+
+  const grouped = new Map<string, TaskTemplate[]>();
+  sorted.forEach((template) => {
+    const bucket = grouped.get(template.category) || [];
+    bucket.push(template);
+    grouped.set(template.category, bucket);
+  });
+
+  return Array.from(grouped.entries())
+    .map(([category, tasks]) => ({ category, tasks, order: tasks[0]?.sort_order ?? 0 }))
+    .sort((a, b) => (a.order === b.order ? a.category.localeCompare(b.category) : a.order - b.order));
+};
+
 const toDateInputValue = (date: Date) => {
   const year = date.getFullYear();
   const month = `${date.getMonth() + 1}`.padStart(2, "0");
@@ -85,7 +111,6 @@ const Tracker: React.FC = () => {
   const [manageTemplatesOpen, setManageTemplatesOpen] = useState(false);
   const [showArchivedTemplates, setShowArchivedTemplates] = useState(false);
   const [newTemplate, setNewTemplate] = useState({ category: "", text: "" });
-  const [savingTemplateId, setSavingTemplateId] = useState<string | null>(null);
 
   const [pipelineItems, setPipelineItems] = useState<PipelineItem[]>([]);
   const [pipelineDraft, setPipelineDraft] = useState<Partial<PipelineItem>>({
@@ -99,8 +124,10 @@ const Tracker: React.FC = () => {
   const [mobilityCollapsed, setMobilityCollapsed] = useState(true);
 
   const [loadingAll, setLoadingAll] = useState(false);
+  const [orderingBusy, setOrderingBusy] = useState(false);
 
   const userId = session?.user?.id;
+  const templateGroups = useMemo(() => groupTemplatesByCategory(templates), [templates]);
 
   useEffect(() => {
     const existing = snapshots[activeWeekStart];
@@ -166,8 +193,8 @@ const Tracker: React.FC = () => {
       .from("weekly_task_templates")
       .select("*")
       .eq("user_id", userId)
-      .order("category", { ascending: true })
-      .order("sort_order", { ascending: true });
+      .order("sort_order", { ascending: true })
+      .order("category", { ascending: true });
     if (!error && data) setTemplates(data);
     setTemplatesLoading(false);
   };
@@ -283,10 +310,18 @@ const Tracker: React.FC = () => {
     }
   };
 
+  const calculateSortOrderForCategory = (categoryName: string) => {
+    const groups = groupTemplatesByCategory(templates);
+    const index = groups.findIndex((g) => g.category === categoryName);
+    const position = index >= 0 ? index : groups.length;
+    const base = position * CATEGORY_STEP;
+    const tasksInGroup = index >= 0 ? groups[index].tasks : [];
+    return base + tasksInGroup.length + 1;
+  };
+
   const handleTemplateCreate = async () => {
     if (!userId || !supabase || !newTemplate.text.trim() || !newTemplate.category.trim()) return;
-    const categoryTemplates = templates.filter((t) => t.category === newTemplate.category);
-    const sortOrder = categoryTemplates.length ? Math.max(...categoryTemplates.map((t) => t.sort_order)) + 1 : 1;
+    const sortOrder = calculateSortOrderForCategory(newTemplate.category.trim());
     await supabase!.from("weekly_task_templates").insert({
       user_id: userId,
       category: newTemplate.category.trim(),
@@ -300,19 +335,15 @@ const Tracker: React.FC = () => {
 
   const handleTemplateUpdate = async (template: TaskTemplate, updates: Partial<TaskTemplate>) => {
     if (!userId || !supabase) return;
-    setSavingTemplateId(template.id);
     let payload: Partial<TaskTemplate> = { ...updates };
     if (updates.category && updates.category !== template.category) {
-      const categoryTemplates = templates.filter((t) => t.category === updates.category);
-      const sortOrder = categoryTemplates.length ? Math.max(...categoryTemplates.map((t) => t.sort_order)) + 1 : 1;
-      payload = { ...payload, sort_order: sortOrder };
+      payload = { ...payload, sort_order: calculateSortOrderForCategory(updates.category.trim()) };
     }
     await supabase
       .from("weekly_task_templates")
       .update({ ...payload })
       .eq("user_id", userId)
       .eq("id", template.id);
-    setSavingTemplateId(null);
     fetchTemplates();
   };
 
@@ -322,19 +353,76 @@ const Tracker: React.FC = () => {
     setTemplates((prev) => prev.filter((t) => t.id !== template.id));
   };
 
-  const handleTemplateMove = async (template: TaskTemplate, direction: "up" | "down") => {
-    if (!supabase) return;
-    const inCategory = templates
-      .filter((t) => t.category === template.category && t.active)
-      .sort((a, b) => a.sort_order - b.sort_order);
-    const index = inCategory.findIndex((t) => t.id === template.id);
-    const target = direction === "up" ? inCategory[index - 1] : inCategory[index + 1];
-    if (!target) return;
-    await supabase!.from("weekly_task_templates").upsert([
-      { id: template.id, sort_order: target.sort_order },
-      { id: target.id, sort_order: template.sort_order },
-    ]);
-    fetchTemplates();
+  const persistGroupOrdering = async (groups: TemplateGroup[]) => {
+    if (!userId || !supabase) return;
+    setOrderingBusy(true);
+    const updates: TaskTemplate[] = [];
+    const updatedTemplates: TaskTemplate[] = [];
+    const previousTemplates = templates;
+
+    groups.forEach((group, groupIndex) => {
+      group.tasks.forEach((task, taskIndex) => {
+        const sortOrder = groupIndex * CATEGORY_STEP + (taskIndex + 1);
+        const updated = { ...task, sort_order: sortOrder };
+        updates.push({
+          ...task,
+          user_id: userId,
+          sort_order: sortOrder,
+        });
+        updatedTemplates.push(updated);
+      });
+    });
+
+    if (updates.length) {
+      setTemplates(updatedTemplates);
+      const { error } = await supabase
+        .from("weekly_task_templates")
+        .upsert(updates, { onConflict: "id", ignoreDuplicates: false });
+      if (error) {
+        console.error("Failed to persist order", error);
+        setTemplates(previousTemplates);
+      } else {
+        await fetchTemplates();
+      }
+    }
+    setOrderingBusy(false);
+  };
+
+  const handleCategoryMove = async (categoryName: string, direction: "up" | "down") => {
+    if (orderingBusy) return;
+    const groups = groupTemplatesByCategory(templates);
+    const index = groups.findIndex((g) => g.category === categoryName);
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (index < 0 || targetIndex < 0 || targetIndex >= groups.length) return;
+    const reordered = [...groups];
+    [reordered[index], reordered[targetIndex]] = [reordered[targetIndex], reordered[index]];
+    await persistGroupOrdering(reordered);
+  };
+
+  const handleTaskMove = async (templateId: string, direction: "up" | "down") => {
+    if (orderingBusy) return;
+    const groups = groupTemplatesByCategory(templates);
+    const groupIndex = groups.findIndex((g) => g.tasks.some((t) => t.id === templateId));
+    if (groupIndex === -1) return;
+
+    const group = groups[groupIndex];
+    const visibleTasks = showArchivedTemplates ? group.tasks : group.tasks.filter((t) => t.active);
+    const currentIndex = visibleTasks.findIndex((t) => t.id === templateId);
+    const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    if (currentIndex === -1 || targetIndex < 0 || targetIndex >= visibleTasks.length) return;
+
+    const reorderedVisible = [...visibleTasks];
+    [reorderedVisible[currentIndex], reorderedVisible[targetIndex]] = [
+      reorderedVisible[targetIndex],
+      reorderedVisible[currentIndex],
+    ];
+
+    const hiddenTasks = showArchivedTemplates ? [] : group.tasks.filter((t) => !t.active);
+    const mergedTasks = showArchivedTemplates ? reorderedVisible : [...reorderedVisible, ...hiddenTasks];
+    const reorderedGroups = [...groups];
+    reorderedGroups[groupIndex] = { ...group, tasks: mergedTasks };
+
+    await persistGroupOrdering(reorderedGroups);
   };
 
   const handleSnapshotSave = async () => {
@@ -450,6 +538,9 @@ const Tracker: React.FC = () => {
   const renderTemplateManager = () => {
     const activeCount = templates.filter((t) => t.active).length;
     const archivedCount = templates.length - activeCount;
+    const visibleGroups = templateGroups.filter((group) => (showArchivedTemplates ? true : group.tasks.some((t) => t.active)));
+    const firstVisibleCategory = visibleGroups[0]?.category;
+    const lastVisibleCategory = visibleGroups[visibleGroups.length - 1]?.category;
 
     return (
       <div className="space-y-4">
@@ -504,74 +595,108 @@ const Tracker: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2">
-          {templates
-            .filter((t) => showArchivedTemplates || t.active)
-            .map((template) => (
-              <div
-                key={template.id}
-                className="flex h-full flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-3"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 space-y-2">
-                    <input
-                      className={inputBase}
-                      value={template.text}
-                      placeholder="Task name"
-                      onChange={(e) => handleTemplateUpdate(template, { text: e.target.value })}
-                    />
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      <input
-                        className={inputBase}
-                        value={template.category}
-                        placeholder="Category"
-                        onChange={(e) => handleTemplateUpdate(template, { category: e.target.value })}
-                      />
-                      <label className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-xs text-white/70">
-                        <input
-                          type="checkbox"
-                          checked={template.active}
-                          onChange={(e) => handleTemplateUpdate(template, { active: e.target.checked })}
-                        />
-                        Active
-                      </label>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-white/70">
-                      <button
-                        className="rounded bg-white/10 px-3 py-1 text-white hover:bg-white/20"
-                        onClick={() => handleTemplateUpdate(template, { active: !template.active })}
-                      >
-                        {template.active ? "Archive" : "Restore"}
-                      </button>
-                      <button
-                        className="rounded bg-red-500/20 px-3 py-1 text-red-100 hover:bg-red-500/30"
-                        onClick={() => handleTemplateDelete(template)}
-                      >
-                        Delete
-                      </button>
-                      <span className="rounded-full bg-white/5 px-2 py-1">{template.category || "Uncategorized"}</span>
-                    </div>
+        <div className="space-y-3">
+          {visibleGroups.map((group) => {
+            const tasks = showArchivedTemplates ? group.tasks : group.tasks.filter((t) => t.active);
+            return (
+              <div key={group.category} className="space-y-3 rounded-xl border border-white/10 bg-white/5 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold text-white">{group.category || "Uncategorized"}</p>
+                    <p className="text-xs text-white/60">
+                      {tasks.length} task{tasks.length === 1 ? "" : "s"}
+                    </p>
                   </div>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
                     <button
-                      className="rounded-lg bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20 disabled:opacity-50"
-                      onClick={() => handleTemplateMove(template, "up")}
-                      disabled={savingTemplateId === template.id}
+                      className="rounded bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20 disabled:opacity-50"
+                      onClick={() => handleCategoryMove(group.category, "up")}
+                      disabled={orderingBusy || group.category === firstVisibleCategory}
                     >
-                      Up
+                      Move category up
                     </button>
                     <button
-                      className="rounded-lg bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20 disabled:opacity-50"
-                      onClick={() => handleTemplateMove(template, "down")}
-                      disabled={savingTemplateId === template.id}
+                      className="rounded bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20 disabled:opacity-50"
+                      onClick={() => handleCategoryMove(group.category, "down")}
+                      disabled={orderingBusy || group.category === lastVisibleCategory}
                     >
-                      Down
+                      Move category down
                     </button>
                   </div>
                 </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  {tasks.map((template, idx) => (
+                    <div
+                      key={template.id}
+                      className="flex h-full flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 space-y-2">
+                          <input
+                            className={inputBase}
+                            value={template.text}
+                            placeholder="Task name"
+                            onChange={(e) => handleTemplateUpdate(template, { text: e.target.value })}
+                          />
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            <input
+                              className={inputBase}
+                              value={template.category}
+                              placeholder="Category"
+                              onChange={(e) => handleTemplateUpdate(template, { category: e.target.value })}
+                            />
+                            <label className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-xs text-white/70">
+                              <input
+                                type="checkbox"
+                                checked={template.active}
+                                onChange={(e) => handleTemplateUpdate(template, { active: e.target.checked })}
+                              />
+                              Active
+                            </label>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-white/70">
+                            <button
+                              className="rounded bg-white/10 px-3 py-1 text-white hover:bg-white/20"
+                              onClick={() => handleTemplateUpdate(template, { active: !template.active })}
+                            >
+                              {template.active ? "Archive" : "Restore"}
+                            </button>
+                            <button
+                              className="rounded bg-red-500/20 px-3 py-1 text-red-100 hover:bg-red-500/30"
+                              onClick={() => handleTemplateDelete(template)}
+                            >
+                              Delete
+                            </button>
+                            <span className="rounded-full bg-white/5 px-2 py-1">
+                              {template.category || "Uncategorized"}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <button
+                            className="rounded-lg bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20 disabled:opacity-50"
+                            onClick={() => handleTaskMove(template.id, "up")}
+                            disabled={orderingBusy || idx === 0}
+                          >
+                            Move up
+                          </button>
+                          <button
+                            className="rounded-lg bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20 disabled:opacity-50"
+                            onClick={() => handleTaskMove(template.id, "down")}
+                            disabled={orderingBusy || idx === tasks.length - 1}
+                          >
+                            Move down
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          {!templates.length && <p className="text-sm text-white/60">No tasks yet.</p>}
+            );
+          })}
+          {!visibleGroups.length && <p className="text-sm text-white/60">No tasks yet.</p>}
         </div>
       </div>
     );
@@ -801,7 +926,9 @@ const Tracker: React.FC = () => {
 
   const renderTabContent = () => {
     if (activeTab === "thisWeek") {
-      const categories = Array.from(new Set(templates.filter((t) => t.active).map((t) => t.category)));
+      const activeGroups = templateGroups
+        .map((group) => ({ ...group, tasks: group.tasks.filter((t) => t.active) }))
+        .filter((group) => group.tasks.length);
       return (
         <div className="grid gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -861,20 +988,17 @@ const Tracker: React.FC = () => {
           <div className="grid gap-5 xl:gap-6 grid-cols-1 lg:grid-cols-[repeat(2,minmax(700px,1fr))]">
             {templatesLoading ? (
               <p className="text-sm text-white/60">Loading templates...</p>
-            ) : categories.length ? (
-              categories.map((category) => (
+            ) : activeGroups.length ? (
+              activeGroups.map((group) => (
                 <GlassCard
-                  key={category}
+                  key={group.category}
                   className="w-full max-w-none p-8 md:p-9"
                 >
                   <div className="mb-4 flex items-center justify-between">
-                    <h3 className={sectionTitle}>{category}</h3>
+                    <h3 className={sectionTitle}>{group.category}</h3>
                   </div>
                   <div className="flex flex-col gap-3">
-                    {templates
-                      .filter((t) => t.category === category && t.active)
-                      .sort((a, b) => a.sort_order - b.sort_order)
-                      .map((template) => renderTaskRow(template))}
+                    {group.tasks.map((template) => renderTaskRow(template))}
                   </div>
                 </GlassCard>
               ))

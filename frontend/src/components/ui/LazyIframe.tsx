@@ -1,3 +1,5 @@
+// frontend/src/components/ui/LazyIframe.tsx
+
 import React, { useEffect, useRef, useState } from "react";
 
 interface LazyIframeProps {
