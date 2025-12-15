@@ -1,6 +1,5 @@
 // src/pages/Home.tsx
 import React, { Suspense, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import Intro from "../components/Intro";
 import GlassCard from "../components/ui/GlassCard";
 
@@ -33,8 +32,6 @@ const SectionFallback: React.FC<{ title: string }> = ({ title }) => (
 );
 
 const Home: React.FC = () => {
-  const navigate = useNavigate();
-
   useEffect(() => {
     const preloadSections = () => sectionPrefetchers.forEach((loader) => loader());
     const idle = (window as any).requestIdleCallback;
@@ -56,19 +53,6 @@ const Home: React.FC = () => {
       }
     };
   }, []);
-
-  useEffect(() => {
-    const handleShortcut = (e: KeyboardEvent) => {
-      if (e.key?.toLowerCase() !== "t" || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
-      const target = e.target as HTMLElement | null;
-      const tag = target?.tagName?.toLowerCase();
-      const isTyping = tag === "input" || tag === "textarea" || target?.isContentEditable;
-      if (isTyping) return;
-      navigate("/tracker");
-    };
-    window.addEventListener("keydown", handleShortcut);
-    return () => window.removeEventListener("keydown", handleShortcut);
-  }, [navigate]);
 
   return (
     <div>
