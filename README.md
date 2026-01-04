@@ -38,26 +38,31 @@ cd personal-portfolio
 ### Frontend Setup
 ```bash
 cd frontend
-New-Item -Path . -Name ".env.local" -ItemType "File"
 yarn install
 ```
 
-### Add the following code to the .env.local file
-
-```VITE_API_BASE_URL=http://localhost:5000```
+### Ensure `frontend/.env.local` includes
+```
+VITE_API_BASE_URL=http://localhost:5000
+VITE_SUPABASE_URL=https://llupwqzjmptmyfsfvsij.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxsdXB3cXpqbXB0bXlmc2Z2c2lqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjQ5MzQsImV4cCI6MjA4MTM0MDkzNH0.mM3HMGu9OrYnfLqA-CzQeeeS8yt_bx7xCfBGCATBw1s
+```
 
 ### Backend Setup
 ```bash
 cd backend
 yarn install
-New-Item -Path . -Name ".env" -ItemType "File"
+Copy-Item .env.example .env
 ```
 
-### Add the following code to the .env file
-
+### Update `backend/.env` with values for
 ```
-GITHUB_USERNAME=KushagraBharti
+PORT=5000
+GITHUB_USERNAME=
 GITHUB_TOKEN=
+LEETCODE_USERNAME=
+OPENWEATHER_API_KEY=
+GITHUB_STATS_TTL_MS=600000
 ```
 
 ## **Initializing Local Environment**

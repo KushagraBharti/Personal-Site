@@ -8,6 +8,12 @@ interface WeatherData {
   weather: { description: string }[];
 }
 
+interface GeoResponse {
+  latitude: number;
+  longitude: number;
+  success?: boolean;
+}
+
 const WeatherCard: React.FC = () => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -20,12 +26,38 @@ const WeatherCard: React.FC = () => {
     const controller = new AbortController();
     const fallbackCity = "Austin";
 
+    const getIpLocation = async () => {
+      try {
+        const locationRes = await axios.get<GeoResponse>("https://ipwho.is/", {
+          signal: controller.signal,
+          timeout: 4000,
+        });
+        if (
+          locationRes.data.success === false ||
+          typeof locationRes.data.latitude !== "number" ||
+          typeof locationRes.data.longitude !== "number"
+        ) {
+          return null;
+        }
+        if (typeof locationRes.data.latitude === "number" && typeof locationRes.data.longitude === "number") {
+          return { lat: locationRes.data.latitude, lon: locationRes.data.longitude };
+        }
+      } catch {
+        return null;
+      }
+      return null;
+    };
+
     const fetchWeather = async () => {
       try {
-        const weatherRes = await axios.get<WeatherData>(
-          `${baseUrl}/api/weather?q=${encodeURIComponent(fallbackCity)}`,
-          { signal: controller.signal, timeout: 4000 }
-        );
+        const ipLocation = await getIpLocation();
+        const query = ipLocation
+          ? `lat=${ipLocation.lat}&lon=${ipLocation.lon}`
+          : `q=${encodeURIComponent(fallbackCity)}`;
+        const weatherRes = await axios.get<WeatherData>(`${baseUrl}/api/weather?${query}`, {
+          signal: controller.signal,
+          timeout: 4000,
+        });
         setWeather(weatherRes.data);
       } catch (err: any) {
         if (!controller.signal.aborted) {
