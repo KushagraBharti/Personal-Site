@@ -25,6 +25,20 @@ export const getWeather: RequestHandler = async (req: Request, res: Response) =>
     res.json(weatherRes.data); 
     return; // return nothing => OK
   } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      console.error("Error fetching weather:", {
+        status: error.response.status,
+        data: error.response.data,
+      });
+      const upstreamMessage =
+        typeof error.response.data === "object" && error.response.data
+          ? (error.response.data as { message?: string }).message
+          : undefined;
+      res.status(error.response.status).json({
+        error: upstreamMessage || "Failed to fetch weather data",
+      });
+      return;
+    }
     console.error("Error fetching weather:", error);
     res.status(500).json({ error: "Failed to fetch weather data" });
     return; // return nothing => OK
