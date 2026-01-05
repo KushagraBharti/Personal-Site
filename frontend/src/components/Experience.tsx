@@ -82,7 +82,7 @@ const Experiences: React.FC = () => {
 
   return (
     <section className="py-16">
-      <div className="container mx-auto max-w-screen-xl px-4 md:px-16">
+      <div className="container mx-auto max-w-screen-2xl px-4 md:px-10 lg:px-12">
         {/* Typed heading */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -113,9 +113,9 @@ const Experiences: React.FC = () => {
                 className="h-full"
               >
                 {/* Fixed-height GlassCard so that all cards align and hover overlay positions correctly. */}
-                <GlassCard className="group relative flex flex-col items-center text-center w-full h-48 px-6 py-6 overflow-hidden">
+                <GlassCard className="group relative flex flex-col items-center text-center w-full max-w-none mx-0 h-48 px-6 py-6 overflow-hidden">
                   {/* Always-visible content (title + summary). Hidden on hover. */}
-                  <div className="relative z-20 flex flex-col items-center justify-center h-full group-hover:hidden">
+                  <div className="relative z-20 flex flex-col items-center justify-center h-full opacity-100 transition-opacity duration-150 delay-100 group-hover:opacity-0 group-hover:delay-0">
                     <div className="mb-2 w-full">
                       <h3 className="text-xl font-semibold text-gray-50 break-words">
                         {exp.position}
@@ -125,10 +125,10 @@ const Experiences: React.FC = () => {
                   </div>
 
                   {/* Background gradient overlay on hover */}
-                  <div className="absolute inset-0 z-10 bg-gradient-to-r from-blue-500 to-purple-600 opacity-0 group-hover:opacity-70 transition-opacity duration-300 pointer-events-none" />
+                  <div className="absolute inset-0 z-10 premium-hover-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                   {/* Hover overlay */}
-                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center space-y-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto">
+                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center space-y-3 opacity-0 transition-opacity duration-150 delay-0 group-hover:opacity-100 group-hover:delay-100 pointer-events-auto">
                     <h3 className="text-xl font-semibold text-white px-2 text-center">
                       {exp.position}
                     </h3>
@@ -156,7 +156,7 @@ const Experiences: React.FC = () => {
         {/* --- Mobile Layout (Stacked cards) --- */}
         <div className="block md:hidden space-y-4">
           {experiences.map((exp, index) => (
-            <GlassCard key={index} className="w-full text-center p-4">
+            <GlassCard key={index} className="w-full max-w-none mx-0 text-center p-4">
               <h3 className="text-lg font-semibold text-gray-50 break-words">
                 {exp.position}
               </h3>

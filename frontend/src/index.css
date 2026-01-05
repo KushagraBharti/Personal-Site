@@ -132,6 +132,14 @@ body {
   transform: none !important;
 }
 
+/* Premium hover overlay for project/education/experience cards */
+.premium-hover-overlay {
+  background:
+    radial-gradient(120% 120% at 10% 10%, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.08) 40%, rgba(15, 23, 42, 0.8) 70%),
+    linear-gradient(135deg, rgba(14, 116, 144, 0.35), rgba(30, 64, 175, 0.35) 45%, rgba(2, 6, 23, 0.9));
+  box-shadow: inset 0 0 40px rgba(15, 23, 42, 0.35);
+}
+
 /* 10. Custom Cursor Example */
 body, button, a {
   cursor: url('custom-cursor.svg'), auto;

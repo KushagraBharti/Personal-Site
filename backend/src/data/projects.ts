@@ -23,6 +23,39 @@ export const projectsData: ProjectData[] = [
     thumbnail: "/quantTestEnv.svg",
   },
 
+  {
+  title: "Monopoly LLM Benchmark Platform",
+  summary: "A deterministic, inspectable multi-agent AI simulation where large language models play full Monopoly games under strict rules, enabling reproducible benchmarking, debugging, and research into strategic reasoning and negotiation.",
+  description: [
+    "Designed and implemented a full Monopoly game engine from scratch with complete rule coverage—including auctions, trading, jail mechanics, building constraints, liquidation, and bankruptcy—ensuring deterministic outcomes via seeded randomness and strict turn enforcement.",
+    "Built a modular AI decision orchestration layer that constrains LLMs to valid actions only, validates structured tool-call responses, retries invalid outputs once, and applies deterministic fallback actions to guarantee uninterrupted and reproducible gameplay.",
+    "Developed a comprehensive telemetry and logging system that records every game event, decision request, model response, applied action, and state snapshot, enabling full replay, auditability, and deep post-hoc analysis of model behavior.",
+    "Engineered a real-time FastAPI backend with WebSocket streaming to manage game lifecycles (start, pause, resume, stop) and broadcast events and snapshots live to a React-based frontend without desynchronization or state leakage.",
+    "Created an interactive frontend UI that visualizes the Monopoly board, player states, auctions, trades, and event feed, while providing detailed inspection tools to view exact LLM prompts, tool schemas, responses, retries, and fallback reasons.",
+    "Implemented robust verification pipelines to prevent silent failures, including contract schema validation, deterministic replay checks, non-overwriting run artifacts, and test suites that enforce correctness invariants such as turn order integrity.",
+    "Refactored and hardened the codebase to enforce clear architectural boundaries between the game engine, AI arena, API server, telemetry layer, and frontend, making the system extensible, debuggable, and suitable as a long-term research platform.",
+    "Designed the system with benchmarking and research in mind, enabling controlled experiments on long-horizon planning, negotiation dynamics, tool-use reliability, auction behavior, and multi-agent strategic reasoning across different LLMs."
+  ],
+  tags: [
+    "Python",
+    "TypeScript",
+    "FastAPI",
+    "React",
+    "WebSockets",
+    "LLMs",
+    "Multi-Agent Systems",
+    "AI Benchmarking",
+    "Game Simulation",
+    "Deterministic Systems",
+    "OpenRouter",
+    "Prompt Engineering",
+    "System Design",
+    "Research Infrastructure"
+  ],
+  githubLink: "https://github.com/KushagraBharti/monopoly-llm-benchmark",
+  thumbnail: "/monopolyBench.svg"
+  },
+
   { 
     title: "Pseudo Lawyer", 
     summary: "A full-stack legal tech platform that leverages AI to generate legal contracts and provides secure user authentication.", 

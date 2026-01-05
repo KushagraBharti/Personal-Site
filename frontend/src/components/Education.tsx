@@ -78,7 +78,7 @@ const Education: React.FC = () => {
 
   return (
     <section className="py-16">
-      <div className="container mx-auto max-w-screen-xl px-4 md:px-16">
+      <div className="container mx-auto max-w-screen-2xl px-4 md:px-10 lg:px-12">
         {/* Typed heading */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -109,9 +109,9 @@ const Education: React.FC = () => {
                 className="h-full"
               >
                 {/* Each card has fixed height h-48 so they align */}
-                <GlassCard className="group relative flex flex-col items-center text-center w-full h-48 px-6 py-6 overflow-hidden">
+                <GlassCard className="group relative flex flex-col items-center text-center w-full max-w-none mx-0 h-48 px-6 py-6 overflow-hidden">
                   {/* Always-visible content (position + focus), hidden on hover */}
-                  <div className="relative z-20 flex flex-col items-center justify-center h-full group-hover:hidden">
+                  <div className="relative z-20 flex flex-col items-center justify-center h-full opacity-100 transition-opacity duration-150 delay-100 group-hover:opacity-0 group-hover:delay-0">
                     <h3 className="text-xl font-semibold text-gray-50 break-words mb-1">
                       {edu.position}
                     </h3>
@@ -119,10 +119,10 @@ const Education: React.FC = () => {
                   </div>
 
                   {/* Background gradient overlay on hover */}
-                  <div className="absolute inset-0 z-10 bg-gradient-to-r from-blue-500 to-purple-600 opacity-0 group-hover:opacity-70 transition-opacity duration-300 pointer-events-none" />
+                  <div className="absolute inset-0 z-10 premium-hover-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                   {/* Hover overlay: title + buttons, centered together */}
-                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center space-y-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto">
+                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center space-y-3 opacity-0 transition-opacity duration-150 delay-0 group-hover:opacity-100 group-hover:delay-100 pointer-events-auto">
                     <h3 className="text-xl font-semibold text-white px-2 text-center">
                       {edu.position}
                     </h3>
@@ -150,7 +150,7 @@ const Education: React.FC = () => {
         {/* --- Mobile Layout (Stacked cards) --- */}
         <div className="block md:hidden space-y-4">
           {education.map((edu, index) => (
-            <GlassCard key={index} className="w-full text-center p-4">
+            <GlassCard key={index} className="w-full max-w-none mx-0 text-center p-4">
               <h3 className="text-lg font-semibold text-gray-50 break-words mb-1">
                 {edu.position}
               </h3>
