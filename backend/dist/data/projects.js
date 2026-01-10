@@ -17,17 +17,50 @@ exports.projectsData = [
         thumbnail: "/quantTestEnv.svg",
     },
     {
-        title: "Pseudo Lawyer",
-        summary: "A full-stack legal tech platform that leverages AI to generate legal contracts and provides secure user authentication.",
+        title: "Monopoly LLM Benchmark Platform",
+        summary: "A deterministic, inspectable multi-agent AI simulation where large language models play full Monopoly games under strict rules, enabling reproducible benchmarking, debugging, and research into strategic reasoning and negotiation.",
         description: [
-            "Built a modern Next.js frontend with engaging UI/UX using Framer Motion and React Tilt, enabling intuitive registration, login, and profile management via AWS Amplify and Cognito.",
-            "Developed a robust Flask backend offering RESTful API endpoints for AI-driven legal contract drafting using AWS Bedrock and Langchain, with persistent chat storage in SQLite.",
-            "Integrated AWS S3 for secure contract uploads and implemented role-based access control to ensure data confidentiality and integrity.",
-            "Orchestrated seamless communication between frontend and backend with CORS and error handling, delivering a scalable and secure legal contract generation solution."
+            "Designed and implemented a full Monopoly game engine from scratch with complete rule coverage—including auctions, trading, jail mechanics, building constraints, liquidation, and bankruptcy—ensuring deterministic outcomes via seeded randomness and strict turn enforcement.",
+            "Built a modular AI decision orchestration layer that constrains LLMs to valid actions only, validates structured tool-call responses, retries invalid outputs once, and applies deterministic fallback actions to guarantee uninterrupted and reproducible gameplay.",
+            "Developed a comprehensive telemetry and logging system that records every game event, decision request, model response, applied action, and state snapshot, enabling full replay, auditability, and deep post-hoc analysis of model behavior.",
+            "Engineered a real-time FastAPI backend with WebSocket streaming to manage game lifecycles (start, pause, resume, stop) and broadcast events and snapshots live to a React-based frontend without desynchronization or state leakage.",
+            "Created an interactive frontend UI that visualizes the Monopoly board, player states, auctions, trades, and event feed, while providing detailed inspection tools to view exact LLM prompts, tool schemas, responses, retries, and fallback reasons.",
+            "Implemented robust verification pipelines to prevent silent failures, including contract schema validation, deterministic replay checks, non-overwriting run artifacts, and test suites that enforce correctness invariants such as turn order integrity.",
+            "Refactored and hardened the codebase to enforce clear architectural boundaries between the game engine, AI arena, API server, telemetry layer, and frontend, making the system extensible, debuggable, and suitable as a long-term research platform.",
+            "Designed the system with benchmarking and research in mind, enabling controlled experiments on long-horizon planning, negotiation dynamics, tool-use reliability, auction behavior, and multi-agent strategic reasoning across different LLMs."
         ],
-        tags: ["Next.js", "Flask", "AWS", "Cognito", "Amplify", "Bedrock", "Langchain", "SQLite", "S3", "Legal Tech", "Full-Stack"],
-        githubLink: "https://github.com/KushagraBharti/PseudoLawyer",
-        thumbnail: "/pseudoLawyer.svg",
+        tags: [
+            "Python",
+            "TypeScript",
+            "FastAPI",
+            "React",
+            "WebSockets",
+            "LLMs",
+            "Multi-Agent Systems",
+            "AI Benchmarking",
+            "Game Simulation",
+            "Deterministic Systems",
+            "OpenRouter",
+            "Prompt Engineering",
+            "System Design",
+            "Research Infrastructure"
+        ],
+        githubLink: "https://github.com/KushagraBharti/monopoly-llm-benchmark",
+        thumbnail: "/monopolyBench.svg"
+    },
+    {
+        "title": "PseudoLawyer",
+        "summary": "An AI-powered real-time contract negotiation platform that uses a virtual mediator to resolve disputes and draft bespoke legal agreements.",
+        "description": [
+            "Architected a real-time, multi-party negotiation platform using Next.js 15 and Supabase Realtime, enabling synchronized group chats between opposing parties.",
+            "Engineered 'Sudo', an autonomous AI mediator powered by Anthropic's Claude 3.5 Sonnet, capable of understanding context, proposing compromises, and neutralizing heated debates in real-time.",
+            "Implemented a smart 'Ask Sudo' triggering system that allows the AI to passively monitor the conversation and intervene only when explicitly invoked or needed.",
+            "Built a contract generation engine that synthesizes the entire negotiation history into a professional, legally-structured document using LLM-driven drafting.",
+            "Designed a premium, 'Glassmorphism' UI with Tailwind CSS and Framer Motion, featuring dark mode, typing indicators, and seamless role-based access control."
+        ],
+        "tags": ["Next.js 15", "TypeScript", "Supabase", "Realtime", "PostgreSQL", "OpenRouter", "Anthropic Claude 3.5", "Tailwind CSS", "Framer Motion", "Legal Tech", "AI Agents"],
+        "githubLink": "https://github.com/KushagraBharti/PseudoLawyer",
+        "thumbnail": "/pseudoLawyer.svg"
     },
     {
         title: "Personal Portfolio Website",
@@ -79,7 +112,7 @@ exports.projectsData = [
         description: [
             "Developed a custom Gymnasium environment ('Race') that simulates an F1 track using Pygame and OpenCV for track extraction.",
             "Implemented a Car class with sensor-based perception (echo sensors) to inform both heuristic and RL-based control strategies.",
-            "Integrated Ray Tune and RLlib’s SACTrainer for training an RL agent, with functionality to restore from checkpoints and export training artifacts.",
+            "Integrated Ray Tune and RLlib's SACTrainer for training an RL agent, with functionality to restore from checkpoints and export training artifacts.",
             "Provided both manual control mode (via keyboard input) and an echo-heuristic agent for testing and debugging.",
             "Although the codebase contains extra legacy and experimental code snippets, the core functionality demonstrates effective application of RL in a simulated racing context."
         ],

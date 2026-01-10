@@ -38,6 +38,19 @@ const getWeather = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return; // return nothing => OK
     }
     catch (error) {
+        if (axios_1.default.isAxiosError(error) && error.response) {
+            console.error("Error fetching weather:", {
+                status: error.response.status,
+                data: error.response.data,
+            });
+            const upstreamMessage = typeof error.response.data === "object" && error.response.data
+                ? error.response.data.message
+                : undefined;
+            res.status(error.response.status).json({
+                error: upstreamMessage || "Failed to fetch weather data",
+            });
+            return;
+        }
         console.error("Error fetching weather:", error);
         res.status(500).json({ error: "Failed to fetch weather data" });
         return; // return nothing => OK

@@ -57,17 +57,18 @@ export const projectsData: ProjectData[] = [
   },
 
   { 
-    title: "Pseudo Lawyer", 
-    summary: "A full-stack legal tech platform that leverages AI to generate legal contracts and provides secure user authentication.", 
-    description: [
-      "Built a modern Next.js frontend with engaging UI/UX using Framer Motion and React Tilt, enabling intuitive registration, login, and profile management via AWS Amplify and Cognito.",
-      "Developed a robust Flask backend offering RESTful API endpoints for AI-driven legal contract drafting using AWS Bedrock and Langchain, with persistent chat storage in SQLite.",
-      "Integrated AWS S3 for secure contract uploads and implemented role-based access control to ensure data confidentiality and integrity.",
-      "Orchestrated seamless communication between frontend and backend with CORS and error handling, delivering a scalable and secure legal contract generation solution."
+    "title": "PseudoLawyer", 
+    "summary": "An AI-powered real-time contract negotiation platform that uses a virtual mediator to resolve disputes and draft bespoke legal agreements.", 
+    "description": [
+      "Architected a real-time, multi-party negotiation platform using Next.js 15 and Supabase Realtime, enabling synchronized group chats between opposing parties.",
+      "Engineered 'Sudo', an autonomous AI mediator powered by Anthropic's Claude 3.5 Sonnet, capable of understanding context, proposing compromises, and neutralizing heated debates in real-time.",
+      "Implemented a smart 'Ask Sudo' triggering system that allows the AI to passively monitor the conversation and intervene only when explicitly invoked or needed.",
+      "Built a contract generation engine that synthesizes the entire negotiation history into a professional, legally-structured document using LLM-driven drafting.",
+      "Designed a premium, 'Glassmorphism' UI with Tailwind CSS and Framer Motion, featuring dark mode, typing indicators, and seamless role-based access control."
     ], 
-    tags: ["Next.js", "Flask", "AWS", "Cognito", "Amplify", "Bedrock", "Langchain", "SQLite", "S3", "Legal Tech", "Full-Stack"], 
-    githubLink: "https://github.com/KushagraBharti/PseudoLawyer", 
-    thumbnail: "/pseudoLawyer.svg",
+    "tags": ["Next.js 15", "TypeScript", "Supabase", "Realtime", "PostgreSQL", "OpenRouter", "Anthropic Claude 3.5", "Tailwind CSS", "Framer Motion", "Legal Tech", "AI Agents"], 
+    "githubLink": "https://github.com/KushagraBharti/PseudoLawyer", 
+    "thumbnail": "/pseudoLawyer.svg"
   },
   
   { 
@@ -123,7 +124,7 @@ export const projectsData: ProjectData[] = [
     description: [
       "Developed a custom Gymnasium environment ('Race') that simulates an F1 track using Pygame and OpenCV for track extraction.",
       "Implemented a Car class with sensor-based perception (echo sensors) to inform both heuristic and RL-based control strategies.",
-      "Integrated Ray Tune and RLlib’s SACTrainer for training an RL agent, with functionality to restore from checkpoints and export training artifacts.",
+      "Integrated Ray Tune and RLlib's SACTrainer for training an RL agent, with functionality to restore from checkpoints and export training artifacts.",
       "Provided both manual control mode (via keyboard input) and an echo-heuristic agent for testing and debugging.",
       "Although the codebase contains extra legacy and experimental code snippets, the core functionality demonstrates effective application of RL in a simulated racing context."
     ],
