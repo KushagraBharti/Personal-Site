@@ -5,6 +5,8 @@
 
 A dynamic, full-stack portfolio website to showcase my professional experience, education, and projects. This project features a responsive frontend built with React and TailwindCSS, a backend API built with Node.js and Express.js, and seamless integration for serving dynamic content.
 
+![Portfolio Preview](personal-site-preview.png)
+
 ## **Features**
 - Interactive UI showcasing education, projects, and work experiences.
 - Reusable and modular React components.
@@ -44,8 +46,10 @@ yarn install
 ### Ensure `frontend/.env.local` includes
 ```
 VITE_API_BASE_URL=http://localhost:5000
-VITE_SUPABASE_URL=https://llupwqzjmptmyfsfvsij.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxsdXB3cXpqbXB0bXlmc2Z2c2lqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjQ5MzQsImV4cCI6MjA4MTM0MDkzNH0.mM3HMGu9OrYnfLqA-CzQeeeS8yt_bx7xCfBGCATBw1s
+
+# Supabase Config for Hidden Task Manager (can ignore)
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
 ```
 
 ### Backend Setup
