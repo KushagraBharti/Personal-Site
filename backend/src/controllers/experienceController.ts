@@ -6,7 +6,8 @@ export const getAllExperiences = (req: Request, res: Response) => {
   };  
 
 export const getExperienceById = (req: Request, res: Response) => {
-    const experienceId = parseInt(req.params.id, 10);
+    const idParam = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const experienceId = parseInt(idParam ?? '', 10);
     if (!isNaN(experienceId) && experienceId >= 0 && experienceId < experiencesData.length) {
       res.json(experiencesData[experienceId]);
     } else {

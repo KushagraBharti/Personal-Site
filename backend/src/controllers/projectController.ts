@@ -8,7 +8,8 @@ export const getAllProjects = (req: Request, res: Response) => {
 
 // Fetch a single project by ID
 export const getProjectById = (req: Request, res: Response) => {
-  const projectId = parseInt(req.params.id, 10);
+  const idParam = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const projectId = parseInt(idParam ?? '', 10);
   if (!isNaN(projectId) && projectId >= 0 && projectId < projectsData.length) {
     res.json(projectsData[projectId]);
   } else {
