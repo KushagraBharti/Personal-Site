@@ -40,7 +40,7 @@ cd personal-portfolio
 ### Frontend Setup
 ```bash
 cd frontend
-yarn install
+bun install
 ```
 
 ### Ensure `frontend/.env.local` includes
@@ -55,7 +55,7 @@ VITE_SUPABASE_ANON_KEY=
 ### Backend Setup
 ```bash
 cd backend
-yarn install
+bun install
 Copy-Item .env.example .env
 ```
 
@@ -74,11 +74,11 @@ GITHUB_STATS_TTL_MS=600000
 ### Frontend Server
 ```bash
 cd frontend
-yarn vite dev
+bun run dev
 ```
 
 ### Backend Server
 ```bash
 cd backend
-yarn dev
+bun run dev
 ```
