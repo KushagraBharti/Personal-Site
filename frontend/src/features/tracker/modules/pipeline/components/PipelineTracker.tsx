@@ -210,7 +210,7 @@ const PipelineTracker: React.FC = () => {
               <div>
                 <p className="text-white font-medium">{edits.name ?? item.name}</p>
                 <p className="text-xs text-white/60">
-                  {edits.type ?? item.type} • {edits.stage ?? item.stage || "Stage"}
+                  {edits.type ?? item.type} • {edits.stage ?? (item.stage || "Stage")}
                 </p>
               </div>
               <div className="flex gap-2">
