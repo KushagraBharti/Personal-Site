@@ -176,13 +176,17 @@ export const useTasksModule = () => {
   const handleTemplateCreate = async () => {
     if (!newTemplate.text.trim() || !newTemplate.category.trim()) return;
     const sortOrder = calculateSortOrderForCategory(newTemplate.category.trim());
-    await createTemplate(supabase, {
+    const { error } = await createTemplate(supabase, {
       user_id: userId,
       category: newTemplate.category.trim(),
       text: newTemplate.text.trim(),
       sort_order: sortOrder,
       active: true,
     });
+    if (error) {
+      console.error("Failed to create template", error);
+      return;
+    }
     setNewTemplate({ category: "", text: "" });
     refreshTemplates();
   };
@@ -190,9 +194,20 @@ export const useTasksModule = () => {
   const handleTemplateUpdate = async (template: TaskTemplate, updates: Partial<TaskTemplate>) => {
     let payload: Partial<TaskTemplate> = { ...updates };
     if (updates.category && updates.category !== template.category) {
-      payload = { ...payload, sort_order: calculateSortOrderForCategory(updates.category.trim()) };
+      const trimmedCategory = updates.category.trim();
+      payload = {
+        ...payload,
+        category: trimmedCategory,
+        sort_order: calculateSortOrderForCategory(trimmedCategory),
+      };
+    } else if (updates.category) {
+      payload = { ...payload, category: updates.category.trim() };
     }
-    await updateTemplate(supabase, userId, template.id, payload);
+    const { error } = await updateTemplate(supabase, userId, template.id, payload);
+    if (error) {
+      console.error("Failed to update template", error);
+      return;
+    }
     refreshTemplates();
   };
 

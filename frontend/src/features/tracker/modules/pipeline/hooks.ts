@@ -19,7 +19,13 @@ export const usePipelineModule = () => {
     startLoading();
     try {
       const { data, error } = await fetchPipelineItems(supabase, userId);
-      if (!error && data) setPipelineItems(data);
+      if (error) {
+        console.error("Failed to fetch pipeline items", error);
+        setErrorMessage(error.message || String(error));
+        return;
+      }
+      setErrorMessage("");
+      if (data) setPipelineItems(data);
     } finally {
       stopLoading();
     }
@@ -33,7 +39,12 @@ export const usePipelineModule = () => {
   const handleSavePipelineItem = async (item: Partial<PipelineItem> & { type: PipelineType }) => {
     if (!item.name || !item.type) return;
     try {
-      await savePipelineItem(supabase, userId, item);
+      const result = await savePipelineItem(supabase, userId, item);
+      if (result.error) {
+        console.error("Failed to save pipeline item", result.error);
+        setErrorMessage(result.error.message || "Failed to save pipeline item.");
+        throw result.error;
+      }
       setErrorMessage("");
       await refreshPipelines();
     } catch (error) {
@@ -45,7 +56,12 @@ export const usePipelineModule = () => {
 
   const handleDeletePipelineItem = async (id: string) => {
     try {
-      await deletePipelineItem(supabase, userId, id);
+      const result = await deletePipelineItem(supabase, userId, id);
+      if (result.error) {
+        console.error("Failed to delete pipeline item", result.error);
+        setErrorMessage(result.error.message || "Failed to delete pipeline item.");
+        throw result.error;
+      }
       setErrorMessage("");
       setPipelineItems((prev) => prev.filter((p) => p.id !== id));
       await refreshPipelines();
