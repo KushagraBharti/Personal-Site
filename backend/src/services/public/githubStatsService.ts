@@ -1,5 +1,5 @@
 import axios from "axios";
-import { GITHUB_TOKEN, GITHUB_USERNAME } from "../config/github";
+import { GITHUB_TOKEN, GITHUB_USERNAME } from "../../config/github";
 
 const headers = GITHUB_TOKEN ? { Authorization: `token ${GITHUB_TOKEN}` } : {};
 

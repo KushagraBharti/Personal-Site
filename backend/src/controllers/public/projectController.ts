@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { projectsData } from '../data/projects';
+import { projectsData } from '../../data/projects';
 
 // Fetch all projects
 export const getAllProjects = (req: Request, res: Response) => {

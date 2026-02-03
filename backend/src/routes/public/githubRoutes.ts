@@ -1,6 +1,6 @@
 // backend/src/routes/githubRoutes.ts
 import express from "express";
-import { getGitHubStats } from "../controllers/githubController";
+import { getGitHubStats } from "../../controllers/public/githubController";
 
 const router = express.Router();
 

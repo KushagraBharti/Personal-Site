@@ -1,6 +1,6 @@
-// backend/src/routes/weatherRoutes.ts
+// backend/src/routes/public/weatherRoutes.ts
 import express from "express";
-import { getWeather } from "../controllers/weatherController";
+import { getWeather } from "../../controllers/public/weatherController";
 
 const router = express.Router();
 

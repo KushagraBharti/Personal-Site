@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { experiencesData } from '../data/experiences';
+import { experiencesData } from '../../data/experiences';
 
 export const getAllExperiences = (req: Request, res: Response) => {
     res.json(experiencesData);

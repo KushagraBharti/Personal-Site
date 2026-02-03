@@ -1,12 +1,7 @@
 import express from "express";
 import cors from "cors";
-import projectRoutes from "./routes/projectRoutes";
-import experienceRoutes from "./routes/experienceRoutes";
-import educationRoutes from "./routes/educationRoutes";
-import introRoutes from "./routes/introRoutes";
-import githubRoutes from "./routes/githubRoutes";
-import weatherRoutes from "./routes/weatherRoutes";
-import leetcodeRoutes from "./routes/leetcodeRoutes";
+import routes from "./routes";
+import { errorHandler } from "./middleware/errorHandler";
 
 const app = express();
 
@@ -66,17 +61,13 @@ app.use((req, res, next) => {
 */
 
 // Routes
-app.use('/api', projectRoutes);
-app.use('/api', experienceRoutes);
-app.use('/api', educationRoutes);
-app.use('/api', introRoutes);
-app.use("/api/github", githubRoutes);
-app.use("/api/weather", weatherRoutes);
-app.use("/api/leetcode", leetcodeRoutes);
+app.use(routes);
 
 
 app.get('/', (req, res) => {
   res.send('Backend server is running!');
 });
+
+app.use(errorHandler);
 
 export default app;

@@ -1,7 +1,7 @@
 // backend/src/controllers/githubController.ts
 import { Request, Response, RequestHandler } from "express";
-import { GITHUB_USERNAME } from "../config/github";
-import { fetchGitHubStats } from "../services/githubStatsService";
+import { GITHUB_USERNAME } from "../../config/github";
+import { fetchGitHubStats } from "../../services/public/githubStatsService";
 
 export const getGitHubStats: RequestHandler = async (req: Request, res: Response): Promise<void> => {
   if (!GITHUB_USERNAME) {
