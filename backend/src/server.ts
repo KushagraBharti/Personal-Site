@@ -1,4 +1,5 @@
 // backend/src/server.ts
+import type {} from "./types/express";
 import dotenv from "dotenv";
 dotenv.config(); // Load env vars immediately
 

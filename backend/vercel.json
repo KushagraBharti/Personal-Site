@@ -11,5 +11,11 @@
       "src": "/(.*)",
       "dest": "src/server.ts"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/private/cron/finance-sync",
+      "schedule": "0 7 * * *"
+    }
   ]
 }
