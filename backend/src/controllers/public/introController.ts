@@ -46,13 +46,11 @@ export const getIntroData: RequestHandler = async (req: Request, res: Response):
     // Fetch weather data if an API key is provided
     const apiKey = process.env.OPENWEATHER_API_KEY;
     if (apiKey) {
-      const weatherRes = await axios.get(
-        "https://api.openweathermap.org/data/2.5/weather",
-        {
-          params: { q: "Austin", units: "imperial" },
-          headers: { "x-api-key": apiKey },
-        }
-      );
+      // Note: OpenWeather expects the key as the `appid` query param (it does not accept the key via headers).
+      const weatherRes = await axios.get("https://api.openweathermap.org/data/2.5/weather", {
+        params: { q: "Austin", units: "imperial", appid: apiKey },
+        timeout: 10_000,
+      });
       responseData.weather = {
         city: weatherRes.data.name,
         temp: weatherRes.data.main.temp,
