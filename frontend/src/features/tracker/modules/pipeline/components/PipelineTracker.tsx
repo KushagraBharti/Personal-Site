@@ -46,7 +46,9 @@ const PipelineTracker: React.FC = () => {
 
   useEffect(() => {
     return () => {
-      saveTimeoutRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+      saveTimeoutRef.current.forEach((timeoutId) => {
+        window.clearTimeout(timeoutId);
+      });
       saveTimeoutRef.current.clear();
     };
   }, []);
@@ -189,13 +191,21 @@ const PipelineTracker: React.FC = () => {
               <div className="flex gap-2">
                 <button
                   className="rounded bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20"
-                  onClick={() => handleSavePipelineItem({ ...item, archived: !item.archived })}
+                  onClick={() =>
+                    handleSavePipelineItem({ ...item, archived: !item.archived }).catch((error) => {
+                      console.error("Failed to update archive status", error);
+                    })
+                  }
                 >
                   {item.archived ? "Unarchive" : "Archive"}
                 </button>
                 <button
                   className="rounded bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20"
-                  onClick={() => handleDeletePipelineItem(item.id)}
+                  onClick={() =>
+                    handleDeletePipelineItem(item.id).catch((error) => {
+                      console.error("Failed to delete pipeline item", error);
+                    })
+                  }
                 >
                   Delete
                 </button>
@@ -205,7 +215,11 @@ const PipelineTracker: React.FC = () => {
               <select
                 className={inputBase}
                 value={item.type}
-                onChange={(e) => handleSavePipelineItem({ ...item, type: e.target.value as PipelineType })}
+                onChange={(e) =>
+                  handleSavePipelineItem({ ...item, type: e.target.value as PipelineType }).catch((error) => {
+                    console.error("Failed to update pipeline type", error);
+                  })
+                }
               >
                 <option value="internship">Internship</option>
                 <option value="traction">Traction</option>

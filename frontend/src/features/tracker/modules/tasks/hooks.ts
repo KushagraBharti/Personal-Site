@@ -83,9 +83,12 @@ export const useTasksModule = () => {
 
   const refreshTemplates = useCallback(async () => {
     setTemplatesLoading(true);
-    const { data, error } = await fetchTemplates(supabase, userId);
-    if (!error && data) setTemplates(data);
-    setTemplatesLoading(false);
+    try {
+      const { data, error } = await fetchTemplates(supabase, userId);
+      if (!error && data) setTemplates(data);
+    } finally {
+      setTemplatesLoading(false);
+    }
   }, [supabase, userId]);
 
   const refreshWeekStatuses = useCallback(
@@ -194,8 +197,12 @@ export const useTasksModule = () => {
   };
 
   const handleTemplateDelete = async (template: TaskTemplate) => {
-    await deleteTemplate(supabase, userId, template.id);
-    setTemplates((prev) => prev.filter((t) => t.id !== template.id));
+    try {
+      await deleteTemplate(supabase, userId, template.id);
+      setTemplates((prev) => prev.filter((t) => t.id !== template.id));
+    } catch (error) {
+      console.error("Failed to delete template", error);
+    }
   };
 
   const persistGroupOrdering = async (groups: TemplateGroup[]) => {
