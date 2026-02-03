@@ -1,6 +1,6 @@
 // backend/src/routes/introRoutes.ts
 import express from "express";
-import { getIntroData } from "../controllers/introController";
+import { getIntroData } from "../../controllers/public/introController";
 
 const router = express.Router();
 

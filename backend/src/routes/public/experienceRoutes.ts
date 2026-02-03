@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllExperiences, getExperienceById } from '../controllers/experienceController';
+import { getAllExperiences, getExperienceById } from '../../controllers/public/experienceController';
 
 const router = express.Router();
 

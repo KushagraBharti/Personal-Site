@@ -1,6 +1,6 @@
 // backend/src/routes/leetcodeRoutes.ts
 import express from "express";
-import { getLeetCodeStats } from "../controllers/leetcodeController";
+import { getLeetCodeStats } from "../../controllers/public/leetcodeController";
 
 const router = express.Router();
 

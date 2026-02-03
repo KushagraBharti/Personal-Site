@@ -1,9 +1,9 @@
 // backend/src/controllers/introController.ts
 import { Request, Response, RequestHandler } from "express";
 import axios from "axios";
-import { introStaticData } from "../data/intro";
-import { GITHUB_USERNAME } from "../config/github";
-import { fetchGitHubStats } from "../services/githubStatsService";
+import { introStaticData } from "../../data/intro";
+import { GITHUB_USERNAME } from "../../config/github";
+import { fetchGitHubStats } from "../../services/public/githubStatsService";
 
 interface IntroResponse {
   personalPhoto: string;

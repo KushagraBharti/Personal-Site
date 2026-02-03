@@ -5,13 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
-const projectRoutes_1 = __importDefault(require("./routes/projectRoutes"));
-const experienceRoutes_1 = __importDefault(require("./routes/experienceRoutes"));
-const educationRoutes_1 = __importDefault(require("./routes/educationRoutes"));
-const introRoutes_1 = __importDefault(require("./routes/introRoutes"));
-const githubRoutes_1 = __importDefault(require("./routes/githubRoutes"));
-const weatherRoutes_1 = __importDefault(require("./routes/weatherRoutes"));
-const leetcodeRoutes_1 = __importDefault(require("./routes/leetcodeRoutes"));
+const routes_1 = __importDefault(require("./routes"));
+const errorHandler_1 = require("./middleware/errorHandler");
 const app = (0, express_1.default)();
 const allowedOrigins = [
     "http://localhost:5173",
@@ -60,14 +55,9 @@ app.use((req, res, next) => {
 });
 */
 // Routes
-app.use('/api', projectRoutes_1.default);
-app.use('/api', experienceRoutes_1.default);
-app.use('/api', educationRoutes_1.default);
-app.use('/api', introRoutes_1.default);
-app.use("/api/github", githubRoutes_1.default);
-app.use("/api/weather", weatherRoutes_1.default);
-app.use("/api/leetcode", leetcodeRoutes_1.default);
+app.use(routes_1.default);
 app.get('/', (req, res) => {
     res.send('Backend server is running!');
 });
+app.use(errorHandler_1.errorHandler);
 exports.default = app;
