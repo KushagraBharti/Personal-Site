@@ -4,8 +4,6 @@ import GlassButton from "../components/ui/GlassButton";
 import GlassCard from "../components/ui/GlassCard";
 import supabase, { isSupabaseConfigured } from "../lib/supabaseClient";
 import {
-  EvidenceLogItem,
-  MobilityRoute,
   PipelineItem,
   PipelineType,
   TabKey,
@@ -59,7 +57,7 @@ const startOfWeekMondayChicago = (date = new Date()) => {
   return toDateInputValue(chicago);
 };
 
-const earliestWeekStart = "2025-12-08";
+const earliestWeekStart = "2026-02-02";
 
 const shiftWeek = (weekStart: string, weeks: number) => {
   const d = new Date(`${weekStart}T00:00:00`);
@@ -119,10 +117,6 @@ const Tracker: React.FC = () => {
   });
   const [showPastDeals, setShowPastDeals] = useState(false);
 
-  const [evidenceLog, setEvidenceLog] = useState<EvidenceLogItem[]>([]);
-  const [mobilityRoutes, setMobilityRoutes] = useState<MobilityRoute[]>([]);
-  const [mobilityCollapsed, setMobilityCollapsed] = useState(true);
-
   const [loadingAll, setLoadingAll] = useState(false);
   const [orderingBusy, setOrderingBusy] = useState(false);
 
@@ -180,8 +174,6 @@ const Tracker: React.FC = () => {
       fetchWeekStatuses(activeWeekStart),
       fetchSnapshot(activeWeekStart),
       fetchPipelines(),
-      fetchEvidence(),
-      fetchMobility(),
     ]);
     setLoadingAll(false);
   };
@@ -234,27 +226,6 @@ const Tracker: React.FC = () => {
       .order("next_action_date", { ascending: true })
       .order("created_at", { ascending: true });
     if (!error && data) setPipelineItems(data);
-  };
-
-  const fetchEvidence = async () => {
-    if (!userId || !supabase) return;
-    const { data, error } = await supabase
-      .from("evidence_log")
-      .select("*")
-      .eq("user_id", userId)
-      .order("date", { ascending: false });
-    if (!error && data) setEvidenceLog(data);
-  };
-
-  const fetchMobility = async () => {
-    if (!userId || !supabase) return;
-    const { data, error } = await supabase
-      .from("mobility_routes")
-      .select("*")
-      .eq("user_id", userId)
-      .order("is_primary", { ascending: false })
-      .order("route_name", { ascending: true });
-    if (!error && data) setMobilityRoutes(data);
   };
 
   const statusesForWeek = weekStatuses[activeWeekStart] || [];
@@ -460,40 +431,6 @@ const Tracker: React.FC = () => {
     if (!userId || !supabase) return;
     await supabase!.from("pipeline_items").delete().eq("user_id", userId).eq("id", id);
     setPipelineItems((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  const saveEvidenceItem = async (item: Partial<EvidenceLogItem>) => {
-    if (!userId || !supabase || !item.date || !item.type) return;
-    const payload: any = { ...item, user_id: userId };
-    if (item.id) {
-      await supabase!.from("evidence_log").update(payload).eq("user_id", userId).eq("id", item.id);
-    } else {
-      await supabase!.from("evidence_log").insert(payload);
-    }
-    fetchEvidence();
-  };
-
-  const deleteEvidenceItem = async (id: string) => {
-    if (!userId || !supabase) return;
-    await supabase!.from("evidence_log").delete().eq("user_id", userId).eq("id", id);
-    setEvidenceLog((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  const saveMobilityRoute = async (route: Partial<MobilityRoute>) => {
-    if (!userId || !supabase || !route.route_name) return;
-    const payload: any = { ...route, user_id: userId, is_primary: route.is_primary ?? false };
-    if (route.id) {
-      await supabase!.from("mobility_routes").update(payload).eq("user_id", userId).eq("id", route.id);
-    } else {
-      await supabase!.from("mobility_routes").insert(payload);
-    }
-    fetchMobility();
-  };
-
-  const deleteMobilityRoute = async (id: string) => {
-    if (!userId || !supabase) return;
-    await supabase!.from("mobility_routes").delete().eq("user_id", userId).eq("id", id);
-    setMobilityRoutes((prev) => prev.filter((p) => p.id !== id));
   };
 
   const renderTaskRow = (template: TaskTemplate) => {
@@ -886,44 +823,6 @@ const Tracker: React.FC = () => {
     );
   };
 
-  const renderWeeklyWins = () => (
-    <div className="space-y-4">
-      <GlassCard className="p-4">
-        <h3 className={sectionTitle}>Log a Win</h3>
-        <EvidenceForm onSave={saveEvidenceItem} />
-      </GlassCard>
-      <div className="rounded-xl border border-white/15 bg-white/5 p-4">
-        <h3 className={sectionTitle}>Recent Wins</h3>
-        <div className="mt-3 grid gap-3">
-          {evidenceLog.map((item) => (
-            <EvidenceCard key={item.id} item={item} onSave={saveEvidenceItem} onDelete={deleteEvidenceItem} />
-          ))}
-          {!evidenceLog.length && <p className="text-sm text-white/60">No wins logged yet.</p>}
-        </div>
-      </div>
-      <div className="rounded-xl border border-white/15 bg-white/5">
-        <button
-          className="flex w-full items-center justify-between px-4 py-3 text-left text-white"
-          onClick={() => setMobilityCollapsed((v) => !v)}
-        >
-          <span className="font-semibold">Mobility</span>
-          <span className="text-sm text-white/70">{mobilityCollapsed ? "Show" : "Hide"}</span>
-        </button>
-        {!mobilityCollapsed && (
-          <div className="border-t border-white/10 p-4">
-            <MobilityForm onSave={saveMobilityRoute} />
-            <div className="mt-3 grid gap-3">
-              {mobilityRoutes.map((route) => (
-                <MobilityCard key={route.id} route={route} onSave={saveMobilityRoute} onDelete={deleteMobilityRoute} />
-              ))}
-              {!mobilityRoutes.length && <p className="text-sm text-white/60">No routes yet.</p>}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
   const renderTabContent = () => {
     if (activeTab === "thisWeek") {
       const activeGroups = templateGroups
@@ -980,7 +879,7 @@ const Tracker: React.FC = () => {
           {activeWeekStart <= earliestWeekStart && (
             <GlassCard className="p-4">
               <p className="text-sm text-white/70">
-                Earliest tracked week is Dec 8 - Dec 14. You can't go back further.
+                Earliest tracked week is Feb 2 - Feb 8. You can't go back further.
               </p>
             </GlassCard>
           )}
@@ -1010,11 +909,7 @@ const Tracker: React.FC = () => {
       );
     }
 
-    if (activeTab === "deals") {
-      return renderDeals();
-    }
-
-    return renderWeeklyWins();
+    return renderDeals();
   };
 
   if (!isSupabaseConfigured || !supabase) {
@@ -1085,7 +980,6 @@ const Tracker: React.FC = () => {
           {[
             { key: "thisWeek", label: "Weekly" },
             { key: "deals", label: "Active Deals" },
-            { key: "wins", label: "Weekly Wins" },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -1185,208 +1079,6 @@ const Tracker: React.FC = () => {
   );
 };
 
-const EvidenceForm: React.FC<{ onSave: (item: Partial<EvidenceLogItem>) => void }> = ({ onSave }) => {
-  const today = toDateInputValue(toChicagoDate());
-  const [draft, setDraft] = useState<Partial<EvidenceLogItem>>({
-    date: today,
-    type: "build",
-    link: "",
-    note: "",
-  });
 
-  return (
-    <div className="mt-2 grid gap-2">
-      <div className="grid gap-2 md:grid-cols-2">
-        <select
-          className={inputBase}
-          value={draft.type || "build"}
-          onChange={(e) => setDraft((d) => ({ ...d, type: e.target.value }))}
-        >
-          <option value="build">Build</option>
-          <option value="internship">Internship</option>
-          <option value="traction">Traction</option>
-          <option value="event">Event</option>
-        </select>
-        <input
-          className={inputBase}
-          type="date"
-          value={draft.date || today}
-          onChange={(e) => setDraft((d) => ({ ...d, date: e.target.value }))}
-        />
-        <input
-          className={inputBase}
-          placeholder="Win note"
-          value={draft.note || ""}
-          onChange={(e) => setDraft((d) => ({ ...d, note: e.target.value }))}
-        />
-        <input
-          className={inputBase}
-          placeholder="Proof link (optional)"
-          value={draft.link || ""}
-          onChange={(e) => setDraft((d) => ({ ...d, link: e.target.value }))}
-        />
-      </div>
-      <GlassButton
-        className="px-4 py-2"
-        onClick={() => {
-          onSave(draft);
-          setDraft({ date: today, type: "build", link: "", note: "" });
-        }}
-      >
-        Add Win
-      </GlassButton>
-    </div>
-  );
-};
-
-const EvidenceCard: React.FC<{
-  item: EvidenceLogItem;
-  onSave: (item: Partial<EvidenceLogItem>) => void;
-  onDelete: (id: string) => void;
-}> = ({ item, onSave, onDelete }) => (
-  <div className="rounded border border-white/10 bg-white/5 p-3">
-    <div className="flex items-center justify-between">
-      <p className="text-white font-medium">{item.type}</p>
-      <button className="rounded bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20" onClick={() => onDelete(item.id)}>
-        Delete
-      </button>
-    </div>
-    <div className="mt-2 grid gap-2 md:grid-cols-2">
-      <input
-        className={inputBase}
-        type="date"
-        value={item.date}
-        onChange={(e) => onSave({ ...item, date: e.target.value })}
-      />
-      <input className={inputBase} value={item.type} onChange={(e) => onSave({ ...item, type: e.target.value })} />
-      <input
-        className={inputBase}
-        value={item.note || ""}
-        onChange={(e) => onSave({ ...item, note: e.target.value })}
-        placeholder="Note"
-      />
-      <input
-        className={inputBase}
-        value={item.link || ""}
-        onChange={(e) => onSave({ ...item, link: e.target.value })}
-        placeholder="Proof link"
-      />
-    </div>
-  </div>
-);
-
-const MobilityForm: React.FC<{ onSave: (route: Partial<MobilityRoute>) => void }> = ({ onSave }) => {
-  const [draft, setDraft] = useState<Partial<MobilityRoute>>({
-    route_name: "",
-    is_primary: false,
-    status: "",
-    next_missing_item: "",
-    next_action_date: "",
-    notes: "",
-  });
-
-  return (
-    <div className="mt-2 grid gap-2">
-      <div className="grid gap-2 md:grid-cols-2">
-        <input
-          className={inputBase}
-          placeholder="Primary route"
-          value={draft.route_name || ""}
-          onChange={(e) => setDraft((d) => ({ ...d, route_name: e.target.value }))}
-        />
-        <label className="flex items-center gap-2 text-white/80">
-          <input
-            type="checkbox"
-            checked={!!draft.is_primary}
-            onChange={(e) => setDraft((d) => ({ ...d, is_primary: e.target.checked }))}
-          />
-          Primary
-        </label>
-        <input
-          className={inputBase}
-          placeholder="Status"
-          value={draft.status || ""}
-          onChange={(e) => setDraft((d) => ({ ...d, status: e.target.value }))}
-        />
-        <input
-          className={inputBase}
-          placeholder="Next missing item"
-          value={draft.next_missing_item || ""}
-          onChange={(e) => setDraft((d) => ({ ...d, next_missing_item: e.target.value }))}
-        />
-        <input
-          className={inputBase}
-          type="date"
-          value={draft.next_action_date || ""}
-          onChange={(e) => setDraft((d) => ({ ...d, next_action_date: e.target.value }))}
-        />
-        <input
-          className={inputBase}
-          placeholder="Notes"
-          value={draft.notes || ""}
-          onChange={(e) => setDraft((d) => ({ ...d, notes: e.target.value }))}
-        />
-      </div>
-      <GlassButton
-        className="px-4 py-2"
-        onClick={() => {
-          onSave(draft);
-          setDraft({ route_name: "", is_primary: false, status: "", next_missing_item: "", next_action_date: "", notes: "" });
-        }}
-      >
-        Add
-      </GlassButton>
-    </div>
-  );
-};
-
-const MobilityCard: React.FC<{
-  route: MobilityRoute;
-  onSave: (route: Partial<MobilityRoute>) => void;
-  onDelete: (id: string) => void;
-}> = ({ route, onSave, onDelete }) => (
-  <div className="rounded border border-white/10 bg-white/5 p-3">
-    <div className="flex items-center justify-between">
-      <p className="text-white font-medium">{route.route_name}</p>
-      <button className="rounded bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20" onClick={() => onDelete(route.id)}>
-        Delete
-      </button>
-    </div>
-    <div className="mt-2 grid gap-2 md:grid-cols-2">
-      <label className="flex items-center gap-2 text-white/80">
-        <input
-          type="checkbox"
-          checked={route.is_primary}
-          onChange={(e) => onSave({ ...route, is_primary: e.target.checked })}
-        />
-        Primary
-      </label>
-      <input
-        className={inputBase}
-        value={route.status}
-        onChange={(e) => onSave({ ...route, status: e.target.value })}
-        placeholder="Status"
-      />
-      <input
-        className={inputBase}
-        value={route.next_missing_item || ""}
-        onChange={(e) => onSave({ ...route, next_missing_item: e.target.value })}
-        placeholder="Next missing item"
-      />
-      <input
-        className={inputBase}
-        type="date"
-        value={route.next_action_date || ""}
-        onChange={(e) => onSave({ ...route, next_action_date: e.target.value })}
-      />
-      <input
-        className={inputBase}
-        value={route.notes || ""}
-        onChange={(e) => onSave({ ...route, notes: e.target.value })}
-        placeholder="Notes"
-      />
-    </div>
-  </div>
-);
 
 export default Tracker;

@@ -1,6 +1,6 @@
 // frontend/src/types/tracker.ts
 
-export type TabKey = "thisWeek" | "deals" | "wins";
+export type TabKey = "thisWeek" | "deals";
 
 export interface TaskTemplate {
   id: string;
@@ -51,32 +51,4 @@ export interface PipelineItem {
   created_at?: string;
   updated_at?: string;
   archived?: boolean;
-}
-
-export interface ProofVaultItem {
-  id: string;
-  title: string;
-  url: string;
-  tag: string | null;
-  pinned: boolean;
-  sort_order: number;
-}
-
-export interface EvidenceLogItem {
-  id: string;
-  date: string;
-  type: string;
-  link: string | null;
-  note: string | null;
-  proof_url?: string | null;
-}
-
-export interface MobilityRoute {
-  id: string;
-  route_name: string;
-  is_primary: boolean;
-  status: string;
-  next_missing_item: string | null;
-  next_action_date: string | null;
-  notes: string | null;
 }
