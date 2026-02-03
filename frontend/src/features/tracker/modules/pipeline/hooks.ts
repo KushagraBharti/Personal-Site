@@ -28,7 +28,7 @@ export const usePipelineModule = () => {
   useEffect(() => {
     if (!userId) return;
     refreshPipelines();
-  }, [userId, refreshPipelines]);
+  }, [userId, supabase, startLoading, stopLoading]);
 
   const handleSavePipelineItem = async (item: Partial<PipelineItem> & { type: PipelineType }) => {
     if (!item.name || !item.type) return;

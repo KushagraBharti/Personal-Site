@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import GlassButton from "../../../../../components/ui/GlassButton";
 import GlassCard from "../../../../../components/ui/GlassCard";
 import { inputBase, sectionTitle } from "../../../shared/styles";
@@ -18,29 +18,36 @@ const PipelineTracker: React.FC = () => {
     resetDraft,
     errorMessage,
   } = usePipelineModule();
+  const [draftError, setDraftError] = useState("");
 
   const now = toChicagoDate();
   const cutoff = new Date(now);
   cutoff.setDate(cutoff.getDate() + 14);
 
-  const saveTimeoutRef = useRef<number | null>(null);
+  const saveTimeoutRef = useRef<Map<string, number>>(new Map());
   const debouncedSave = useCallback(
     (item: PipelineItem & { type: PipelineType }) => {
-      if (saveTimeoutRef.current) {
-        window.clearTimeout(saveTimeoutRef.current);
+      if (!item.id) return;
+      const existing = saveTimeoutRef.current.get(item.id);
+      if (existing) {
+        window.clearTimeout(existing);
       }
-      saveTimeoutRef.current = window.setTimeout(() => {
-        handleSavePipelineItem(item);
+      const timeoutId = window.setTimeout(async () => {
+        try {
+          await handleSavePipelineItem(item);
+        } catch (error) {
+          console.error("Failed to save pipeline item", error);
+        }
       }, 400);
+      saveTimeoutRef.current.set(item.id, timeoutId);
     },
     [handleSavePipelineItem]
   );
 
   useEffect(() => {
     return () => {
-      if (saveTimeoutRef.current) {
-        window.clearTimeout(saveTimeoutRef.current);
-      }
+      saveTimeoutRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+      saveTimeoutRef.current.clear();
     };
   }, []);
 
@@ -128,9 +135,19 @@ const PipelineTracker: React.FC = () => {
         </div>
         <GlassButton
           className="mt-3 px-4 py-2"
-          onClick={() => {
-            handleSavePipelineItem(pipelineDraft as PipelineItem & { type: PipelineType });
-            resetDraft();
+          onClick={async () => {
+            if (!pipelineDraft.name?.trim()) {
+              setDraftError("Name is required.");
+              return;
+            }
+            try {
+              await handleSavePipelineItem(pipelineDraft as PipelineItem & { type: PipelineType });
+              setDraftError("");
+              resetDraft();
+            } catch (error) {
+              console.error("Failed to save pipeline draft", error);
+              setDraftError("Failed to save. Please try again.");
+            }
           }}
         >
           Add Deal
@@ -155,7 +172,9 @@ const PipelineTracker: React.FC = () => {
         </div>
       </div>
 
-      {errorMessage && <p className="text-sm text-red-300">{errorMessage}</p>}
+      {(errorMessage || draftError) && (
+        <p className="text-sm text-red-300">{draftError || errorMessage}</p>
+      )}
 
       <div className="grid gap-3">
         {visible.map((item) => (
