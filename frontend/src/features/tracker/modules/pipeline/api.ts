@@ -19,7 +19,7 @@ export const savePipelineItem = async (
   const payload: any = {
     ...item,
     user_id: userId,
-    links: Array.isArray(item.links) ? item.links : [],
+    links: Array.isArray(item.links) ? item.links : typeof item.links === "string" ? [item.links] : [],
     archived: item.archived ?? false,
   };
 

@@ -6,10 +6,9 @@ export const errorHandler = (err: unknown, _req: Request, res: Response, next: N
   }
 
   const status = (err as any)?.status ?? (err as any)?.statusCode ?? 500;
-  const isProd = process.env.NODE_ENV === "production";
-  const message = isProd ? "Internal server error" : ((err as any)?.message ?? "Internal server error");
+  const message = "Internal server error";
 
-  if (!isProd) {
+  if (process.env.NODE_ENV !== "production") {
     console.error(err);
   }
 

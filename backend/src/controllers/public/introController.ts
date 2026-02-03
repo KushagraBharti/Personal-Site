@@ -47,7 +47,11 @@ export const getIntroData: RequestHandler = async (req: Request, res: Response):
     const apiKey = process.env.OPENWEATHER_API_KEY;
     if (apiKey) {
       const weatherRes = await axios.get(
-        `https://api.openweathermap.org/data/2.5/weather?q=Austin&units=imperial&appid=${apiKey}`
+        "https://api.openweathermap.org/data/2.5/weather",
+        {
+          params: { q: "Austin", units: "imperial" },
+          headers: { "x-api-key": apiKey },
+        }
       );
       responseData.weather = {
         city: weatherRes.data.name,

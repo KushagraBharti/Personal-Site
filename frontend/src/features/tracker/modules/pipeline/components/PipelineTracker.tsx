@@ -36,20 +36,17 @@ const PipelineTracker: React.FC = () => {
         window.clearTimeout(existing);
       }
       const timeoutId = window.setTimeout(async () => {
-        try {
-          await handleSavePipelineItem(item);
-          setPipelineItems((prev) =>
-            prev.map((current) => (current.id === item.id ? { ...current, ...item } : current))
-          );
-          setEditsById((prev) => {
-            const next = { ...prev };
-            delete next[item.id];
-            editsRef.current = next;
-            return next;
-          });
-        } catch (error) {
-          console.error("Failed to save pipeline item", error);
-        }
+        const succeeded = await handleSavePipelineItem(item);
+        if (!succeeded) return;
+        setPipelineItems((prev) =>
+          prev.map((current) => (current.id === item.id ? { ...current, ...item } : current))
+        );
+        setEditsById((prev) => {
+          const next = { ...prev };
+          delete next[item.id];
+          editsRef.current = next;
+          return next;
+        });
       }, 400);
       saveTimeoutRef.current.set(item.id, timeoutId);
     },
@@ -165,12 +162,11 @@ const PipelineTracker: React.FC = () => {
               setDraftError("Name is required.");
               return;
             }
-            try {
-              await handleSavePipelineItem(pipelineDraft as PipelineItem & { type: PipelineType });
+            const succeeded = await handleSavePipelineItem(pipelineDraft as PipelineItem & { type: PipelineType });
+            if (succeeded) {
               setDraftError("");
               resetDraft();
-            } catch (error) {
-              console.error("Failed to save pipeline draft", error);
+            } else {
               setDraftError("Failed to save. Please try again.");
             }
           }}
@@ -216,21 +212,23 @@ const PipelineTracker: React.FC = () => {
               <div className="flex gap-2">
                 <button
                   className="rounded bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20"
-                  onClick={() =>
-                    handleSavePipelineItem({ ...item, archived: !item.archived }).catch((error) => {
-                      console.error("Failed to update archive status", error);
-                    })
-                  }
+                  onClick={async () => {
+                    const succeeded = await handleSavePipelineItem({ ...item, archived: !item.archived });
+                    if (!succeeded) {
+                      console.error("Failed to update archive status");
+                    }
+                  }}
                 >
                   {item.archived ? "Unarchive" : "Archive"}
                 </button>
                 <button
                   className="rounded bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/20"
-                  onClick={() =>
-                    handleDeletePipelineItem(item.id).catch((error) => {
-                      console.error("Failed to delete pipeline item", error);
-                    })
-                  }
+                  onClick={async () => {
+                    const succeeded = await handleDeletePipelineItem(item.id);
+                    if (!succeeded) {
+                      console.error("Failed to delete pipeline item");
+                    }
+                  }}
                 >
                   Delete
                 </button>

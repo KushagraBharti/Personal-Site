@@ -212,12 +212,12 @@ export const useTasksModule = () => {
   };
 
   const handleTemplateDelete = async (template: TaskTemplate) => {
-    try {
-      await deleteTemplate(supabase, userId, template.id);
-      setTemplates((prev) => prev.filter((t) => t.id !== template.id));
-    } catch (error) {
+    const { error } = await deleteTemplate(supabase, userId, template.id);
+    if (error) {
       console.error("Failed to delete template", error);
+      return;
     }
+    setTemplates((prev) => prev.filter((t) => t.id !== template.id));
   };
 
   const persistGroupOrdering = async (groups: TemplateGroup[]) => {
