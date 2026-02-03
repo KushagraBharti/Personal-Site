@@ -347,6 +347,7 @@ const TasksTracker: React.FC = () => {
               <h3 className="text-xl font-semibold text-white">Close Week</h3>
               <button
                 className="rounded bg-white/10 px-3 py-1 text-white hover:bg-white/20"
+                aria-label="Close snapshot modal"
                 onClick={() => setIsSnapshotModalOpen(false)}
               >
                 x

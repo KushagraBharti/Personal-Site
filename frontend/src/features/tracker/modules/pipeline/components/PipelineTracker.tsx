@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import GlassButton from "../../../../../components/ui/GlassButton";
 import GlassCard from "../../../../../components/ui/GlassCard";
 import { inputBase, sectionTitle } from "../../../shared/styles";
@@ -16,29 +16,58 @@ const PipelineTracker: React.FC = () => {
     handleSavePipelineItem,
     handleDeletePipelineItem,
     resetDraft,
+    errorMessage,
   } = usePipelineModule();
 
   const now = toChicagoDate();
   const cutoff = new Date(now);
   cutoff.setDate(cutoff.getDate() + 14);
 
+  const saveTimeoutRef = useRef<number | null>(null);
+  const debouncedSave = useCallback(
+    (item: PipelineItem & { type: PipelineType }) => {
+      if (saveTimeoutRef.current) {
+        window.clearTimeout(saveTimeoutRef.current);
+      }
+      saveTimeoutRef.current = window.setTimeout(() => {
+        handleSavePipelineItem(item);
+      }, 400);
+    },
+    [handleSavePipelineItem]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        window.clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const normalizeActionDate = useCallback((dateValue?: string | null) => {
+    if (!dateValue) return null;
+    return toChicagoDate(new Date(`${dateValue}T00:00:00`));
+  }, []);
+
   const sorted = [...pipelineItems].sort((a, b) => {
-    const aDate = a.next_action_date ? new Date(a.next_action_date).getTime() : Infinity;
-    const bDate = b.next_action_date ? new Date(b.next_action_date).getTime() : Infinity;
+    const aDate = normalizeActionDate(a.next_action_date)?.getTime() ?? Infinity;
+    const bDate = normalizeActionDate(b.next_action_date)?.getTime() ?? Infinity;
     return aDate - bDate;
   });
 
   const current = sorted.filter((item) => {
     if (item.archived) return false;
     if (!item.next_action_date) return true;
-    const d = new Date(item.next_action_date);
+    const d = normalizeActionDate(item.next_action_date);
+    if (!d) return true;
     return d <= cutoff;
   });
 
   const past = sorted.filter((item) => {
     if (item.archived) return true;
     if (!item.next_action_date) return false;
-    const d = new Date(item.next_action_date);
+    const d = normalizeActionDate(item.next_action_date);
+    if (!d) return false;
     return d > cutoff;
   });
 
@@ -126,6 +155,8 @@ const PipelineTracker: React.FC = () => {
         </div>
       </div>
 
+      {errorMessage && <p className="text-sm text-red-300">{errorMessage}</p>}
+
       <div className="grid gap-3">
         {visible.map((item) => (
           <div key={item.id} className="rounded-lg border border-white/10 bg-white/5 p-3">
@@ -165,32 +196,32 @@ const PipelineTracker: React.FC = () => {
                 className={inputBase}
                 placeholder="Stage"
                 value={item.stage || ""}
-                onChange={(e) => handleSavePipelineItem({ ...item, stage: e.target.value })}
+                onChange={(e) => debouncedSave({ ...item, stage: e.target.value })}
               />
               <input
                 className={inputBase}
                 type="date"
                 value={item.next_action_date || ""}
-                onChange={(e) => handleSavePipelineItem({ ...item, next_action_date: e.target.value })}
+                onChange={(e) => debouncedSave({ ...item, next_action_date: e.target.value })}
               />
               <input
                 className={inputBase}
                 placeholder="Next action"
                 value={item.next_action || ""}
-                onChange={(e) => handleSavePipelineItem({ ...item, next_action: e.target.value })}
+                onChange={(e) => debouncedSave({ ...item, next_action: e.target.value })}
               />
               <textarea
                 className={`${inputBase} min-h-[70px] md:col-span-2`}
                 placeholder="Notes"
                 value={item.notes || ""}
-                onChange={(e) => handleSavePipelineItem({ ...item, notes: e.target.value })}
+                onChange={(e) => debouncedSave({ ...item, notes: e.target.value })}
               />
               <textarea
                 className={`${inputBase} min-h-[70px] md:col-span-2`}
                 placeholder="Links (one per line)"
                 value={Array.isArray(item.links) ? item.links.join("\n") : ""}
                 onChange={(e) =>
-                  handleSavePipelineItem({ ...item, links: e.target.value.split("\n").filter(Boolean) })
+                  debouncedSave({ ...item, links: e.target.value.split("\n").filter(Boolean) })
                 }
               />
             </div>

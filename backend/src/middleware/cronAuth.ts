@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "crypto";
 import { NextFunction, Request, Response } from "express";
 
 export const cronAuth = (req: Request, res: Response, next: NextFunction) => {
@@ -17,7 +18,18 @@ export const cronAuth = (req: Request, res: Response, next: NextFunction) => {
     req.header("cron-secret") ||
     req.header("CRON_SECRET");
 
-  if (!provided || provided !== expected) {
+  if (!provided) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const providedBuffer = Buffer.from(provided);
+  const expectedBuffer = Buffer.from(expected);
+
+  if (providedBuffer.length !== expectedBuffer.length) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  if (!timingSafeEqual(providedBuffer, expectedBuffer)) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 

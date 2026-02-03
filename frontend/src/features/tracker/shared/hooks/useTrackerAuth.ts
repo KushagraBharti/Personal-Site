@@ -16,9 +16,15 @@ export const useTrackerAuth = () => {
     const client = supabase;
 
     const init = async () => {
-      const { data } = await client.auth.getSession();
-      setSession(data.session);
-      setAuthLoading(false);
+      try {
+        const { data } = await client.auth.getSession();
+        setSession(data.session);
+        setAuthLoading(false);
+      } catch (error) {
+        console.error("Failed to get Supabase session", error);
+        setSession(null);
+        setAuthLoading(false);
+      }
     };
 
     init();

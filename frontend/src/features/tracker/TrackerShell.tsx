@@ -78,6 +78,8 @@ const TrackerShell: React.FC = () => {
               className={inputBase}
               type="email"
               placeholder="Email"
+              aria-label="Email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -85,6 +87,8 @@ const TrackerShell: React.FC = () => {
               className={inputBase}
               type="password"
               placeholder="Password"
+              aria-label="Password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />

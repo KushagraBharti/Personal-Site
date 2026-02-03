@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { TaskStatus, TaskTemplate, WeeklySnapshot } from "../../shared/types";
 import { formatWeekLabel, shiftWeek, startOfWeekMondayChicago } from "../../shared/utils/date";
 import { useTrackerContext } from "../../shared/hooks/useTrackerContext";
@@ -81,12 +81,35 @@ export const useTasksModule = () => {
     }
   }, [activeWeekStart, snapshots]);
 
-  useEffect(() => {
-    if (!userId) return;
-    loadCoreData();
-  }, [userId, activeWeekStart]);
+  const refreshTemplates = useCallback(async () => {
+    setTemplatesLoading(true);
+    const { data, error } = await fetchTemplates(supabase, userId);
+    if (!error && data) setTemplates(data);
+    setTemplatesLoading(false);
+  }, [supabase, userId]);
 
-  const loadCoreData = async () => {
+  const refreshWeekStatuses = useCallback(
+    async (week: string) => {
+      const { data, error } = await fetchWeekStatuses(supabase, userId, week);
+      if (!error && data) setWeekStatuses((prev) => ({ ...prev, [week]: data }));
+    },
+    [supabase, userId]
+  );
+
+  const refreshSnapshot = useCallback(
+    async (week: string) => {
+      const { data, error } = await fetchSnapshot(supabase, userId, week);
+      if (!error) {
+        setSnapshots((prev) => ({ ...prev, [week]: data ?? null }));
+        if (data) {
+          setSnapshotDraft({ ...data, week_start: week });
+        }
+      }
+    },
+    [supabase, userId]
+  );
+
+  const loadCoreData = useCallback(async () => {
     startLoading();
     try {
       await Promise.all([
@@ -97,29 +120,12 @@ export const useTasksModule = () => {
     } finally {
       stopLoading();
     }
-  };
+  }, [activeWeekStart, startLoading, stopLoading, refreshTemplates, refreshWeekStatuses, refreshSnapshot]);
 
-  const refreshTemplates = async () => {
-    setTemplatesLoading(true);
-    const { data, error } = await fetchTemplates(supabase, userId);
-    if (!error && data) setTemplates(data);
-    setTemplatesLoading(false);
-  };
-
-  const refreshWeekStatuses = async (week: string) => {
-    const { data, error } = await fetchWeekStatuses(supabase, userId, week);
-    if (!error && data) setWeekStatuses((prev) => ({ ...prev, [week]: data }));
-  };
-
-  const refreshSnapshot = async (week: string) => {
-    const { data, error } = await fetchSnapshot(supabase, userId, week);
-    if (!error) {
-      setSnapshots((prev) => ({ ...prev, [week]: data ?? null }));
-      if (data) {
-        setSnapshotDraft({ ...data, week_start: week });
-      }
-    }
-  };
+  useEffect(() => {
+    if (!userId) return;
+    loadCoreData();
+  }, [userId, activeWeekStart, loadCoreData]);
 
   const statusesForWeek = weekStatuses[activeWeekStart] || [];
   const statusByTask = useMemo(() => {
@@ -198,30 +204,33 @@ export const useTasksModule = () => {
     const updatedTemplates: TaskTemplate[] = [];
     const previousTemplates = templates;
 
-    groups.forEach((group, groupIndex) => {
-      group.tasks.forEach((task, taskIndex) => {
-        const sortOrder = groupIndex * CATEGORY_STEP + (taskIndex + 1);
-        const updated = { ...task, sort_order: sortOrder };
-        updates.push({
-          ...task,
-          user_id: userId,
-          sort_order: sortOrder,
+    try {
+      groups.forEach((group, groupIndex) => {
+        group.tasks.forEach((task, taskIndex) => {
+          const sortOrder = groupIndex * CATEGORY_STEP + (taskIndex + 1);
+          const updated = { ...task, sort_order: sortOrder };
+          updates.push({
+            ...task,
+            user_id: userId,
+            sort_order: sortOrder,
+          });
+          updatedTemplates.push(updated);
         });
-        updatedTemplates.push(updated);
       });
-    });
 
-    if (updates.length) {
-      setTemplates(updatedTemplates);
-      const { error } = await upsertTemplatesOrder(supabase, updates);
-      if (error) {
-        console.error("Failed to persist order", error);
-        setTemplates(previousTemplates);
-      } else {
-        await refreshTemplates();
+      if (updates.length) {
+        setTemplates(updatedTemplates);
+        const { error } = await upsertTemplatesOrder(supabase, updates);
+        if (error) {
+          console.error("Failed to persist order", error);
+          setTemplates(previousTemplates);
+        } else {
+          await refreshTemplates();
+        }
       }
+    } finally {
+      setOrderingBusy(false);
     }
-    setOrderingBusy(false);
   };
 
   const handleCategoryMove = async (categoryName: string, direction: "up" | "down") => {

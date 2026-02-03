@@ -1,4 +1,4 @@
-// backend/src/routes/weatherRoutes.ts
+// backend/src/routes/public/weatherRoutes.ts
 import express from "express";
 import { getWeather } from "../../controllers/public/weatherController";
 
