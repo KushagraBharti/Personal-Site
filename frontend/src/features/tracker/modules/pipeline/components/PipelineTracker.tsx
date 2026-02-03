@@ -9,6 +9,7 @@ import { usePipelineModule } from "../hooks";
 const PipelineTracker: React.FC = () => {
   const {
     pipelineItems,
+    setPipelineItems,
     pipelineDraft,
     setPipelineDraft,
     showPastDeals,
@@ -19,6 +20,8 @@ const PipelineTracker: React.FC = () => {
     errorMessage,
   } = usePipelineModule();
   const [draftError, setDraftError] = useState("");
+  const [editsById, setEditsById] = useState<Record<string, Partial<PipelineItem>>>({});
+  const editsRef = useRef<Record<string, Partial<PipelineItem>>>({});
 
   const now = toChicagoDate();
   const cutoff = new Date(now);
@@ -35,13 +38,22 @@ const PipelineTracker: React.FC = () => {
       const timeoutId = window.setTimeout(async () => {
         try {
           await handleSavePipelineItem(item);
+          setPipelineItems((prev) =>
+            prev.map((current) => (current.id === item.id ? { ...current, ...item } : current))
+          );
+          setEditsById((prev) => {
+            const next = { ...prev };
+            delete next[item.id];
+            editsRef.current = next;
+            return next;
+          });
         } catch (error) {
           console.error("Failed to save pipeline item", error);
         }
       }, 400);
       saveTimeoutRef.current.set(item.id, timeoutId);
     },
-    [handleSavePipelineItem]
+    [handleSavePipelineItem, setPipelineItems]
   );
 
   useEffect(() => {
@@ -57,6 +69,17 @@ const PipelineTracker: React.FC = () => {
     if (!dateValue) return null;
     return toChicagoDate(new Date(`${dateValue}T00:00:00`));
   }, []);
+
+  const updateEdit = useCallback(
+    (item: PipelineItem, updates: Partial<PipelineItem>) => {
+      const currentEdits = editsRef.current[item.id] ?? {};
+      const nextEdits = { ...currentEdits, ...updates };
+      editsRef.current = { ...editsRef.current, [item.id]: nextEdits };
+      setEditsById((prev) => ({ ...prev, [item.id]: nextEdits }));
+      debouncedSave({ ...item, ...nextEdits } as PipelineItem & { type: PipelineType });
+    },
+    [debouncedSave]
+  );
 
   const sorted = [...pipelineItems].sort((a, b) => {
     const aDate = normalizeActionDate(a.next_action_date)?.getTime() ?? Infinity;
@@ -179,13 +202,15 @@ const PipelineTracker: React.FC = () => {
       )}
 
       <div className="grid gap-3">
-        {visible.map((item) => (
+        {visible.map((item) => {
+          const edits = editsById[item.id] ?? {};
+          return (
           <div key={item.id} className="rounded-lg border border-white/10 bg-white/5 p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <p className="text-white font-medium">{item.name}</p>
+                <p className="text-white font-medium">{edits.name ?? item.name}</p>
                 <p className="text-xs text-white/60">
-                  {item.type} • {item.stage || "Stage"}
+                  {edits.type ?? item.type} • {edits.stage ?? item.stage || "Stage"}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -214,11 +239,9 @@ const PipelineTracker: React.FC = () => {
             <div className="mt-3 grid gap-2 md:grid-cols-2">
               <select
                 className={inputBase}
-                value={item.type}
+                value={(edits.type ?? item.type) as PipelineType}
                 onChange={(e) =>
-                  handleSavePipelineItem({ ...item, type: e.target.value as PipelineType }).catch((error) => {
-                    console.error("Failed to update pipeline type", error);
-                  })
+                  updateEdit(item, { type: e.target.value as PipelineType })
                 }
               >
                 <option value="internship">Internship</option>
@@ -228,38 +251,45 @@ const PipelineTracker: React.FC = () => {
               <input
                 className={inputBase}
                 placeholder="Stage"
-                value={item.stage || ""}
-                onChange={(e) => debouncedSave({ ...item, stage: e.target.value })}
+                value={edits.stage ?? item.stage ?? ""}
+                onChange={(e) => updateEdit(item, { stage: e.target.value })}
               />
               <input
                 className={inputBase}
                 type="date"
-                value={item.next_action_date || ""}
-                onChange={(e) => debouncedSave({ ...item, next_action_date: e.target.value })}
+                value={edits.next_action_date ?? item.next_action_date ?? ""}
+                onChange={(e) => updateEdit(item, { next_action_date: e.target.value })}
               />
               <input
                 className={inputBase}
                 placeholder="Next action"
-                value={item.next_action || ""}
-                onChange={(e) => debouncedSave({ ...item, next_action: e.target.value })}
+                value={edits.next_action ?? item.next_action ?? ""}
+                onChange={(e) => updateEdit(item, { next_action: e.target.value })}
               />
               <textarea
                 className={`${inputBase} min-h-[70px] md:col-span-2`}
                 placeholder="Notes"
-                value={item.notes || ""}
-                onChange={(e) => debouncedSave({ ...item, notes: e.target.value })}
+                value={edits.notes ?? item.notes ?? ""}
+                onChange={(e) => updateEdit(item, { notes: e.target.value })}
               />
               <textarea
                 className={`${inputBase} min-h-[70px] md:col-span-2`}
                 placeholder="Links (one per line)"
-                value={Array.isArray(item.links) ? item.links.join("\n") : ""}
+                value={
+                  Array.isArray(edits.links)
+                    ? edits.links.join("\n")
+                    : Array.isArray(item.links)
+                    ? item.links.join("\n")
+                    : ""
+                }
                 onChange={(e) =>
-                  debouncedSave({ ...item, links: e.target.value.split("\n").filter(Boolean) })
+                  updateEdit(item, { links: e.target.value.split("\n").filter(Boolean) })
                 }
               />
             </div>
           </div>
-        ))}
+        );
+        })}
         {!visible.length && <p className="text-sm text-white/60">Nothing here yet.</p>}
       </div>
     </div>

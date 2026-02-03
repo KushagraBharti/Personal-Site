@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import GlassButton from "../../components/ui/GlassButton";
 import GlassCard from "../../components/ui/GlassCard";
@@ -21,8 +21,8 @@ const TrackerShell: React.FC = () => {
   const [activeModuleId, setActiveModuleId] = useState<TrackerModuleId>(resolvedModuleId);
   const [loadingCount, setLoadingCount] = useState(0);
 
-  const startLoading = () => setLoadingCount((count) => count + 1);
-  const stopLoading = () => setLoadingCount((count) => Math.max(0, count - 1));
+  const startLoading = useCallback(() => setLoadingCount((count) => count + 1), []);
+  const stopLoading = useCallback(() => setLoadingCount((count) => Math.max(0, count - 1)), []);
   const loadingAll = loadingCount > 0;
 
   const activeModule = useMemo(() => {

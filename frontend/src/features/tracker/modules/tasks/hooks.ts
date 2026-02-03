@@ -128,7 +128,7 @@ export const useTasksModule = () => {
   useEffect(() => {
     if (!userId) return;
     loadCoreData();
-  }, [userId, activeWeekStart, startLoading, stopLoading, refreshTemplates, refreshWeekStatuses, refreshSnapshot]);
+  }, [userId, activeWeekStart, loadCoreData]);
 
   const statusesForWeek = weekStatuses[activeWeekStart] || [];
   const statusByTask = useMemo(() => {

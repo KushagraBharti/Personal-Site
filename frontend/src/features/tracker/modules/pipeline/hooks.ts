@@ -28,7 +28,7 @@ export const usePipelineModule = () => {
   useEffect(() => {
     if (!userId) return;
     refreshPipelines();
-  }, [userId, supabase, startLoading, stopLoading]);
+  }, [userId, refreshPipelines]);
 
   const handleSavePipelineItem = async (item: Partial<PipelineItem> & { type: PipelineType }) => {
     if (!item.name || !item.type) return;
@@ -65,6 +65,7 @@ export const usePipelineModule = () => {
 
   return {
     pipelineItems,
+    setPipelineItems,
     pipelineDraft,
     setPipelineDraft,
     showPastDeals,
