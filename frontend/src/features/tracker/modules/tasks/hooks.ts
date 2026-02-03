@@ -127,7 +127,7 @@ export const useTasksModule = () => {
     loadCoreData();
   }, [userId, activeWeekStart, loadCoreData]);
 
-  const statusesForWeek = weekStatuses[activeWeekStart] || [];
+  const statusesForWeek = useMemo(() => weekStatuses[activeWeekStart] || [], [activeWeekStart, weekStatuses]);
   const statusByTask = useMemo(() => {
     const map: Record<string, TaskStatus> = {};
     statusesForWeek.forEach((s) => {
