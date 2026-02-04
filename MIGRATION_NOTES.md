@@ -185,5 +185,46 @@ New middleware:
 - Shared utilities for reuse: `frontend/src/features/tracker/shared/hooks/useTrackerContext.ts`, `frontend/src/features/tracker/shared/supabase/client.ts`, and `frontend/src/features/tracker/shared/utils/date.ts`.
 - Private API naming convention: `/api/private/<domain>` with routes under `backend/src/routes/private/`.
 - Cron auth secret is defined in `backend/.env.example` as `CRON_SECRET`.
-- Finance placeholder is inert (no data calls); it only renders a “coming soon” message.
+- Finance placeholder is inert (no data calls); it only renders a "coming soon" message.
 - Plan 2 should add Supabase JWT verification middleware for private routes and derive `user_id` from the token.
+
+---
+
+## Phase D: Finance Tracker Frontend MVP
+
+**Added Files:**
+- `frontend/src/features/tracker/modules/finance/types.ts` - Complete finance types + default categories
+- `frontend/src/features/tracker/modules/finance/api.ts` - Supabase queries + backend API calls
+- `frontend/src/features/tracker/modules/finance/hooks.ts` - State management + orchestration
+- `frontend/src/features/tracker/modules/finance/components/FinanceTracker.tsx` - Full UI with tabs
+- `backend/sql/finance_schema_migration_d.sql` - Migration for Phase D columns
+
+**Schema Changes:**
+- `finance_categories` now has `icon` (text) and `sort_order` (integer) columns
+- `finance_transactions` now has `reviewed_at` (timestamptz) column
+
+**Frontend Features:**
+1. **Tabs**: Inbox, Month, History, Accounts
+2. **Categories**: Auto-initializes default categories on first load
+3. **Connect Bank**: Plaid Link integration (requires SDK script in HTML)
+4. **Inbox View**: Categorize unreviewed transactions with optimistic UI
+5. **Month View**: Monthly breakdown by category with totals
+6. **History View**: Filter by date range, category, merchant search
+7. **Accounts View**: List connected banks, sync status, manual sync
+
+**Dependencies:**
+- Plaid Link SDK: Added `<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js">` to `frontend/index.html`
+- Uses existing framer-motion for animations
+
+**Environment:**
+- Uses `VITE_API_BASE_URL` for backend API calls (already in `.env.production`)
+
+**Runtime Verification:**
+- `/tracker?module=finance` should load the Finance tab
+- Categories should auto-populate on first load
+- "Connect Bank" button should open Plaid Link modal
+- Inbox should show uncategorized transactions
+- Categorizing a transaction should remove it from inbox with animation
+- Month view should compute category totals
+- History view should filter transactions
+- Accounts view should show connected institutions and sync status
