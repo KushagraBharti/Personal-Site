@@ -178,15 +178,21 @@ const WeekNavigator: React.FC<{
         className="neo-card p-3"
         style={{ background: "var(--neo-cyan)" }}
       >
-        <span className="neo-label text-sm font-bold">{weekLabel}</span>
-      </motion.div>
-
       <input
         type="date"
         className="neo-input w-auto"
-        value={weekStart}
         onChange={(e) => onDateChange(e.target.value)}
+        value={weekStart}
+        style={{
+          background: "var(--neo-white)",
+          border: "4px solid var(--neo-black)",
+          padding: "8px",
+          borderRadius: "4px",
+          fontFamily: "inherit",
+          fontSize: "16px",
+        }}
       />
+      </motion.div>
 
       <motion.button
         onClick={onNext}
@@ -196,6 +202,7 @@ const WeekNavigator: React.FC<{
       >
         NEXT →
       </motion.button>
+
     </div>
   );
 };
@@ -815,15 +822,6 @@ const TasksTracker: React.FC = () => {
           <p className="neo-label text-xs">SNAPSHOT SAVED</p>
           <p className="font-mono text-sm mt-1">{snapshots[activeWeekStart]?.next_week_focus}</p>
         </motion.div>
-      )}
-
-      {/* Earliest week notice */}
-      {activeWeekStart <= earliestWeekStart && (
-        <div className="neo-card p-4" style={{ background: "var(--neo-yellow)" }}>
-          <p className="neo-label text-xs">
-            EARLIEST TRACKED WEEK IS FEB 2 - FEB 8. YOU CAN'T GO BACK FURTHER.
-          </p>
-        </div>
       )}
 
       {/* Loading state */}

@@ -452,6 +452,7 @@ const TrackerLayout: React.FC<{
           </div>
         </motion.header>
 
+        
         {/* Marquee */}
         <MarqueeBanner text="STAY FOCUSED ★ EXECUTE DAILY ★ BUILD MOMENTUM ★ TRACK PROGRESS" />
 
