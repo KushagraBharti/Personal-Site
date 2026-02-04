@@ -1,0 +1,752 @@
+/* ============================================================================
+   NEOBRUTALIST TRACKER STYLES
+   A bold, exaggerated, maximalist design system
+   ============================================================================ */
+
+/* CSS Variables */
+:root {
+  --neo-lime: #BFFF00;
+  --neo-pink: #FF6B9D;
+  --neo-cyan: #00FFFF;
+  --neo-yellow: #FFE600;
+  --neo-black: #1A1A1A;
+  --neo-white: #FAFAFA;
+  --neo-red: #FF3B3B;
+  --neo-purple: #B388FF;
+  --neo-orange: #FF9500;
+  --neo-blue: #0066FF;
+
+  --neo-border: 3px solid var(--neo-black);
+  --neo-border-thick: 4px solid var(--neo-black);
+  --neo-shadow: 6px 6px 0 var(--neo-black);
+  --neo-shadow-sm: 4px 4px 0 var(--neo-black);
+  --neo-shadow-lg: 8px 8px 0 var(--neo-black);
+  --neo-shadow-hover: 8px 8px 0 var(--neo-black);
+  --neo-shadow-active: 2px 2px 0 var(--neo-black);
+
+  --neo-font-display: 'Archivo Black', sans-serif;
+  --neo-font-mono: 'Space Mono', monospace;
+
+  --neo-radius: 0px;
+  --neo-radius-chunky: 8px;
+}
+
+/* ============================================================================
+   BASE STYLES FOR TRACKER
+   ============================================================================ */
+
+.neo-tracker {
+  font-family: var(--neo-font-mono);
+  background: var(--neo-white);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Noise texture overlay */
+.neo-tracker::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  z-index: 9999;
+}
+
+/* Grid pattern background option */
+.neo-grid-bg {
+  background-image:
+    linear-gradient(var(--neo-black) 1px, transparent 1px),
+    linear-gradient(90deg, var(--neo-black) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-color: var(--neo-white);
+}
+
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+
+.neo-btn {
+  font-family: var(--neo-font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px 24px;
+  border: var(--neo-border-thick);
+  background: var(--neo-yellow);
+  color: var(--neo-black);
+  box-shadow: var(--neo-shadow);
+  cursor: pointer;
+  transition: all 0.1s ease;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.neo-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--neo-shadow-hover);
+}
+
+.neo-btn:active {
+  transform: translate(4px, 4px);
+  box-shadow: var(--neo-shadow-active);
+}
+
+.neo-btn-pink {
+  background: var(--neo-pink);
+}
+
+.neo-btn-lime {
+  background: var(--neo-lime);
+}
+
+.neo-btn-cyan {
+  background: var(--neo-cyan);
+}
+
+.neo-btn-white {
+  background: var(--neo-white);
+}
+
+.neo-btn-black {
+  background: var(--neo-black);
+  color: var(--neo-white);
+}
+
+.neo-btn-sm {
+  padding: 8px 16px;
+  font-size: 12px;
+  box-shadow: var(--neo-shadow-sm);
+}
+
+.neo-btn-lg {
+  padding: 16px 32px;
+  font-size: 16px;
+  box-shadow: var(--neo-shadow-lg);
+}
+
+/* ============================================================================
+   CARDS
+   ============================================================================ */
+
+.neo-card {
+  background: var(--neo-white);
+  border: var(--neo-border-thick);
+  box-shadow: var(--neo-shadow);
+  padding: 24px;
+  position: relative;
+}
+
+.neo-card-yellow {
+  background: var(--neo-yellow);
+}
+
+.neo-card-lime {
+  background: var(--neo-lime);
+}
+
+.neo-card-pink {
+  background: var(--neo-pink);
+}
+
+.neo-card-cyan {
+  background: var(--neo-cyan);
+}
+
+.neo-card-purple {
+  background: var(--neo-purple);
+}
+
+.neo-card-hover {
+  transition: all 0.15s ease;
+}
+
+.neo-card-hover:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 10px 10px 0 var(--neo-black);
+}
+
+/* ============================================================================
+   INPUTS
+   ============================================================================ */
+
+.neo-input {
+  font-family: var(--neo-font-mono);
+  font-size: 14px;
+  padding: 12px 16px;
+  border: var(--neo-border-thick);
+  background: var(--neo-white);
+  color: var(--neo-black);
+  width: 100%;
+  box-shadow: var(--neo-shadow-sm);
+  transition: all 0.1s ease;
+}
+
+.neo-input:focus {
+  outline: none;
+  transform: translate(-2px, -2px);
+  box-shadow: var(--neo-shadow);
+  background: var(--neo-yellow);
+}
+
+.neo-input::placeholder {
+  color: var(--neo-black);
+  opacity: 0.5;
+}
+
+.neo-select {
+  font-family: var(--neo-font-mono);
+  font-size: 14px;
+  padding: 12px 16px;
+  border: var(--neo-border-thick);
+  background: var(--neo-white);
+  color: var(--neo-black);
+  box-shadow: var(--neo-shadow-sm);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%231A1A1A' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 44px;
+}
+
+.neo-select:focus {
+  outline: none;
+  background-color: var(--neo-lime);
+}
+
+/* ============================================================================
+   TYPOGRAPHY
+   ============================================================================ */
+
+.neo-title {
+  font-family: var(--neo-font-display);
+  font-size: 48px;
+  line-height: 1.1;
+  color: var(--neo-black);
+  text-transform: uppercase;
+}
+
+.neo-title-lg {
+  font-size: 64px;
+}
+
+.neo-title-xl {
+  font-size: 80px;
+}
+
+.neo-title-sm {
+  font-size: 32px;
+}
+
+.neo-subtitle {
+  font-family: var(--neo-font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.neo-label {
+  font-family: var(--neo-font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--neo-black);
+}
+
+/* Rotated labels */
+.neo-label-rotated {
+  transform: rotate(-3deg);
+  display: inline-block;
+  background: var(--neo-yellow);
+  padding: 4px 12px;
+  border: 2px solid var(--neo-black);
+}
+
+/* ============================================================================
+   TABS / NAVIGATION
+   ============================================================================ */
+
+.neo-tabs {
+  display: flex;
+  gap: 0;
+  border: var(--neo-border-thick);
+  background: var(--neo-black);
+  padding: 4px;
+}
+
+.neo-tab {
+  font-family: var(--neo-font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px 24px;
+  border: none;
+  background: transparent;
+  color: var(--neo-white);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.neo-tab:hover {
+  background: var(--neo-white);
+  color: var(--neo-black);
+}
+
+.neo-tab-active {
+  background: var(--neo-lime);
+  color: var(--neo-black);
+  box-shadow: inset 0 -4px 0 var(--neo-black);
+}
+
+.neo-tab-badge {
+  background: var(--neo-red);
+  color: var(--neo-white);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  margin-left: 8px;
+  border: 2px solid var(--neo-black);
+}
+
+/* ============================================================================
+   TAGS / CHIPS
+   ============================================================================ */
+
+.neo-tag {
+  font-family: var(--neo-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 6px 12px;
+  border: 2px solid var(--neo-black);
+  background: var(--neo-white);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.neo-tag:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--neo-black);
+}
+
+.neo-tag-yellow { background: var(--neo-yellow); }
+.neo-tag-pink { background: var(--neo-pink); }
+.neo-tag-lime { background: var(--neo-lime); }
+.neo-tag-cyan { background: var(--neo-cyan); }
+.neo-tag-purple { background: var(--neo-purple); }
+.neo-tag-orange { background: var(--neo-orange); }
+
+/* ============================================================================
+   CHECKBOX
+   ============================================================================ */
+
+.neo-checkbox {
+  width: 24px;
+  height: 24px;
+  border: var(--neo-border-thick);
+  background: var(--neo-white);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.1s ease;
+  flex-shrink: 0;
+}
+
+.neo-checkbox:hover {
+  background: var(--neo-yellow);
+}
+
+.neo-checkbox-checked {
+  background: var(--neo-lime);
+}
+
+.neo-checkbox-checked::after {
+  content: '✓';
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--neo-black);
+}
+
+/* ============================================================================
+   PROGRESS BAR
+   ============================================================================ */
+
+.neo-progress {
+  height: 24px;
+  border: var(--neo-border-thick);
+  background: var(--neo-white);
+  overflow: hidden;
+}
+
+.neo-progress-bar {
+  height: 100%;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--neo-lime),
+    var(--neo-lime) 10px,
+    var(--neo-yellow) 10px,
+    var(--neo-yellow) 20px
+  );
+  transition: width 0.5s ease;
+  animation: neo-progress-stripes 1s linear infinite;
+}
+
+@keyframes neo-progress-stripes {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 0; }
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes neo-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px) rotate(-1deg); }
+  75% { transform: translateX(5px) rotate(1deg); }
+}
+
+@keyframes neo-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes neo-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes neo-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+@keyframes neo-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes neo-slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes neo-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes neo-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes neo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes neo-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-5px) rotate(1deg); }
+  75% { transform: translateY(5px) rotate(-1deg); }
+}
+
+@keyframes neo-glitch {
+  0%, 100% {
+    clip-path: inset(0 0 0 0);
+    transform: translate(0);
+  }
+  20% {
+    clip-path: inset(20% 0 60% 0);
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    clip-path: inset(60% 0 20% 0);
+    transform: translate(2px, -2px);
+  }
+  60% {
+    clip-path: inset(40% 0 40% 0);
+    transform: translate(-1px, 1px);
+  }
+  80% {
+    clip-path: inset(80% 0 5% 0);
+    transform: translate(1px, -1px);
+  }
+}
+
+@keyframes neo-marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes neo-blink {
+  0%, 50%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0; }
+}
+
+@keyframes neo-typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes neo-counter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Animation utility classes */
+.neo-animate-shake { animation: neo-shake 0.5s ease; }
+.neo-animate-bounce { animation: neo-bounce 0.6s ease infinite; }
+.neo-animate-pulse { animation: neo-pulse 2s ease infinite; }
+.neo-animate-wiggle { animation: neo-wiggle 0.3s ease; }
+.neo-animate-slide-up { animation: neo-slide-up 0.4s ease forwards; }
+.neo-animate-pop { animation: neo-pop 0.3s ease forwards; }
+.neo-animate-spin { animation: neo-spin 1s linear infinite; }
+.neo-animate-float { animation: neo-float 3s ease-in-out infinite; }
+.neo-animate-glitch { animation: neo-glitch 0.3s ease; }
+.neo-animate-blink { animation: neo-blink 1s ease infinite; }
+
+/* Staggered animation delays */
+.neo-stagger-1 { animation-delay: 0.05s; }
+.neo-stagger-2 { animation-delay: 0.1s; }
+.neo-stagger-3 { animation-delay: 0.15s; }
+.neo-stagger-4 { animation-delay: 0.2s; }
+.neo-stagger-5 { animation-delay: 0.25s; }
+.neo-stagger-6 { animation-delay: 0.3s; }
+.neo-stagger-7 { animation-delay: 0.35s; }
+.neo-stagger-8 { animation-delay: 0.4s; }
+.neo-stagger-9 { animation-delay: 0.45s; }
+.neo-stagger-10 { animation-delay: 0.5s; }
+
+/* ============================================================================
+   SPECIAL ELEMENTS
+   ============================================================================ */
+
+/* Marquee banner */
+.neo-marquee {
+  overflow: hidden;
+  background: var(--neo-black);
+  color: var(--neo-lime);
+  padding: 8px 0;
+  border-top: var(--neo-border-thick);
+  border-bottom: var(--neo-border-thick);
+}
+
+.neo-marquee-content {
+  display: inline-block;
+  white-space: nowrap;
+  animation: neo-marquee 20s linear infinite;
+  font-family: var(--neo-font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+/* Floating shapes (decorative) */
+.neo-shape {
+  position: absolute;
+  border: var(--neo-border-thick);
+  pointer-events: none;
+}
+
+.neo-shape-circle {
+  border-radius: 50%;
+}
+
+.neo-shape-square {
+  transform: rotate(45deg);
+}
+
+/* Striped backgrounds */
+.neo-stripes {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    var(--neo-black) 10px,
+    var(--neo-black) 12px
+  );
+}
+
+.neo-stripes-yellow {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--neo-yellow),
+    var(--neo-yellow) 10px,
+    var(--neo-black) 10px,
+    var(--neo-black) 12px
+  );
+}
+
+/* Status indicators */
+.neo-status {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--neo-black);
+  display: inline-block;
+}
+
+.neo-status-active {
+  background: var(--neo-lime);
+  animation: neo-pulse 1s ease infinite;
+}
+
+.neo-status-error {
+  background: var(--neo-red);
+  animation: neo-blink 0.5s ease infinite;
+}
+
+.neo-status-pending {
+  background: var(--neo-yellow);
+}
+
+/* Divider */
+.neo-divider {
+  height: 4px;
+  background: var(--neo-black);
+  margin: 24px 0;
+}
+
+.neo-divider-dashed {
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--neo-black),
+    var(--neo-black) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+  margin: 24px 0;
+}
+
+/* Tooltip */
+.neo-tooltip {
+  position: absolute;
+  background: var(--neo-black);
+  color: var(--neo-lime);
+  padding: 8px 12px;
+  font-family: var(--neo-font-mono);
+  font-size: 12px;
+  border: 2px solid var(--neo-lime);
+  z-index: 1000;
+  white-space: nowrap;
+}
+
+/* ============================================================================
+   LOADING STATES
+   ============================================================================ */
+
+.neo-loader {
+  width: 40px;
+  height: 40px;
+  border: var(--neo-border-thick);
+  border-top-color: var(--neo-lime);
+  animation: neo-spin 0.8s linear infinite;
+}
+
+.neo-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--neo-white) 0%,
+    #e0e0e0 50%,
+    var(--neo-white) 100%
+  );
+  background-size: 200% 100%;
+  animation: neo-skeleton-shimmer 1.5s ease infinite;
+  border: 2px solid var(--neo-black);
+}
+
+@keyframes neo-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .neo-title { font-size: 32px; }
+  .neo-title-lg { font-size: 40px; }
+  .neo-title-xl { font-size: 48px; }
+
+  .neo-card { padding: 16px; }
+
+  .neo-tabs {
+    flex-direction: column;
+  }
+
+  .neo-btn {
+    padding: 10px 20px;
+    font-size: 12px;
+  }
+}
+
+/* ============================================================================
+   SCROLLBAR
+   ============================================================================ */
+
+.neo-tracker::-webkit-scrollbar {
+  width: 16px;
+}
+
+.neo-tracker::-webkit-scrollbar-track {
+  background: var(--neo-white);
+  border-left: var(--neo-border-thick);
+}
+
+.neo-tracker::-webkit-scrollbar-thumb {
+  background: var(--neo-black);
+  border: 3px solid var(--neo-white);
+}
+
+.neo-tracker::-webkit-scrollbar-thumb:hover {
+  background: var(--neo-lime);
+}
