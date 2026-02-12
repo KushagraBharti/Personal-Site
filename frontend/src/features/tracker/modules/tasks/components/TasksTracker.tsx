@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useId, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TaskTemplate, TaskStatus, WeeklySnapshot } from "../../../shared/types";
-import { earliestWeekStart, useTasksModule } from "../hooks";
+import { earliestWeekStart, SnapshotSaveResult, useTasksModule } from "../hooks";
 import { startOfWeekMondayChicago } from "../../../shared/utils/date";
 
 // ============================================================================
@@ -397,17 +397,37 @@ const CategorySection: React.FC<{
 const SnapshotModal: React.FC<{
   weekLabel: string;
   draft: WeeklySnapshot;
-  setDraft: React.Dispatch<React.SetStateAction<WeeklySnapshot>>;
+  onFieldChange: (key: string, value: string) => void;
+  fieldErrors: Partial<Record<string, string>>;
+  submitFeedback: { kind: "error"; message: string } | null;
+  isSaving: boolean;
   onClose: () => void;
-  onSave: () => void;
-}> = ({ weekLabel, draft, setDraft, onClose, onSave }) => {
+  onSave: () => Promise<void>;
+}> = ({ weekLabel, draft, onFieldChange, fieldErrors, submitFeedback, isSaving, onClose, onSave }) => {
   const fields = [
-    { key: "build_milestone", label: "BUILD MILESTONE", placeholder: "What did you ship?" },
+    {
+      key: "build_milestone",
+      label: "BUILD MILESTONE",
+      placeholder: "What did you ship?",
+      required: true,
+    },
     { key: "best_demo_hook_url", label: "DEMO HOOK URL", placeholder: "https://..." },
     { key: "best_demo_walkthrough_url", label: "DEMO WALKTHROUGH URL", placeholder: "https://..." },
     { key: "paid_work_progress", label: "PAID WORK PROGRESS", placeholder: "Revenue, clients...", textarea: true },
-    { key: "traction_progress", label: "TRACTION PROGRESS", placeholder: "Users, growth...", textarea: true },
-    { key: "next_week_focus", label: "NEXT WEEK FOCUS", placeholder: "Top priorities...", textarea: true },
+    {
+      key: "traction_progress",
+      label: "TRACTION PROGRESS",
+      placeholder: "Users, growth...",
+      textarea: true,
+      required: true,
+    },
+    {
+      key: "next_week_focus",
+      label: "NEXT WEEK FOCUS",
+      placeholder: "Top priorities...",
+      textarea: true,
+      required: true,
+    },
   ];
 
   return (
@@ -451,38 +471,70 @@ const SnapshotModal: React.FC<{
         <div className="space-y-4">
           {fields.map((field) => (
             <div key={field.key}>
-              <label className="neo-label text-xs block mb-2">{field.label}</label>
+              <div className="flex items-center justify-between mb-2 gap-4">
+                <label className="neo-label text-xs">
+                  {field.label}
+                  {field.required ? " *" : ""}
+                </label>
+                {field.required && (
+                  <span className="neo-label text-[10px] opacity-70">
+                    {(((draft as any)[field.key] ?? "") as string).length} chars
+                  </span>
+                )}
+              </div>
               {field.textarea ? (
                 <textarea
                   className="neo-input"
                   rows={3}
                   placeholder={field.placeholder}
                   value={(draft as any)[field.key] ?? ""}
-                  onChange={(e) =>
-                    setDraft((prev) => ({ ...prev, [field.key]: e.target.value }))
-                  }
+                  onChange={(e) => onFieldChange(field.key, e.target.value)}
+                  style={fieldErrors[field.key] ? { border: "4px solid var(--neo-red)" } : undefined}
                 />
               ) : (
                 <input
                   className="neo-input"
                   placeholder={field.placeholder}
                   value={(draft as any)[field.key] ?? ""}
-                  onChange={(e) =>
-                    setDraft((prev) => ({ ...prev, [field.key]: e.target.value }))
-                  }
+                  onChange={(e) => onFieldChange(field.key, e.target.value)}
+                  style={fieldErrors[field.key] ? { border: "4px solid var(--neo-red)" } : undefined}
                 />
+              )}
+              {fieldErrors[field.key] && (
+                <p className="neo-label text-xs mt-2" style={{ color: "var(--neo-red)" }}>
+                  {fieldErrors[field.key]}
+                </p>
               )}
             </div>
           ))}
         </div>
 
+        {submitFeedback?.kind === "error" && (
+          <div
+            className="neo-card mt-4 p-3"
+            style={{
+              background: "var(--neo-red)",
+              color: "var(--neo-white)",
+            }}
+          >
+            <p
+              className="neo-label text-xs"
+              style={{ color: "var(--neo-white)" }}
+            >
+              {submitFeedback.message}
+            </p>
+          </div>
+        )}
+
         <div className="flex gap-3 mt-6">
           <motion.button
-            onClick={onSave}
+            onClick={() => void onSave()}
             className="neo-btn neo-btn-lime flex-1"
+            disabled={isSaving}
+            style={{ opacity: isSaving ? 0.7 : 1 }}
             whileTap={{ scale: 0.95 }}
           >
-            💾 SAVE SNAPSHOT
+            {isSaving ? "SAVING..." : "💾 SAVE SNAPSHOT"}
           </motion.button>
         </div>
       </motion.div>
@@ -494,6 +546,203 @@ const SnapshotModal: React.FC<{
 // TEMPLATE MANAGER MODAL
 // ============================================================================
 
+const normalizeCategoryKey = (value: string) => value.trim().replace(/\s+/g, " ").toLocaleLowerCase();
+
+type CategoryComboboxOption =
+  | { kind: "create"; value: string; label: string }
+  | { kind: "category"; value: string; label: string };
+
+const CategoryCombobox: React.FC<{
+  value: string;
+  onChange: (value: string) => void;
+  categories: string[];
+}> = ({ value, onChange, categories }) => {
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const listboxId = useId();
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+
+  const compactValue = value.trim().replace(/\s+/g, " ");
+  const normalizedValue = normalizeCategoryKey(value);
+  const hasExactMatch = categories.some(
+    (category) => normalizeCategoryKey(category) === normalizedValue
+  );
+
+  const options = useMemo<CategoryComboboxOption[]>(() => {
+    const categoryOptions = categories.map((category) => ({
+      kind: "category" as const,
+      value: category,
+      label: category,
+    }));
+
+    if (!compactValue || hasExactMatch) {
+      return categoryOptions;
+    }
+
+    return [
+      {
+        kind: "create" as const,
+        value: compactValue,
+        label: `Use "${compactValue}"`,
+      },
+      ...categoryOptions,
+    ];
+  }, [categories, compactValue, hasExactMatch]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (!compactValue) {
+      setActiveIndex(-1);
+      return;
+    }
+
+    const selectedIndex = options.findIndex(
+      (option) => normalizeCategoryKey(option.value) === normalizedValue
+    );
+    setActiveIndex(selectedIndex);
+  }, [compactValue, normalizedValue, options, isOpen]);
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (rootRef.current?.contains(event.target as Node)) return;
+      setIsOpen(false);
+      setActiveIndex(-1);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen || activeIndex < 0) return;
+    optionRefs.current[activeIndex]?.scrollIntoView({ block: "nearest" });
+  }, [activeIndex, isOpen]);
+
+  const selectOption = (option: CategoryComboboxOption) => {
+    onChange(option.value);
+    setIsOpen(false);
+    setActiveIndex(-1);
+    inputRef.current?.focus();
+  };
+
+  const moveActiveIndex = (direction: "next" | "prev") => {
+    if (!options.length) return;
+
+    setActiveIndex((current) => {
+      if (current === -1) {
+        return direction === "next" ? 0 : options.length - 1;
+      }
+
+      if (direction === "next") {
+        return current >= options.length - 1 ? 0 : current + 1;
+      }
+      return current <= 0 ? options.length - 1 : current - 1;
+    });
+  };
+
+  return (
+    <div ref={rootRef} className="relative">
+      <input
+        ref={inputRef}
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded={isOpen}
+        aria-controls={listboxId}
+        aria-activedescendant={activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : undefined}
+        className="neo-input pr-12"
+        placeholder="Category"
+        value={value}
+        onFocus={() => setIsOpen(true)}
+        onClick={() => setIsOpen(true)}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setIsOpen(true);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            setIsOpen(true);
+            moveActiveIndex("next");
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            setIsOpen(true);
+            moveActiveIndex("prev");
+          } else if (e.key === "Enter") {
+            if (isOpen && activeIndex >= 0 && activeIndex < options.length) {
+              e.preventDefault();
+              selectOption(options[activeIndex]);
+            }
+          } else if (e.key === "Escape") {
+            setIsOpen(false);
+            setActiveIndex(-1);
+          } else if (e.key === "Tab") {
+            setIsOpen(false);
+            setActiveIndex(-1);
+          }
+        }}
+      />
+      <button
+        type="button"
+        className="absolute right-3 top-1/2 -translate-y-1/2 font-black text-lg"
+        aria-label="Toggle categories"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => {
+          setIsOpen((open) => !open);
+          inputRef.current?.focus();
+        }}
+      >
+        {isOpen ? "▴" : "▾"}
+      </button>
+
+      {isOpen && (
+        <div
+          className="absolute left-0 right-0 mt-2 z-50 border-4 border-black max-h-56 overflow-auto"
+          style={{
+            background: "var(--neo-yellow)",
+            boxShadow: "4px 4px 0 var(--neo-black)",
+          }}
+        >
+          <ul id={listboxId} role="listbox">
+            {options.map((option, index) => {
+              const isActive = index === activeIndex;
+              return (
+                <li key={`${option.kind}-${option.value}`} role="none">
+                  <button
+                    id={`${listboxId}-option-${index}`}
+                    ref={(el) => {
+                      optionRefs.current[index] = el;
+                    }}
+                    role="option"
+                    aria-selected={normalizeCategoryKey(option.value) === normalizedValue}
+                    type="button"
+                    className="w-full text-left px-4 py-2 border-b-2 border-black font-bold"
+                    style={{
+                      background: isActive ? "var(--neo-blue)" : "transparent",
+                      color: isActive ? "var(--neo-white)" : "var(--neo-black)",
+                    }}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => selectOption(option)}
+                  >
+                    {option.label}
+                  </button>
+                </li>
+              );
+            })}
+
+            {!options.length && (
+              <li className="px-4 py-2 neo-label text-xs">NO CATEGORIES YET</li>
+            )}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const TemplateManagerModal: React.FC<{
   templates: TaskTemplate[];
   newTemplate: { category: string; text: string };
@@ -502,7 +751,7 @@ const TemplateManagerModal: React.FC<{
   setShowArchived: React.Dispatch<React.SetStateAction<boolean>>;
   onClose: () => void;
   onCreate: () => void;
-  onUpdate: (template: TaskTemplate, updates: Partial<TaskTemplate>) => void;
+  onUpdate: (template: TaskTemplate, updates: Partial<TaskTemplate>) => Promise<void> | void;
   onDelete: (template: TaskTemplate) => void;
   onCategoryMove: (category: string, direction: "up" | "down") => void;
   onTaskMove: (templateId: string, direction: "up" | "down") => void;
@@ -525,10 +774,43 @@ const TemplateManagerModal: React.FC<{
 }) => {
   const activeCount = templates.filter((t) => t.active).length;
   const archivedCount = templates.length - activeCount;
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
+  const [editingDraft, setEditingDraft] = useState({ category: "", text: "" });
 
   const visibleGroups = templateGroups.filter((group) =>
     showArchived ? true : group.tasks.some((t) => t.active)
   );
+  const categoryOptions = useMemo(
+    () =>
+      Array.from(new Set(templateGroups.map((group) => group.category))).sort((a, b) =>
+        a.localeCompare(b)
+      ),
+    [templateGroups]
+  );
+
+  const startEditingTemplate = (template: TaskTemplate) => {
+    setEditingTemplateId(template.id);
+    setEditingDraft({ category: template.category, text: template.text });
+  };
+
+  const cancelEditingTemplate = () => {
+    setEditingTemplateId(null);
+    setEditingDraft({ category: "", text: "" });
+  };
+
+  const saveEditingTemplate = async (template: TaskTemplate) => {
+    const nextCategory = editingDraft.category.trim();
+    const nextText = editingDraft.text.trim();
+    if (!nextCategory || !nextText) return;
+
+    if (nextCategory === template.category && nextText === template.text) {
+      cancelEditingTemplate();
+      return;
+    }
+
+    await onUpdate(template, { category: nextCategory, text: nextText });
+    cancelEditingTemplate();
+  };
 
   return (
     <motion.div
@@ -580,11 +862,10 @@ const TemplateManagerModal: React.FC<{
         <div className="neo-card mb-6" style={{ background: "var(--neo-white)" }}>
           <p className="neo-label text-xs mb-3">ADD NEW TEMPLATE</p>
           <div className="grid gap-3 md:grid-cols-[1fr_2fr_auto]">
-            <input
-              className="neo-input"
-              placeholder="Category"
+            <CategoryCombobox
               value={newTemplate.category}
-              onChange={(e) => setNewTemplate((prev) => ({ ...prev, category: e.target.value }))}
+              onChange={(category) => setNewTemplate((prev) => ({ ...prev, category }))}
+              categories={categoryOptions}
             />
             <input
               className="neo-input"
@@ -664,28 +945,80 @@ const TemplateManagerModal: React.FC<{
                           ↓
                         </motion.button>
                       </div>
-                      <span
-                        className="flex-1 font-mono text-sm"
-                        style={{ textDecoration: template.active ? "none" : "line-through" }}
-                      >
-                        {template.text}
-                      </span>
+                      {editingTemplateId === template.id ? (
+                        <div className="flex-1 grid gap-2 md:grid-cols-2">
+                          <CategoryCombobox
+                            value={editingDraft.category}
+                            onChange={(category) =>
+                              setEditingDraft((prev) => ({ ...prev, category }))
+                            }
+                            categories={categoryOptions}
+                          />
+                          <input
+                            className="neo-input"
+                            placeholder="Task description"
+                            value={editingDraft.text}
+                            onChange={(e) =>
+                              setEditingDraft((prev) => ({ ...prev, text: e.target.value }))
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") void saveEditingTemplate(template);
+                              if (e.key === "Escape") cancelEditingTemplate();
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <span
+                          className="flex-1 font-mono text-sm"
+                          style={{ textDecoration: template.active ? "none" : "line-through" }}
+                        >
+                          {template.text}
+                        </span>
+                      )}
                       <div className="flex gap-2">
-                        <motion.button
-                          onClick={() => onUpdate(template, { active: !template.active })}
-                          className="neo-btn neo-btn-sm neo-btn-cyan"
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          {template.active ? "ARCHIVE" : "RESTORE"}
-                        </motion.button>
-                        <motion.button
-                          onClick={() => onDelete(template)}
-                          className="neo-btn neo-btn-sm"
-                          style={{ background: "var(--neo-red)", color: "white" }}
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          🗑
-                        </motion.button>
+                        {editingTemplateId === template.id ? (
+                          <>
+                            <motion.button
+                              onClick={() => void saveEditingTemplate(template)}
+                              className="neo-btn neo-btn-sm neo-btn-lime"
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              SAVE
+                            </motion.button>
+                            <motion.button
+                              onClick={cancelEditingTemplate}
+                              className="neo-btn neo-btn-sm neo-btn-white"
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              CANCEL
+                            </motion.button>
+                          </>
+                        ) : (
+                          <>
+                            <motion.button
+                              onClick={() => startEditingTemplate(template)}
+                              className="neo-btn neo-btn-sm neo-btn-yellow"
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              EDIT
+                            </motion.button>
+                            <motion.button
+                              onClick={() => onUpdate(template, { active: !template.active })}
+                              className="neo-btn neo-btn-sm neo-btn-cyan"
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              {template.active ? "ARCHIVE" : "RESTORE"}
+                            </motion.button>
+                            <motion.button
+                              onClick={() => onDelete(template)}
+                              className="neo-btn neo-btn-sm"
+                              style={{ background: "var(--neo-red)", color: "white" }}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              🗑
+                            </motion.button>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -738,6 +1071,93 @@ const TasksTracker: React.FC = () => {
     formatWeekLabel,
     shiftWeek,
   } = useTasksModule();
+  const [snapshotSaving, setSnapshotSaving] = useState(false);
+  const [snapshotFieldErrors, setSnapshotFieldErrors] = useState<Partial<Record<string, string>>>({});
+  const [snapshotSubmitFeedback, setSnapshotSubmitFeedback] = useState<{
+    kind: "error";
+    message: string;
+  } | null>(null);
+  const snapshotCloseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const snapshotToastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [snapshotToast, setSnapshotToast] = useState<{ id: number; message: string } | null>(null);
+  const [snapshotSavedAtByWeek, setSnapshotSavedAtByWeek] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    return () => {
+      if (snapshotCloseTimeoutRef.current) {
+        clearTimeout(snapshotCloseTimeoutRef.current);
+      }
+      if (snapshotToastTimeoutRef.current) {
+        clearTimeout(snapshotToastTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isSnapshotModalOpen) {
+      if (snapshotCloseTimeoutRef.current) {
+        clearTimeout(snapshotCloseTimeoutRef.current);
+        snapshotCloseTimeoutRef.current = null;
+      }
+      setSnapshotSaving(false);
+      setSnapshotFieldErrors({});
+      setSnapshotSubmitFeedback(null);
+    }
+  }, [isSnapshotModalOpen]);
+
+  const formatSnapshotSavedAt = (iso: string) => {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
+
+  const handleSnapshotFieldChange = (key: string, value: string) => {
+    setSnapshotDraft((prev) => ({ ...prev, [key]: value }));
+    setSnapshotFieldErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+    if (snapshotSubmitFeedback?.kind === "error") {
+      setSnapshotSubmitFeedback(null);
+    }
+  };
+
+  const handleSnapshotSubmit = async () => {
+    setSnapshotSaving(true);
+    const result: SnapshotSaveResult = await handleSnapshotSave();
+    setSnapshotSaving(false);
+    setSnapshotFieldErrors(result.fieldErrors);
+
+    if (result.ok) {
+      setSnapshotSubmitFeedback(null);
+      setSnapshotSavedAtByWeek((prev) => ({ ...prev, [activeWeekStart]: result.savedAt }));
+      const toastId = Date.now();
+      setSnapshotToast({ id: toastId, message: result.message });
+      if (snapshotToastTimeoutRef.current) {
+        clearTimeout(snapshotToastTimeoutRef.current);
+      }
+      snapshotToastTimeoutRef.current = setTimeout(() => {
+        setSnapshotToast((prev) => (prev?.id === toastId ? null : prev));
+      }, 3000);
+
+      snapshotCloseTimeoutRef.current = setTimeout(() => {
+        setIsSnapshotModalOpen(false);
+      }, 500);
+      return;
+    }
+
+    setSnapshotSubmitFeedback({
+      kind: "error",
+      message: result.message,
+    });
+  };
 
   // Filter for active templates only
   const activeGroups = templateGroups
@@ -821,6 +1241,22 @@ const TasksTracker: React.FC = () => {
         >
           <p className="neo-label text-xs">SNAPSHOT SAVED</p>
           <p className="font-mono text-sm mt-1">{snapshots[activeWeekStart]?.next_week_focus}</p>
+          {formatSnapshotSavedAt(
+            snapshotSavedAtByWeek[activeWeekStart] ??
+              snapshots[activeWeekStart]?.updated_at ??
+              snapshots[activeWeekStart]?.created_at ??
+              ""
+          ) && (
+            <p className="neo-label text-xs mt-2">
+              LAST SAVED:{" "}
+              {formatSnapshotSavedAt(
+                snapshotSavedAtByWeek[activeWeekStart] ??
+                  snapshots[activeWeekStart]?.updated_at ??
+                  snapshots[activeWeekStart]?.created_at ??
+                  ""
+              )}
+            </p>
+          )}
         </motion.div>
       )}
 
@@ -880,15 +1316,40 @@ const TasksTracker: React.FC = () => {
         </div>
       )}
 
+      {/* Global success toast */}
+      <AnimatePresence>
+        {snapshotToast && (
+          <motion.div
+            key={snapshotToast.id}
+            initial={{ opacity: 0, y: 16, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="fixed right-4 bottom-4 z-[70] max-w-sm w-[calc(100%-2rem)] sm:w-auto"
+          >
+            <div
+              className="neo-card p-3"
+              style={{ background: "var(--neo-lime)", boxShadow: "6px 6px 0 var(--neo-black)" }}
+            >
+              <p className="neo-label text-xs">SNAPSHOT SAVED</p>
+              <p className="font-mono text-sm mt-1">{snapshotToast.message}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Modals */}
       <AnimatePresence>
         {isSnapshotModalOpen && (
           <SnapshotModal
             weekLabel={formatWeekLabel(activeWeekStart)}
             draft={snapshotDraft}
-            setDraft={setSnapshotDraft}
+            onFieldChange={handleSnapshotFieldChange}
+            fieldErrors={snapshotFieldErrors}
+            submitFeedback={snapshotSubmitFeedback}
+            isSaving={snapshotSaving}
             onClose={() => setIsSnapshotModalOpen(false)}
-            onSave={handleSnapshotSave}
+            onSave={handleSnapshotSubmit}
           />
         )}
         {manageTemplatesOpen && (

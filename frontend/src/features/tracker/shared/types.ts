@@ -36,6 +36,8 @@ export interface WeeklySnapshot {
   build_outcome?: string | null;
   internship_outcome?: string | null;
   traction_outcome?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export type PipelineType = "internship" | "relationship" | "traction";

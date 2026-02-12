@@ -17,6 +17,7 @@ import { TaskStatusUpsert, TemplateGroup } from "./types";
 
 const CATEGORY_STEP = 1000;
 export const earliestWeekStart = "2026-02-02";
+const normalizeCategoryKey = (value: string) => value.trim().replace(/\s+/g, " ").toLocaleLowerCase();
 
 const groupTemplatesByCategory = (templatesList: TaskTemplate[]): TemplateGroup[] => {
   const sorted = [...templatesList].sort((a, b) => {
@@ -52,6 +53,13 @@ const createEmptySnapshot = (weekStart: string): WeeklySnapshot => ({
   internship_outcome: "",
   traction_outcome: "",
 });
+
+type SnapshotFieldKey = "build_milestone" | "traction_progress" | "next_week_focus";
+type SnapshotFieldErrors = Partial<Record<SnapshotFieldKey, string>>;
+
+export type SnapshotSaveResult =
+  | { ok: true; message: string; fieldErrors: SnapshotFieldErrors; savedAt: string }
+  | { ok: false; message: string; fieldErrors: SnapshotFieldErrors };
 
 export const useTasksModule = () => {
   const { userId, supabase, startLoading, stopLoading } = useTrackerContext();
@@ -173,13 +181,27 @@ export const useTasksModule = () => {
     return base + tasksInGroup.length + 1;
   };
 
+  const resolveCategoryName = (input: string) => {
+    const compact = input.trim().replace(/\s+/g, " ");
+    if (!compact) return "";
+
+    const normalizedInput = normalizeCategoryKey(compact);
+    const existing = templates.find(
+      (template) => normalizeCategoryKey(template.category) === normalizedInput
+    );
+    return existing ? existing.category : compact;
+  };
+
   const handleTemplateCreate = async () => {
-    if (!newTemplate.text.trim() || !newTemplate.category.trim()) return;
-    const sortOrder = calculateSortOrderForCategory(newTemplate.category.trim());
+    const resolvedCategory = resolveCategoryName(newTemplate.category);
+    const nextText = newTemplate.text.trim();
+    if (!nextText || !resolvedCategory) return;
+
+    const sortOrder = calculateSortOrderForCategory(resolvedCategory);
     const { error } = await createTemplate(supabase, {
       user_id: userId,
-      category: newTemplate.category.trim(),
-      text: newTemplate.text.trim(),
+      category: resolvedCategory,
+      text: nextText,
       sort_order: sortOrder,
       active: true,
     });
@@ -193,15 +215,22 @@ export const useTasksModule = () => {
 
   const handleTemplateUpdate = async (template: TaskTemplate, updates: Partial<TaskTemplate>) => {
     let payload: Partial<TaskTemplate> = { ...updates };
-    if (updates.category && updates.category !== template.category) {
-      const trimmedCategory = updates.category.trim();
-      payload = {
-        ...payload,
-        category: trimmedCategory,
-        sort_order: calculateSortOrderForCategory(trimmedCategory),
-      };
-    } else if (updates.category) {
-      payload = { ...payload, category: updates.category.trim() };
+
+    if (typeof updates.text === "string") {
+      payload.text = updates.text.trim();
+    }
+
+    if (typeof updates.category === "string") {
+      const resolvedCategory = resolveCategoryName(updates.category);
+      if (resolvedCategory && resolvedCategory !== template.category) {
+        payload = {
+          ...payload,
+          category: resolvedCategory,
+          sort_order: calculateSortOrderForCategory(resolvedCategory),
+        };
+      } else if (resolvedCategory) {
+        payload = { ...payload, category: resolvedCategory };
+      }
     }
     const { error } = await updateTemplate(supabase, userId, template.id, payload);
     if (error) {
@@ -292,13 +321,61 @@ export const useTasksModule = () => {
     await persistGroupOrdering(reorderedGroups);
   };
 
-  const handleSnapshotSave = async () => {
-    const payload = { ...snapshotDraft, week_start: activeWeekStart, user_id: userId };
+  const handleSnapshotSave = async (): Promise<SnapshotSaveResult> => {
+    const fieldErrors: SnapshotFieldErrors = {};
+    if (!snapshotDraft.build_milestone?.trim()) {
+      fieldErrors.build_milestone = "BUILD MILESTONE is required.";
+    }
+    if (!snapshotDraft.traction_progress?.trim()) {
+      fieldErrors.traction_progress = "TRACTION PROGRESS is required.";
+    }
+    if (!snapshotDraft.next_week_focus?.trim()) {
+      fieldErrors.next_week_focus = "NEXT WEEK FOCUS is required.";
+    }
+
+    if (Object.keys(fieldErrors).length > 0) {
+      return {
+        ok: false,
+        message: "Please complete all required fields before saving.",
+        fieldErrors,
+      };
+    }
+
+    const payload = {
+      user_id: userId,
+      week_start: activeWeekStart,
+      build_milestone: snapshotDraft.build_milestone ?? "",
+      best_demo_hook_url: snapshotDraft.best_demo_hook_url ?? "",
+      best_demo_walkthrough_url: snapshotDraft.best_demo_walkthrough_url ?? "",
+      paid_work_progress: snapshotDraft.paid_work_progress ?? "",
+      traction_progress: snapshotDraft.traction_progress ?? "",
+      next_week_focus: snapshotDraft.next_week_focus ?? "",
+    };
     const { data, error } = await upsertSnapshot(supabase, payload);
+    if (error) {
+      console.error("Failed to save snapshot", error);
+      return {
+        ok: false,
+        message: `Failed to save snapshot: ${error.message}`,
+        fieldErrors: {},
+      };
+    }
+
     if (!error && data) {
       setSnapshots((prev) => ({ ...prev, [activeWeekStart]: data }));
-      setIsSnapshotModalOpen(false);
+      return {
+        ok: true,
+        message: "Snapshot saved successfully.",
+        fieldErrors: {},
+        savedAt: data.updated_at ?? new Date().toISOString(),
+      };
     }
+
+    return {
+      ok: false,
+      message: "Failed to save snapshot: No row returned from database.",
+      fieldErrors: {},
+    };
   };
 
   const clampWeekStart = (weekStart: string) =>

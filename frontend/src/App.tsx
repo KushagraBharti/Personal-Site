@@ -33,7 +33,6 @@ const App: React.FC = () => {
   return (
     <Router>
       <ScrollProgress />
-      <SectionSidebar />
       <GlobalHotkeys />
       <Suspense
         fallback={

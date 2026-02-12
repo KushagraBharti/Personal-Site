@@ -13,11 +13,42 @@ import "./styles/neo-brutal.css";
 
 const FloatingShapes: React.FC = () => {
   const shapes = [
-    { size: 60, color: "var(--neo-lime)", top: "10%", left: "5%", delay: 0 },
-    { size: 40, color: "var(--neo-pink)", top: "20%", right: "10%", delay: 0.5 },
-    { size: 80, color: "var(--neo-cyan)", bottom: "15%", left: "8%", delay: 1 },
-    { size: 50, color: "var(--neo-yellow)", bottom: "25%", right: "5%", delay: 1.5 },
-    { size: 35, color: "var(--neo-purple)", top: "50%", left: "3%", delay: 2 },
+    { size: 72, color: "var(--neo-lime)", top: "8%", left: "3%", delay: 0, opacity: 0.9 },
+    { size: 48, color: "var(--neo-pink)", top: "22%", right: "12%", delay: 0.3, opacity: 0.8 },
+    { size: 95, color: "var(--neo-cyan)", bottom: "18%", left: "6%", delay: 0.8, opacity: 0.7 },
+    { size: 55, color: "var(--neo-yellow)", bottom: "28%", right: "8%", delay: 1.2, opacity: 0.85 },
+    { size: 42, color: "var(--neo-purple)", top: "45%", left: "88%", delay: 1.6, opacity: 0.9 },
+    { size: 65, color: "var(--neo-lime)", top: "12%", left: "75%", delay: 0.4, opacity: 0.75 },
+    { size: 38, color: "var(--neo-pink)", bottom: "8%", right: "20%", delay: 0.7, opacity: 0.85 },
+    { size: 85, color: "var(--neo-cyan)", top: "35%", left: "2%", delay: 1.1, opacity: 0.8 },
+    { size: 58, color: "var(--neo-yellow)", top: "60%", right: "3%", delay: 1.5, opacity: 0.9 },
+    { size: 32, color: "var(--neo-purple)", bottom: "5%", left: "45%", delay: 2, opacity: 0.8 },
+    { size: 76, color: "var(--neo-lime)", top: "15%", right: "18%", delay: 0.2, opacity: 0.6 },
+    { size: 62, color: "var(--neo-cyan)", top: "42%", left: "12%", delay: 0.9, opacity: 0.85 },
+    { size: 44, color: "var(--neo-yellow)", bottom: "35%", right: "25%", delay: 1.4, opacity: 0.75 },
+    { size: 51, color: "var(--neo-pink)", top: "68%", left: "18%", delay: 0.6, opacity: 0.9 },
+    { size: 88, color: "var(--neo-purple)", bottom: "12%", right: "6%", delay: 1.8, opacity: 0.8 },
+    { size: 35, color: "var(--neo-lime)", top: "28%", right: "35%", delay: 0.5, opacity: 0.85 },
+    { size: 71, color: "var(--neo-cyan)", top: "72%", left: "68%", delay: 1.3, opacity: 0.75 },
+    { size: 46, color: "var(--neo-yellow)", bottom: "42%", left: "78%", delay: 2.1, opacity: 0.9 },
+    { size: 83, color: "var(--neo-pink)", top: "5%", left: "45%", delay: 0.1, opacity: 0.8 },
+    { size: 40, color: "var(--neo-purple)", bottom: "22%", left: "25%", delay: 1.7, opacity: 0.85 },
+    { size: 67, color: "var(--neo-lime)", top: "55%", right: "42%", delay: 0.8, opacity: 0.7 },
+    { size: 52, color: "var(--neo-cyan)", bottom: "15%", right: "45%", delay: 1.9, opacity: 0.9 },
+    { size: 39, color: "var(--neo-yellow)", top: "38%", left: "32%", delay: 0.35, opacity: 0.8 },
+    { size: 29, color: "var(--neo-lime)", top: "11%", right: "5%", delay: 1.05, opacity: 0.75 },
+    { size: 73, color: "var(--neo-pink)", bottom: "38%", left: "41%", delay: 0.45, opacity: 0.8 },
+    { size: 41, color: "var(--neo-cyan)", top: "52%", left: "58%", delay: 1.25, opacity: 0.9 },
+    { size: 63, color: "var(--neo-yellow)", top: "28%", left: "68%", delay: 0.65, opacity: 0.85 },
+    { size: 47, color: "var(--neo-purple)", bottom: "48%", right: "32%", delay: 1.35, opacity: 0.75 },
+    { size: 54, color: "var(--neo-lime)", top: "78%", right: "28%", delay: 0.25, opacity: 0.9 },
+    { size: 37, color: "var(--neo-pink)", top: "14%", left: "22%", delay: 0.55, opacity: 0.8 },
+    { size: 79, color: "var(--neo-cyan)", bottom: "32%", left: "52%", delay: 1.45, opacity: 0.85 },
+    { size: 45, color: "var(--neo-yellow)", top: "48%", right: "18%", delay: 0.75, opacity: 0.9 },
+    { size: 60, color: "var(--neo-purple)", bottom: "55%", right: "15%", delay: 1.55, opacity: 0.8 },
+    { size: 53, color: "var(--neo-lime)", top: "32%", left: "35%", delay: 0.85, opacity: 0.75 },
+    { size: 68, color: "var(--neo-pink)", bottom: "42%", left: "23%", delay: 1.65, opacity: 0.9 },
+    { size: 34, color: "var(--neo-cyan)", top: "66%", left: "78%", delay: 0.35, opacity: 0.8 },
   ];
 
   return (
@@ -53,20 +84,6 @@ const FloatingShapes: React.FC = () => {
   );
 };
 
-// ============================================================================
-// MARQUEE BANNER
-// ============================================================================
-
-const MarqueeBanner: React.FC<{ text: string }> = ({ text }) => {
-  const repeated = Array(10).fill(text).join(" ★ ");
-  return (
-    <div className="neo-marquee">
-      <div className="neo-marquee-content">
-        {repeated}
-      </div>
-    </div>
-  );
-};
 
 // ============================================================================
 // LOGIN SCREEN
@@ -231,6 +248,15 @@ const LoginScreen: React.FC<{
             </motion.div>
           </form>
 
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.55 }}
+            className="neo-label mt-4 text-[10px] leading-relaxed"
+          >
+            if you want access to this; please contact kushagra directly @ kushagrabharti@gmail.com
+          </motion.p>
+
           {/* Decorative corner */}
           <div
             className="absolute -bottom-3 -right-3 w-12 h-12"
@@ -241,11 +267,6 @@ const LoginScreen: React.FC<{
           />
         </div>
       </motion.div>
-
-      {/* Bottom marquee */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <MarqueeBanner text="PRIVATE ACCESS REQUIRED" />
-      </div>
     </div>
   );
 };
@@ -423,7 +444,7 @@ const TrackerLayout: React.FC<{
                     onClick={() => handleTabChange(module.id)}
                     className={`
                       relative px-6 py-4 font-bold uppercase tracking-wider text-sm
-                      border-r-4 border-black transition-colors
+                      border-r-4 first:border-l-4 border-black transition-colors
                       ${activeModuleId === module.id
                         ? "bg-neo-lime text-black"
                         : "bg-white text-black hover:bg-gray-100"
@@ -452,9 +473,8 @@ const TrackerLayout: React.FC<{
           </div>
         </motion.header>
 
-        
-        {/* Marquee */}
-        <MarqueeBanner text="STAY FOCUSED ★ EXECUTE DAILY ★ BUILD MOMENTUM ★ TRACK PROGRESS" />
+        {/* Floating shapes */}
+        <FloatingShapes />
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 py-8">
