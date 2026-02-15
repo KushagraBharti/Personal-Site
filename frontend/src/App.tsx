@@ -2,6 +2,7 @@
 
 import React, { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, useNavigate } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import ScrollProgress from "./components/ScrollProgress";
 
 const Home = lazy(() => import("./pages/Home"));
@@ -33,6 +34,7 @@ const App: React.FC = () => {
     <Router>
       <ScrollProgress />
       <GlobalHotkeys />
+      <Analytics />
       <Suspense
         fallback={
           <div className="min-h-screen flex items-center justify-center text-white/80">
