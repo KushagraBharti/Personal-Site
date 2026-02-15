@@ -1,17 +1,23 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   createTask,
   createTaskList,
+  disconnectCalendar,
   deleteTask,
   deleteTaskList,
   fetchSortPreferences,
   fetchTaskLists,
   fetchTasks,
+  getCalendarStatus,
+  getGoogleConnectUrl,
+  setListSync,
+  triggerCalendarSyncNow,
   updateTask,
   updateTaskList,
   upsertSortPreference,
 } from "./api";
 import {
+  CalendarConnectionState,
   RecurrenceType,
   SortDirection,
   TaskDraft,
@@ -105,7 +111,7 @@ const pickAutoListColor = (existingColors: string[]) => {
 };
 
 export const useTasksHubModule = () => {
-  const { supabase, userId, startLoading, stopLoading } = useTrackerContext();
+  const { supabase, userId, session, startLoading, stopLoading } = useTrackerContext();
 
   const [lists, setLists] = useState<TaskList[]>([]);
   const [tasks, setTasks] = useState<TrackerTask[]>([]);
@@ -114,6 +120,10 @@ export const useTasksHubModule = () => {
   const [showCompleted, setShowCompleted] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
+  const [calendarState, setCalendarState] = useState<CalendarConnectionState | null>(null);
+  const [calendarBusy, setCalendarBusy] = useState(false);
+  const [calendarSyncResult, setCalendarSyncResult] = useState<{ processed: number; failed: number } | null>(null);
+  const syncTimerRef = useRef<number | null>(null);
 
   const runWithLoading = useCallback(
     async <T>(fn: () => Promise<T>) => {
@@ -172,6 +182,27 @@ export const useTasksHubModule = () => {
     if (!userId) return;
     fetchAll();
   }, [userId, fetchAll]);
+
+  const loadCalendarStatus = useCallback(async () => {
+    if (!session?.access_token) {
+      setCalendarState(null);
+      return null;
+    }
+    try {
+      const status = await getCalendarStatus(session.access_token);
+      setCalendarState(status);
+      return status;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to load calendar status";
+      setErrorMessage(message);
+      return null;
+    }
+  }, [session?.access_token]);
+
+  useEffect(() => {
+    if (!session?.access_token) return;
+    loadCalendarStatus();
+  }, [session?.access_token, loadCalendarStatus]);
 
   useEffect(() => {
     if (selectedListId === ALL_LISTS_KEY) return;
@@ -365,6 +396,29 @@ export const useTasksHubModule = () => {
     [selectedListId, supabase, userId]
   );
 
+  const scheduleCalendarSync = useCallback(
+    (immediate = false) => {
+      if (!session?.access_token || !calendarState?.connected) return;
+      if (syncTimerRef.current) {
+        window.clearTimeout(syncTimerRef.current);
+      }
+      const delayMs = immediate ? 0 : 800;
+      syncTimerRef.current = window.setTimeout(async () => {
+        try {
+          const result = await triggerCalendarSyncNow(session.access_token);
+          setCalendarSyncResult({ processed: result.processed, failed: result.failed });
+          await loadCalendarStatus();
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "Calendar sync failed";
+          setErrorMessage(message);
+        } finally {
+          syncTimerRef.current = null;
+        }
+      }, delayMs);
+    },
+    [calendarState?.connected, loadCalendarStatus, session?.access_token]
+  );
+
   const createTaskFromDraft = useCallback(
     async (draft: TaskDraft) => {
       const cleanedTitle = draft.title.trim();
@@ -397,9 +451,10 @@ export const useTasksHubModule = () => {
 
       setTasks((prev) => [...prev, result.data as TrackerTask]);
       setErrorMessage("");
+      scheduleCalendarSync();
       return result.data;
     },
-    [getNextTaskSortOrder, supabase, userId]
+    [getNextTaskSortOrder, scheduleCalendarSync, supabase, userId]
   );
 
   const saveTask = useCallback(
@@ -419,9 +474,10 @@ export const useTasksHubModule = () => {
 
       setTasks((prev) => prev.map((task) => (task.id === taskId ? (result.data as TrackerTask) : task)));
       setErrorMessage("");
+      scheduleCalendarSync();
       return true;
     },
-    [supabase, userId]
+    [scheduleCalendarSync, supabase, userId]
   );
 
   const removeTask = useCallback(
@@ -434,9 +490,10 @@ export const useTasksHubModule = () => {
 
       setTasks((prev) => prev.filter((task) => task.id !== taskId && task.parent_task_id !== taskId));
       setErrorMessage("");
+      scheduleCalendarSync();
       return true;
     },
-    [supabase, userId]
+    [scheduleCalendarSync, supabase, userId]
   );
 
   const toggleTaskCompletion = useCallback(
@@ -483,9 +540,10 @@ export const useTasksHubModule = () => {
       }
 
       setErrorMessage("");
+      scheduleCalendarSync();
       return true;
     },
-    [getNextTaskSortOrder, supabase, userId]
+    [getNextTaskSortOrder, scheduleCalendarSync, supabase, userId]
   );
 
   const reorderTasks = useCallback(
@@ -516,9 +574,10 @@ export const useTasksHubModule = () => {
       }
 
       setErrorMessage("");
+      scheduleCalendarSync();
       return true;
     },
-    [supabase, tasks, userId]
+    [scheduleCalendarSync, supabase, tasks, userId]
   );
 
   const reorderLists = useCallback(
@@ -615,6 +674,81 @@ export const useTasksHubModule = () => {
       ? { mode: DEFAULT_SORT_MODE, direction: DEFAULT_SORT_DIRECTION }
       : getSortForList(selectedListId);
 
+  const syncEnabledByList = useMemo(() => {
+    const map: Record<string, boolean> = {};
+    (calendarState?.list_sync_settings ?? []).forEach((item) => {
+      map[item.list_id] = !!item.sync_enabled;
+    });
+    return map;
+  }, [calendarState?.list_sync_settings]);
+
+  const connectGoogleCalendar = useCallback(async () => {
+    if (!session?.access_token) {
+      setErrorMessage("No active session for Google connect.");
+      return;
+    }
+    setCalendarBusy(true);
+    try {
+      const { url } = await getGoogleConnectUrl(session.access_token);
+      window.location.href = url;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to connect Google Calendar";
+      setErrorMessage(message);
+    } finally {
+      setCalendarBusy(false);
+    }
+  }, [session?.access_token]);
+
+  const disconnectGoogleCalendar = useCallback(async () => {
+    if (!session?.access_token) return;
+    setCalendarBusy(true);
+    try {
+      await disconnectCalendar(session.access_token);
+      await loadCalendarStatus();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to disconnect Google Calendar";
+      setErrorMessage(message);
+    } finally {
+      setCalendarBusy(false);
+    }
+  }, [loadCalendarStatus, session?.access_token]);
+
+  const setListCalendarSync = useCallback(
+    async (listId: string, enabled: boolean) => {
+      if (!session?.access_token) return false;
+      try {
+        await setListSync(session.access_token, listId, enabled);
+        await loadCalendarStatus();
+        if (enabled) {
+          scheduleCalendarSync(true);
+        }
+        return true;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to update list sync";
+        setErrorMessage(message);
+        return false;
+      }
+    },
+    [loadCalendarStatus, scheduleCalendarSync, session?.access_token]
+  );
+
+  const syncCalendarNow = useCallback(async () => {
+    if (!session?.access_token) return false;
+    setCalendarBusy(true);
+    try {
+      const result = await triggerCalendarSyncNow(session.access_token);
+      setCalendarSyncResult({ processed: result.processed, failed: result.failed });
+      await loadCalendarStatus();
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to sync calendar now";
+      setErrorMessage(message);
+      return false;
+    } finally {
+      setCalendarBusy(false);
+    }
+  }, [loadCalendarStatus, session?.access_token]);
+
   return {
     allListsKey: ALL_LISTS_KEY,
     lists: sortedLists,
@@ -635,8 +769,17 @@ export const useTasksHubModule = () => {
     showCompleted,
     setShowCompleted,
     isSaving,
+    calendarState,
+    calendarBusy,
+    calendarSyncResult,
+    syncEnabledByList,
     errorMessage,
     fetchAll,
+    loadCalendarStatus,
+    connectGoogleCalendar,
+    disconnectGoogleCalendar,
+    setListCalendarSync,
+    syncCalendarNow,
     createList,
     saveList,
     removeList,

@@ -1,6 +1,8 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import {
+  CalendarConnectionState,
   ListUpdateInput,
+  SyncNowResult,
   SortDirection,
   TaskList,
   TaskSortMode,
@@ -8,6 +10,8 @@ import {
   TrackerTask,
   TaskUpdateInput,
 } from "./types";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
 interface TaskListCreateInput {
   user_id: string;
@@ -32,6 +36,11 @@ interface TaskCreateInput {
   recurrence_ends_at: string | null;
   sort_order: number;
 }
+
+const getAuthHeaders = (accessToken: string) => ({
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${accessToken}`,
+});
 
 export const fetchTaskLists = async (client: SupabaseClient, userId: string) => {
   const { data, error } = await client
@@ -163,4 +172,72 @@ export const upsertSortPreference = async (
     .single();
 
   return { data: data as TaskSortPreference | null, error };
+};
+
+export const getCalendarStatus = async (accessToken: string): Promise<CalendarConnectionState> => {
+  const res = await fetch(`${API_BASE}/api/private/calendar/status`, {
+    method: "GET",
+    headers: getAuthHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Failed to fetch calendar status");
+  }
+  return res.json();
+};
+
+export const getGoogleConnectUrl = async (accessToken: string): Promise<{ url: string }> => {
+  const res = await fetch(`${API_BASE}/api/private/calendar/google/connect-url`, {
+    method: "POST",
+    headers: getAuthHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Failed to generate Google connect URL");
+  }
+  return res.json();
+};
+
+export const disconnectCalendar = async (accessToken: string): Promise<{ ok: boolean }> => {
+  const res = await fetch(`${API_BASE}/api/private/calendar/disconnect`, {
+    method: "POST",
+    headers: getAuthHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Failed to disconnect calendar");
+  }
+  return res.json();
+};
+
+export const setListSync = async (
+  accessToken: string,
+  listId: string,
+  syncEnabled: boolean
+): Promise<{ ok: boolean }> => {
+  const res = await fetch(`${API_BASE}/api/private/calendar/list-sync`, {
+    method: "POST",
+    headers: getAuthHeaders(accessToken),
+    body: JSON.stringify({
+      list_id: listId,
+      sync_enabled: syncEnabled,
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Failed to update list sync setting");
+  }
+  return res.json();
+};
+
+export const triggerCalendarSyncNow = async (accessToken: string): Promise<SyncNowResult> => {
+  const res = await fetch(`${API_BASE}/api/private/calendar/sync-now`, {
+    method: "POST",
+    headers: getAuthHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Failed to sync calendar");
+  }
+  return res.json();
 };

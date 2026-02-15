@@ -463,6 +463,14 @@ const TasksHubTracker: React.FC = () => {
     reorderTasks,
     reorderLists,
     buildTaskDraft,
+    calendarState,
+    calendarBusy,
+    calendarSyncResult,
+    syncEnabledByList,
+    connectGoogleCalendar,
+    disconnectGoogleCalendar,
+    setListCalendarSync,
+    syncCalendarNow,
   } = useTasksHubModule();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -740,6 +748,56 @@ const TasksHubTracker: React.FC = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.15 }}
             >
+              <div className="tasks-add-list mb-2">
+                <div className="tasks-card-title-row">
+                  <p className="neo-label" style={{ color: "var(--neo-cyan)" }}>Calendar Sync</p>
+                  <span className="tasks-chip">{calendarState?.connected ? "Connected" : "Not connected"}</span>
+                </div>
+                {calendarState?.connection?.selected_calendar_summary && (
+                  <p className="tasks-muted text-xs">
+                    {calendarState.connection.selected_calendar_summary}
+                  </p>
+                )}
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {!calendarState?.connected ? (
+                    <button
+                      className="neo-btn neo-btn-sm neo-btn-cyan"
+                      onClick={connectGoogleCalendar}
+                      disabled={calendarBusy}
+                    >
+                      Connect Google
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        className="neo-btn neo-btn-sm neo-btn-lime"
+                        onClick={syncCalendarNow}
+                        disabled={calendarBusy}
+                      >
+                        Sync now
+                      </button>
+                      <button
+                        className="neo-btn neo-btn-sm neo-btn-white"
+                        onClick={disconnectGoogleCalendar}
+                        disabled={calendarBusy}
+                      >
+                        Disconnect
+                      </button>
+                    </>
+                  )}
+                </div>
+                {calendarSyncResult && (
+                  <p className="tasks-muted text-xs mt-1">
+                    Last run: {calendarSyncResult.processed} processed / {calendarSyncResult.failed} failed
+                  </p>
+                )}
+                {calendarState?.connection?.last_error && (
+                  <p className="tasks-muted text-xs mt-1" style={{ color: "var(--neo-red)" }}>
+                    {calendarState.connection.last_error}
+                  </p>
+                )}
+              </div>
+
               <div className="mb-2 mt-2 flex items-center justify-between">
                 <h3>Lists</h3>
                 <span className="neo-label" style={{ color: "var(--neo-cyan)" }}>{visibleLists.length}/{lists.length}</span>
@@ -803,6 +861,19 @@ const TasksHubTracker: React.FC = () => {
                           }}
                           onClick={(e) => e.stopPropagation()}
                         />
+                        {calendarState?.connected && (
+                          <input
+                            type="checkbox"
+                            checked={!!syncEnabledByList[list.id]}
+                            className="tasks-list-visibility"
+                            title={syncEnabledByList[list.id] ? "Synced to Google Calendar" : "Not synced to Google Calendar"}
+                            onChange={async (e) => {
+                              const enabled = e.target.checked;
+                              await setListCalendarSync(list.id, enabled);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        )}
                         <motion.span
                           className="tasks-list-dot"
                           style={{ background: list.color_hex }}
@@ -1014,6 +1085,9 @@ const TasksHubTracker: React.FC = () => {
                           >
                             {countsByList[list.id]?.open ?? 0} open
                           </motion.span>
+                          {calendarState?.connected && syncEnabledByList[list.id] && (
+                            <span className="tasks-chip">Synced</span>
+                          )}
                           <motion.button
                             className="neo-btn neo-btn-sm neo-btn-lime"
                             onClick={() => setAddTaskOpenByList((prev) => ({ ...prev, [list.id]: !addTaskOpen }))}

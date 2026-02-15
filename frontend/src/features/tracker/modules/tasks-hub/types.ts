@@ -79,3 +79,30 @@ export interface ListUpdateInput {
   sort_order?: number;
   archived?: boolean;
 }
+
+export interface TaskListSyncSetting {
+  list_id: string;
+  sync_enabled: boolean;
+}
+
+export interface CalendarConnectionState {
+  connected: boolean;
+  connection: {
+    id: string;
+    status: "connected" | "error" | "disconnected";
+    google_email: string | null;
+    selected_calendar_id: string | null;
+    selected_calendar_summary: string | null;
+    last_full_sync_at: string | null;
+    last_incremental_sync_at: string | null;
+    last_error: string | null;
+  } | null;
+  watch_expires_at: string | null;
+  list_sync_settings: TaskListSyncSetting[];
+}
+
+export interface SyncNowResult {
+  ok: boolean;
+  processed: number;
+  failed: number;
+}
