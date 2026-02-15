@@ -18,7 +18,7 @@ const allowedOrigins = [
   "https://kushagrabharti.com",
 ];
 
-// More useless edit for testing Vercel preview deployments and CORS issues. The regex allows any Vercel deployment URL, which is useful for testing branches and preview deployments without needing to update the allowed origins list each time.
+// More useless edits
 
 const vercelRegex = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i;
 const localLanRegex = /^http:\/\/(?:10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[0-1])\.)[0-9.]+:5173$/i;
