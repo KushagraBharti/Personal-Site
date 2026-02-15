@@ -343,7 +343,7 @@ const TrackerLayout: React.FC<{
   setSearchParams,
 }) => {
   const [time, setTime] = useState(new Date());
-  const mainWidthClass = activeModuleId === "tasks" ? "max-w-[94rem]" : "max-w-7xl";
+  const mainWidthClass = activeModuleId === "tasks" ? "w-full max-w-none" : "max-w-7xl";
 
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);

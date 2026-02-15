@@ -1,10 +1,11 @@
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTasksHubModule } from "../hooks";
 import {
   RecurrenceType,
   RecurrenceUnit,
+  SortDirection,
   TaskDraft,
   TaskSortMode,
   TrackerTask,
@@ -27,6 +28,8 @@ const RECURRENCE_OPTIONS: Array<{ value: RecurrenceType; label: string }> = [
   { value: "custom", label: "Custom" },
 ];
 
+const DATE_ONLY_MARKER_MS = 777;
+
 const toLocalDateTimeInput = (isoString: string | null | undefined) => {
   if (!isoString) return "";
   const date = new Date(isoString);
@@ -38,9 +41,60 @@ const toLocalDateTimeInput = (isoString: string | null | undefined) => {
 const toIsoOrNull = (dateTimeLocal: string) => {
   const trimmed = dateTimeLocal.trim();
   if (!trimmed) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const parsedDate = new Date(`${trimmed}T12:00`);
+    if (Number.isNaN(parsedDate.getTime())) return null;
+    parsedDate.setMilliseconds(DATE_ONLY_MARKER_MS);
+    return parsedDate.toISOString();
+  }
   const parsed = new Date(trimmed);
   if (Number.isNaN(parsed.getTime())) return null;
+  parsed.setMilliseconds(0);
   return parsed.toISOString();
+};
+
+const isDateOnlyIso = (isoString: string | null | undefined) => {
+  if (!isoString) return false;
+  const parsed = new Date(isoString);
+  if (Number.isNaN(parsed.getTime())) return false;
+  return parsed.getMilliseconds() === DATE_ONLY_MARKER_MS;
+};
+
+const toLocalDateInput = (isoString: string | null | undefined) => {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return "";
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+};
+
+const toLocalDueInput = (isoString: string | null | undefined) => {
+  if (!isoString) return "";
+  return isDateOnlyIso(isoString) ? toLocalDateInput(isoString) : toLocalDateTimeInput(isoString);
+};
+
+const getDueParts = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return { date: "", time: "" };
+  if (trimmed.includes("T")) {
+    const [datePart, timePart] = trimmed.split("T");
+    return { date: datePart, time: (timePart || "").slice(0, 5) };
+  }
+  return { date: trimmed.slice(0, 10), time: "" };
+};
+
+const setDueDatePart = (current: string, date: string) => {
+  const nextDate = date.trim();
+  if (!nextDate) return "";
+  const { time } = getDueParts(current);
+  return time ? `${nextDate}T${time}` : nextDate;
+};
+
+const setDueTimePart = (current: string, time: string) => {
+  const nextTime = time.trim();
+  const { date } = getDueParts(current);
+  if (!date) return "";
+  return nextTime ? `${date}T${nextTime}` : date;
 };
 
 const toLocalInputFromDate = (date: Date) => {
@@ -48,33 +102,36 @@ const toLocalInputFromDate = (date: Date) => {
   return local.toISOString().slice(0, 16);
 };
 
-const quickDue = (kind: "later" | "tonight" | "tomorrow" | "nextweek") => {
+const quickDue = (kind: "today" | "tonight" | "tomorrow" | "sunday") => {
   const base = new Date();
-  if (kind === "later") {
-    base.setHours(base.getHours() + 2, 0, 0, 0);
-    return toLocalInputFromDate(base);
+  if (kind === "today") {
+    return toLocalInputFromDate(base).slice(0, 10);
   }
   if (kind === "tonight") {
-    base.setHours(20, 0, 0, 0);
+    base.setHours(22, 0, 0, 0);
     return toLocalInputFromDate(base);
   }
   if (kind === "tomorrow") {
     base.setDate(base.getDate() + 1);
-    base.setHours(9, 0, 0, 0);
-    return toLocalInputFromDate(base);
+    return toLocalInputFromDate(base).slice(0, 10);
   }
-  base.setDate(base.getDate() + 7);
-  base.setHours(9, 0, 0, 0);
-  return toLocalInputFromDate(base);
+  const dayOfWeek = base.getDay();
+  const daysUntilSunday = (7 - dayOfWeek) || 7;
+  base.setDate(base.getDate() + daysUntilSunday);
+  return toLocalInputFromDate(base).slice(0, 10);
 };
 
 const formatDue = (isoString: string | null) => {
-  if (!isoString) return "No due date";
+  if (!isoString) return "";
   const d = new Date(isoString);
-  if (Number.isNaN(d.getTime())) return "No due date";
-  return d.toLocaleString([], {
-    month: "short",
-    day: "numeric",
+  if (Number.isNaN(d.getTime())) return "";
+  if (isDateOnlyIso(isoString)) {
+    return d.toLocaleDateString([], {
+      month: "short",
+      day: "numeric",
+    });
+  }
+  return d.toLocaleTimeString([], {
     hour: "numeric",
     minute: "2-digit",
   });
@@ -110,22 +167,69 @@ const dueGroupLabel = (isoString: string | null) => {
 
 const setTimeToTenPm = (localDateTimeValue: string) => {
   const trimmed = localDateTimeValue.trim();
-  if (!trimmed || !trimmed.includes("T")) return "";
-  const datePart = trimmed.split("T")[0];
+  if (!trimmed) return "";
+  const datePart = trimmed.includes("T") ? trimmed.split("T")[0] : trimmed.slice(0, 10);
+  if (!datePart) return "";
   return `${datePart}T22:00`;
 };
 
-const isDueWithinThreeDays = (isoString: string | null) => {
-  if (!isoString) return false;
+const getDueUrgency = (isoString: string | null): "overdue" | "soon" | "future" => {
+  if (!isoString) return "future";
   const due = new Date(isoString);
-  if (Number.isNaN(due.getTime())) return false;
+  if (Number.isNaN(due.getTime())) return "future";
   const now = new Date();
+  const diffMs = due.getTime() - now.getTime();
+  if (diffMs < 0) return "overdue";
   const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
-  return due.getTime() - now.getTime() <= threeDaysMs;
+  if (diffMs <= threeDaysMs) return "soon";
+  return "future";
 };
 
-const dueChipClassName = (isoString: string | null) =>
-  `tasks-chip tasks-chip-due ${isDueWithinThreeDays(isoString) ? "tasks-chip-due-urgent" : "tasks-chip-due-normal"}`;
+const dueChipClassName = (isoString: string | null) => {
+  const urgency = getDueUrgency(isoString);
+  if (urgency === "overdue") return "tasks-chip tasks-chip-due tasks-chip-due-overdue";
+  if (urgency === "soon") return "tasks-chip tasks-chip-due tasks-chip-due-soon";
+  return "tasks-chip tasks-chip-due tasks-chip-due-future";
+};
+
+const getTimestamp = (value: string | null | undefined, fallback: number) => {
+  if (!value) return fallback;
+  const parsed = new Date(value).getTime();
+  return Number.isNaN(parsed) ? fallback : parsed;
+};
+
+const compareTasksBySortMode = (a: TrackerTask, b: TrackerTask, mode: TaskSortMode) => {
+  if (mode === "title") {
+    return a.title.localeCompare(b.title, undefined, { sensitivity: "base" });
+  }
+
+  if (mode === "date_created") {
+    return getTimestamp(a.created_at, 0) - getTimestamp(b.created_at, 0);
+  }
+
+  if (mode === "due_date") {
+    const aDue = getTimestamp(a.due_at, Number.MAX_SAFE_INTEGER);
+    const bDue = getTimestamp(b.due_at, Number.MAX_SAFE_INTEGER);
+    if (aDue === bDue) {
+      return getTimestamp(a.created_at, 0) - getTimestamp(b.created_at, 0);
+    }
+    return aDue - bDue;
+  }
+
+  if (a.sort_order === b.sort_order) {
+    return getTimestamp(a.created_at, 0) - getTimestamp(b.created_at, 0);
+  }
+  return a.sort_order - b.sort_order;
+};
+
+const sortTasksForList = (
+  tasks: TrackerTask[],
+  mode: TaskSortMode,
+  direction: SortDirection
+) => {
+  const sorted = [...tasks].sort((a, b) => compareTasksBySortMode(a, b, mode));
+  return direction === "asc" ? sorted : sorted.reverse();
+};
 
 const recurrenceLabel = (task: TrackerTask) => {
   if (task.recurrence_type === "none") return "";
@@ -150,7 +254,7 @@ type TaskEditDraft = {
 const createTaskEditDraft = (task: TrackerTask): TaskEditDraft => ({
   title: task.title,
   details: task.details ?? "",
-  due_at: toLocalDateTimeInput(task.due_at),
+  due_at: toLocalDueInput(task.due_at),
   recurrence_type: task.recurrence_type,
   recurrence_interval: Math.max(task.recurrence_interval ?? 1, 1),
   recurrence_unit: task.recurrence_unit ?? "week",
@@ -173,9 +277,17 @@ const TaskRecurrenceFields: React.FC<{
     recurrence_ends_at?: string;
   }) => void;
 }> = ({ value, onChange }) => {
+  const isCustom = value.recurrence_type === "custom";
+  const hasEnd = value.recurrence_type !== "none";
+  const recurrenceClassName = isCustom
+    ? "tasks-recurrence-fields tasks-recurrence-fields-custom"
+    : hasEnd
+      ? "tasks-recurrence-fields tasks-recurrence-fields-with-until"
+      : "tasks-recurrence-fields tasks-recurrence-fields-basic";
+
   return (
-    <div className="grid gap-2 md:grid-cols-4">
-      <div>
+    <div className={recurrenceClassName}>
+      <div className="tasks-recurrence-item">
         <label className="neo-label">Repeat</label>
         <select
           className="tasks-select"
@@ -190,9 +302,9 @@ const TaskRecurrenceFields: React.FC<{
         </select>
       </div>
 
-      {value.recurrence_type === "custom" && (
+      {isCustom && (
         <>
-          <div>
+          <div className="tasks-recurrence-item">
             <label className="neo-label">Every</label>
             <input
               className="tasks-input"
@@ -204,7 +316,7 @@ const TaskRecurrenceFields: React.FC<{
               }
             />
           </div>
-          <div>
+          <div className="tasks-recurrence-item">
             <label className="neo-label">Unit</label>
             <select
               className="tasks-select"
@@ -219,9 +331,9 @@ const TaskRecurrenceFields: React.FC<{
         </>
       )}
 
-      {value.recurrence_type !== "none" && (
-        <div>
-          <label className="neo-label">Repeat until</label>
+      {hasEnd && (
+        <div className="tasks-recurrence-item tasks-recurrence-until">
+          <label className="neo-label">Until</label>
           <input
             className="tasks-input"
             type="datetime-local"
@@ -250,17 +362,17 @@ const DueQuickButtons: React.FC<{
       >
         10pm
       </button>
-      <button type="button" className="tasks-quick-pill" onClick={() => onPick(quickDue("later"))}>
-        +2h
+      <button type="button" className="tasks-quick-pill" onClick={() => onPick(quickDue("today"))}>
+        Today
       </button>
       <button type="button" className="tasks-quick-pill" onClick={() => onPick(quickDue("tonight"))}>
         Tonight
       </button>
       <button type="button" className="tasks-quick-pill" onClick={() => onPick(quickDue("tomorrow"))}>
-        Tomorrow 9a
+        Tomorrow
       </button>
-      <button type="button" className="tasks-quick-pill" onClick={() => onPick(quickDue("nextweek"))}>
-        +1 week
+      <button type="button" className="tasks-quick-pill" onClick={() => onPick(quickDue("sunday"))}>
+        Sunday
       </button>
     </div>
   );
@@ -273,16 +385,10 @@ const TasksHubTracker: React.FC = () => {
     tasksByParent,
     rootTasksByList,
     countsByList,
-    totalOpenCount,
-    totalCompletedCount,
-    totalTaskCount,
     selectedListId,
     setSelectedListId,
-    sortMode,
-    sortDirection,
-    setSortForCurrentView,
-    showCompleted,
-    setShowCompleted,
+    getSortForList,
+    setSortForList,
     errorMessage,
     createList,
     saveList,
@@ -292,10 +398,13 @@ const TasksHubTracker: React.FC = () => {
     removeTask,
     toggleTaskCompletion,
     reorderTasks,
+    reorderLists,
     buildTaskDraft,
   } = useTasksHubModule();
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [newListName, setNewListName] = useState("");
+  const [hiddenListIds, setHiddenListIds] = useState<Record<string, boolean>>({});
   const [listRenameById, setListRenameById] = useState<Record<string, string>>({});
   const [taskDraftByKey, setTaskDraftByKey] = useState<Record<string, TaskDraft>>({});
   const [expandedTaskIds, setExpandedTaskIds] = useState<Record<string, boolean>>({});
@@ -306,11 +415,74 @@ const TasksHubTracker: React.FC = () => {
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
   const [draggingParentId, setDraggingParentId] = useState<string | null>(null);
   const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null);
+  const [draggingListId, setDraggingListId] = useState<string | null>(null);
+  const [dragOverListId, setDragOverListId] = useState<string | null>(null);
+  const [hideCompletedByList, setHideCompletedByList] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("tasksHubSidebarOpen");
+      if (!raw) return;
+      setIsSidebarOpen(raw === "1");
+    } catch {
+      // no-op
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("tasksHubSidebarOpen", isSidebarOpen ? "1" : "0");
+  }, [isSidebarOpen]);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("tasksHubHiddenLists");
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Record<string, boolean>;
+      if (parsed && typeof parsed === "object") {
+        setHiddenListIds(parsed);
+      }
+    } catch {
+      // no-op
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("tasksHubHiddenLists", JSON.stringify(hiddenListIds));
+  }, [hiddenListIds]);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("tasksHubHideCompletedByList");
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Record<string, boolean>;
+      if (parsed && typeof parsed === "object") {
+        setHideCompletedByList(parsed);
+      }
+    } catch {
+      // no-op
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("tasksHubHideCompletedByList", JSON.stringify(hideCompletedByList));
+  }, [hideCompletedByList]);
+
+  const visibleLists = useMemo(
+    () => lists.filter((list) => !hiddenListIds[list.id]),
+    [lists, hiddenListIds]
+  );
+
+  useEffect(() => {
+    if (selectedListId === allListsKey) return;
+    if (hiddenListIds[selectedListId]) {
+      setSelectedListId(allListsKey);
+    }
+  }, [allListsKey, hiddenListIds, selectedListId, setSelectedListId]);
 
   const listsToRender = useMemo(() => {
-    if (selectedListId === allListsKey) return lists;
-    return lists.filter((list) => list.id === selectedListId);
-  }, [allListsKey, lists, selectedListId]);
+    if (selectedListId === allListsKey) return visibleLists;
+    return visibleLists.filter((list) => list.id === selectedListId);
+  }, [allListsKey, selectedListId, visibleLists]);
 
   const getDraft = (listId: string, parentTaskId: string | null) => {
     const key = draftKey(listId, parentTaskId);
@@ -421,71 +593,108 @@ const TasksHubTracker: React.FC = () => {
     setDragOverTaskId(null);
   };
 
+  const handleListDrop = async (targetListId: string) => {
+    if (!draggingListId || draggingListId === targetListId) {
+      setDraggingListId(null);
+      setDragOverListId(null);
+      return;
+    }
+
+    const orderedListIds = lists.map((list) => list.id);
+    const fromIndex = orderedListIds.indexOf(draggingListId);
+    const toIndex = orderedListIds.indexOf(targetListId);
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) {
+      setDraggingListId(null);
+      setDragOverListId(null);
+      return;
+    }
+
+    const nextOrder = [...orderedListIds];
+    nextOrder.splice(fromIndex, 1);
+    nextOrder.splice(toIndex, 0, draggingListId);
+    await reorderLists(nextOrder);
+    setDraggingListId(null);
+    setDragOverListId(null);
+  };
+
+  const totalOpenCount = useMemo(
+    () => Object.values(countsByList).reduce((sum, item) => sum + item.open, 0),
+    [countsByList]
+  );
+  const totalCompletedCount = useMemo(
+    () => Object.values(countsByList).reduce((sum, item) => sum + item.completed, 0),
+    [countsByList]
+  );
+  const totalTaskCount = useMemo(
+    () => Object.values(countsByList).reduce((sum, item) => sum + item.total, 0),
+    [countsByList]
+  );
+  const totalVisibleOpenCount = useMemo(
+    () =>
+      visibleLists.reduce((sum, list) => sum + (countsByList[list.id]?.open ?? 0), 0),
+    [visibleLists, countsByList]
+  );
+
   return (
     <div className="tasks-hub">
-      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="tasks-surface tasks-surface-compact">
-        <div className="tasks-top-row">
-          <div className="tasks-top-left">
-            <span className="tasks-top-title">Tasks</span>
-            <span className="tasks-top-stats">{totalOpenCount} open • {totalCompletedCount} done • {totalTaskCount} total</span>
-          </div>
-
-          <div className="tasks-toolbar tasks-toolbar-compact">
-            <label className="neo-label" style={{ color: "var(--neo-cyan)" }}>Sort</label>
-            <select
-              className="tasks-select"
-              style={{ width: 128 }}
-              value={sortMode}
-              onChange={(e) => setSortForCurrentView(e.target.value as TaskSortMode, sortDirection)}
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-            <button
-              className="neo-btn neo-btn-sm neo-btn-white"
-              onClick={() => setSortForCurrentView(sortMode, sortDirection === "asc" ? "desc" : "asc")}
-            >
-              {sortDirection === "asc" ? "ASC" : "DESC"}
-            </button>
-            <button className="neo-btn neo-btn-sm neo-btn-cyan" onClick={() => setShowCompleted((prev) => !prev)}>
-              {showCompleted ? "Hide Done" : "Show Done"}
-            </button>
-          </div>
-        </div>
-
-        {sortMode === "custom" && <p className="tasks-muted tasks-helper-note">Drag to reorder</p>}
-      </motion.div>
-
-      <div className="tasks-shell">
-        <aside className="tasks-sidebar">
-          <div className="mb-2 flex items-center justify-between">
-            <h3>Lists</h3>
-            <span className="neo-label" style={{ color: "var(--neo-cyan)" }}>{lists.length}</span>
-          </div>
-
+      <div className={`tasks-shell ${isSidebarOpen ? "open" : "collapsed"}`}>
+        <aside className={`tasks-sidebar ${isSidebarOpen ? "open" : "collapsed"}`}>
           <button
-            className={`tasks-list-row ${selectedListId === allListsKey ? "active" : ""}`}
-            onClick={() => setSelectedListId(allListsKey)}
+            className="tasks-sidebar-toggle"
+            onClick={() => setIsSidebarOpen((prev) => !prev)}
           >
-            <span className="flex items-center gap-2">
-              <span className="tasks-list-dot" style={{ background: "var(--neo-lime)" }} />
-              All tasks
-            </span>
-            <span>{totalOpenCount}</span>
+            <span>{isSidebarOpen ? "Hide Lists" : "Lists"}</span>
+            <span>{isSidebarOpen ? "◀" : "▶"}</span>
           </button>
+
+          {isSidebarOpen && (
+            <>
+              <div className="mb-2 mt-2 flex items-center justify-between">
+                <h3>Lists</h3>
+                <span className="neo-label" style={{ color: "var(--neo-cyan)" }}>{visibleLists.length}/{lists.length}</span>
+              </div>
+              <p className="tasks-muted tasks-sidebar-stats">
+                {totalOpenCount} open • {totalCompletedCount} done • {totalTaskCount} total
+              </p>
+
+              <button
+                className={`tasks-list-row ${selectedListId === allListsKey ? "active" : ""}`}
+                onClick={() => setSelectedListId(allListsKey)}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="tasks-list-dot" style={{ background: "var(--neo-lime)" }} />
+                  All tasks
+                </span>
+                <span>{totalVisibleOpenCount}</span>
+              </button>
 
           {lists.map((list) => {
             const counts = countsByList[list.id] || { open: 0, completed: 0, total: 0 };
             const renameValue = listRenameById[list.id] !== undefined ? listRenameById[list.id] : list.name;
+            const isVisible = !hiddenListIds[list.id];
 
             return (
               <div key={list.id} className="mt-1">
                 <button
-                  className={`tasks-list-row ${selectedListId === list.id ? "active" : ""}`}
+                  className={`tasks-list-row ${selectedListId === list.id ? "active" : ""} ${isVisible ? "" : "tasks-list-row-hidden"}`}
                   onClick={() => setSelectedListId(list.id)}
                 >
                   <span className="flex min-w-0 items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={isVisible}
+                      className="tasks-list-visibility"
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setHiddenListIds((prev) => {
+                          const next = { ...prev };
+                          if (checked) delete next[list.id];
+                          else next[list.id] = true;
+                          return next;
+                        });
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    />
                     <span className="tasks-list-dot" style={{ background: list.color_hex }} />
                     <span className="truncate">{list.name}</span>
                   </span>
@@ -550,29 +759,31 @@ const TasksHubTracker: React.FC = () => {
             );
           })}
 
-          <div className="tasks-add-list mt-3 space-y-2">
-            <p className="neo-label" style={{ color: "var(--neo-cyan)" }}>Add list</p>
-            <input
-              className="tasks-input"
-              placeholder="List name"
-              value={newListName}
-              onChange={(e) => setNewListName(e.target.value)}
-              onKeyDown={async (e) => {
-                if (e.key !== "Enter") return;
-                const created = await createList(newListName);
-                if (created) setNewListName("");
-              }}
-            />
-            <button
-              className="neo-btn neo-btn-sm neo-btn-cyan"
-              onClick={async () => {
-                const created = await createList(newListName);
-                if (created) setNewListName("");
-              }}
-            >
-              Create
-            </button>
-          </div>
+              <div className="tasks-add-list mt-3 space-y-2">
+                <p className="neo-label" style={{ color: "var(--neo-cyan)" }}>Add list</p>
+                <input
+                  className="tasks-input"
+                  placeholder="List name"
+                  value={newListName}
+                  onChange={(e) => setNewListName(e.target.value)}
+                  onKeyDown={async (e) => {
+                    if (e.key !== "Enter") return;
+                    const created = await createList(newListName);
+                    if (created) setNewListName("");
+                  }}
+                />
+                <button
+                  className="neo-btn neo-btn-sm neo-btn-cyan"
+                  onClick={async () => {
+                    const created = await createList(newListName);
+                    if (created) setNewListName("");
+                  }}
+                >
+                  Create
+                </button>
+              </div>
+            </>
+          )}
         </aside>
 
         <section className="tasks-board">
@@ -582,52 +793,114 @@ const TasksHubTracker: React.FC = () => {
             </div>
           )}
 
-          <div className="tasks-cards">
-            {listsToRender.map((list) => {
-              const allRootTasks = rootTasksByList[list.id] ?? [];
-              const activeRootTasks = allRootTasks.filter((task) => !task.is_completed);
-              const completedRootTasks = allRootTasks.filter((task) => task.is_completed);
-              const activeRootTasksByDue = [...activeRootTasks].sort((a, b) => {
-                const aTime = a.due_at ? new Date(a.due_at).getTime() : Number.MAX_SAFE_INTEGER;
-                const bTime = b.due_at ? new Date(b.due_at).getTime() : Number.MAX_SAFE_INTEGER;
-                if (aTime === bTime) {
-                  return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          <div className="tasks-cards-scroller">
+            <div className="tasks-cards">
+              {listsToRender.map((list) => {
+                const listSort = getSortForList(list.id);
+                const allRootTasks = rootTasksByList[list.id] ?? [];
+                const sortedRootTasks = sortTasksForList(allRootTasks, listSort.mode, listSort.direction);
+                const activeRootTasks = sortedRootTasks.filter((task) => !task.is_completed);
+                const completedRootTasks = sortedRootTasks.filter((task) => task.is_completed);
+                const dueHeaderByTaskId = new Map<string, string>();
+                if (listSort.mode === "due_date") {
+                  let previousDueKey = "";
+                  activeRootTasks.forEach((task) => {
+                    const dueKey = toDueDayKey(task.due_at);
+                    if (dueKey !== previousDueKey) {
+                      dueHeaderByTaskId.set(task.id, dueGroupLabel(task.due_at));
+                      previousDueKey = dueKey;
+                    }
+                  });
                 }
-                return aTime - bTime;
-              });
-              const dueHeaderByTaskId = new Map<string, string>();
-              let previousDueKey = "";
-              activeRootTasksByDue.forEach((task) => {
-                const dueKey = toDueDayKey(task.due_at);
-                if (dueKey !== previousDueKey) {
-                  dueHeaderByTaskId.set(task.id, dueGroupLabel(task.due_at));
-                  previousDueKey = dueKey;
-                }
-              });
-              const completedSubtasks = allRootTasks.flatMap((rootTask) =>
-                (tasksByParent[rootTask.id] || [])
-                  .filter((subtask) => subtask.is_completed)
-                  .map((subtask) => ({ task: subtask, parentTitle: rootTask.title }))
-              );
-              const completedOpen = completedSectionOpenByList[list.id] ?? false;
-              const addTaskOpen = addTaskOpenByList[list.id] ?? false;
-              const topDraft = getDraft(list.id, null);
+                const completedSubtasks = sortedRootTasks.flatMap((rootTask) =>
+                  (tasksByParent[rootTask.id] || [])
+                    .filter((subtask) => subtask.is_completed)
+                    .map((subtask) => ({ task: subtask, parentTitle: rootTask.title }))
+                );
+                const completedOpen = completedSectionOpenByList[list.id] ?? false;
+                const addTaskOpen = addTaskOpenByList[list.id] ?? false;
+                const topDraft = getDraft(list.id, null);
+                const hideCompleted = hideCompletedByList[list.id] ?? false;
 
-              return (
-                <motion.div key={list.id} className="tasks-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-                  <div className="tasks-card-header tasks-card-header-compact">
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="tasks-card-title">{list.name}</h3>
-                      <div className="flex items-center gap-2">
-                        <span className="neo-label" style={{ color: list.color_hex }}>{countsByList[list.id]?.open ?? 0} open</span>
-                        <button
-                          className="neo-btn neo-btn-sm neo-btn-lime"
-                          onClick={() => setAddTaskOpenByList((prev) => ({ ...prev, [list.id]: !addTaskOpen }))}
+                const canDragList = selectedListId === allListsKey && listsToRender.length > 1;
+
+                return (
+                  <motion.div
+                    key={list.id}
+                    className={`tasks-card ${draggingListId === list.id ? "dragging" : ""} ${dragOverListId === list.id ? "drop-target" : ""}`}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    draggable={canDragList}
+                    onDragStart={() => {
+                      if (!canDragList) return;
+                      setDraggingListId(list.id);
+                    }}
+                    onDragOver={(e) => {
+                      if (!canDragList) return;
+                      e.preventDefault();
+                      setDragOverListId(list.id);
+                    }}
+                    onDrop={async (e) => {
+                      if (!canDragList) return;
+                      e.preventDefault();
+                      await handleListDrop(list.id);
+                    }}
+                    onDragEnd={() => {
+                      setDraggingListId(null);
+                      setDragOverListId(null);
+                    }}
+                  >
+                    <div className="tasks-card-header tasks-card-header-compact">
+                      <div className="tasks-card-title-row">
+                        <h3 className="tasks-card-title">{list.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <span className="neo-label" style={{ color: list.color_hex }}>{countsByList[list.id]?.open ?? 0} open</span>
+                          <button
+                            className="neo-btn neo-btn-sm neo-btn-lime"
+                            onClick={() => setAddTaskOpenByList((prev) => ({ ...prev, [list.id]: !addTaskOpen }))}
+                          >
+                            {addTaskOpen ? "−" : "+"}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="tasks-card-controls">
+                        <label className="neo-label" style={{ color: "var(--tasks-muted)" }}>Sort</label>
+                        <select
+                          className="tasks-select tasks-select-xs"
+                          value={listSort.mode}
+                          onChange={async (e) => {
+                            await setSortForList(list.id, e.target.value as TaskSortMode, listSort.direction);
+                          }}
                         >
-                          {addTaskOpen ? "−" : "+"}
+                          {SORT_OPTIONS.map((option) => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                          ))}
+                        </select>
+                        <button
+                          className="tasks-icon-btn tasks-icon-btn-xs"
+                          onClick={async () => {
+                            await setSortForList(
+                              list.id,
+                              listSort.mode,
+                              listSort.direction === "asc" ? "desc" : "asc"
+                            );
+                          }}
+                        >
+                          {listSort.direction === "asc" ? "A↑" : "D↓"}
+                        </button>
+                        <button
+                          className="tasks-icon-btn tasks-icon-btn-xs"
+                          onClick={() => {
+                            setHideCompletedByList((prev) => ({
+                              ...prev,
+                              [list.id]: !hideCompleted,
+                            }));
+                          }}
+                        >
+                          {hideCompleted ? "Done off" : "Done on"}
                         </button>
                       </div>
-                    </div>
 
                     <AnimatePresence>
                       {addTaskOpen && (
@@ -644,12 +917,20 @@ const TasksHubTracker: React.FC = () => {
                             value={topDraft.details}
                             onChange={(e) => setDraft(list.id, null, { details: e.target.value })}
                           />
-                          <input
-                            className="tasks-input"
-                            type="datetime-local"
-                            value={topDraft.due_at}
-                            onChange={(e) => setDraft(list.id, null, { due_at: e.target.value })}
-                          />
+                          <div className="tasks-due-inputs">
+                            <input
+                              className="tasks-input"
+                              type="date"
+                              value={getDueParts(topDraft.due_at).date}
+                              onChange={(e) => setDraft(list.id, null, { due_at: setDueDatePart(topDraft.due_at, e.target.value) })}
+                            />
+                            <input
+                              className="tasks-input"
+                              type="time"
+                              value={getDueParts(topDraft.due_at).time}
+                              onChange={(e) => setDraft(list.id, null, { due_at: setDueTimePart(topDraft.due_at, e.target.value) })}
+                            />
+                          </div>
                           <DueQuickButtons
                             onPick={(value) => setDraft(list.id, null, { due_at: value })}
                             onSetTenPm={() => {
@@ -697,24 +978,24 @@ const TasksHubTracker: React.FC = () => {
                     </AnimatePresence>
                   </div>
 
-                  <div>
+                  <div className="tasks-card-body">
                     {activeRootTasks.length === 0 && completedRootTasks.length === 0 && completedSubtasks.length === 0 && (
                       <div className="tasks-empty">No tasks in this list yet.</div>
                     )}
 
-                    {activeRootTasksByDue.map((task) => {
+                    {activeRootTasks.map((task) => {
                       const expanded = !!expandedTaskIds[task.id];
                       const edit = taskEditsById[task.id] ?? createTaskEditDraft(task);
-                      const subtasks = tasksByParent[task.id] || [];
+                      const subtasks = sortTasksForList(tasksByParent[task.id] || [], listSort.mode, listSort.direction);
                       const activeSubtasks = subtasks.filter((subtask) => !subtask.is_completed);
                       const doneSubtaskCount = subtasks.length - activeSubtasks.length;
                       const subtaskDraft = getDraft(list.id, task.id);
                       const addSubtaskOpen = addSubtaskOpenByParent[task.id] ?? false;
-                      const canDrag = sortMode === "custom";
+                      const canDrag = listSort.mode === "custom";
 
                       return (
                         <React.Fragment key={task.id}>
-                          {dueHeaderByTaskId.get(task.id) && (
+                          {listSort.mode === "due_date" && dueHeaderByTaskId.get(task.id) && (
                             <div className="tasks-due-group-label">{dueHeaderByTaskId.get(task.id)}</div>
                           )}
                           <div
@@ -732,7 +1013,7 @@ const TasksHubTracker: React.FC = () => {
                             onDrop={async (e) => {
                               if (!canDrag) return;
                               e.preventDefault();
-                              await handleTaskDrop(list.id, null, activeRootTasksByDue.map((item) => item.id), task.id);
+                              await handleTaskDrop(list.id, null, activeRootTasks.map((item) => item.id), task.id);
                             }}
                             onDragEnd={() => {
                               setDraggingTaskId(null);
@@ -757,7 +1038,7 @@ const TasksHubTracker: React.FC = () => {
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-1">
+                            <div className="tasks-row-actions">
                               <button className="tasks-icon-btn" onClick={() => setAddSubtaskOpenByParent((prev) => ({ ...prev, [task.id]: !addSubtaskOpen }))}>
                                 {addSubtaskOpen ? "−" : "+"}
                               </button>
@@ -805,9 +1086,11 @@ const TasksHubTracker: React.FC = () => {
                                       {subtask.due_at && <span className={dueChipClassName(subtask.due_at)}>{formatDue(subtask.due_at)}</span>}
                                     </div>
                                   </div>
-                                  <button className="tasks-icon-btn tasks-danger" onClick={async () => { await removeTask(subtask.id); }}>
-                                    Del
-                                  </button>
+                                  <div className="tasks-row-actions">
+                                    <button className="tasks-icon-btn tasks-danger" onClick={async () => { await removeTask(subtask.id); }}>
+                                      Del
+                                    </button>
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -822,12 +1105,20 @@ const TasksHubTracker: React.FC = () => {
                                   value={subtaskDraft.title}
                                   onChange={(e) => setDraft(list.id, task.id, { title: e.target.value })}
                                 />
-                                <input
-                                  className="tasks-input"
-                                  type="datetime-local"
-                                  value={subtaskDraft.due_at}
-                                  onChange={(e) => setDraft(list.id, task.id, { due_at: e.target.value })}
-                                />
+                                <div className="tasks-due-inputs">
+                                  <input
+                                    className="tasks-input"
+                                    type="date"
+                                    value={getDueParts(subtaskDraft.due_at).date}
+                                    onChange={(e) => setDraft(list.id, task.id, { due_at: setDueDatePart(subtaskDraft.due_at, e.target.value) })}
+                                  />
+                                  <input
+                                    className="tasks-input"
+                                    type="time"
+                                    value={getDueParts(subtaskDraft.due_at).time}
+                                    onChange={(e) => setDraft(list.id, task.id, { due_at: setDueTimePart(subtaskDraft.due_at, e.target.value) })}
+                                  />
+                                </div>
                                 <DueQuickButtons
                                   onPick={(value) => setDraft(list.id, task.id, { due_at: value })}
                                   onSetTenPm={() => {
@@ -877,7 +1168,20 @@ const TasksHubTracker: React.FC = () => {
                               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="tasks-expansion">
                                 <input className="tasks-input" value={edit.title} onChange={(e) => updateTaskEdit(task.id, { title: e.target.value })} />
                                 <textarea className="tasks-textarea" placeholder="Task details" value={edit.details} onChange={(e) => updateTaskEdit(task.id, { details: e.target.value })} />
-                                <input className="tasks-input" type="datetime-local" value={edit.due_at} onChange={(e) => updateTaskEdit(task.id, { due_at: e.target.value })} />
+                                <div className="tasks-due-inputs">
+                                  <input
+                                    className="tasks-input"
+                                    type="date"
+                                    value={getDueParts(edit.due_at).date}
+                                    onChange={(e) => updateTaskEdit(task.id, { due_at: setDueDatePart(edit.due_at, e.target.value) })}
+                                  />
+                                  <input
+                                    className="tasks-input"
+                                    type="time"
+                                    value={getDueParts(edit.due_at).time}
+                                    onChange={(e) => updateTaskEdit(task.id, { due_at: setDueTimePart(edit.due_at, e.target.value) })}
+                                  />
+                                </div>
                                 <DueQuickButtons
                                   onPick={(value) => updateTaskEdit(task.id, { due_at: value })}
                                   onSetTenPm={() => {
@@ -917,7 +1221,7 @@ const TasksHubTracker: React.FC = () => {
                       );
                     })}
 
-                    {showCompleted && (completedRootTasks.length > 0 || completedSubtasks.length > 0) && (
+                    {!hideCompleted && (completedRootTasks.length > 0 || completedSubtasks.length > 0) && (
                       <>
                         <button className="tasks-completed-toggle" onClick={() => setCompletedSectionOpenByList((prev) => ({ ...prev, [list.id]: !completedOpen }))}>
                           {completedOpen ? "▼" : "▶"} Completed ({completedRootTasks.length + completedSubtasks.length})
@@ -932,7 +1236,9 @@ const TasksHubTracker: React.FC = () => {
                                   <button className="tasks-title-btn done" onClick={() => toggleExpandedTask(task)}>{task.title}</button>
                                   <div className="tasks-meta">{task.due_at && <span className={dueChipClassName(task.due_at)}>{formatDue(task.due_at)}</span>}</div>
                                 </div>
-                                <button className="tasks-icon-btn tasks-danger" onClick={async () => { await removeTask(task.id); }}>Del</button>
+                                <div className="tasks-row-actions">
+                                  <button className="tasks-icon-btn tasks-danger" onClick={async () => { await removeTask(task.id); }}>Del</button>
+                                </div>
                               </div>
                             ))}
 
@@ -946,7 +1252,9 @@ const TasksHubTracker: React.FC = () => {
                                     {task.due_at && <span className={dueChipClassName(task.due_at)}>{formatDue(task.due_at)}</span>}
                                   </div>
                                 </div>
-                                <button className="tasks-icon-btn tasks-danger" onClick={async () => { await removeTask(task.id); }}>Del</button>
+                                <div className="tasks-row-actions">
+                                  <button className="tasks-icon-btn tasks-danger" onClick={async () => { await removeTask(task.id); }}>Del</button>
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -957,6 +1265,7 @@ const TasksHubTracker: React.FC = () => {
                 </motion.div>
               );
             })}
+          </div>
           </div>
         </section>
       </div>
