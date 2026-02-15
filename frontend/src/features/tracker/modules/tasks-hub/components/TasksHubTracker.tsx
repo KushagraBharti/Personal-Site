@@ -13,10 +13,10 @@ import "../../../styles/neo-brutal.css";
 import "./tasks-hub.css";
 
 const SORT_OPTIONS: Array<{ value: TaskSortMode; label: string }> = [
-  { value: "due_date", label: "Due date" },
-  { value: "date_created", label: "Date created" },
+  { value: "due_date", label: "Due" },
+  { value: "date_created", label: "Created" },
   { value: "title", label: "Title" },
-  { value: "custom", label: "Custom order" },
+  { value: "custom", label: "Custom" },
 ];
 
 const RECURRENCE_OPTIONS: Array<{ value: RecurrenceType; label: string }> = [
@@ -43,6 +43,31 @@ const toIsoOrNull = (dateTimeLocal: string) => {
   return parsed.toISOString();
 };
 
+const toLocalInputFromDate = (date: Date) => {
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+};
+
+const quickDue = (kind: "later" | "tonight" | "tomorrow" | "nextweek") => {
+  const base = new Date();
+  if (kind === "later") {
+    base.setHours(base.getHours() + 2, 0, 0, 0);
+    return toLocalInputFromDate(base);
+  }
+  if (kind === "tonight") {
+    base.setHours(20, 0, 0, 0);
+    return toLocalInputFromDate(base);
+  }
+  if (kind === "tomorrow") {
+    base.setDate(base.getDate() + 1);
+    base.setHours(9, 0, 0, 0);
+    return toLocalInputFromDate(base);
+  }
+  base.setDate(base.getDate() + 7);
+  base.setHours(9, 0, 0, 0);
+  return toLocalInputFromDate(base);
+};
+
 const formatDue = (isoString: string | null) => {
   if (!isoString) return "No due date";
   const d = new Date(isoString);
@@ -54,6 +79,53 @@ const formatDue = (isoString: string | null) => {
     minute: "2-digit",
   });
 };
+
+const toDueDayKey = (isoString: string | null) => {
+  if (!isoString) return "no-date";
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return "no-date";
+  return date.toDateString();
+};
+
+const dueGroupLabel = (isoString: string | null) => {
+  if (!isoString) return "No date";
+  const due = new Date(isoString);
+  if (Number.isNaN(due.getTime())) return "No date";
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const target = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+  const dayDiff = Math.round((target.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+
+  if (dayDiff === 0) return "Today";
+  if (dayDiff === 1) return "Tomorrow";
+  if (dayDiff === -1) return "Yesterday";
+
+  return due.toLocaleDateString([], {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+};
+
+const setTimeToTenPm = (localDateTimeValue: string) => {
+  const trimmed = localDateTimeValue.trim();
+  if (!trimmed || !trimmed.includes("T")) return "";
+  const datePart = trimmed.split("T")[0];
+  return `${datePart}T22:00`;
+};
+
+const isDueWithinThreeDays = (isoString: string | null) => {
+  if (!isoString) return false;
+  const due = new Date(isoString);
+  if (Number.isNaN(due.getTime())) return false;
+  const now = new Date();
+  const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+  return due.getTime() - now.getTime() <= threeDaysMs;
+};
+
+const dueChipClassName = (isoString: string | null) =>
+  `tasks-chip tasks-chip-due ${isDueWithinThreeDays(isoString) ? "tasks-chip-due-urgent" : "tasks-chip-due-normal"}`;
 
 const recurrenceLabel = (task: TrackerTask) => {
   if (task.recurrence_type === "none") return "";
@@ -162,6 +234,38 @@ const TaskRecurrenceFields: React.FC<{
   );
 };
 
+const DueQuickButtons: React.FC<{
+  onPick: (value: string) => void;
+  onSetTenPm: () => void;
+  canSetTenPm: boolean;
+}> = ({ onPick, onSetTenPm, canSetTenPm }) => {
+  return (
+    <div className="tasks-quick-due">
+      <button
+        type="button"
+        className="tasks-quick-pill"
+        onClick={onSetTenPm}
+        disabled={!canSetTenPm}
+        title={canSetTenPm ? "Set selected task date to 10:00 PM" : "Pick a date first, then use 10pm"}
+      >
+        10pm
+      </button>
+      <button type="button" className="tasks-quick-pill" onClick={() => onPick(quickDue("later"))}>
+        +2h
+      </button>
+      <button type="button" className="tasks-quick-pill" onClick={() => onPick(quickDue("tonight"))}>
+        Tonight
+      </button>
+      <button type="button" className="tasks-quick-pill" onClick={() => onPick(quickDue("tomorrow"))}>
+        Tomorrow 9a
+      </button>
+      <button type="button" className="tasks-quick-pill" onClick={() => onPick(quickDue("nextweek"))}>
+        +1 week
+      </button>
+    </div>
+  );
+};
+
 const TasksHubTracker: React.FC = () => {
   const {
     allListsKey,
@@ -192,13 +296,15 @@ const TasksHubTracker: React.FC = () => {
   } = useTasksHubModule();
 
   const [newListName, setNewListName] = useState("");
-  const [newListColor, setNewListColor] = useState("#00FFFF");
   const [listRenameById, setListRenameById] = useState<Record<string, string>>({});
   const [taskDraftByKey, setTaskDraftByKey] = useState<Record<string, TaskDraft>>({});
   const [expandedTaskIds, setExpandedTaskIds] = useState<Record<string, boolean>>({});
   const [taskEditsById, setTaskEditsById] = useState<Record<string, TaskEditDraft>>({});
   const [completedSectionOpenByList, setCompletedSectionOpenByList] = useState<Record<string, boolean>>({});
+  const [addTaskOpenByList, setAddTaskOpenByList] = useState<Record<string, boolean>>({});
+  const [addSubtaskOpenByParent, setAddSubtaskOpenByParent] = useState<Record<string, boolean>>({});
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
+  const [draggingParentId, setDraggingParentId] = useState<string | null>(null);
   const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null);
 
   const listsToRender = useMemo(() => {
@@ -294,12 +400,13 @@ const TasksHubTracker: React.FC = () => {
     currentOrder: string[],
     targetTaskId: string
   ) => {
-    if (!draggingTaskId) return;
+    if (!draggingTaskId || draggingParentId !== parentTaskId) return;
 
     const fromIndex = currentOrder.indexOf(draggingTaskId);
     const toIndex = currentOrder.indexOf(targetTaskId);
     if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) {
       setDraggingTaskId(null);
+      setDraggingParentId(null);
       setDragOverTaskId(null);
       return;
     }
@@ -310,74 +417,51 @@ const TasksHubTracker: React.FC = () => {
     await reorderTasks(listId, nextOrder, parentTaskId);
 
     setDraggingTaskId(null);
+    setDraggingParentId(null);
     setDragOverTaskId(null);
   };
 
   return (
-    <div className="tasks-hub space-y-4">
-      <motion.div
-        initial={{ opacity: 0, y: -12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="tasks-surface p-4"
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="neo-label" style={{ color: "var(--neo-cyan)" }}>
-              PRIVATE TRACKER
-            </p>
-            <h2 className="tasks-header-title text-3xl">TASKS</h2>
-            <p className="tasks-muted text-sm">
-              {totalOpenCount} open | {totalCompletedCount} completed | {totalTaskCount} total
-            </p>
+    <div className="tasks-hub">
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="tasks-surface tasks-surface-compact">
+        <div className="tasks-top-row">
+          <div className="tasks-top-left">
+            <span className="tasks-top-title">Tasks</span>
+            <span className="tasks-top-stats">{totalOpenCount} open • {totalCompletedCount} done • {totalTaskCount} total</span>
           </div>
 
-          <div className="tasks-toolbar">
-            <div className="flex items-center gap-2">
-              <label className="neo-label" style={{ color: "var(--neo-cyan)" }}>
-                Sort
-              </label>
-              <select
-                className="tasks-select"
-                style={{ width: 150 }}
-                value={sortMode}
-                onChange={(e) => setSortForCurrentView(e.target.value as TaskSortMode, sortDirection)}
-              >
-                {SORT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <button
-                className="neo-btn neo-btn-sm neo-btn-white"
-                onClick={() =>
-                  setSortForCurrentView(sortMode, sortDirection === "asc" ? "desc" : "asc")
-                }
-              >
-                {sortDirection === "asc" ? "ASC" : "DESC"}
-              </button>
-              <button
-                className="neo-btn neo-btn-sm neo-btn-cyan"
-                onClick={() => setShowCompleted((prev) => !prev)}
-              >
-                {showCompleted ? "Hide completed" : "Show completed"}
-              </button>
-            </div>
+          <div className="tasks-toolbar tasks-toolbar-compact">
+            <label className="neo-label" style={{ color: "var(--neo-cyan)" }}>Sort</label>
+            <select
+              className="tasks-select"
+              style={{ width: 128 }}
+              value={sortMode}
+              onChange={(e) => setSortForCurrentView(e.target.value as TaskSortMode, sortDirection)}
+            >
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+            <button
+              className="neo-btn neo-btn-sm neo-btn-white"
+              onClick={() => setSortForCurrentView(sortMode, sortDirection === "asc" ? "desc" : "asc")}
+            >
+              {sortDirection === "asc" ? "ASC" : "DESC"}
+            </button>
+            <button className="neo-btn neo-btn-sm neo-btn-cyan" onClick={() => setShowCompleted((prev) => !prev)}>
+              {showCompleted ? "Hide Done" : "Show Done"}
+            </button>
           </div>
         </div>
 
-        {sortMode === "custom" && (
-          <p className="tasks-muted mt-2 text-xs">Drag tasks to customize order in each list.</p>
-        )}
+        {sortMode === "custom" && <p className="tasks-muted tasks-helper-note">Drag to reorder</p>}
       </motion.div>
 
       <div className="tasks-shell">
         <aside className="tasks-sidebar">
           <div className="mb-2 flex items-center justify-between">
             <h3>Lists</h3>
-            <span className="neo-label" style={{ color: "var(--neo-cyan)" }}>
-              {lists.length}
-            </span>
+            <span className="neo-label" style={{ color: "var(--neo-cyan)" }}>{lists.length}</span>
           </div>
 
           <button
@@ -393,8 +477,7 @@ const TasksHubTracker: React.FC = () => {
 
           {lists.map((list) => {
             const counts = countsByList[list.id] || { open: 0, completed: 0, total: 0 };
-            const renameValue =
-              listRenameById[list.id] !== undefined ? listRenameById[list.id] : list.name;
+            const renameValue = listRenameById[list.id] !== undefined ? listRenameById[list.id] : list.name;
 
             return (
               <div key={list.id} className="mt-1">
@@ -410,22 +493,16 @@ const TasksHubTracker: React.FC = () => {
                 </button>
 
                 <div className="tasks-list-actions mb-2 mt-1 justify-end">
-                  <button
-                    className="tasks-icon-btn"
-                    onClick={() => setListRenameById((prev) => ({ ...prev, [list.id]: renameValue }))}
-                  >
+                  <button className="tasks-icon-btn" onClick={() => setListRenameById((prev) => ({ ...prev, [list.id]: renameValue }))}>
                     Edit
                   </button>
                   <button
                     className="tasks-icon-btn"
                     onClick={async () => {
-                      if (lists.length <= 1) {
-                        return;
-                      }
+                      if (lists.length <= 1) return;
                       await removeList(list.id);
                     }}
                     disabled={lists.length <= 1}
-                    title={lists.length <= 1 ? "At least one list is required" : "Delete list"}
                   >
                     Del
                   </button>
@@ -436,16 +513,9 @@ const TasksHubTracker: React.FC = () => {
                     <input
                       className="tasks-input"
                       value={renameValue}
-                      onChange={(e) =>
-                        setListRenameById((prev) => ({ ...prev, [list.id]: e.target.value }))
-                      }
+                      onChange={(e) => setListRenameById((prev) => ({ ...prev, [list.id]: e.target.value }))}
                     />
                     <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={list.color_hex}
-                        onChange={(e) => saveList(list.id, { color_hex: e.target.value })}
-                      />
                       <button
                         className="neo-btn neo-btn-sm neo-btn-lime"
                         onClick={async () => {
@@ -481,9 +551,7 @@ const TasksHubTracker: React.FC = () => {
           })}
 
           <div className="tasks-add-list mt-3 space-y-2">
-            <p className="neo-label" style={{ color: "var(--neo-cyan)" }}>
-              Add list
-            </p>
+            <p className="neo-label" style={{ color: "var(--neo-cyan)" }}>Add list</p>
             <input
               className="tasks-input"
               placeholder="List name"
@@ -491,35 +559,26 @@ const TasksHubTracker: React.FC = () => {
               onChange={(e) => setNewListName(e.target.value)}
               onKeyDown={async (e) => {
                 if (e.key !== "Enter") return;
-                const created = await createList(newListName, newListColor);
-                if (created) {
-                  setNewListName("");
-                }
+                const created = await createList(newListName);
+                if (created) setNewListName("");
               }}
             />
-            <div className="flex items-center gap-2">
-              <input type="color" value={newListColor} onChange={(e) => setNewListColor(e.target.value)} />
-              <button
-                className="neo-btn neo-btn-sm neo-btn-cyan"
-                onClick={async () => {
-                  const created = await createList(newListName, newListColor);
-                  if (created) {
-                    setNewListName("");
-                  }
-                }}
-              >
-                Create
-              </button>
-            </div>
+            <button
+              className="neo-btn neo-btn-sm neo-btn-cyan"
+              onClick={async () => {
+                const created = await createList(newListName);
+                if (created) setNewListName("");
+              }}
+            >
+              Create
+            </button>
           </div>
         </aside>
 
         <section className="tasks-board">
           {errorMessage && (
-            <div className="neo-card mb-3" style={{ background: "var(--neo-red)", color: "var(--neo-white)" }}>
-              <p className="neo-label" style={{ color: "var(--neo-white)" }}>
-                {errorMessage}
-              </p>
+            <div className="neo-card mb-2 py-2" style={{ background: "var(--neo-red)", color: "var(--neo-white)" }}>
+              <p className="neo-label" style={{ color: "var(--neo-white)", letterSpacing: "0.08em" }}>{errorMessage}</p>
             </div>
           )}
 
@@ -528,198 +587,305 @@ const TasksHubTracker: React.FC = () => {
               const allRootTasks = rootTasksByList[list.id] ?? [];
               const activeRootTasks = allRootTasks.filter((task) => !task.is_completed);
               const completedRootTasks = allRootTasks.filter((task) => task.is_completed);
-              const topDraft = getDraft(list.id, null);
+              const activeRootTasksByDue = [...activeRootTasks].sort((a, b) => {
+                const aTime = a.due_at ? new Date(a.due_at).getTime() : Number.MAX_SAFE_INTEGER;
+                const bTime = b.due_at ? new Date(b.due_at).getTime() : Number.MAX_SAFE_INTEGER;
+                if (aTime === bTime) {
+                  return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+                }
+                return aTime - bTime;
+              });
+              const dueHeaderByTaskId = new Map<string, string>();
+              let previousDueKey = "";
+              activeRootTasksByDue.forEach((task) => {
+                const dueKey = toDueDayKey(task.due_at);
+                if (dueKey !== previousDueKey) {
+                  dueHeaderByTaskId.set(task.id, dueGroupLabel(task.due_at));
+                  previousDueKey = dueKey;
+                }
+              });
+              const completedSubtasks = allRootTasks.flatMap((rootTask) =>
+                (tasksByParent[rootTask.id] || [])
+                  .filter((subtask) => subtask.is_completed)
+                  .map((subtask) => ({ task: subtask, parentTitle: rootTask.title }))
+              );
               const completedOpen = completedSectionOpenByList[list.id] ?? false;
+              const addTaskOpen = addTaskOpenByList[list.id] ?? false;
+              const topDraft = getDraft(list.id, null);
 
               return (
-                <motion.div
-                  key={list.id}
-                  className="tasks-card"
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <div className="tasks-card-header">
+                <motion.div key={list.id} className="tasks-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className="tasks-card-header tasks-card-header-compact">
                     <div className="flex items-center justify-between gap-2">
                       <h3 className="tasks-card-title">{list.name}</h3>
-                      <span className="neo-label" style={{ color: list.color_hex }}>
-                        {countsByList[list.id]?.open ?? 0} open
-                      </span>
-                    </div>
-
-                    <div className="mt-2 grid gap-2">
-                      <input
-                        className="tasks-input"
-                        placeholder="Add a task"
-                        value={topDraft.title}
-                        onChange={(e) => setDraft(list.id, null, { title: e.target.value })}
-                        onKeyDown={async (e) => {
-                          if (e.key !== "Enter") return;
-                          const created = await createTaskFromDraft(topDraft);
-                          if (created) {
-                            resetDraft(list.id, null);
-                          }
-                        }}
-                      />
-
-                      <div className="grid gap-2 md:grid-cols-2">
-                        <input
-                          className="tasks-input"
-                          type="datetime-local"
-                          value={topDraft.due_at}
-                          onChange={(e) => setDraft(list.id, null, { due_at: e.target.value })}
-                        />
+                      <div className="flex items-center gap-2">
+                        <span className="neo-label" style={{ color: list.color_hex }}>{countsByList[list.id]?.open ?? 0} open</span>
                         <button
                           className="neo-btn neo-btn-sm neo-btn-lime"
-                          onClick={async () => {
-                            const created = await createTaskFromDraft(topDraft);
-                            if (created) {
-                              resetDraft(list.id, null);
-                            }
-                          }}
+                          onClick={() => setAddTaskOpenByList((prev) => ({ ...prev, [list.id]: !addTaskOpen }))}
                         >
-                          Add task
+                          {addTaskOpen ? "−" : "+"}
                         </button>
                       </div>
-
-                      <TaskRecurrenceFields
-                        value={{
-                          recurrence_type: topDraft.recurrence_type,
-                          recurrence_interval: topDraft.recurrence_interval,
-                          recurrence_unit: topDraft.recurrence_unit,
-                          recurrence_ends_at: topDraft.recurrence_ends_at,
-                        }}
-                        onChange={(patch) => setDraft(list.id, null, patch)}
-                      />
                     </div>
+
+                    <AnimatePresence>
+                      {addTaskOpen && (
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="tasks-quick-form mt-2">
+                          <input
+                            className="tasks-input"
+                            placeholder="Task title"
+                            value={topDraft.title}
+                            onChange={(e) => setDraft(list.id, null, { title: e.target.value })}
+                          />
+                          <textarea
+                            className="tasks-textarea"
+                            placeholder="Details (optional)"
+                            value={topDraft.details}
+                            onChange={(e) => setDraft(list.id, null, { details: e.target.value })}
+                          />
+                          <input
+                            className="tasks-input"
+                            type="datetime-local"
+                            value={topDraft.due_at}
+                            onChange={(e) => setDraft(list.id, null, { due_at: e.target.value })}
+                          />
+                          <DueQuickButtons
+                            onPick={(value) => setDraft(list.id, null, { due_at: value })}
+                            onSetTenPm={() => {
+                              const next = setTimeToTenPm(topDraft.due_at);
+                              if (next) setDraft(list.id, null, { due_at: next });
+                            }}
+                            canSetTenPm={!!setTimeToTenPm(topDraft.due_at)}
+                          />
+
+                          <TaskRecurrenceFields
+                            value={{
+                              recurrence_type: topDraft.recurrence_type,
+                              recurrence_interval: topDraft.recurrence_interval,
+                              recurrence_unit: topDraft.recurrence_unit,
+                              recurrence_ends_at: topDraft.recurrence_ends_at,
+                            }}
+                            onChange={(patch) => setDraft(list.id, null, patch)}
+                          />
+
+                          <div className="flex gap-2">
+                            <button
+                              className="neo-btn neo-btn-sm neo-btn-cyan"
+                              onClick={async () => {
+                                const created = await createTaskFromDraft(topDraft);
+                                if (created) {
+                                  resetDraft(list.id, null);
+                                  setAddTaskOpenByList((prev) => ({ ...prev, [list.id]: false }));
+                                }
+                              }}
+                            >
+                              Add task
+                            </button>
+                            <button
+                              className="neo-btn neo-btn-sm neo-btn-white"
+                              onClick={() => {
+                                resetDraft(list.id, null);
+                                setAddTaskOpenByList((prev) => ({ ...prev, [list.id]: false }));
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                   <div>
-                    {activeRootTasks.length === 0 && completedRootTasks.length === 0 && (
+                    {activeRootTasks.length === 0 && completedRootTasks.length === 0 && completedSubtasks.length === 0 && (
                       <div className="tasks-empty">No tasks in this list yet.</div>
                     )}
 
-                    {activeRootTasks.map((task) => {
+                    {activeRootTasksByDue.map((task) => {
                       const expanded = !!expandedTaskIds[task.id];
                       const edit = taskEditsById[task.id] ?? createTaskEditDraft(task);
                       const subtasks = tasksByParent[task.id] || [];
-                      const visibleSubtasks = showCompleted
-                        ? subtasks
-                        : subtasks.filter((subtask) => !subtask.is_completed);
+                      const activeSubtasks = subtasks.filter((subtask) => !subtask.is_completed);
+                      const doneSubtaskCount = subtasks.length - activeSubtasks.length;
                       const subtaskDraft = getDraft(list.id, task.id);
+                      const addSubtaskOpen = addSubtaskOpenByParent[task.id] ?? false;
                       const canDrag = sortMode === "custom";
 
                       return (
-                        <div
-                          key={task.id}
-                          className={`tasks-task-row ${draggingTaskId === task.id ? "dragging" : ""} ${
-                            dragOverTaskId === task.id ? "drop-target" : ""
-                          }`}
-                          draggable={canDrag}
-                          onDragStart={() => setDraggingTaskId(task.id)}
-                          onDragOver={(e) => {
-                            if (!canDrag) return;
-                            e.preventDefault();
-                            setDragOverTaskId(task.id);
-                          }}
-                          onDragLeave={() => {
-                            if (!canDrag) return;
-                            setDragOverTaskId((current) => (current === task.id ? null : current));
-                          }}
-                          onDrop={async (e) => {
-                            if (!canDrag) return;
-                            e.preventDefault();
-                            await handleTaskDrop(
-                              list.id,
-                              null,
-                              activeRootTasks.map((item) => item.id),
-                              task.id
-                            );
-                          }}
-                          onDragEnd={() => {
-                            setDraggingTaskId(null);
-                            setDragOverTaskId(null);
-                          }}
-                        >
+                        <React.Fragment key={task.id}>
+                          {dueHeaderByTaskId.get(task.id) && (
+                            <div className="tasks-due-group-label">{dueHeaderByTaskId.get(task.id)}</div>
+                          )}
+                          <div
+                            className={`tasks-task-row ${draggingTaskId === task.id ? "dragging" : ""} ${dragOverTaskId === task.id ? "drop-target" : ""}`}
+                            draggable={canDrag}
+                            onDragStart={() => {
+                              setDraggingTaskId(task.id);
+                              setDraggingParentId(null);
+                            }}
+                            onDragOver={(e) => {
+                              if (!canDrag) return;
+                              e.preventDefault();
+                              setDragOverTaskId(task.id);
+                            }}
+                            onDrop={async (e) => {
+                              if (!canDrag) return;
+                              e.preventDefault();
+                              await handleTaskDrop(list.id, null, activeRootTasksByDue.map((item) => item.id), task.id);
+                            }}
+                            onDragEnd={() => {
+                              setDraggingTaskId(null);
+                              setDraggingParentId(null);
+                              setDragOverTaskId(null);
+                            }}
+                          >
                           <div className="tasks-task-main">
-                            <button
-                              className={`tasks-checkbox ${task.is_completed ? "done" : ""}`}
-                              onClick={async () => {
-                                await toggleTaskCompletion(task);
-                              }}
-                            >
+                            <button className={`tasks-checkbox ${task.is_completed ? "done" : ""}`} onClick={async () => { await toggleTaskCompletion(task); }}>
                               {task.is_completed ? "✓" : ""}
                             </button>
 
                             <div className="min-w-0">
-                              <button
-                                className={`tasks-title-btn ${task.is_completed ? "done" : ""}`}
-                                onClick={() => toggleExpandedTask(task)}
-                              >
+                              <button className={`tasks-title-btn ${task.is_completed ? "done" : ""}`} onClick={() => toggleExpandedTask(task)}>
                                 {task.title}
                               </button>
-
                               <div className="tasks-meta">
-                                {task.due_at && <span className="tasks-chip">{formatDue(task.due_at)}</span>}
-                                {recurrenceLabel(task) && (
-                                  <span className="tasks-chip">{recurrenceLabel(task)}</span>
-                                )}
-                                {subtasks.length > 0 && (
-                                  <span className="tasks-chip">{subtasks.length} subtasks</span>
-                                )}
+                                {task.due_at && <span className={dueChipClassName(task.due_at)}>{formatDue(task.due_at)}</span>}
+                                {recurrenceLabel(task) && <span className="tasks-chip">{recurrenceLabel(task)}</span>}
+                                {subtasks.length > 0 && <span className="tasks-chip">{activeSubtasks.length}/{subtasks.length} subtasks</span>}
+                                {doneSubtaskCount > 0 && <span className="tasks-chip">{doneSubtaskCount} done</span>}
                               </div>
                             </div>
 
-                            <button
-                              className="tasks-icon-btn tasks-danger"
-                              onClick={async () => {
-                                await removeTask(task.id);
-                              }}
-                            >
-                              Delete
-                            </button>
+                            <div className="flex items-center gap-1">
+                              <button className="tasks-icon-btn" onClick={() => setAddSubtaskOpenByParent((prev) => ({ ...prev, [task.id]: !addSubtaskOpen }))}>
+                                {addSubtaskOpen ? "−" : "+"}
+                              </button>
+                              <button className="tasks-icon-btn tasks-danger" onClick={async () => { await removeTask(task.id); }}>
+                                Del
+                              </button>
+                            </div>
                           </div>
+
+                          {activeSubtasks.length > 0 && (
+                            <div className="tasks-subtasks">
+                              {activeSubtasks.map((subtask) => (
+                                <div
+                                  key={subtask.id}
+                                  className={`tasks-subtask-row ${draggingTaskId === subtask.id ? "dragging" : ""} ${dragOverTaskId === subtask.id ? "drop-target" : ""}`}
+                                  draggable={canDrag}
+                                  onDragStart={() => {
+                                    setDraggingTaskId(subtask.id);
+                                    setDraggingParentId(task.id);
+                                  }}
+                                  onDragOver={(e) => {
+                                    if (!canDrag) return;
+                                    e.preventDefault();
+                                    setDragOverTaskId(subtask.id);
+                                  }}
+                                  onDrop={async (e) => {
+                                    if (!canDrag) return;
+                                    e.preventDefault();
+                                    await handleTaskDrop(list.id, task.id, activeSubtasks.map((item) => item.id), subtask.id);
+                                  }}
+                                  onDragEnd={() => {
+                                    setDraggingTaskId(null);
+                                    setDraggingParentId(null);
+                                    setDragOverTaskId(null);
+                                  }}
+                                >
+                                  <button className={`tasks-checkbox ${subtask.is_completed ? "done" : ""}`} onClick={async () => { await toggleTaskCompletion(subtask); }}>
+                                    {subtask.is_completed ? "✓" : ""}
+                                  </button>
+                                  <div className="min-w-0">
+                                    <button className={`tasks-title-btn ${subtask.is_completed ? "done" : ""}`} onClick={() => toggleExpandedTask(subtask)}>
+                                      {subtask.title}
+                                    </button>
+                                    <div className="tasks-meta">
+                                      {subtask.due_at && <span className={dueChipClassName(subtask.due_at)}>{formatDue(subtask.due_at)}</span>}
+                                    </div>
+                                  </div>
+                                  <button className="tasks-icon-btn tasks-danger" onClick={async () => { await removeTask(subtask.id); }}>
+                                    Del
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          <AnimatePresence>
+                            {addSubtaskOpen && (
+                              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="tasks-quick-form mt-2 tasks-subtask-form">
+                                <input
+                                  className="tasks-input"
+                                  placeholder="Subtask title"
+                                  value={subtaskDraft.title}
+                                  onChange={(e) => setDraft(list.id, task.id, { title: e.target.value })}
+                                />
+                                <input
+                                  className="tasks-input"
+                                  type="datetime-local"
+                                  value={subtaskDraft.due_at}
+                                  onChange={(e) => setDraft(list.id, task.id, { due_at: e.target.value })}
+                                />
+                                <DueQuickButtons
+                                  onPick={(value) => setDraft(list.id, task.id, { due_at: value })}
+                                  onSetTenPm={() => {
+                                    const next = setTimeToTenPm(subtaskDraft.due_at);
+                                    if (next) setDraft(list.id, task.id, { due_at: next });
+                                  }}
+                                  canSetTenPm={!!setTimeToTenPm(subtaskDraft.due_at)}
+                                />
+                                <TaskRecurrenceFields
+                                  value={{
+                                    recurrence_type: subtaskDraft.recurrence_type,
+                                    recurrence_interval: subtaskDraft.recurrence_interval,
+                                    recurrence_unit: subtaskDraft.recurrence_unit,
+                                    recurrence_ends_at: subtaskDraft.recurrence_ends_at,
+                                  }}
+                                  onChange={(patch) => setDraft(list.id, task.id, patch)}
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    className="neo-btn neo-btn-sm neo-btn-cyan"
+                                    onClick={async () => {
+                                      const created = await createTaskFromDraft(subtaskDraft);
+                                      if (created) {
+                                        resetDraft(list.id, task.id);
+                                        setAddSubtaskOpenByParent((prev) => ({ ...prev, [task.id]: false }));
+                                      }
+                                    }}
+                                  >
+                                    Add subtask
+                                  </button>
+                                  <button
+                                    className="neo-btn neo-btn-sm neo-btn-white"
+                                    onClick={() => {
+                                      resetDraft(list.id, task.id);
+                                      setAddSubtaskOpenByParent((prev) => ({ ...prev, [task.id]: false }));
+                                    }}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
 
                           <AnimatePresence>
                             {expanded && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="tasks-expansion"
-                              >
-                                <input
-                                  className="tasks-input"
-                                  value={edit.title}
-                                  onChange={(e) => updateTaskEdit(task.id, { title: e.target.value })}
+                              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="tasks-expansion">
+                                <input className="tasks-input" value={edit.title} onChange={(e) => updateTaskEdit(task.id, { title: e.target.value })} />
+                                <textarea className="tasks-textarea" placeholder="Task details" value={edit.details} onChange={(e) => updateTaskEdit(task.id, { details: e.target.value })} />
+                                <input className="tasks-input" type="datetime-local" value={edit.due_at} onChange={(e) => updateTaskEdit(task.id, { due_at: e.target.value })} />
+                                <DueQuickButtons
+                                  onPick={(value) => updateTaskEdit(task.id, { due_at: value })}
+                                  onSetTenPm={() => {
+                                    const next = setTimeToTenPm(edit.due_at);
+                                    if (next) updateTaskEdit(task.id, { due_at: next });
+                                  }}
+                                  canSetTenPm={!!setTimeToTenPm(edit.due_at)}
                                 />
-
-                                <textarea
-                                  className="tasks-textarea"
-                                  placeholder="Task details"
-                                  value={edit.details}
-                                  onChange={(e) => updateTaskEdit(task.id, { details: e.target.value })}
-                                />
-
-                                <div className="grid gap-2 md:grid-cols-2">
-                                  <div>
-                                    <label className="neo-label">Due</label>
-                                    <input
-                                      className="tasks-input"
-                                      type="datetime-local"
-                                      value={edit.due_at}
-                                      onChange={(e) => updateTaskEdit(task.id, { due_at: e.target.value })}
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="neo-label">Created</label>
-                                    <input
-                                      className="tasks-input"
-                                      disabled
-                                      value={new Date(task.created_at).toLocaleString()}
-                                    />
-                                  </div>
-                                </div>
-
                                 <TaskRecurrenceFields
                                   value={{
                                     recurrence_type: edit.recurrence_type,
@@ -729,161 +895,62 @@ const TasksHubTracker: React.FC = () => {
                                   }}
                                   onChange={(patch) => updateTaskEdit(task.id, patch)}
                                 />
-
-                                <div className="flex flex-wrap gap-2">
-                                  <button
-                                    className="neo-btn neo-btn-sm neo-btn-lime"
-                                    onClick={async () => {
-                                      await saveTaskEdit(task);
-                                    }}
-                                  >
-                                    Save task
+                                <div className="flex gap-2">
+                                  <button className="neo-btn neo-btn-sm neo-btn-lime" onClick={async () => { await saveTaskEdit(task); }}>
+                                    Save
                                   </button>
                                   <button
                                     className="neo-btn neo-btn-sm neo-btn-white"
                                     onClick={() => {
                                       setExpandedTaskIds((prev) => ({ ...prev, [task.id]: false }));
-                                      setTaskEditsById((prev) => ({
-                                        ...prev,
-                                        [task.id]: createTaskEditDraft(task),
-                                      }));
+                                      setTaskEditsById((prev) => ({ ...prev, [task.id]: createTaskEditDraft(task) }));
                                     }}
                                   >
                                     Cancel
                                   </button>
                                 </div>
-
-                                <div>
-                                  <label className="neo-label" style={{ color: "var(--neo-cyan)" }}>
-                                    Add subtask
-                                  </label>
-                                  <div className="mt-1 grid gap-2 md:grid-cols-[1fr_auto]">
-                                    <input
-                                      className="tasks-input"
-                                      placeholder="Subtask title"
-                                      value={subtaskDraft.title}
-                                      onChange={(e) =>
-                                        setDraft(list.id, task.id, { title: e.target.value })
-                                      }
-                                      onKeyDown={async (e) => {
-                                        if (e.key !== "Enter") return;
-                                        const created = await createTaskFromDraft(subtaskDraft);
-                                        if (created) {
-                                          resetDraft(list.id, task.id);
-                                        }
-                                      }}
-                                    />
-                                    <button
-                                      className="neo-btn neo-btn-sm neo-btn-cyan"
-                                      onClick={async () => {
-                                        const created = await createTaskFromDraft(subtaskDraft);
-                                        if (created) {
-                                          resetDraft(list.id, task.id);
-                                        }
-                                      }}
-                                    >
-                                      Add subtask
-                                    </button>
-                                  </div>
-                                </div>
-
-                                {visibleSubtasks.length > 0 && (
-                                  <div className="tasks-subtasks">
-                                    {visibleSubtasks.map((subtask) => (
-                                      <div key={subtask.id} className="tasks-task-row">
-                                        <div className="tasks-task-main">
-                                          <button
-                                            className={`tasks-checkbox ${subtask.is_completed ? "done" : ""}`}
-                                            onClick={async () => {
-                                              await toggleTaskCompletion(subtask);
-                                            }}
-                                          >
-                                            {subtask.is_completed ? "✓" : ""}
-                                          </button>
-
-                                          <div className="min-w-0">
-                                            <button
-                                              className={`tasks-title-btn ${
-                                                subtask.is_completed ? "done" : ""
-                                              }`}
-                                              onClick={() => toggleExpandedTask(subtask)}
-                                            >
-                                              {subtask.title}
-                                            </button>
-                                            {subtask.due_at && (
-                                              <div className="tasks-meta">
-                                                <span className="tasks-chip">{formatDue(subtask.due_at)}</span>
-                                              </div>
-                                            )}
-                                          </div>
-
-                                          <button
-                                            className="tasks-icon-btn tasks-danger"
-                                            onClick={async () => {
-                                              await removeTask(subtask.id);
-                                            }}
-                                          >
-                                            Delete
-                                          </button>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
                               </motion.div>
                             )}
                           </AnimatePresence>
-                        </div>
+                          </div>
+                        </React.Fragment>
                       );
                     })}
 
-                    {showCompleted && completedRootTasks.length > 0 && (
+                    {showCompleted && (completedRootTasks.length > 0 || completedSubtasks.length > 0) && (
                       <>
-                        <button
-                          className="tasks-completed-toggle"
-                          onClick={() =>
-                            setCompletedSectionOpenByList((prev) => ({
-                              ...prev,
-                              [list.id]: !completedOpen,
-                            }))
-                          }
-                        >
-                          {completedOpen ? "▼" : "▶"} Completed ({completedRootTasks.length})
+                        <button className="tasks-completed-toggle" onClick={() => setCompletedSectionOpenByList((prev) => ({ ...prev, [list.id]: !completedOpen }))}>
+                          {completedOpen ? "▼" : "▶"} Completed ({completedRootTasks.length + completedSubtasks.length})
                         </button>
 
-                        {completedOpen &&
-                          completedRootTasks.map((task) => (
-                            <div key={task.id} className="tasks-task-row">
-                              <div className="tasks-task-main">
-                                <button
-                                  className="tasks-checkbox done"
-                                  onClick={async () => {
-                                    await toggleTaskCompletion(task);
-                                  }}
-                                >
-                                  ✓
-                                </button>
-
+                        {completedOpen && (
+                          <div className="tasks-completed-list">
+                            {completedRootTasks.map((task) => (
+                              <div key={task.id} className="tasks-subtask-row">
+                                <button className="tasks-checkbox done" onClick={async () => { await toggleTaskCompletion(task); }}>✓</button>
                                 <div className="min-w-0">
-                                  <button className="tasks-title-btn done" onClick={() => toggleExpandedTask(task)}>
-                                    {task.title}
-                                  </button>
+                                  <button className="tasks-title-btn done" onClick={() => toggleExpandedTask(task)}>{task.title}</button>
+                                  <div className="tasks-meta">{task.due_at && <span className={dueChipClassName(task.due_at)}>{formatDue(task.due_at)}</span>}</div>
+                                </div>
+                                <button className="tasks-icon-btn tasks-danger" onClick={async () => { await removeTask(task.id); }}>Del</button>
+                              </div>
+                            ))}
+
+                            {completedSubtasks.map(({ task, parentTitle }) => (
+                              <div key={task.id} className="tasks-subtask-row tasks-completed-subtask">
+                                <button className="tasks-checkbox done" onClick={async () => { await toggleTaskCompletion(task); }}>✓</button>
+                                <div className="min-w-0">
+                                  <button className="tasks-title-btn done" onClick={() => toggleExpandedTask(task)}>{task.title}</button>
                                   <div className="tasks-meta">
-                                    {task.due_at && <span className="tasks-chip">{formatDue(task.due_at)}</span>}
+                                    <span className="tasks-chip">Subtask of {parentTitle}</span>
+                                    {task.due_at && <span className={dueChipClassName(task.due_at)}>{formatDue(task.due_at)}</span>}
                                   </div>
                                 </div>
-
-                                <button
-                                  className="tasks-icon-btn tasks-danger"
-                                  onClick={async () => {
-                                    await removeTask(task.id);
-                                  }}
-                                >
-                                  Delete
-                                </button>
+                                <button className="tasks-icon-btn tasks-danger" onClick={async () => { await removeTask(task.id); }}>Del</button>
                               </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
+                        )}
                       </>
                     )}
                   </div>

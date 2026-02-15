@@ -24,10 +24,18 @@ import {
 import { useTrackerContext } from "../../shared/hooks/useTrackerContext";
 
 const ALL_LISTS_KEY = "all";
-const DEFAULT_LIST_COLOR = "#00FFFF";
 const DEFAULT_LIST_NAME = "General";
 const DEFAULT_SORT_MODE: TaskSortMode = "custom";
 const DEFAULT_SORT_DIRECTION: SortDirection = "asc";
+const LIST_COLOR_POOL = [
+  "#00FFFF",
+  "#BFFF00",
+  "#FF6B9D",
+  "#FFE600",
+  "#B388FF",
+  "#FF9500",
+  "#0066FF",
+];
 
 const toIsoOrNull = (dateTimeLocal: string): string | null => {
   const trimmed = dateTimeLocal.trim();
@@ -35,43 +43,6 @@ const toIsoOrNull = (dateTimeLocal: string): string | null => {
   const parsed = new Date(trimmed);
   if (Number.isNaN(parsed.getTime())) return null;
   return parsed.toISOString();
-};
-
-const normalizeSortMode = (mode: TaskSortMode): TaskSortMode => mode;
-
-const getTimestamp = (value: string | null | undefined, fallback: number) => {
-  if (!value) return fallback;
-  const parsed = new Date(value).getTime();
-  return Number.isNaN(parsed) ? fallback : parsed;
-};
-
-const compareBySortMode = (a: TrackerTask, b: TrackerTask, mode: TaskSortMode) => {
-  if (mode === "title") {
-    return a.title.localeCompare(b.title, undefined, { sensitivity: "base" });
-  }
-
-  if (mode === "date_created") {
-    return getTimestamp(a.created_at, 0) - getTimestamp(b.created_at, 0);
-  }
-
-  if (mode === "due_date") {
-    const aDue = getTimestamp(a.due_at, Number.MAX_SAFE_INTEGER);
-    const bDue = getTimestamp(b.due_at, Number.MAX_SAFE_INTEGER);
-    if (aDue === bDue) {
-      return getTimestamp(a.created_at, 0) - getTimestamp(b.created_at, 0);
-    }
-    return aDue - bDue;
-  }
-
-  if (a.sort_order === b.sort_order) {
-    return getTimestamp(a.created_at, 0) - getTimestamp(b.created_at, 0);
-  }
-  return a.sort_order - b.sort_order;
-};
-
-const sortTasks = (tasks: TrackerTask[], mode: TaskSortMode, direction: SortDirection) => {
-  const sorted = [...tasks].sort((a, b) => compareBySortMode(a, b, mode));
-  return direction === "asc" ? sorted : sorted.reverse();
 };
 
 const computeNextDueAt = (task: TrackerTask): string | null => {
@@ -126,6 +97,12 @@ const buildTaskDraft = (listId: string, parentTaskId: string | null = null): Tas
 });
 
 const normalizeListName = (name: string) => name.trim().replace(/\s+/g, " ").toLocaleLowerCase();
+const pickAutoListColor = (existingColors: string[]) => {
+  const existing = new Set(existingColors.map((color) => color.toLocaleLowerCase()));
+  const available = LIST_COLOR_POOL.filter((color) => !existing.has(color.toLocaleLowerCase()));
+  const palette = available.length > 0 ? available : LIST_COLOR_POOL;
+  return palette[Math.floor(Math.random() * palette.length)];
+};
 
 export const useTasksHubModule = () => {
   const { supabase, userId, startLoading, stopLoading } = useTrackerContext();
@@ -134,8 +111,6 @@ export const useTasksHubModule = () => {
   const [tasks, setTasks] = useState<TrackerTask[]>([]);
   const [sortPreferences, setSortPreferences] = useState<TaskSortPreference[]>([]);
   const [selectedListId, setSelectedListId] = useState<string>(ALL_LISTS_KEY);
-  const [sortMode, setSortMode] = useState<TaskSortMode>(DEFAULT_SORT_MODE);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(DEFAULT_SORT_DIRECTION);
   const [showCompleted, setShowCompleted] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
@@ -173,7 +148,7 @@ export const useTasksHubModule = () => {
         const seeded = await createTaskList(supabase, {
           user_id: userId,
           name: DEFAULT_LIST_NAME,
-          color_hex: DEFAULT_LIST_COLOR,
+          color_hex: pickAutoListColor([]),
           sort_order: 1,
           archived: false,
         });
@@ -207,14 +182,6 @@ export const useTasksHubModule = () => {
     }
   }, [lists, selectedListId]);
 
-  useEffect(() => {
-    if (selectedListId === ALL_LISTS_KEY) return;
-
-    const pref = sortPreferences.find((item) => item.list_id === selectedListId);
-    setSortMode(pref?.sort_mode ?? DEFAULT_SORT_MODE);
-    setSortDirection(pref?.sort_direction ?? DEFAULT_SORT_DIRECTION);
-  }, [selectedListId, sortPreferences]);
-
   const listIds = useMemo(() => new Set(lists.map((list) => list.id)), [lists]);
 
   const tasksForKnownLists = useMemo(
@@ -232,12 +199,8 @@ export const useTasksHubModule = () => {
       grouped[task.parent_task_id] = bucket;
     });
 
-    Object.keys(grouped).forEach((parentId) => {
-      grouped[parentId] = sortTasks(grouped[parentId], sortMode, sortDirection);
-    });
-
     return grouped;
-  }, [tasksForKnownLists, sortMode, sortDirection]);
+  }, [tasksForKnownLists]);
 
   const rootTasksByList = useMemo(() => {
     const grouped: Record<string, TrackerTask[]> = {};
@@ -246,11 +209,11 @@ export const useTasksHubModule = () => {
       const roots = tasksForKnownLists.filter(
         (task) => task.list_id === list.id && !task.parent_task_id
       );
-      grouped[list.id] = sortTasks(roots, sortMode, sortDirection);
+      grouped[list.id] = roots;
     });
 
     return grouped;
-  }, [lists, tasksForKnownLists, sortMode, sortDirection]);
+  }, [lists, tasksForKnownLists]);
 
   const countsByList = useMemo(() => {
     const counts: Record<string, { total: number; open: number; completed: number }> = {};
@@ -300,7 +263,7 @@ export const useTasksHubModule = () => {
   );
 
   const createList = useCallback(
-    async (name: string, colorHex: string) => {
+    async (name: string, colorHex?: string) => {
       const cleanedName = name.trim();
       if (!cleanedName) return null;
 
@@ -313,10 +276,11 @@ export const useTasksHubModule = () => {
       }
 
       setIsSaving(true);
+      const assignedColor = colorHex || pickAutoListColor(lists.map((list) => list.color_hex));
       const result = await createTaskList(supabase, {
         user_id: userId,
         name: cleanedName,
-        color_hex: colorHex,
+        color_hex: assignedColor,
         sort_order: getNextListSortOrder(),
         archived: false,
       });
@@ -557,31 +521,66 @@ export const useTasksHubModule = () => {
     [supabase, tasks, userId]
   );
 
-  const setSortForCurrentView = useCallback(
-    async (mode: TaskSortMode, direction: SortDirection) => {
-      const normalizedMode = normalizeSortMode(mode);
-      setSortMode(normalizedMode);
-      setSortDirection(direction);
+  const reorderLists = useCallback(
+    async (orderedListIds: string[]) => {
+      if (orderedListIds.length <= 1) return true;
 
-      if (selectedListId === ALL_LISTS_KEY) {
-        return;
+      const orderMap = new Map(orderedListIds.map((listId, index) => [listId, index + 1]));
+      const previous = lists;
+
+      setLists((prev) =>
+        prev.map((list) => {
+          const nextOrder = orderMap.get(list.id);
+          return typeof nextOrder === "number" ? { ...list, sort_order: nextOrder } : list;
+        })
+      );
+
+      const updates = orderedListIds.map((listId, index) =>
+        updateTaskList(supabase, userId, listId, { sort_order: index + 1 })
+      );
+
+      const results = await Promise.all(updates);
+      const failed = results.find((result) => result.error);
+      if (failed?.error) {
+        setLists(previous);
+        setErrorMessage(failed.error.message || "Failed to persist list order.");
+        return false;
       }
 
+      setErrorMessage("");
+      return true;
+    },
+    [lists, supabase, userId]
+  );
+
+  const getSortForList = useCallback(
+    (listId: string): { mode: TaskSortMode; direction: SortDirection } => {
+      const pref = sortPreferences.find((item) => item.list_id === listId);
+      return {
+        mode: pref?.sort_mode ?? DEFAULT_SORT_MODE,
+        direction: pref?.sort_direction ?? DEFAULT_SORT_DIRECTION,
+      };
+    },
+    [sortPreferences]
+  );
+
+  const setSortForList = useCallback(
+    async (listId: string, mode: TaskSortMode, direction: SortDirection) => {
       const result = await upsertSortPreference(
         supabase,
         userId,
-        selectedListId,
-        normalizedMode,
+        listId,
+        mode,
         direction
       );
 
       if (result.error || !result.data) {
         setErrorMessage(result.error?.message || "Failed to save sort preference.");
-        return;
+        return false;
       }
 
       setSortPreferences((prev) => {
-        const existingIndex = prev.findIndex((item) => item.list_id === selectedListId);
+        const existingIndex = prev.findIndex((item) => item.list_id === listId);
         if (existingIndex < 0) {
           return [...prev, result.data as TaskSortPreference];
         }
@@ -591,14 +590,30 @@ export const useTasksHubModule = () => {
         return copy;
       });
       setErrorMessage("");
+      return true;
     },
-    [selectedListId, supabase, userId]
+    [supabase, userId]
+  );
+
+  const setSortForCurrentView = useCallback(
+    async (mode: TaskSortMode, direction: SortDirection) => {
+      if (selectedListId === ALL_LISTS_KEY) {
+        return;
+      }
+
+      await setSortForList(selectedListId, mode, direction);
+    },
+    [selectedListId, setSortForList]
   );
 
   const sortedLists = useMemo(
     () => [...lists].sort((a, b) => (a.sort_order === b.sort_order ? a.name.localeCompare(b.name) : a.sort_order - b.sort_order)),
     [lists]
   );
+  const selectedListSort =
+    selectedListId === ALL_LISTS_KEY
+      ? { mode: DEFAULT_SORT_MODE, direction: DEFAULT_SORT_DIRECTION }
+      : getSortForList(selectedListId);
 
   return {
     allListsKey: ALL_LISTS_KEY,
@@ -612,9 +627,11 @@ export const useTasksHubModule = () => {
     totalTaskCount,
     selectedListId,
     setSelectedListId,
-    sortMode,
-    sortDirection,
+    sortMode: selectedListSort.mode,
+    sortDirection: selectedListSort.direction,
     setSortForCurrentView,
+    getSortForList,
+    setSortForList,
     showCompleted,
     setShowCompleted,
     isSaving,
@@ -628,6 +645,7 @@ export const useTasksHubModule = () => {
     removeTask,
     toggleTaskCompletion,
     reorderTasks,
+    reorderLists,
     buildTaskDraft,
   };
 };
