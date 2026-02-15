@@ -594,6 +594,7 @@
   position: absolute;
   border: var(--neo-border-thick);
   pointer-events: none;
+  z-index: 0;
 }
 
 .neo-shape-circle {

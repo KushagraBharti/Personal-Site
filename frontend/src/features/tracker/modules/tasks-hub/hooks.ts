@@ -125,6 +125,8 @@ const buildTaskDraft = (listId: string, parentTaskId: string | null = null): Tas
   recurrence_ends_at: "",
 });
 
+const normalizeListName = (name: string) => name.trim().replace(/\s+/g, " ").toLocaleLowerCase();
+
 export const useTasksHubModule = () => {
   const { supabase, userId, startLoading, stopLoading } = useTrackerContext();
 
@@ -301,6 +303,15 @@ export const useTasksHubModule = () => {
     async (name: string, colorHex: string) => {
       const cleanedName = name.trim();
       if (!cleanedName) return null;
+
+      const existingListName = lists.find(
+        (list) => normalizeListName(list.name) === normalizeListName(cleanedName)
+      );
+      if (existingListName) {
+        setErrorMessage(`List "${existingListName.name}" already exists.`);
+        return null;
+      }
+
       setIsSaving(true);
       const result = await createTaskList(supabase, {
         user_id: userId,
@@ -312,7 +323,11 @@ export const useTasksHubModule = () => {
       setIsSaving(false);
 
       if (result.error || !result.data) {
-        setErrorMessage(result.error?.message || "Failed to create list.");
+        if (result.error?.code === "23505") {
+          setErrorMessage(`List "${cleanedName}" already exists.`);
+        } else {
+          setErrorMessage(result.error?.message || "Failed to create list.");
+        }
         return null;
       }
 
@@ -321,7 +336,7 @@ export const useTasksHubModule = () => {
       setErrorMessage("");
       return result.data;
     },
-    [getNextListSortOrder, supabase, userId]
+    [getNextListSortOrder, lists, supabase, userId]
   );
 
   const saveList = useCallback(
@@ -330,6 +345,17 @@ export const useTasksHubModule = () => {
       if (typeof updates.name === "string") {
         const cleanedName = updates.name.trim();
         if (!cleanedName) return false;
+
+        const duplicate = lists.find(
+          (list) =>
+            list.id !== listId &&
+            normalizeListName(list.name) === normalizeListName(cleanedName)
+        );
+        if (duplicate) {
+          setErrorMessage(`List "${duplicate.name}" already exists.`);
+          return false;
+        }
+
         payload.name = cleanedName;
       }
       if (typeof updates.color_hex === "string") {
@@ -340,7 +366,11 @@ export const useTasksHubModule = () => {
 
       const result = await updateTaskList(supabase, userId, listId, payload);
       if (result.error || !result.data) {
-        setErrorMessage(result.error?.message || "Failed to update list.");
+        if (result.error?.code === "23505") {
+          setErrorMessage("Another list already has that name.");
+        } else {
+          setErrorMessage(result.error?.message || "Failed to update list.");
+        }
         return false;
       }
 
@@ -348,7 +378,7 @@ export const useTasksHubModule = () => {
       setErrorMessage("");
       return true;
     },
-    [supabase, userId]
+    [lists, supabase, userId]
   );
 
   const removeList = useCallback(

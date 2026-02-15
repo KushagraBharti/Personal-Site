@@ -80,8 +80,10 @@ create table if not exists public.tracker_task_lists (
 create index if not exists tracker_task_lists_user_sort_idx
   on public.tracker_task_lists(user_id, archived, sort_order, created_at);
 
-create unique index if not exists tracker_task_lists_user_name_ci_unique_idx
-  on public.tracker_task_lists(user_id, lower(name));
+drop index if exists tracker_task_lists_user_name_ci_unique_idx;
+create unique index if not exists tracker_task_lists_user_name_ci_active_unique_idx
+  on public.tracker_task_lists(user_id, lower(name))
+  where archived = false;
 
 -- ============================================================================
 -- 2) Tasks (supports subtasks through parent_task_id)
