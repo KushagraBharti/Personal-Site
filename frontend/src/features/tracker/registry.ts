@@ -1,13 +1,19 @@
 import { TrackerModule } from "./shared/types";
-import TasksTracker from "./modules/tasks/components/TasksTracker";
+import TasksHubTracker from "./modules/tasks-hub/components/TasksHubTracker";
+import WeeklyTasksTracker from "./modules/tasks/components/TasksTracker";
 import PipelineTracker from "./modules/pipeline/components/PipelineTracker";
 import FinanceTracker from "./modules/finance/components/FinanceTracker";
 
 export const trackerModules: TrackerModule[] = [
   {
     id: "tasks",
-    label: "Weekly",
-    Component: TasksTracker,
+    label: "Tasks",
+    Component: TasksHubTracker,
+  },
+  {
+    id: "weekly",
+    label: "Weekly Tasks",
+    Component: WeeklyTasksTracker,
   },
   {
     id: "pipeline",

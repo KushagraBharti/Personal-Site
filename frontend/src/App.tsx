@@ -3,7 +3,6 @@
 import React, { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, useNavigate } from "react-router-dom";
 import ScrollProgress from "./components/ScrollProgress";
-import SectionSidebar from "./components/SectionSidebar";
 
 const Home = lazy(() => import("./pages/Home"));
 const Tracker = lazy(() => import("./pages/Tracker"));
