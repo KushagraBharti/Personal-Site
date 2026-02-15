@@ -1,6 +1,6 @@
 {
   "crons": [
-    { "path": "/api/private/cron/calendar-sync", "schedule": "* * * * *" },
-    { "path": "/api/private/cron/calendar-watch-renew", "schedule": "*/30 * * * *" }
+    { "path": "/api/private/cron/calendar-sync", "schedule": "0 3 * * *" },
+    { "path": "/api/private/cron/calendar-watch-renew", "schedule": "30 3 * * *" }
   ]
 }
