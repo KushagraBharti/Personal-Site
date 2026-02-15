@@ -80,7 +80,11 @@ router.get("/google/callback", async (req, res) => {
     return res.redirect(`${redirectBase}&calendar=connected`);
   } catch (error) {
     console.error("Google OAuth callback failed", error);
-    return res.redirect(`${redirectBase}&calendar=error&reason=oauth_callback_failed`);
+    const reason =
+      error instanceof Error && error.message
+        ? error.message.slice(0, 180)
+        : "oauth_callback_failed";
+    return res.redirect(`${redirectBase}&calendar=error&reason=${encodeURIComponent(reason)}`);
   }
 });
 
