@@ -1,4 +1,11 @@
 {
+  "version": 2,
+  "builds": [
+    { "src": "src/server.ts", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "src/server.ts" }
+  ],
   "crons": [
     { "path": "/api/private/cron/calendar-sync", "schedule": "0 3 * * *" },
     { "path": "/api/private/cron/calendar-watch-renew", "schedule": "30 3 * * *" }
