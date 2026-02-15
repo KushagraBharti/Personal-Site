@@ -73,7 +73,7 @@ export const createGoogleOAuthUrl = (state: string) => {
     prompt: "consent",
     include_granted_scopes: "true",
     scope: [
-      "https://www.googleapis.com/auth/calendar.events",
+      "https://www.googleapis.com/auth/calendar",
       "https://www.googleapis.com/auth/userinfo.email",
     ].join(" "),
     state,
@@ -109,4 +109,3 @@ export const exchangeGoogleOAuthCode = async (code: string) => {
 
   return data;
 };
-
