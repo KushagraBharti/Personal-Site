@@ -7,6 +7,12 @@ export const getSupabaseAdmin = (): SupabaseClient => {
   if (!url || !key) {
     throw new Error("SUPABASE_URL and (SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY) must be set");
   }
+  const looksLikePublishable = key.startsWith("sb_publishable_") || key.startsWith("eyJ");
+  if (looksLikePublishable) {
+    throw new Error(
+      "Supabase server key is misconfigured. Use SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY), not a publishable/anon key."
+    );
+  }
 
   return createClient(url, key, {
     auth: {
