@@ -1,6 +1,20 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { CalendarSyncJobType, TrackerGoogleSyncJob } from "../../types/googleCalendar";
 
+const parseJwtRole = (jwt: string): string | null => {
+  const parts = jwt.split(".");
+  if (parts.length < 2) return null;
+  try {
+    const normalized = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - (normalized.length % 4 || 4)) % 4);
+    const payloadJson = Buffer.from(padded, "base64").toString("utf8");
+    const payload = JSON.parse(payloadJson) as { role?: string };
+    return typeof payload.role === "string" ? payload.role : null;
+  } catch {
+    return null;
+  }
+};
+
 export const getSupabaseAdmin = (): SupabaseClient => {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -8,12 +22,20 @@ export const getSupabaseAdmin = (): SupabaseClient => {
     throw new Error("SUPABASE_URL and (SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY) must be set");
   }
   // Supabase supports both newer sb_secret_* keys and legacy JWT service_role keys.
-  // Only explicitly reject publishable keys here.
+  // Reject clearly invalid frontend keys and JWT anon keys to avoid silent RLS failures.
   const looksLikePublishable = key.startsWith("sb_publishable_");
   if (looksLikePublishable) {
     throw new Error(
       "Supabase server key is misconfigured. Use SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY), not a publishable/anon key."
     );
+  }
+  if (key.startsWith("eyJ")) {
+    const role = parseJwtRole(key);
+    if (role && role !== "service_role") {
+      throw new Error(
+        `Supabase JWT key role is '${role}', expected 'service_role'. Set SUPABASE_SERVICE_ROLE_KEY to the service role key.`
+      );
+    }
   }
 
   return createClient(url, key, {
