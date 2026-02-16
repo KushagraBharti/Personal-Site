@@ -7,7 +7,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "http://localhost:5174", // Local frontend
+  "http://localhost:5174", // Local frontend MORE RANDOM EDITS
   "http://127.0.0.1:5173",
   "http://127.0.0.1:5174",
   "https://personal-site-frontend-navy.vercel.app", // Deployed frontend URL
