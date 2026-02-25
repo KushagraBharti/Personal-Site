@@ -77,18 +77,41 @@ exports.projectsData = [
         thumbnail: "/personalPortfolio.svg",
     },
     {
-        title: "DataDrive: Unified Insights for Data & Fuel Optimization",
-        summary: "A full-stack AI-driven analytics platform that integrates advanced ML models, real-time data observability, and interactive visualizations for fuel optimization.",
+        title: "AutoHDR ML Lens Correction",
+        summary: "Built a competition-grade automatic lens-correction pipeline that combines a CNN with analytic camera geometry (Brown–Conrady) for stable, reproducible distortion correction at full resolution.",
         description: [
-            "Developed a modular Flask backend with multiple API endpoints for fuel efficiency prediction, car details retrieval, and clustering analysis using pre-trained Linear Regression and K-Means models.",
-            "Implemented robust services including scheduled anomaly detection with APScheduler, SHAP-based interpretability, and comprehensive data observability with automated logging.",
-            "Integrated advanced external services such as GPT-4 powered explanation generation for model outputs and Pinata for decentralized file storage, enhancing transparency and auditability.",
-            "Engineered end-to-end training pipelines for both regression (evaluated via MAE and R² metrics) and clustering models (using PCA for visualization), ensuring actionable insights.",
-            "Built a modern React dashboard featuring interactive D3.js charts, real-time fuel efficiency predictions, a 3D car model viewer via react-three-fiber, and dynamic cluster visualizations."
+            "Built a geometry-first lens-correction system designed for leaderboard-safe, reproducible submissions: predict warp parameters (and optional residual flow), apply a single full-resolution backward warp, validate via proxy/QA gates, and package deterministic submissions.",
+            "Model architecture: HybridLensCorrectionModel with a ResNet34 backbone and two heads — (1) an MLP predicting Brown–Conrady lens coefficients (k1,k2,k3,p1,p2,dcx,dcy,scale) and (2) a conv decoder predicting a 2-channel residual displacement field for local corrections.",
+            "Training approach: staged training (param-only → hybrid → finetune) to progressively introduce the residual path while maintaining stability; cloud training ran on NVIDIA H200.",
+            "Verified quality progression across stages (cloud): proxy_fullres_slice_total_score improved from 0.8851 (stage1) to 0.8942 (stage3), with validation loss reduced 15.66% (0.09398 → 0.07927).",
+            "Stability hardening: training warnings dropped from 64 in stage1 to 0 in stage2/stage3 (including non-finite warnings 16 → 0).",
+            "Data scale handled: 23,118 training pairs (46,238 files; 83 lens models; 99 camera models; 5,575 photoshoots) plus a 1,000-image test set.",
+            "Benchmarking + sizing: fused hybrid warp p50 latency measured at 2.20ms (128×192) and 15.47ms (512×768) with 7.04× scaling; full predictor p50/p95 latency measured at 295.98ms/322.40ms on a 1367×2048 image.",
+            "End-to-end inference: processed 1,000 cloud test images in hybrid mode with 0 unsafe triggers/fallbacks recorded in the stage3 handoff metadata.",
+            "Competition outcome: the solution led to a follow-up call with AutoHDR’s founder and CTO to walk through the system design and discuss potential internship/job opportunities.",
+            "Engineering rigor: 108/108 tests passing (18 files) covering geometry contracts, inference fallback behavior, training hooks, QA tooling, and submission flows; submission zips are deterministic (bit-identical SHA-256 across rebuilds)."
         ],
-        tags: ["Flask", "Python", "Machine Learning", "Linear Regression", "KMeans", "APScheduler", "SHAP", "OpenAI", "Pinata", "React", "D3.js", "Three.js", "Data Analytics"],
-        githubLink: "https://github.com/KushagraBharti/HACKUTD-Data-Drive",
-        thumbnail: "/dataDrive.svg",
+        tags: [
+            "Computer Vision",
+            "Deep Learning",
+            "PyTorch",
+            "CNNs",
+            "ResNet34",
+            "Image Geometry",
+            "Lens Distortion Correction",
+            "Brown–Conrady Model",
+            "Optical Flow",
+            "Warping / grid_sample",
+            "Model Training",
+            "Staged Training",
+            "Benchmarking",
+            "Reproducible Systems",
+            "Testing",
+            "QA Tooling",
+            "Competition Engineering"
+        ],
+        githubLink: "https://github.com/satvikh/autohdr-lenscorrection",
+        thumbnail: "autohdr.png"
     },
     {
         title: "Kaggle Titanic ML",
@@ -120,6 +143,20 @@ exports.projectsData = [
         ],
         githubLink: "https://github.com/KushagraBharti/HackTX-2024---F1-Optimization",
         thumbnail: "/f1Optimization.svg"
+    },
+    {
+        title: "DataDrive: Unified Insights for Data & Fuel Optimization",
+        summary: "A full-stack AI-driven analytics platform that integrates advanced ML models, real-time data observability, and interactive visualizations for fuel optimization.",
+        description: [
+            "Developed a modular Flask backend with multiple API endpoints for fuel efficiency prediction, car details retrieval, and clustering analysis using pre-trained Linear Regression and K-Means models.",
+            "Implemented robust services including scheduled anomaly detection with APScheduler, SHAP-based interpretability, and comprehensive data observability with automated logging.",
+            "Integrated advanced external services such as GPT-4 powered explanation generation for model outputs and Pinata for decentralized file storage, enhancing transparency and auditability.",
+            "Engineered end-to-end training pipelines for both regression (evaluated via MAE and R² metrics) and clustering models (using PCA for visualization), ensuring actionable insights.",
+            "Built a modern React dashboard featuring interactive D3.js charts, real-time fuel efficiency predictions, a 3D car model viewer via react-three-fiber, and dynamic cluster visualizations."
+        ],
+        tags: ["Flask", "Python", "Machine Learning", "Linear Regression", "KMeans", "APScheduler", "SHAP", "OpenAI", "Pinata", "React", "D3.js", "Three.js", "Data Analytics"],
+        githubLink: "https://github.com/KushagraBharti/HACKUTD-Data-Drive",
+        thumbnail: "/dataDrive.svg",
     },
     {
         title: "CircuitSeer (Circuit Solver)",
