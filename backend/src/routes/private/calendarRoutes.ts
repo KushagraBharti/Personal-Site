@@ -9,7 +9,7 @@ import {
 import {
   disconnectGoogleCalendarForUser,
   getCalendarStatusForUser,
-  processCalendarSyncJobs,
+  queueManualSyncForUser,
   queueFullBackfill,
   renewCalendarWatchForUser,
   upsertGoogleConnectionFromOAuth,
@@ -175,10 +175,10 @@ router.post("/list-sync", requireUser, async (req, res) => {
 router.post("/sync-now", requireUser, async (req, res) => {
   if (!isCalendarSyncEnabled()) return res.status(503).json({ error: "Calendar sync disabled" });
   try {
-    const results = await processCalendarSyncJobs({ userId: req.user!.id, batchSize: 40 });
-    const processed = results.length;
-    const failed = results.filter((item) => !item.ok).length;
-    return res.json({ ok: true, processed, failed });
+    const supabaseAdmin = getSupabaseAdmin();
+    await queueManualSyncForUser(supabaseAdmin, req.user!.id);
+    // Keep response shape stable for existing frontend.
+    return res.json({ ok: true, processed: 0, failed: 0, queued: true });
   } catch (error) {
     console.error("Failed to sync calendar now", error);
     return res.status(500).json({ error: "Failed to sync calendar" });

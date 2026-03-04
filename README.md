@@ -26,7 +26,7 @@ A dynamic, full-stack portfolio website to showcase my professional experience, 
 ## **Getting Started**
 
 ### **Prerequisites**
-- Node.js and Bun installed on your system
+- Bun installed on your system
 - Basic knowledge of JavaScript, TypeScript, and React
 
 ### **Setup**
@@ -56,7 +56,7 @@ VITE_SUPABASE_ANON_KEY=
 ```bash
 cd backend
 bun install
-Copy-Item .env.example .env
+cp .env.example .env
 ```
 
 ### Update `backend/.env` with values for

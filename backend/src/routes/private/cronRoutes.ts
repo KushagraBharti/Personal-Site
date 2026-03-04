@@ -15,7 +15,8 @@ router.get("/health", (req, res) => {
 const runCalendarSync = async (req: Request, res: Response) => {
   if (!isCalendarSyncEnabled()) return res.json({ ok: true, disabled: true });
   try {
-    const results = await processCalendarSyncJobs({ batchSize: 100 });
+    // Keep cron execution bounded for serverless limits.
+    const results = await processCalendarSyncJobs({ batchSize: 12 });
     return res.json({
       ok: true,
       processed: results.length,

@@ -35,6 +35,31 @@ const GOOGLE_WEBHOOK_URL = () => {
 
 const nowIso = () => new Date().toISOString();
 
+const formatSyncErrorMessage = (error: unknown) => {
+  const err = error as any;
+  const status = err?.response?.status;
+  const tokenErr = err?.response?.data?.error;
+  const tokenErrDescription = err?.response?.data?.error_description;
+  const apiErrMessage =
+    typeof err?.response?.data?.error?.message === "string"
+      ? err.response.data.error.message
+      : null;
+  const generic = error instanceof Error ? error.message : String(error);
+
+  if (status === 400 && tokenErr === "invalid_grant") {
+    return tokenErrDescription
+      ? `Google auth expired/revoked: ${tokenErrDescription}. Please reconnect Google Calendar.`
+      : "Google auth expired/revoked. Please reconnect Google Calendar.";
+  }
+  if (status === 401 || status === 403) {
+    return "Google authorization failed. Please reconnect Google Calendar.";
+  }
+  if (apiErrMessage) {
+    return apiErrMessage;
+  }
+  return generic;
+};
+
 const isAuthFatalSyncError = (error: unknown) => {
   const err = error as any;
   const status = err?.response?.status;
@@ -488,9 +513,13 @@ export const processCalendarSyncJobs = async (input?: { userId?: string; batchSi
     try {
       await processOneJob(supabaseAdmin, job);
       await completeSyncJob(supabaseAdmin, job.id);
+      await setConnectionHealth(supabaseAdmin, job.user_id, {
+        status: "connected",
+        last_error: null,
+      }).catch(() => {});
       results.push({ id: job.id, ok: true });
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = formatSyncErrorMessage(error);
       const retryDelay = computeRetryDelayInterval(job.attempt_count + 1);
       const authFatal = isAuthFatalSyncError(error);
       try {
@@ -649,13 +678,21 @@ export const renewExpiringCalendarWatches = async (input?: { userId?: string }) 
   for (const userId of usersToRenew) {
     try {
       await renewWatchForUser(supabaseAdmin, userId);
+      await setConnectionHealth(supabaseAdmin, userId, {
+        status: "connected",
+        last_error: null,
+      }).catch(() => {});
       results.push({ userId, ok: true });
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      await setConnectionHealth(supabaseAdmin, userId, {
-        status: "error",
-        last_error: message,
-      }).catch(() => {});
+      const message = formatSyncErrorMessage(err);
+      const authFatal = isAuthFatalSyncError(err);
+      await setConnectionHealth(
+        supabaseAdmin,
+        userId,
+        authFatal
+          ? { status: "error", last_error: message }
+          : { last_error: message }
+      ).catch(() => {});
       results.push({ userId, ok: false, error: message });
     }
   }
@@ -694,16 +731,58 @@ export const getCalendarStatusForUser = async (supabaseAdmin: SupabaseClient, us
   const { publicRow, secretsRow } = await loadCalendarConnection(supabaseAdmin, userId);
   const listSettings = await listUserSyncEnabledLists(supabaseAdmin, userId).catch(() => []);
 
+  let connectionRow = publicRow;
+  const canAutoRepairBinding =
+    !!connectionRow &&
+    !connectionRow.selected_calendar_id &&
+    !!secretsRow?.refresh_token_encrypted;
+
+  if (canAutoRepairBinding) {
+    try {
+      const { accessToken } = await getValidGoogleAccessToken(supabaseAdmin, userId);
+      const repairedCalendar = await ensureTasksCalendar({
+        accessToken,
+        preferredCalendarId: null,
+      });
+
+      const { data: repairedRow, error: repairedErr } = await supabaseAdmin
+        .from("tracker_google_calendar_connections_public")
+        .update({
+          selected_calendar_id: repairedCalendar.id,
+          selected_calendar_summary: repairedCalendar.summary,
+          status: "connected",
+          last_error: null,
+        })
+        .eq("user_id", userId)
+        .select("*")
+        .single();
+      if (!repairedErr && repairedRow) {
+        connectionRow = repairedRow as CalendarConnectionPublic;
+      }
+    } catch (error) {
+      const message = formatSyncErrorMessage(error);
+      await setConnectionHealth(supabaseAdmin, userId, { last_error: message }).catch(() => {});
+    }
+  }
+
   return {
-    connected:
-      !!publicRow &&
-      publicRow.status === "connected" &&
-      !!publicRow.selected_calendar_id &&
-      !!secretsRow?.refresh_token_encrypted,
-    connection: publicRow,
+    connected: !!connectionRow && !!secretsRow?.refresh_token_encrypted,
+    connection: connectionRow,
     watch_expires_at: secretsRow?.channel_expiration || null,
     list_sync_settings: listSettings,
   };
+};
+
+export const queueManualSyncForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
+  // Queue fast-return manual sync work and let cron workers process it.
+  await enqueueSyncJob(supabaseAdmin, {
+    userId,
+    jobType: "inbound_delta",
+    priority: 70,
+    payload: { source: "manual_sync_now" },
+    dedupeKey: `manual-inbound:${userId}:${new Date().toISOString().slice(0, 16)}`,
+  });
+  await queueFullBackfill(supabaseAdmin, userId);
 };
 
 export const normalizeDueAtForSync = (isoValue: string | null) => {
