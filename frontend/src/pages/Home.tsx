@@ -31,22 +31,31 @@ const SectionFallback: React.FC<{ title: string }> = ({ title }) => (
   </div>
 );
 
+type IdleWindow = Window & {
+  requestIdleCallback?: (
+    callback: IdleRequestCallback,
+    options?: IdleRequestOptions
+  ) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
+
 const Home: React.FC = () => {
   useEffect(() => {
     const preloadSections = () => sectionPrefetchers.forEach((loader) => loader());
-    const idle = (window as any).requestIdleCallback;
+    const idleWindow = window as IdleWindow;
+    const idle = idleWindow.requestIdleCallback;
     let idleId: number | undefined;
     let timeoutId: number | undefined;
 
     if (typeof idle === "function") {
-      idleId = idle(preloadSections, { timeout: 1500 }) as number;
+      idleId = idle(preloadSections, { timeout: 1500 });
     } else {
       timeoutId = window.setTimeout(preloadSections, 600);
     }
 
     return () => {
       if (typeof idle === "function" && idleId) {
-        (window as any).cancelIdleCallback?.(idleId);
+        idleWindow.cancelIdleCallback?.(idleId);
       }
       if (timeoutId) {
         window.clearTimeout(timeoutId);

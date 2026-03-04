@@ -128,103 +128,6 @@ const PongGame: React.FC = () => {
     }
   };
 
-  const update = (dt: number) => {
-    // Smooth movement: update user paddle continuously based on key press
-    if (isUpPressed.current) {
-      gameState.current.userPaddleY -= userPaddleSpeed * dt;
-      if (gameState.current.userPaddleY < 0) gameState.current.userPaddleY = 0;
-    }
-    if (isDownPressed.current) {
-      gameState.current.userPaddleY += userPaddleSpeed * dt;
-      if (gameState.current.userPaddleY + paddleHeight > canvasHeight)
-        gameState.current.userPaddleY = canvasHeight - paddleHeight;
-    }
-    
-    // Update ball and other logic (as before)
-    gameState.current.ballX += gameState.current.ballVX * dt;
-    gameState.current.ballY += gameState.current.ballVY * dt;
-  
-    if (gameState.current.ballY < ballSize / 2 || gameState.current.ballY > canvasHeight - ballSize / 2) {
-      gameState.current.ballVY = -gameState.current.ballVY;
-      gameState.current.ballY = Math.max(ballSize / 2, Math.min(canvasHeight - ballSize / 2, gameState.current.ballY));
-    }
-  
-    // Collision with user paddle
-    if (
-      gameState.current.ballVX < 0 &&
-      gameState.current.ballX - ballSize / 2 < 4 + paddleWidth &&
-      gameState.current.ballY > gameState.current.userPaddleY &&
-      gameState.current.ballY < gameState.current.userPaddleY + paddleHeight
-    ) {
-      const hitOffset = (gameState.current.ballY - (gameState.current.userPaddleY + paddleHeight / 2)) / (paddleHeight / 2);
-      gameState.current.ballVX = Math.abs(gameState.current.ballVX);
-      gameState.current.ballVY = hitOffset * 160;
-      gameState.current.ballX = 4 + paddleWidth + ballSize / 2;
-    }
-  
-    // Collision with AI paddle
-    if (
-      gameState.current.ballVX > 0 &&
-      gameState.current.ballX + ballSize / 2 > canvasWidth - paddleWidth - 4 &&
-      gameState.current.ballY > gameState.current.aiPaddleY &&
-      gameState.current.ballY < gameState.current.aiPaddleY + paddleHeight
-    ) {
-      const hitOffset = (gameState.current.ballY - (gameState.current.aiPaddleY + paddleHeight / 2)) / (paddleHeight / 2);
-      gameState.current.ballVX = -Math.abs(gameState.current.ballVX);
-      gameState.current.ballVY = hitOffset * 160;
-      gameState.current.ballX = canvasWidth - paddleWidth - 4 - ballSize / 2;
-    }
-  
-    // Scoring
-    if (gameState.current.ballX < -ballSize) {
-      const nextScore = aiScoreRef.current + 1;
-      aiScoreRef.current = nextScore;
-      setAiScore(nextScore);
-      if (nextScore >= winningScore) {
-        endGame();
-        return;
-      }
-      resetPositions();
-    }
-    if (gameState.current.ballX > canvasWidth + ballSize) {
-      const nextScore = userScoreRef.current + 1;
-      userScoreRef.current = nextScore;
-      setUserScore(nextScore);
-      if (nextScore >= winningScore) {
-        endGame();
-        return;
-      }
-      resetPositions();
-    }
-  
-    // Dynamic AI paddle movement (you can adjust multiplier for difficulty)
-    const aiCenter = gameState.current.aiPaddleY + paddleHeight / 2;
-    const diff = gameState.current.ballY - aiCenter;
-    const aiMove = Math.max(-aiPaddleSpeed * dt, Math.min(aiPaddleSpeed * dt, diff));
-    gameState.current.aiPaddleY += aiMove;
-    if (gameState.current.aiPaddleY < 0) gameState.current.aiPaddleY = 0;
-    if (gameState.current.aiPaddleY + paddleHeight > canvasHeight)
-      gameState.current.aiPaddleY = canvasHeight - paddleHeight;
-  };
-
-  const gameLoop = (timestamp: number) => {
-    if (!ctxRef.current) return;
-    if (!isGameActiveRef.current || isGameOverRef.current) return;
-
-    if (lastFrameTime.current === null) {
-      lastFrameTime.current = timestamp;
-    }
-    const deltaMs = Math.min(32, timestamp - lastFrameTime.current);
-    const dt = deltaMs / 1000;
-    lastFrameTime.current = timestamp;
-
-    update(dt);
-    draw(ctxRef.current);
-    if (isGameActiveRef.current && !isGameOverRef.current) {
-      animationFrameId.current = requestAnimationFrame(gameLoop);
-    }
-  };
-
   const isUpPressed = useRef(false);
   const isDownPressed = useRef(false);
   const userPaddleSpeed = 220;
@@ -290,7 +193,105 @@ const PongGame: React.FC = () => {
       return;
     }
 
-    animationFrameId.current = requestAnimationFrame(gameLoop);
+    const updateFrame = (dt: number) => {
+      if (isUpPressed.current) {
+        gameState.current.userPaddleY -= userPaddleSpeed * dt;
+        if (gameState.current.userPaddleY < 0) gameState.current.userPaddleY = 0;
+      }
+      if (isDownPressed.current) {
+        gameState.current.userPaddleY += userPaddleSpeed * dt;
+        if (gameState.current.userPaddleY + paddleHeight > canvasHeight)
+          gameState.current.userPaddleY = canvasHeight - paddleHeight;
+      }
+
+      gameState.current.ballX += gameState.current.ballVX * dt;
+      gameState.current.ballY += gameState.current.ballVY * dt;
+
+      if (gameState.current.ballY < ballSize / 2 || gameState.current.ballY > canvasHeight - ballSize / 2) {
+        gameState.current.ballVY = -gameState.current.ballVY;
+        gameState.current.ballY = Math.max(
+          ballSize / 2,
+          Math.min(canvasHeight - ballSize / 2, gameState.current.ballY)
+        );
+      }
+
+      if (
+        gameState.current.ballVX < 0 &&
+        gameState.current.ballX - ballSize / 2 < 4 + paddleWidth &&
+        gameState.current.ballY > gameState.current.userPaddleY &&
+        gameState.current.ballY < gameState.current.userPaddleY + paddleHeight
+      ) {
+        const hitOffset =
+          (gameState.current.ballY - (gameState.current.userPaddleY + paddleHeight / 2)) /
+          (paddleHeight / 2);
+        gameState.current.ballVX = Math.abs(gameState.current.ballVX);
+        gameState.current.ballVY = hitOffset * 160;
+        gameState.current.ballX = 4 + paddleWidth + ballSize / 2;
+      }
+
+      if (
+        gameState.current.ballVX > 0 &&
+        gameState.current.ballX + ballSize / 2 > canvasWidth - paddleWidth - 4 &&
+        gameState.current.ballY > gameState.current.aiPaddleY &&
+        gameState.current.ballY < gameState.current.aiPaddleY + paddleHeight
+      ) {
+        const hitOffset =
+          (gameState.current.ballY - (gameState.current.aiPaddleY + paddleHeight / 2)) /
+          (paddleHeight / 2);
+        gameState.current.ballVX = -Math.abs(gameState.current.ballVX);
+        gameState.current.ballVY = hitOffset * 160;
+        gameState.current.ballX = canvasWidth - paddleWidth - 4 - ballSize / 2;
+      }
+
+      if (gameState.current.ballX < -ballSize) {
+        const nextScore = aiScoreRef.current + 1;
+        aiScoreRef.current = nextScore;
+        setAiScore(nextScore);
+        if (nextScore >= winningScore) {
+          endGame();
+          return;
+        }
+        resetPositions();
+      }
+      if (gameState.current.ballX > canvasWidth + ballSize) {
+        const nextScore = userScoreRef.current + 1;
+        userScoreRef.current = nextScore;
+        setUserScore(nextScore);
+        if (nextScore >= winningScore) {
+          endGame();
+          return;
+        }
+        resetPositions();
+      }
+
+      const aiCenter = gameState.current.aiPaddleY + paddleHeight / 2;
+      const diff = gameState.current.ballY - aiCenter;
+      const aiMove = Math.max(-aiPaddleSpeed * dt, Math.min(aiPaddleSpeed * dt, diff));
+      gameState.current.aiPaddleY += aiMove;
+      if (gameState.current.aiPaddleY < 0) gameState.current.aiPaddleY = 0;
+      if (gameState.current.aiPaddleY + paddleHeight > canvasHeight)
+        gameState.current.aiPaddleY = canvasHeight - paddleHeight;
+    };
+
+    const tick = (timestamp: number) => {
+      if (!ctxRef.current) return;
+      if (!isGameActiveRef.current || isGameOverRef.current) return;
+
+      if (lastFrameTime.current === null) {
+        lastFrameTime.current = timestamp;
+      }
+      const deltaMs = Math.min(32, timestamp - lastFrameTime.current);
+      const dt = deltaMs / 1000;
+      lastFrameTime.current = timestamp;
+
+      updateFrame(dt);
+      draw(ctxRef.current);
+      if (isGameActiveRef.current && !isGameOverRef.current) {
+        animationFrameId.current = requestAnimationFrame(tick);
+      }
+    };
+
+    animationFrameId.current = requestAnimationFrame(tick);
     return () => {
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);

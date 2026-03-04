@@ -59,7 +59,7 @@ const WeatherCard: React.FC = () => {
           timeout: 4000,
         });
         setWeather(weatherRes.data);
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!controller.signal.aborted) {
           console.error("Error fetching weather:", err);
           setError("Unable to load weather data");

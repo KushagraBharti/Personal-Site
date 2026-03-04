@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import {
   createTask,
   createTaskList,
+  getCalendarSyncRunStatus,
   disconnectCalendar,
   deleteTask,
   deleteTaskList,
@@ -29,6 +30,7 @@ import {
   TaskUpdateInput,
 } from "./types";
 import { useTrackerContext } from "../../shared/hooks/useTrackerContext";
+import { isDateOnlyIso, toIsoOrNull } from "./dueDateTime";
 
 const ALL_LISTS_KEY = "all";
 const DEFAULT_LIST_NAME = "General";
@@ -43,14 +45,6 @@ const LIST_COLOR_POOL = [
   "#FF9500",
   "#0066FF",
 ];
-
-const toIsoOrNull = (dateTimeLocal: string): string | null => {
-  const trimmed = dateTimeLocal.trim();
-  if (!trimmed) return null;
-  const parsed = new Date(trimmed);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return parsed.toISOString();
-};
 
 const isValidIanaTimeZone = (timeZone: string | null | undefined) => {
   if (!timeZone) return false;
@@ -78,8 +72,9 @@ const computeNextDueAt = (task: TrackerTask): string | null => {
   const recurrence = task.recurrence_type;
   if (recurrence === "none") return null;
 
+  const hasDateOnlyDueAt = isDateOnlyIso(task.due_at);
   const zone = normalizeTaskTimeZone(task.due_timezone) || getBrowserTimeZone();
-  let next = baseUtc.setZone(zone);
+  let next = hasDateOnlyDueAt ? baseUtc : baseUtc.setZone(zone);
 
   if (recurrence === "daily") {
     next = next.plus({ days: 1 });
@@ -99,7 +94,7 @@ const computeNextDueAt = (task: TrackerTask): string | null => {
     }
   }
 
-  const nextUtc = next.toUTC();
+  const nextUtc = hasDateOnlyDueAt ? next : next.toUTC();
   if (task.recurrence_ends_at) {
     const endUtc = DateTime.fromISO(task.recurrence_ends_at, { zone: "utc" });
     if (endUtc.isValid && nextUtc.toMillis() > endUtc.toMillis()) {
@@ -152,6 +147,7 @@ export const useTasksHubModule = () => {
   } | null>(null);
   const syncTimerRef = useRef<number | null>(null);
   const seededDueTimezoneByUserRef = useRef<Record<string, boolean>>({});
+  const clearedDateOnlyTimezoneByUserRef = useRef<Record<string, boolean>>({});
 
   const runWithLoading = useCallback(
     async <T>(fn: () => Promise<T>) => {
@@ -216,7 +212,9 @@ export const useTasksHubModule = () => {
     if (seededDueTimezoneByUserRef.current[userId]) return;
     if (tasks.length === 0) return;
 
-    const missingTimezoneTasks = tasks.filter((task) => !!task.due_at && !task.due_timezone);
+    const missingTimezoneTasks = tasks.filter(
+      (task) => !!task.due_at && !task.due_timezone && !isDateOnlyIso(task.due_at)
+    );
     seededDueTimezoneByUserRef.current[userId] = true;
     if (missingTimezoneTasks.length === 0) return;
 
@@ -237,6 +235,35 @@ export const useTasksHubModule = () => {
         setTasks((prev) =>
           prev.map((task) => successfulById.get(task.id) || task)
         );
+      }
+    })();
+  }, [supabase, tasks, userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+    if (clearedDateOnlyTimezoneByUserRef.current[userId]) return;
+    if (tasks.length === 0) return;
+
+    const dateOnlyTasksWithTimezone = tasks.filter(
+      (task) => !!task.due_at && isDateOnlyIso(task.due_at) && !!task.due_timezone
+    );
+    clearedDateOnlyTimezoneByUserRef.current[userId] = true;
+    if (dateOnlyTasksWithTimezone.length === 0) return;
+
+    void (async () => {
+      const results = await Promise.all(
+        dateOnlyTasksWithTimezone.map((task) =>
+          updateTask(supabase, userId, task.id, { due_timezone: null })
+        )
+      );
+      const successfulById = new Map<string, TrackerTask>();
+      results.forEach((result) => {
+        if (!result.error && result.data) {
+          successfulById.set(result.data.id, result.data as TrackerTask);
+        }
+      });
+      if (successfulById.size > 0) {
+        setTasks((prev) => prev.map((task) => successfulById.get(task.id) || task));
       }
     })();
   }, [supabase, tasks, userId]);
@@ -464,11 +491,30 @@ export const useTasksHubModule = () => {
       syncTimerRef.current = window.setTimeout(async () => {
         try {
           const result = await triggerCalendarSyncNow(session.access_token);
-          setCalendarSyncResult({
-            processed: result.processed,
-            failed: result.failed,
-            failures: result.failures || [],
-          });
+          if (!result.run_id) {
+            setCalendarSyncResult({
+              processed: result.processed ?? 0,
+              failed: result.failed ?? 0,
+              failures: result.failures || [],
+            });
+            await loadCalendarStatus();
+            return;
+          }
+
+          for (let attempt = 0; attempt < 3; attempt += 1) {
+            const run = await getCalendarSyncRunStatus(session.access_token, result.run_id);
+            setCalendarSyncResult({
+              processed: run.processed,
+              failed: run.failed,
+              failures: run.failures || [],
+            });
+            if (run.done) {
+              await loadCalendarStatus();
+              return;
+            }
+            await new Promise((resolve) => window.setTimeout(resolve, 650));
+          }
+
           await loadCalendarStatus();
         } catch (err) {
           const message = err instanceof Error ? err.message : "Calendar sync failed";
@@ -502,7 +548,10 @@ export const useTasksHubModule = () => {
         title: cleanedTitle,
         details: draft.details.trim() || null,
         due_at: dueAtIso,
-        due_timezone: dueAtIso ? normalizeTaskTimeZone(draft.due_timezone) || getBrowserTimeZone() : null,
+        due_timezone:
+          dueAtIso && !isDateOnlyIso(dueAtIso)
+            ? normalizeTaskTimeZone(draft.due_timezone) || getBrowserTimeZone()
+            : null,
         is_completed: false,
         completed_at: null,
         recurrence_type: recurrenceType,
@@ -545,13 +594,15 @@ export const useTasksHubModule = () => {
       if (touchesRecurrence) {
         const nextDueAt =
           payload.due_at !== undefined ? payload.due_at : (currentTask?.due_at ?? null);
-        if (nextDueAt) {
+        if (nextDueAt && !isDateOnlyIso(nextDueAt)) {
           const nextTimeZone =
             payload.due_timezone !== undefined
               ? normalizeTaskTimeZone(payload.due_timezone) || getBrowserTimeZone()
               : normalizeTaskTimeZone(currentTask?.due_timezone) || getBrowserTimeZone();
           payload.due_timezone = nextTimeZone;
-        } else if (touchesDueAt && payload.due_at === null) {
+        } else if (nextDueAt && isDateOnlyIso(nextDueAt)) {
+          payload.due_timezone = null;
+        } else if (touchesDueAt || payload.due_timezone !== undefined) {
           payload.due_timezone = null;
         }
       }
@@ -623,7 +674,9 @@ export const useTasksHubModule = () => {
             title: task.title,
             details: task.details,
             due_at: nextDueAt,
-            due_timezone: normalizeTaskTimeZone(task.due_timezone) || getBrowserTimeZone(),
+            due_timezone: isDateOnlyIso(nextDueAt)
+              ? null
+              : normalizeTaskTimeZone(task.due_timezone) || getBrowserTimeZone(),
             is_completed: false,
             completed_at: null,
             recurrence_type: task.recurrence_type,
@@ -837,11 +890,43 @@ export const useTasksHubModule = () => {
     setCalendarBusy(true);
     try {
       const result = await triggerCalendarSyncNow(session.access_token);
-      setCalendarSyncResult({
-        processed: result.processed,
-        failed: result.failed,
-        failures: result.failures || [],
-      });
+      if (!result.run_id) {
+        setCalendarSyncResult({
+          processed: result.processed ?? 0,
+          failed: result.failed ?? 0,
+          failures: result.failures || [],
+        });
+        await loadCalendarStatus();
+        return true;
+      }
+
+      const startedAt = Date.now();
+      const timeoutMs = 15_000;
+      let lastSnapshot = null as null | {
+        processed: number;
+        failed: number;
+        failures: Array<{ id: number; error: string }>;
+      };
+
+      while (Date.now() - startedAt < timeoutMs) {
+        const run = await getCalendarSyncRunStatus(session.access_token, result.run_id);
+        const nextSnapshot = {
+          processed: run.processed,
+          failed: run.failed,
+          failures: run.failures || [],
+        };
+        lastSnapshot = nextSnapshot;
+        setCalendarSyncResult(nextSnapshot);
+        if (run.done) {
+          await loadCalendarStatus();
+          return true;
+        }
+        await new Promise((resolve) => window.setTimeout(resolve, 700));
+      }
+
+      if (lastSnapshot) {
+        setCalendarSyncResult(lastSnapshot);
+      }
       await loadCalendarStatus();
       return true;
     } catch (err) {

@@ -404,7 +404,22 @@ const SnapshotModal: React.FC<{
   onClose: () => void;
   onSave: () => Promise<void>;
 }> = ({ weekLabel, draft, onFieldChange, fieldErrors, submitFeedback, isSaving, onClose, onSave }) => {
-  const fields = [
+  type SnapshotFieldKey =
+    | "build_milestone"
+    | "best_demo_hook_url"
+    | "best_demo_walkthrough_url"
+    | "paid_work_progress"
+    | "traction_progress"
+    | "next_week_focus";
+  type SnapshotFieldConfig = {
+    key: SnapshotFieldKey;
+    label: string;
+    placeholder: string;
+    required?: boolean;
+    textarea?: boolean;
+  };
+
+  const fields: SnapshotFieldConfig[] = [
     {
       key: "build_milestone",
       label: "BUILD MILESTONE",
@@ -469,8 +484,10 @@ const SnapshotModal: React.FC<{
         </div>
 
         <div className="space-y-4">
-          {fields.map((field) => (
-            <div key={field.key}>
+          {fields.map((field) => {
+            const fieldValue = (draft[field.key] ?? "") as string;
+            return (
+              <div key={field.key}>
               <div className="flex items-center justify-between mb-2 gap-4">
                 <label className="neo-label text-xs">
                   {field.label}
@@ -478,7 +495,7 @@ const SnapshotModal: React.FC<{
                 </label>
                 {field.required && (
                   <span className="neo-label text-[10px] opacity-70">
-                    {(((draft as any)[field.key] ?? "") as string).length} chars
+                    {fieldValue.length} chars
                   </span>
                 )}
               </div>
@@ -487,7 +504,7 @@ const SnapshotModal: React.FC<{
                   className="neo-input"
                   rows={3}
                   placeholder={field.placeholder}
-                  value={(draft as any)[field.key] ?? ""}
+                  value={fieldValue}
                   onChange={(e) => onFieldChange(field.key, e.target.value)}
                   style={fieldErrors[field.key] ? { border: "4px solid var(--neo-red)" } : undefined}
                 />
@@ -495,7 +512,7 @@ const SnapshotModal: React.FC<{
                 <input
                   className="neo-input"
                   placeholder={field.placeholder}
-                  value={(draft as any)[field.key] ?? ""}
+                  value={fieldValue}
                   onChange={(e) => onFieldChange(field.key, e.target.value)}
                   style={fieldErrors[field.key] ? { border: "4px solid var(--neo-red)" } : undefined}
                 />
@@ -506,7 +523,8 @@ const SnapshotModal: React.FC<{
                 </p>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {submitFeedback?.kind === "error" && (

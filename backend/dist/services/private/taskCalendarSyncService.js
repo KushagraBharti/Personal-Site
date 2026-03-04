@@ -20,7 +20,7 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.normalizeDueAtForSync = exports.queueManualSyncForUser = exports.getCalendarStatusForUser = exports.upsertListSyncSetting = exports.listUserSyncEnabledLists = exports.renewExpiringCalendarWatches = exports.disconnectGoogleCalendarForUser = exports.upsertGoogleConnectionFromOAuth = exports.queueFullBackfill = exports.processCalendarSyncJobs = exports.renewCalendarWatchForUser = void 0;
+exports.normalizeDueAtForSync = exports.getManualSyncRunStatus = exports.queueManualSyncForUser = exports.getCalendarStatusForUser = exports.upsertListSyncSetting = exports.listUserSyncEnabledLists = exports.renewExpiringCalendarWatches = exports.disconnectGoogleCalendarForUser = exports.upsertGoogleConnectionFromOAuth = exports.queueFullBackfill = exports.processCalendarSyncJobs = exports.renewCalendarWatchForUser = void 0;
 const crypto_1 = require("crypto");
 const calendarSyncQueueService_1 = require("./calendarSyncQueueService");
 const googleCalendarApiService_1 = require("./googleCalendarApiService");
@@ -32,6 +32,7 @@ const GOOGLE_WEBHOOK_URL = () => {
     return value;
 };
 const nowIso = () => new Date().toISOString();
+const createManualRunId = () => (0, crypto_1.randomBytes)(12).toString("hex");
 const formatSyncErrorMessage = (error) => {
     var _a, _b, _c, _d, _e, _f, _g, _h;
     const err = error;
@@ -735,17 +736,55 @@ const getCalendarStatusForUser = (supabaseAdmin, userId) => __awaiter(void 0, vo
 });
 exports.getCalendarStatusForUser = getCalendarStatusForUser;
 const queueManualSyncForUser = (supabaseAdmin, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    // Queue fast-return manual sync work and let cron workers process it.
+    const runId = createManualRunId();
+    // Queue fast-return manual sync work and let workers process it.
     yield (0, calendarSyncQueueService_1.enqueueSyncJob)(supabaseAdmin, {
         userId,
         jobType: "inbound_delta",
         priority: 70,
-        payload: { source: "manual_sync_now" },
-        dedupeKey: `manual-inbound:${userId}:${new Date().toISOString().slice(0, 16)}`,
+        payload: { source: "manual_sync_now", run_id: runId },
+        dedupeKey: `manual-inbound:${userId}:${runId}`,
     });
-    yield (0, exports.queueFullBackfill)(supabaseAdmin, userId);
+    yield (0, calendarSyncQueueService_1.enqueueSyncJob)(supabaseAdmin, {
+        userId,
+        jobType: "full_backfill",
+        priority: 50,
+        payload: { source: "manual_sync_now", run_id: runId },
+        dedupeKey: `manual-backfill:${userId}:${runId}`,
+    });
+    return runId;
 });
 exports.queueManualSyncForUser = queueManualSyncForUser;
+const getManualSyncRunStatus = (supabaseAdmin, userId, runId) => __awaiter(void 0, void 0, void 0, function* () {
+    const { data, error } = yield supabaseAdmin
+        .from("tracker_google_sync_jobs")
+        .select("id,status,last_error")
+        .eq("user_id", userId)
+        .contains("payload", { run_id: runId })
+        .order("id", { ascending: true });
+    if (error)
+        throw new Error(error.message);
+    const jobs = (data !== null && data !== void 0 ? data : []);
+    const total = jobs.length;
+    const processed = jobs.filter((job) => job.status === "done").length;
+    const failedRows = jobs.filter((job) => job.status === "failed" || job.status === "dead");
+    const failed = failedRows.length;
+    const pending = jobs.filter((job) => job.status === "pending").length;
+    const running = jobs.filter((job) => job.status === "running").length;
+    return {
+        run_id: runId,
+        total,
+        processed,
+        failed,
+        pending,
+        running,
+        done: total > 0 && pending === 0 && running === 0,
+        failures: failedRows
+            .slice(0, 10)
+            .map((job) => ({ id: job.id, error: job.last_error || "Unknown sync error" })),
+    };
+});
+exports.getManualSyncRunStatus = getManualSyncRunStatus;
 const normalizeDueAtForSync = (isoValue) => {
     if (!isoValue)
         return null;

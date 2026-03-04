@@ -6,7 +6,6 @@ This project now includes two-way Google Calendar sync for the Tracker Tasks mod
 
 1. Open Supabase SQL Editor.
 2. Run:
-   - `backend/sql/calendar_sync_schema.sql`
    - `backend/sql/2026-03-04_tracker_tasks_due_timezone.sql`
    - `backend/sql/2026-03-04_tracker_google_sync_jobs_fk_fix.sql`
 3. Verify tables exist:
@@ -23,6 +22,7 @@ This project now includes two-way Google Calendar sync for the Tracker Tasks mod
 3. Configure OAuth consent screen:
    - User type: External
    - Add test users if still in testing mode
+   - For longer-lived refresh-token behavior, move Publishing Status to **In production**
 4. Create OAuth Client ID (Web application).
 5. Add redirect URIs:
    - Local: `http://localhost:5000/api/private/calendar/google/callback`
@@ -70,6 +70,8 @@ Notes:
    - OAuth callback auto-creates/selects calendar named `Tracker Tasks`
 3. For each list to sync, enable the new sync checkbox in the list row.
 4. Use **Sync now** for immediate processing.
+   - `POST /api/private/calendar/sync-now` now queues and returns a `run_id`
+   - Poll `GET /api/private/calendar/sync-run/:runId` for pass/fail progress and job-level errors
 
 ## 6) Behavior implemented
 

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, SetURLSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { Session, SupabaseClient } from "@supabase/supabase-js";
 import { trackerModules, defaultModuleId } from "./registry";
 import { TrackerProvider } from "./shared/hooks/useTrackerContext";
 import { useTrackerAuth } from "./shared/hooks/useTrackerAuth";
@@ -318,8 +319,8 @@ const SetupNeededScreen: React.FC = () => {
 // ============================================================================
 
 const TrackerLayout: React.FC<{
-  session: any;
-  supabase: any;
+  session: Session;
+  supabase: SupabaseClient;
   signOut: () => void;
   children: React.ReactNode;
   activeModuleId: TrackerModuleId;
@@ -328,7 +329,7 @@ const TrackerLayout: React.FC<{
   startLoading: () => void;
   stopLoading: () => void;
   searchParams: URLSearchParams;
-  setSearchParams: (params: URLSearchParams, options?: { replace?: boolean }) => void;
+  setSearchParams: SetURLSearchParams;
 }> = ({
   session,
   supabase,

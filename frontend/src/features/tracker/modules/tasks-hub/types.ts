@@ -106,9 +106,25 @@ export interface CalendarConnectionState {
 
 export interface SyncNowResult {
   ok: boolean;
+  run_id?: string | null;
+  processed?: number;
+  failed?: number;
+  queued?: boolean;
+  failures?: Array<{
+    id: number;
+    error: string;
+  }>;
+}
+
+export interface CalendarSyncRunStatus {
+  run_id: string;
+  total: number;
   processed: number;
   failed: number;
-  failures?: Array<{
+  pending: number;
+  running: number;
+  done: boolean;
+  failures: Array<{
     id: number;
     error: string;
   }>;

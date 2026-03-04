@@ -1,5 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import {
+  CalendarSyncRunStatus,
   CalendarConnectionState,
   ListUpdateInput,
   SyncNowResult,
@@ -43,8 +44,11 @@ const getAuthHeaders = (accessToken: string) => ({
   Authorization: `Bearer ${accessToken}`,
 });
 
-const isMissingDueTimezoneColumnError = (error: any) => {
-  const message = typeof error?.message === "string" ? error.message.toLowerCase() : "";
+const isMissingDueTimezoneColumnError = (error: unknown) => {
+  const message =
+    typeof error === "object" && error !== null && "message" in error
+      ? String((error as { message?: unknown }).message ?? "").toLowerCase()
+      : "";
   return message.includes("due_timezone") && message.includes("column");
 };
 
@@ -276,6 +280,22 @@ export const triggerCalendarSyncNow = async (accessToken: string): Promise<SyncN
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || "Failed to sync calendar");
+  }
+  return res.json();
+};
+
+export const getCalendarSyncRunStatus = async (
+  accessToken: string,
+  runId: string
+): Promise<CalendarSyncRunStatus> => {
+  const encodedRunId = encodeURIComponent(runId);
+  const res = await fetch(`${API_BASE}/api/private/calendar/sync-run/${encodedRunId}`, {
+    method: "GET",
+    headers: getAuthHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Failed to fetch calendar sync run status");
   }
   return res.json();
 };

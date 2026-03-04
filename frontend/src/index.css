@@ -140,13 +140,3 @@ body {
   box-shadow: inset 0 0 40px rgba(15, 23, 42, 0.35);
 }
 
-/* 10. Custom Cursor Example */
-body, button, a {
-  cursor: url('custom-cursor.svg'), auto;
-}
-
-.cursor-interactive,
-a:hover,
-button:hover {
-  cursor: url('custom-cursor-link.svg'), pointer;
-}

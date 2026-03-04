@@ -10,6 +10,7 @@ import {
   TaskSortMode,
   TrackerTask,
 } from "../types";
+import { isDateOnlyIso, toIsoOrNull } from "../dueDateTime";
 import "../../../styles/neo-brutal.css";
 import "./tasks-hub.css";
 
@@ -28,36 +29,12 @@ const RECURRENCE_OPTIONS: Array<{ value: RecurrenceType; label: string }> = [
   { value: "custom", label: "Custom" },
 ];
 
-const DATE_ONLY_MARKER_MS = 777;
-
 const toLocalDateTimeInput = (isoString: string | null | undefined) => {
   if (!isoString) return "";
   const date = new Date(isoString);
   if (Number.isNaN(date.getTime())) return "";
   const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
   return local.toISOString().slice(0, 16);
-};
-
-const toIsoOrNull = (dateTimeLocal: string) => {
-  const trimmed = dateTimeLocal.trim();
-  if (!trimmed) return null;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-    const parsedDate = new Date(`${trimmed}T12:00`);
-    if (Number.isNaN(parsedDate.getTime())) return null;
-    parsedDate.setMilliseconds(DATE_ONLY_MARKER_MS);
-    return parsedDate.toISOString();
-  }
-  const parsed = new Date(trimmed);
-  if (Number.isNaN(parsed.getTime())) return null;
-  parsed.setMilliseconds(0);
-  return parsed.toISOString();
-};
-
-const isDateOnlyIso = (isoString: string | null | undefined) => {
-  if (!isoString) return false;
-  const parsed = new Date(isoString);
-  if (Number.isNaN(parsed.getTime())) return false;
-  return parsed.getMilliseconds() === DATE_ONLY_MARKER_MS;
 };
 
 const toLocalDateInput = (isoString: string | null | undefined) => {

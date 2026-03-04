@@ -616,11 +616,12 @@ const PipelineTracker: React.FC = () => {
   );
 
   useEffect(() => {
+    const timeoutMap = saveTimeoutRef.current;
     return () => {
-      saveTimeoutRef.current.forEach((timeoutId) => {
+      timeoutMap.forEach((timeoutId) => {
         window.clearTimeout(timeoutId);
       });
-      saveTimeoutRef.current.clear();
+      timeoutMap.clear();
     };
   }, []);
 

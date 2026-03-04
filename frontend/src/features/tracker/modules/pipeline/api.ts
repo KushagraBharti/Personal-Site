@@ -16,7 +16,12 @@ export const savePipelineItem = async (
   userId: string,
   item: Partial<PipelineItem> & { type: PipelineType }
 ) => {
-  const payload: any = {
+  const payload: Partial<PipelineItem> & {
+    user_id: string;
+    links: string[];
+    archived: boolean;
+    type: PipelineType;
+  } = {
     ...item,
     user_id: userId,
     links: Array.isArray(item.links) ? item.links : typeof item.links === "string" ? [item.links] : [],
