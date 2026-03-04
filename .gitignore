@@ -7,6 +7,9 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+# Keep backend build output trackable in git (requested).
+!backend/dist/
+!backend/dist/**
 *.local
 **/package-lock.json
 **/yarn.lock

@@ -52,5 +52,9 @@ export const handleGoogleWebhook = async (
     },
     dedupeKey: `inbound:${secretRow.user_id}:${resourceId}:${new Date().toISOString().slice(0, 16)}`,
   });
-};
 
+  return {
+    userId: secretRow.user_id as string,
+    resourceState: resourceState || "exists",
+  };
+};

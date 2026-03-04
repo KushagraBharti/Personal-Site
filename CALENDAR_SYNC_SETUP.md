@@ -47,10 +47,17 @@ Add these in backend environment (see `backend/.env.example`):
 
 Call these endpoints with `Authorization: Bearer <CRON_SECRET>`:
 
-- Every 1 minute:
+- Daily fallback (Vercel Hobby-compatible):
   - `POST /api/private/cron/calendar-sync`
-- Every 30 minutes:
+- Daily watch renew:
   - `POST /api/private/cron/calendar-watch-renew`
+
+Notes:
+- On Vercel Hobby, cron schedules must run at most once per day.
+- Near-real-time sync is handled by:
+  - Google webhook events (`/api/private/calendar/google/webhook`)
+  - User-triggered sync (`/api/private/calendar/sync-now`, called by app actions)
+- Cron is now a safety fallback for catch-up + watch maintenance.
 
 ## 5) App usage flow
 

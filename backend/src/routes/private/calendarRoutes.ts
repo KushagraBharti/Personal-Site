@@ -9,6 +9,7 @@ import {
 import {
   disconnectGoogleCalendarForUser,
   getCalendarStatusForUser,
+  processCalendarSyncJobs,
   queueManualSyncForUser,
   queueFullBackfill,
   renewCalendarWatchForUser,
@@ -28,7 +29,13 @@ router.post("/google/webhook", async (req, res) => {
   if (!isCalendarSyncEnabled()) return res.status(200).json({ ok: true, disabled: true });
   try {
     const supabaseAdmin = getSupabaseAdmin();
-    await handleGoogleWebhook(supabaseAdmin, req.headers as Record<string, string | string[] | undefined>);
+    const webhookMeta = await handleGoogleWebhook(
+      supabaseAdmin,
+      req.headers as Record<string, string | string[] | undefined>
+    );
+    // Hobby-friendly: process a small bounded batch immediately so we do not depend
+    // on high-frequency platform crons for webhook-driven updates.
+    await processCalendarSyncJobs({ userId: webhookMeta.userId, batchSize: 6 });
     return res.status(200).json({ ok: true });
   } catch (error) {
     console.error("Google webhook handling failed", error);
@@ -177,8 +184,10 @@ router.post("/sync-now", requireUser, async (req, res) => {
   try {
     const supabaseAdmin = getSupabaseAdmin();
     await queueManualSyncForUser(supabaseAdmin, req.user!.id);
-    // Keep response shape stable for existing frontend.
-    return res.json({ ok: true, processed: 0, failed: 0, queued: true });
+    const processedResults = await processCalendarSyncJobs({ userId: req.user!.id, batchSize: 8 });
+    const processed = processedResults.length;
+    const failed = processedResults.filter((item) => !item.ok).length;
+    return res.json({ ok: true, processed, failed, queued: true });
   } catch (error) {
     console.error("Failed to sync calendar now", error);
     return res.status(500).json({ error: "Failed to sync calendar" });
