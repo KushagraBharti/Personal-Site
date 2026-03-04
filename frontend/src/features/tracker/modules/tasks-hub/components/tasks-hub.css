@@ -227,6 +227,7 @@
 .tasks-hub .tasks-select,
 .tasks-hub .tasks-textarea {
   width: 100%;
+  min-width: 0;
   border: 3px solid var(--neo-black);
   background: var(--tasks-panel-alt);
   color: var(--neo-black);
@@ -609,15 +610,15 @@
 
 .tasks-hub .tasks-due-inputs {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 118px;
+  grid-template-columns: minmax(132px, 1fr) minmax(102px, 0.85fr);
   gap: 6px;
 }
 
 .tasks-hub .tasks-schedule-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(170px, 220px);
+  grid-template-columns: minmax(0, 1.35fr) minmax(150px, 1fr);
   gap: 6px;
-  align-items: end;
+  align-items: start;
 }
 
 /* ============================================================================
@@ -645,8 +646,35 @@
   width: 100%;
 }
 
+.tasks-hub .tasks-due-field,
 .tasks-hub .tasks-repeat-field {
   min-width: 0;
+  width: 100%;
+}
+
+.tasks-hub .tasks-due-field .neo-label,
+.tasks-hub .tasks-repeat-field .neo-label {
+  display: block;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.tasks-hub .tasks-repeat-field .tasks-select,
+.tasks-hub .tasks-due-inputs .tasks-input {
+  min-width: 0;
+}
+
+.tasks-hub .tasks-due-inputs .tasks-input {
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+.tasks-hub .tasks-due-inputs input[type="date"] {
+  min-width: 132px;
+}
+
+.tasks-hub .tasks-due-inputs input[type="time"] {
+  min-width: 102px;
 }
 
 .tasks-hub .tasks-recurrence-until {

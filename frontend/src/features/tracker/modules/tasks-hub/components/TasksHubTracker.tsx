@@ -1188,19 +1188,22 @@ const TasksHubTracker: React.FC = () => {
                               onChange={(e) => setDraft(list.id, null, { details: e.target.value })}
                             />
                             <div className="tasks-schedule-row">
-                              <div className="tasks-due-inputs">
-                                <input
-                                  className="tasks-input"
-                                  type="date"
-                                  value={getDueParts(topDraft.due_at).date}
-                                  onChange={(e) => setDraft(list.id, null, { due_at: setDueDatePart(topDraft.due_at, e.target.value) })}
-                                />
-                                <input
-                                  className="tasks-input"
-                                  type="time"
-                                  value={getDueParts(topDraft.due_at).time}
-                                  onChange={(e) => setDraft(list.id, null, { due_at: setDueTimePart(topDraft.due_at, e.target.value) })}
-                                />
+                              <div className="tasks-recurrence-item tasks-due-field">
+                                <label className="neo-label">Due</label>
+                                <div className="tasks-due-inputs">
+                                  <input
+                                    className="tasks-input"
+                                    type="date"
+                                    value={getDueParts(topDraft.due_at).date}
+                                    onChange={(e) => setDraft(list.id, null, { due_at: setDueDatePart(topDraft.due_at, e.target.value) })}
+                                  />
+                                  <input
+                                    className="tasks-input"
+                                    type="time"
+                                    value={getDueParts(topDraft.due_at).time}
+                                    onChange={(e) => setDraft(list.id, null, { due_at: setDueTimePart(topDraft.due_at, e.target.value) })}
+                                  />
+                                </div>
                               </div>
                               <TaskRepeatField
                                 value={topDraft.recurrence_type}
@@ -1482,19 +1485,22 @@ const TasksHubTracker: React.FC = () => {
                                       onChange={(e) => setDraft(list.id, task.id, { title: e.target.value })}
                                     />
                                     <div className="tasks-schedule-row">
-                                      <div className="tasks-due-inputs">
-                                        <input
-                                          className="tasks-input"
-                                          type="date"
-                                          value={getDueParts(subtaskDraft.due_at).date}
-                                          onChange={(e) => setDraft(list.id, task.id, { due_at: setDueDatePart(subtaskDraft.due_at, e.target.value) })}
-                                        />
-                                        <input
-                                          className="tasks-input"
-                                          type="time"
-                                          value={getDueParts(subtaskDraft.due_at).time}
-                                          onChange={(e) => setDraft(list.id, task.id, { due_at: setDueTimePart(subtaskDraft.due_at, e.target.value) })}
-                                        />
+                                      <div className="tasks-recurrence-item tasks-due-field">
+                                        <label className="neo-label">Due</label>
+                                        <div className="tasks-due-inputs">
+                                          <input
+                                            className="tasks-input"
+                                            type="date"
+                                            value={getDueParts(subtaskDraft.due_at).date}
+                                            onChange={(e) => setDraft(list.id, task.id, { due_at: setDueDatePart(subtaskDraft.due_at, e.target.value) })}
+                                          />
+                                          <input
+                                            className="tasks-input"
+                                            type="time"
+                                            value={getDueParts(subtaskDraft.due_at).time}
+                                            onChange={(e) => setDraft(list.id, task.id, { due_at: setDueTimePart(subtaskDraft.due_at, e.target.value) })}
+                                          />
+                                        </div>
                                       </div>
                                       <TaskRepeatField
                                         value={subtaskDraft.recurrence_type}
@@ -1561,19 +1567,22 @@ const TasksHubTracker: React.FC = () => {
                                     <input className="tasks-input" value={edit.title} onChange={(e) => updateTaskEdit(task.id, { title: e.target.value })} />
                                     <textarea className="tasks-textarea" placeholder="Task details" value={edit.details} onChange={(e) => updateTaskEdit(task.id, { details: e.target.value })} />
                                     <div className="tasks-schedule-row">
-                                      <div className="tasks-due-inputs">
-                                        <input
-                                          className="tasks-input"
-                                          type="date"
-                                          value={getDueParts(edit.due_at).date}
-                                          onChange={(e) => updateTaskEdit(task.id, { due_at: setDueDatePart(edit.due_at, e.target.value) })}
-                                        />
-                                        <input
-                                          className="tasks-input"
-                                          type="time"
-                                          value={getDueParts(edit.due_at).time}
-                                          onChange={(e) => updateTaskEdit(task.id, { due_at: setDueTimePart(edit.due_at, e.target.value) })}
-                                        />
+                                      <div className="tasks-recurrence-item tasks-due-field">
+                                        <label className="neo-label">Due</label>
+                                        <div className="tasks-due-inputs">
+                                          <input
+                                            className="tasks-input"
+                                            type="date"
+                                            value={getDueParts(edit.due_at).date}
+                                            onChange={(e) => updateTaskEdit(task.id, { due_at: setDueDatePart(edit.due_at, e.target.value) })}
+                                          />
+                                          <input
+                                            className="tasks-input"
+                                            type="time"
+                                            value={getDueParts(edit.due_at).time}
+                                            onChange={(e) => updateTaskEdit(task.id, { due_at: setDueTimePart(edit.due_at, e.target.value) })}
+                                          />
+                                        </div>
                                       </div>
                                       <TaskRepeatField
                                         value={edit.recurrence_type}
