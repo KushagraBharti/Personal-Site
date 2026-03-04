@@ -610,15 +610,8 @@
 
 .tasks-hub .tasks-due-inputs {
   display: grid;
-  grid-template-columns: minmax(132px, 1fr) minmax(102px, 0.85fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
-}
-
-.tasks-hub .tasks-schedule-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(150px, 1fr);
-  gap: 6px;
-  align-items: start;
 }
 
 /* ============================================================================
@@ -665,16 +658,8 @@
 }
 
 .tasks-hub .tasks-due-inputs .tasks-input {
-  font-size: 12px;
+  font-size: 13px;
   padding: 6px 8px;
-}
-
-.tasks-hub .tasks-due-inputs input[type="date"] {
-  min-width: 132px;
-}
-
-.tasks-hub .tasks-due-inputs input[type="time"] {
-  min-width: 102px;
 }
 
 .tasks-hub .tasks-recurrence-until {
@@ -907,14 +892,6 @@
     min-width: calc(100vw - 28px);
     max-width: calc(100vw - 28px);
     max-height: calc(100vh - 250px);
-  }
-
-  .tasks-hub .tasks-due-inputs {
-    grid-template-columns: 1fr;
-  }
-
-  .tasks-hub .tasks-schedule-row {
-    grid-template-columns: 1fr;
   }
 
   .tasks-hub .tasks-recurrence-fields {

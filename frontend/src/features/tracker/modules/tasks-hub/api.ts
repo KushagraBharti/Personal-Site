@@ -129,6 +129,7 @@ export const createTask = async (client: SupabaseClient, payload: TaskCreateInpu
   // Backward compatibility while due_timezone migration rolls out.
   if (error && isMissingDueTimezoneColumnError(error)) {
     const { due_timezone, ...fallbackPayload } = payload;
+    void due_timezone;
     const retried = await client
       .from("tracker_tasks")
       .insert(fallbackPayload)
@@ -162,6 +163,7 @@ export const updateTask = async (
     Object.prototype.hasOwnProperty.call(updates, "due_timezone")
   ) {
     const { due_timezone, ...fallbackUpdates } = updates;
+    void due_timezone;
     const retried = await client
       .from("tracker_tasks")
       .update(fallbackUpdates)
