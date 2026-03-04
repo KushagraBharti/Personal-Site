@@ -3,7 +3,6 @@ import { DateTime } from "luxon";
 import {
   createTask,
   createTaskList,
-  getCalendarSyncRunStatus,
   disconnectCalendar,
   deleteTask,
   deleteTaskList,
@@ -491,30 +490,11 @@ export const useTasksHubModule = () => {
       syncTimerRef.current = window.setTimeout(async () => {
         try {
           const result = await triggerCalendarSyncNow(session.access_token);
-          if (!result.run_id) {
-            setCalendarSyncResult({
-              processed: result.processed ?? 0,
-              failed: result.failed ?? 0,
-              failures: result.failures || [],
-            });
-            await loadCalendarStatus();
-            return;
-          }
-
-          for (let attempt = 0; attempt < 3; attempt += 1) {
-            const run = await getCalendarSyncRunStatus(session.access_token, result.run_id);
-            setCalendarSyncResult({
-              processed: run.processed,
-              failed: run.failed,
-              failures: run.failures || [],
-            });
-            if (run.done) {
-              await loadCalendarStatus();
-              return;
-            }
-            await new Promise((resolve) => window.setTimeout(resolve, 650));
-          }
-
+          setCalendarSyncResult({
+            processed: result.processed,
+            failed: result.failed,
+            failures: result.failures || [],
+          });
           await loadCalendarStatus();
         } catch (err) {
           const message = err instanceof Error ? err.message : "Calendar sync failed";
@@ -890,43 +870,11 @@ export const useTasksHubModule = () => {
     setCalendarBusy(true);
     try {
       const result = await triggerCalendarSyncNow(session.access_token);
-      if (!result.run_id) {
-        setCalendarSyncResult({
-          processed: result.processed ?? 0,
-          failed: result.failed ?? 0,
-          failures: result.failures || [],
-        });
-        await loadCalendarStatus();
-        return true;
-      }
-
-      const startedAt = Date.now();
-      const timeoutMs = 15_000;
-      let lastSnapshot = null as null | {
-        processed: number;
-        failed: number;
-        failures: Array<{ id: number; error: string }>;
-      };
-
-      while (Date.now() - startedAt < timeoutMs) {
-        const run = await getCalendarSyncRunStatus(session.access_token, result.run_id);
-        const nextSnapshot = {
-          processed: run.processed,
-          failed: run.failed,
-          failures: run.failures || [],
-        };
-        lastSnapshot = nextSnapshot;
-        setCalendarSyncResult(nextSnapshot);
-        if (run.done) {
-          await loadCalendarStatus();
-          return true;
-        }
-        await new Promise((resolve) => window.setTimeout(resolve, 700));
-      }
-
-      if (lastSnapshot) {
-        setCalendarSyncResult(lastSnapshot);
-      }
+      setCalendarSyncResult({
+        processed: result.processed,
+        failed: result.failed,
+        failures: result.failures || [],
+      });
       await loadCalendarStatus();
       return true;
     } catch (err) {

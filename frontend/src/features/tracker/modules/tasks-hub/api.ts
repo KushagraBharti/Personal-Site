@@ -1,6 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import {
-  CalendarSyncRunStatus,
   CalendarConnectionState,
   ListUpdateInput,
   SyncNowResult,
@@ -280,22 +279,6 @@ export const triggerCalendarSyncNow = async (accessToken: string): Promise<SyncN
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || "Failed to sync calendar");
-  }
-  return res.json();
-};
-
-export const getCalendarSyncRunStatus = async (
-  accessToken: string,
-  runId: string
-): Promise<CalendarSyncRunStatus> => {
-  const encodedRunId = encodeURIComponent(runId);
-  const res = await fetch(`${API_BASE}/api/private/calendar/sync-run/${encodedRunId}`, {
-    method: "GET",
-    headers: getAuthHeaders(accessToken),
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || "Failed to fetch calendar sync run status");
   }
   return res.json();
 };

@@ -8,7 +8,6 @@ import {
 } from "../../services/private/googleCalendarOAuthService";
 import {
   disconnectGoogleCalendarForUser,
-  getManualSyncRunStatus,
   getCalendarStatusForUser,
   processCalendarSyncJobs,
   queueManualSyncForUser,
@@ -184,38 +183,32 @@ router.post("/sync-now", requireUser, async (req, res) => {
   if (!isCalendarSyncEnabled()) return res.status(503).json({ error: "Calendar sync disabled" });
   try {
     const supabaseAdmin = getSupabaseAdmin();
-    const runId = await queueManualSyncForUser(supabaseAdmin, req.user!.id);
+    await queueManualSyncForUser(supabaseAdmin, req.user!.id);
+    const aggregatedResults: Array<{ id: number; ok: boolean; error?: string }> = [];
+    for (let pass = 0; pass < 3; pass += 1) {
+      const batchResults = await processCalendarSyncJobs({ userId: req.user!.id, batchSize: 8 });
+      if (batchResults.length === 0) break;
+      aggregatedResults.push(...batchResults);
+    }
+
+    const processed = aggregatedResults.length;
+    const failureRows = aggregatedResults
+      .filter((item) => !item.ok)
+      .map((item) => ({
+        id: item.id,
+        error: item.error || "Unknown sync error",
+      }));
+    const failed = failureRows.length;
     return res.json({
       ok: true,
-      run_id: runId,
+      processed,
+      failed,
       queued: true,
-      processed: 0,
-      failed: 0,
-      failures: [],
+      failures: failureRows.slice(0, 5),
     });
   } catch (error) {
     console.error("Failed to sync calendar now", error);
     return res.status(500).json({ error: "Failed to sync calendar" });
-  }
-});
-
-router.get("/sync-run/:runId", requireUser, async (req, res) => {
-  if (!isCalendarSyncEnabled()) return res.status(503).json({ error: "Calendar sync disabled" });
-  const runId = typeof req.params.runId === "string" ? req.params.runId.trim() : "";
-  if (!runId) {
-    return res.status(400).json({ error: "runId is required" });
-  }
-
-  try {
-    const supabaseAdmin = getSupabaseAdmin();
-    // Poll-driven worker kick: process a tiny bounded batch so run polling advances
-    // without depending on high-frequency platform cron support.
-    await processCalendarSyncJobs({ userId: req.user!.id, batchSize: 4 }).catch(() => {});
-    const status = await getManualSyncRunStatus(supabaseAdmin, req.user!.id, runId);
-    return res.json(status);
-  } catch (error) {
-    console.error("Failed to fetch sync run status", error);
-    return res.status(500).json({ error: "Failed to fetch sync run status" });
   }
 });
 

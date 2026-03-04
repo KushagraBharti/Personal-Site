@@ -70,8 +70,8 @@ Notes:
    - OAuth callback auto-creates/selects calendar named `Tracker Tasks`
 3. For each list to sync, enable the new sync checkbox in the list row.
 4. Use **Sync now** for immediate processing.
-   - `POST /api/private/calendar/sync-now` now queues and returns a `run_id`
-   - Poll `GET /api/private/calendar/sync-run/:runId` for pass/fail progress and job-level errors
+   - `POST /api/private/calendar/sync-now` enqueues + processes a bounded batch immediately
+   - Response includes processed/failed counts and top failure messages
 
 ## 6) Behavior implemented
 

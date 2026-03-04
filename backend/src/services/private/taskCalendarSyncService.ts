@@ -35,7 +35,6 @@ const GOOGLE_WEBHOOK_URL = () => {
 };
 
 const nowIso = () => new Date().toISOString();
-const createManualRunId = () => randomBytes(12).toString("hex");
 
 const formatSyncErrorMessage = (error: unknown) => {
   const err = error as any;
@@ -827,65 +826,22 @@ export const getCalendarStatusForUser = async (supabaseAdmin: SupabaseClient, us
 };
 
 export const queueManualSyncForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
-  const runId = createManualRunId();
-  // Queue fast-return manual sync work and let workers process it.
+  const dedupeToken = `${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+  // Queue fast-return manual sync work and let cron workers process it.
   await enqueueSyncJob(supabaseAdmin, {
     userId,
     jobType: "inbound_delta",
     priority: 70,
-    payload: { source: "manual_sync_now", run_id: runId },
-    dedupeKey: `manual-inbound:${userId}:${runId}`,
+    payload: { source: "manual_sync_now" },
+    dedupeKey: `manual-inbound:${userId}:${dedupeToken}`,
   });
   await enqueueSyncJob(supabaseAdmin, {
     userId,
     jobType: "full_backfill",
     priority: 50,
-    payload: { source: "manual_sync_now", run_id: runId },
-    dedupeKey: `manual-backfill:${userId}:${runId}`,
+    payload: { source: "manual_sync_now" },
+    dedupeKey: `manual-backfill:${userId}:${dedupeToken}`,
   });
-  return runId;
-};
-
-type SyncRunJobRow = {
-  id: number;
-  status: "pending" | "running" | "done" | "failed" | "dead";
-  last_error: string | null;
-};
-
-export const getManualSyncRunStatus = async (
-  supabaseAdmin: SupabaseClient,
-  userId: string,
-  runId: string
-) => {
-  const { data, error } = await supabaseAdmin
-    .from("tracker_google_sync_jobs")
-    .select("id,status,last_error")
-    .eq("user_id", userId)
-    .contains("payload", { run_id: runId })
-    .order("id", { ascending: true });
-
-  if (error) throw new Error(error.message);
-
-  const jobs = (data ?? []) as SyncRunJobRow[];
-  const total = jobs.length;
-  const processed = jobs.filter((job) => job.status === "done").length;
-  const failedRows = jobs.filter((job) => job.status === "failed" || job.status === "dead");
-  const failed = failedRows.length;
-  const pending = jobs.filter((job) => job.status === "pending").length;
-  const running = jobs.filter((job) => job.status === "running").length;
-
-  return {
-    run_id: runId,
-    total,
-    processed,
-    failed,
-    pending,
-    running,
-    done: total > 0 && pending === 0 && running === 0,
-    failures: failedRows
-      .slice(0, 10)
-      .map((job) => ({ id: job.id, error: job.last_error || "Unknown sync error" })),
-  };
 };
 
 export const normalizeDueAtForSync = (isoValue: string | null) => {
