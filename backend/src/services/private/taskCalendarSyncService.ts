@@ -35,6 +35,38 @@ const GOOGLE_WEBHOOK_URL = () => {
 };
 
 const nowIso = () => new Date().toISOString();
+const FULL_BACKFILL_PAGE_SIZE = 24;
+const INBOUND_DELTA_PAGE_SIZE = 30;
+const JOB_RUNTIME_BUDGET_MS = 3_500;
+const MANUAL_SYNC_INBOUND_PRIORITY = 20;
+const MANUAL_SYNC_BACKFILL_PRIORITY = 25;
+const MANUAL_SYNC_TASK_PRIORITY = 30;
+const BACKGROUND_SYNC_INBOUND_PRIORITY = 80;
+const BACKGROUND_SYNC_BACKFILL_PRIORITY = 55;
+const BACKGROUND_SYNC_TASK_PRIORITY = 60;
+const WEBHOOK_SYNC_PRIORITY = 70;
+
+const createManualRunId = () => `run_${Date.now()}_${randomBytes(5).toString("hex")}`;
+const createSyncChainId = () => `chain_${Date.now()}_${randomBytes(4).toString("hex")}`;
+const hasJobBudgetLeft = (startedAtMs: number) => Date.now() - startedAtMs < JOB_RUNTIME_BUDGET_MS;
+
+const getJobStringPayload = (job: TrackerGoogleSyncJob, key: string) => {
+  const raw = (job.payload as Record<string, unknown> | null | undefined)?.[key];
+  return typeof raw === "string" && raw.trim() ? raw.trim() : null;
+};
+
+const getRunIdFromJob = (job: TrackerGoogleSyncJob) => getJobStringPayload(job, "run_id");
+const getChainIdFromJob = (job: TrackerGoogleSyncJob) => getJobStringPayload(job, "chain_id");
+
+const withSyncContextPayload = (
+  base: Record<string, unknown>,
+  context: { runId?: string | null; chainId?: string | null }
+) => {
+  const payload = { ...base } as Record<string, unknown>;
+  if (context.runId) payload.run_id = context.runId;
+  if (context.chainId) payload.chain_id = context.chainId;
+  return payload;
+};
 
 const formatSyncErrorMessage = (error: unknown) => {
   const err = error as any;
@@ -318,6 +350,9 @@ const processTaskDeleteJob = async (supabaseAdmin: SupabaseClient, job: TrackerG
 };
 
 const processFullBackfillJob = async (supabaseAdmin: SupabaseClient, job: TrackerGoogleSyncJob) => {
+  const startedAtMs = Date.now();
+  const runId = getRunIdFromJob(job);
+  const chainId = getChainIdFromJob(job) || runId || createSyncChainId();
   const { data: enabledRows, error: enabledErr } = await supabaseAdmin
     .from("tracker_task_list_sync_settings")
     .select("list_id")
@@ -330,25 +365,63 @@ const processFullBackfillJob = async (supabaseAdmin: SupabaseClient, job: Tracke
 
   let query = supabaseAdmin
     .from("tracker_tasks")
-    .select("id, user_id, list_id, due_at, is_completed")
+    .select("id, user_id, list_id, due_at, is_completed, updated_at")
     .eq("user_id", job.user_id)
-    .in("list_id", enabledListIds);
+    .in("list_id", enabledListIds)
+    .eq("is_completed", false)
+    .not("due_at", "is", null)
+    .order("id", { ascending: true })
+    .limit(FULL_BACKFILL_PAGE_SIZE);
 
   if (job.list_id) query = query.eq("list_id", job.list_id);
+  const cursorAfter = getJobStringPayload(job, "cursor_after");
+  if (cursorAfter) {
+    query = query.gt("id", cursorAfter);
+  }
   const { data: tasks, error: taskErr } = await query;
   if (taskErr) throw new Error(taskErr.message);
 
-  for (const row of tasks ?? []) {
-    if (row.is_completed || !row.due_at) continue;
+  const page = tasks ?? [];
+  let processedCount = 0;
+  let lastProcessedTaskId: string | null = null;
+
+  for (const row of page) {
+    if (!hasJobBudgetLeft(startedAtMs)) break;
     await enqueueSyncJob(supabaseAdmin, {
       userId: job.user_id,
       taskId: row.id,
       listId: row.list_id,
       jobType: "task_upsert",
-      priority: 60,
-      payload: { source: "full_backfill" },
-      dedupeKey: `backfill:${row.id}:${new Date().toISOString().slice(0, 16)}`,
+      priority: runId ? MANUAL_SYNC_TASK_PRIORITY : BACKGROUND_SYNC_TASK_PRIORITY,
+      payload: withSyncContextPayload({ source: "full_backfill" }, { runId, chainId }),
+      dedupeKey: `backfill:${row.id}:${row.updated_at || "na"}`,
     });
+    processedCount += 1;
+    lastProcessedTaskId = row.id;
+  }
+
+  const processedAllCurrentPage = processedCount === page.length;
+  const hasMoreFromQuery = page.length === FULL_BACKFILL_PAGE_SIZE;
+  const needsContinuation = !processedAllCurrentPage || hasMoreFromQuery;
+  if (needsContinuation) {
+    const initialCursor = cursorAfter ?? null;
+    const continuationCursor = processedCount > 0 ? lastProcessedTaskId : initialCursor;
+    const cursorLabel = continuationCursor || "start";
+    await enqueueSyncJob(supabaseAdmin, {
+      userId: job.user_id,
+      listId: job.list_id ?? null,
+      jobType: "full_backfill",
+      priority: runId ? MANUAL_SYNC_BACKFILL_PRIORITY : BACKGROUND_SYNC_BACKFILL_PRIORITY,
+      payload: withSyncContextPayload(
+        {
+          source: "full_backfill_continuation",
+          cursor_after: continuationCursor,
+        },
+        { runId, chainId }
+      ),
+      dedupeKey: `full_backfill_page:${job.user_id}:${job.list_id || "all"}:${chainId}:${cursorLabel}`,
+    });
+    return;
   }
 
   await setConnectionHealth(supabaseAdmin, job.user_id, {
@@ -363,139 +436,204 @@ const processInboundDeltaJob = async (supabaseAdmin: SupabaseClient, job: Tracke
   const calendarId = publicRow.selected_calendar_id;
   if (!calendarId) return;
 
-  let pageToken: string | null = null;
-  let nextSyncToken: string | null = null;
-  const syncToken = secretsRow.sync_token || null;
+  const runId = getRunIdFromJob(job);
+  const chainId = getChainIdFromJob(job) || runId || createSyncChainId();
+  const pageToken = getJobStringPayload(job, "page_token");
+  const syncTokenFromPayload = getJobStringPayload(job, "sync_token");
+  const syncToken = syncTokenFromPayload || secretsRow.sync_token || null;
 
-  do {
-    let delta;
-    try {
-      delta = await listGoogleEventsDelta({
-        accessToken,
-        calendarId,
-        syncToken,
-        pageToken,
-        timeMin: syncToken ? undefined : new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
+  let delta;
+  try {
+    delta = await listGoogleEventsDelta({
+      accessToken,
+      calendarId,
+      syncToken,
+      pageToken,
+      maxResults: INBOUND_DELTA_PAGE_SIZE,
+      timeMin: syncToken ? undefined : new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
+    });
+  } catch (err: any) {
+    const status = err?.response?.status;
+    if (status === 410 && syncToken) {
+      const { error } = await supabaseAdmin
+        .from("tracker_google_calendar_connections_secrets")
+        .update({ sync_token: null })
+        .eq("id", secretsRow.id);
+      if (error) throw new Error(error.message);
+      await enqueueSyncJob(supabaseAdmin, {
+        userId: job.user_id,
+        jobType: "inbound_delta",
+        priority: runId ? MANUAL_SYNC_INBOUND_PRIORITY : BACKGROUND_SYNC_INBOUND_PRIORITY,
+        payload: withSyncContextPayload({ source: "sync_token_reset" }, { runId, chainId }),
+        dedupeKey: `inbound-reset:${job.user_id}:${chainId}:${syncToken || "none"}`,
       });
-    } catch (err: any) {
-      const status = err?.response?.status;
-      if (status === 410 && syncToken) {
-        const { error } = await supabaseAdmin
-          .from("tracker_google_calendar_connections_secrets")
-          .update({ sync_token: null })
-          .eq("id", secretsRow.id);
-        if (error) throw new Error(error.message);
-        await enqueueSyncJob(supabaseAdmin, {
-          userId: job.user_id,
-          jobType: "inbound_delta",
-          priority: 80,
-          payload: { source: "sync_token_reset" },
-          dedupeKey: `inbound-reset:${job.user_id}:${new Date().toISOString().slice(0, 16)}`,
-        });
-        return;
-      }
-      throw err;
+      return;
     }
+    throw err;
+  }
 
-    for (const event of delta.items ?? []) {
-      if (!event?.id) continue;
-      const linkByEvent = await getLinkByEvent(supabaseAdmin, job.user_id, calendarId, event.id);
-      const extTaskId = event?.extendedProperties?.private?.tracker_task_id as string | undefined;
-      const taskId = linkByEvent?.task_id || extTaskId;
-      if (!taskId) continue;
+  const enabledListIds = new Set<string>();
+  const { data: enabledRows, error: enabledErr } = await supabaseAdmin
+    .from("tracker_task_list_sync_settings")
+    .select("list_id")
+    .eq("user_id", job.user_id)
+    .eq("sync_enabled", true);
+  if (enabledErr) throw new Error(enabledErr.message);
+  for (const row of enabledRows ?? []) {
+    if (row?.list_id) enabledListIds.add(row.list_id as string);
+  }
 
-      const task = await getTaskById(supabaseAdmin, job.user_id, taskId);
-      if (!task) continue;
+  const events = (delta.items ?? []).filter((event) => !!event?.id);
+  const eventIds = events.map((event) => event.id as string);
+  const linksByEventId = new Map<string, any>();
+  if (eventIds.length > 0) {
+    const { data: links, error: linksErr } = await supabaseAdmin
+      .from("tracker_task_google_event_links")
+      .select("*")
+      .eq("user_id", job.user_id)
+      .eq("calendar_id", calendarId)
+      .in("google_event_id", eventIds);
+    if (linksErr) throw new Error(linksErr.message);
+    for (const link of links ?? []) {
+      if (link?.google_event_id) linksByEventId.set(String(link.google_event_id), link);
+    }
+  }
 
-      const listEnabled = await isListSyncEnabled(supabaseAdmin, job.user_id, task.list_id);
-      if (!listEnabled) continue;
+  const taskIds = new Set<string>();
+  for (const event of events) {
+    const eventId = String(event.id);
+    const extTaskId = event?.extendedProperties?.private?.tracker_task_id;
+    const linkedTaskId = linksByEventId.get(eventId)?.task_id;
+    const taskId =
+      typeof linkedTaskId === "string" && linkedTaskId.trim()
+        ? linkedTaskId
+        : typeof extTaskId === "string" && extTaskId.trim()
+          ? extTaskId
+          : null;
+    if (taskId) taskIds.add(taskId);
+  }
 
-      if (event.status === "cancelled") {
-        if (shouldSyncTask(task)) {
-          await enqueueSyncJob(supabaseAdmin, {
-            userId: job.user_id,
-            taskId: task.id,
-            listId: task.list_id,
-            jobType: "task_upsert",
-            priority: 70,
-            payload: { source: "google_cancelled" },
-            dedupeKey: `restore:${task.id}:${new Date().toISOString().slice(0, 16)}`,
-          });
-        }
-        continue;
-      }
+  const tasksById = new Map<string, TrackerTaskRow>();
+  if (taskIds.size > 0) {
+    const { data: tasks, error: tasksErr } = await supabaseAdmin
+      .from("tracker_tasks")
+      .select("*")
+      .eq("user_id", job.user_id)
+      .in("id", Array.from(taskIds));
+    if (tasksErr) throw new Error(tasksErr.message);
+    for (const task of tasks ?? []) {
+      if (task?.id) tasksById.set(String(task.id), task as TrackerTaskRow);
+    }
+  }
 
-      const googleUpdatedMs = new Date(event.updated || event.created || 0).getTime();
-      const taskUpdatedMs = new Date(task.updated_at).getTime();
+  for (const event of events) {
+    const eventId = String(event.id);
+    const linkByEvent = linksByEventId.get(eventId) || null;
+    const extTaskId = event?.extendedProperties?.private?.tracker_task_id as string | undefined;
+    const taskId = linkByEvent?.task_id || extTaskId;
+    if (!taskId) continue;
 
-      if (Number.isFinite(googleUpdatedMs) && googleUpdatedMs > taskUpdatedMs) {
-        const nextDueAt = googleEventToTaskDueAtIso(event);
-        const nextDueTimeZone =
-          nextDueAt && !isDateOnlyIso(nextDueAt) ? googleEventToTaskTimeZone(event) : null;
-        const updates = {
-          title: typeof event.summary === "string" && event.summary.trim() ? event.summary.trim() : task.title,
-          details: typeof event.description === "string" ? event.description : null,
-          due_at: nextDueAt,
-          due_timezone: nextDueTimeZone,
-        };
-
-        let updateAttempt = await supabaseAdmin
-          .from("tracker_tasks")
-          .update(updates)
-          .eq("user_id", job.user_id)
-          .eq("id", task.id)
-          .select("id, updated_at")
-          .single();
-        if (updateAttempt.error && isMissingDueTimezoneColumnError(updateAttempt.error)) {
-          const { due_timezone, ...fallbackUpdates } = updates;
-          updateAttempt = await supabaseAdmin
-            .from("tracker_tasks")
-            .update(fallbackUpdates)
-            .eq("user_id", job.user_id)
-            .eq("id", task.id)
-            .select("id, updated_at")
-            .single();
-        }
-        const updatedTask = updateAttempt.data;
-        const updateErr = updateAttempt.error;
-        if (updateErr || !updatedTask) {
-          throw new Error(updateErr?.message || "Failed to apply Google update to task");
-        }
-
-        await upsertLink(supabaseAdmin, {
-          userId: job.user_id,
-          taskId: task.id,
-          calendarId,
-          googleEventId: event.id,
-          etag: event.etag ?? null,
-          googleUpdatedAt: event.updated ?? null,
-          lastSyncedTaskUpdatedAt: updatedTask.updated_at,
-          lastSyncSource: "google",
-          isDeleted: false,
-        });
-      } else {
+    const task = tasksById.get(taskId);
+    if (!task) continue;
+    if (!enabledListIds.has(task.list_id)) continue;
+    if (event.status === "cancelled") {
+      if (shouldSyncTask(task)) {
         await enqueueSyncJob(supabaseAdmin, {
           userId: job.user_id,
           taskId: task.id,
           listId: task.list_id,
           jobType: "task_upsert",
-          priority: 90,
-          payload: { source: "conflict_app_won" },
-          dedupeKey: `conflict:${task.id}:${new Date().toISOString().slice(0, 16)}`,
+          priority: runId ? MANUAL_SYNC_TASK_PRIORITY : WEBHOOK_SYNC_PRIORITY,
+          payload: withSyncContextPayload({ source: "google_cancelled" }, { runId, chainId }),
+          dedupeKey: `restore:${task.id}:${task.updated_at}`,
         });
       }
+      continue;
     }
 
-    pageToken = delta.nextPageToken ?? null;
-    if (delta.nextSyncToken) {
-      nextSyncToken = delta.nextSyncToken;
+    const googleUpdatedMs = new Date(event.updated || event.created || 0).getTime();
+    const taskUpdatedMs = new Date(task.updated_at).getTime();
+
+    if (Number.isFinite(googleUpdatedMs) && googleUpdatedMs > taskUpdatedMs) {
+      const nextDueAt = googleEventToTaskDueAtIso(event);
+      const nextDueTimeZone =
+        nextDueAt && !isDateOnlyIso(nextDueAt) ? googleEventToTaskTimeZone(event) : null;
+      const updates = {
+        title: typeof event.summary === "string" && event.summary.trim() ? event.summary.trim() : task.title,
+        details: typeof event.description === "string" ? event.description : null,
+        due_at: nextDueAt,
+        due_timezone: nextDueTimeZone,
+      };
+
+      let updateAttempt = await supabaseAdmin
+        .from("tracker_tasks")
+        .update(updates)
+        .eq("user_id", job.user_id)
+        .eq("id", task.id)
+        .select("id, updated_at")
+        .single();
+      if (updateAttempt.error && isMissingDueTimezoneColumnError(updateAttempt.error)) {
+        const { due_timezone, ...fallbackUpdates } = updates;
+        updateAttempt = await supabaseAdmin
+          .from("tracker_tasks")
+          .update(fallbackUpdates)
+          .eq("user_id", job.user_id)
+          .eq("id", task.id)
+          .select("id, updated_at")
+          .single();
+      }
+      const updatedTask = updateAttempt.data;
+      const updateErr = updateAttempt.error;
+      if (updateErr || !updatedTask) {
+        throw new Error(updateErr?.message || "Failed to apply Google update to task");
+      }
+
+      await upsertLink(supabaseAdmin, {
+        userId: job.user_id,
+        taskId: task.id,
+        calendarId,
+        googleEventId: eventId,
+        etag: event.etag ?? null,
+        googleUpdatedAt: event.updated ?? null,
+        lastSyncedTaskUpdatedAt: updatedTask.updated_at,
+        lastSyncSource: "google",
+        isDeleted: false,
+      });
+    } else {
+      await enqueueSyncJob(supabaseAdmin, {
+        userId: job.user_id,
+        taskId: task.id,
+        listId: task.list_id,
+        jobType: "task_upsert",
+        priority: runId ? MANUAL_SYNC_TASK_PRIORITY : BACKGROUND_SYNC_INBOUND_PRIORITY,
+        payload: withSyncContextPayload({ source: "conflict_app_won" }, { runId, chainId }),
+        dedupeKey: `conflict:${task.id}:${task.updated_at}`,
+      });
     }
-  } while (pageToken);
+  }
+
+  if (delta.nextPageToken) {
+    await enqueueSyncJob(supabaseAdmin, {
+      userId: job.user_id,
+      jobType: "inbound_delta",
+      priority: runId ? MANUAL_SYNC_INBOUND_PRIORITY : BACKGROUND_SYNC_INBOUND_PRIORITY,
+      payload: withSyncContextPayload(
+        {
+          source: "inbound_delta_continuation",
+          page_token: delta.nextPageToken,
+          sync_token: syncToken,
+        },
+        { runId, chainId }
+      ),
+      dedupeKey: `inbound-page:${job.user_id}:${chainId}:${delta.nextPageToken}`,
+    });
+    return;
+  }
 
   const { error: secretErr } = await supabaseAdmin
     .from("tracker_google_calendar_connections_secrets")
     .update({
-      sync_token: nextSyncToken ?? syncToken,
+      sync_token: delta.nextSyncToken ?? syncToken,
     })
     .eq("id", secretsRow.id);
   if (secretErr) throw new Error(secretErr.message);
@@ -593,14 +731,22 @@ export const processCalendarSyncJobs = async (input?: { userId?: string; batchSi
   return results;
 };
 
-export const queueFullBackfill = async (supabaseAdmin: SupabaseClient, userId: string, listId?: string) => {
+export const queueFullBackfill = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  listId?: string,
+  options?: { runId?: string | null; source?: string; chainId?: string | null }
+) => {
+  const runId = options?.runId?.trim() || null;
+  const chainId = options?.chainId?.trim() || runId || createSyncChainId();
+  const source = options?.source || "manual_or_connect";
   await enqueueSyncJob(supabaseAdmin, {
     userId,
     listId: listId ?? null,
     jobType: "full_backfill",
-    priority: 50,
-    payload: { source: "manual_or_connect" },
-    dedupeKey: `full_backfill:${userId}:${listId || "all"}:${new Date().toISOString().slice(0, 16)}`,
+    priority: runId ? MANUAL_SYNC_BACKFILL_PRIORITY : BACKGROUND_SYNC_BACKFILL_PRIORITY,
+    payload: withSyncContextPayload({ source }, { runId, chainId }),
+    dedupeKey: `full_backfill:${userId}:${listId || "all"}:${chainId}`,
   });
 };
 
@@ -826,14 +972,78 @@ export const getCalendarStatusForUser = async (supabaseAdmin: SupabaseClient, us
 };
 
 export const queueManualSyncForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
+  const runId = createManualRunId();
+  const chainId = runId;
   // Queue fast-return manual sync work and let cron workers process it.
   await enqueueSyncJob(supabaseAdmin, {
     userId,
     jobType: "inbound_delta",
-    priority: 70,
-    payload: { source: "manual_sync_now" },
-    dedupeKey: `manual-inbound:${userId}:${new Date().toISOString().slice(0, 16)}`,
+    priority: MANUAL_SYNC_INBOUND_PRIORITY,
+    payload: withSyncContextPayload({ source: "manual_sync_now" }, { runId, chainId }),
+    dedupeKey: `manual-inbound:${userId}:${chainId}`,
   });
+  await queueFullBackfill(supabaseAdmin, userId, undefined, {
+    runId,
+    source: "manual_sync_now",
+    chainId,
+  });
+  return runId;
+};
+
+export const getSyncProgressForRun = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  runId: string
+) => {
+  const normalizedRunId = runId.trim();
+  if (!normalizedRunId) {
+    return {
+      run_id: runId,
+      total: 0,
+      processed: 0,
+      failed: 0,
+      pending: 0,
+      running: 0,
+      done: false,
+      failures: [] as Array<{ id: number; error: string }>,
+    };
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("tracker_google_sync_jobs")
+    .select("id,status,last_error")
+    .eq("user_id", userId)
+    .contains("payload", { run_id: normalizedRunId })
+    .order("id", { ascending: false })
+    .limit(2000);
+  if (error) throw new Error(error.message);
+
+  const rows = (data ?? []) as Array<{
+    id: number;
+    status: "pending" | "running" | "done" | "failed" | "dead";
+    last_error: string | null;
+  }>;
+
+  const pending = rows.filter((row) => row.status === "pending").length;
+  const running = rows.filter((row) => row.status === "running").length;
+  const failedRows = rows.filter((row) => row.status === "failed" || row.status === "dead");
+  const failed = failedRows.length;
+  const doneRows = rows.filter((row) => row.status === "done").length;
+  const processed = doneRows + failed;
+
+  return {
+    run_id: normalizedRunId,
+    total: rows.length,
+    processed,
+    failed,
+    pending,
+    running,
+    done: rows.length > 0 && pending === 0 && running === 0,
+    failures: failedRows.slice(0, 5).map((row) => ({
+      id: row.id,
+      error: row.last_error || "Unknown sync error",
+    })),
+  };
 };
 
 export const normalizeDueAtForSync = (isoValue: string | null) => {

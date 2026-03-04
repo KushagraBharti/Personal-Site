@@ -24,7 +24,7 @@ const runCalendarSync = (req, res) => __awaiter(void 0, void 0, void 0, function
         return res.json({ ok: true, disabled: true });
     try {
         // Keep cron execution bounded for serverless limits.
-        const results = yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ batchSize: 20 });
+        const results = yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ batchSize: 1 });
         return res.json({
             ok: true,
             processed: results.length,

@@ -26,6 +26,7 @@ const handleGoogleWebhook = (supabaseAdmin, headers) => __awaiter(void 0, void 0
     const resourceId = normalizeHeader(headers["x-goog-resource-id"]);
     const channelToken = normalizeHeader(headers["x-goog-channel-token"]);
     const resourceState = normalizeHeader(headers["x-goog-resource-state"]);
+    const messageNumber = normalizeHeader(headers["x-goog-message-number"]);
     if (!channelId || !resourceId || !channelToken) {
         throw new Error("Missing required Google webhook headers");
     }
@@ -52,8 +53,14 @@ const handleGoogleWebhook = (supabaseAdmin, headers) => __awaiter(void 0, void 0
             resource_state: resourceState || "exists",
             channel_id: channelId,
             resource_id: resourceId,
+            message_number: messageNumber || null,
+            chain_id: messageNumber
+                ? `webhook_${channelId}_${messageNumber}`
+                : `webhook_${channelId}_${Date.now()}`,
         },
-        dedupeKey: `inbound:${secretRow.user_id}:${resourceId}:${new Date().toISOString().slice(0, 16)}`,
+        dedupeKey: messageNumber
+            ? `webhook:${secretRow.user_id}:${channelId}:${messageNumber}`
+            : `webhook:${secretRow.user_id}:${channelId}:${resourceId}:${Date.now()}`,
     });
     return {
         userId: secretRow.user_id,

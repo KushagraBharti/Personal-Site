@@ -464,12 +464,13 @@ export const listGoogleEventsDelta = async (params: {
   calendarId: string;
   syncToken?: string | null;
   pageToken?: string | null;
+  maxResults?: number;
   timeMin?: string;
 }) => {
   const query: Record<string, string> = {
     singleEvents: "false",
     showDeleted: "true",
-    maxResults: "2500",
+    maxResults: String(Math.max(1, Math.min(params.maxResults ?? 500, 2500))),
   };
   if (params.syncToken) query.syncToken = params.syncToken;
   if (params.pageToken) query.pageToken = params.pageToken;

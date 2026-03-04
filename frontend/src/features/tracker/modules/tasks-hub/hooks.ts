@@ -10,6 +10,7 @@ import {
   fetchTaskLists,
   fetchTasks,
   getCalendarStatus,
+  getCalendarSyncProgress,
   getGoogleConnectUrl,
   setListSync,
   triggerCalendarSyncNow,
@@ -480,6 +481,39 @@ export const useTasksHubModule = () => {
     [selectedListId, supabase, userId]
   );
 
+  const pollSyncRun = useCallback(
+    async (runId: string, options?: { timeoutMs?: number; pollEveryMs?: number }) => {
+      if (!session?.access_token) return;
+      const timeoutMs = Math.max(options?.timeoutMs ?? 25_000, 2_000);
+      const pollEveryMs = Math.max(options?.pollEveryMs ?? 1_000, 300);
+      const startedAt = Date.now();
+      let latestSnapshot: { processed: number; failed: number; failures: Array<{ id: number; error: string }> } = {
+        processed: 0,
+        failed: 0,
+        failures: [],
+      };
+
+      while (Date.now() - startedAt < timeoutMs) {
+        const progress = await getCalendarSyncProgress(session.access_token, runId);
+        latestSnapshot = {
+          processed: progress.processed,
+          failed: progress.failed,
+          failures: progress.failures || [],
+        };
+        setCalendarSyncResult(latestSnapshot);
+        if (progress.done) {
+          await loadCalendarStatus();
+          return;
+        }
+        await new Promise((resolve) => window.setTimeout(resolve, pollEveryMs));
+      }
+
+      setCalendarSyncResult(latestSnapshot);
+      await loadCalendarStatus();
+    },
+    [loadCalendarStatus, session?.access_token]
+  );
+
   const scheduleCalendarSync = useCallback(
     (immediate = false) => {
       if (!session?.access_token || !calendarState?.connected) return;
@@ -495,7 +529,11 @@ export const useTasksHubModule = () => {
             failed: result.failed,
             failures: result.failures || [],
           });
-          await loadCalendarStatus();
+          if (result.run_id) {
+            await pollSyncRun(result.run_id, { timeoutMs: 25_000, pollEveryMs: 1_000 });
+          } else {
+            await loadCalendarStatus();
+          }
         } catch (err) {
           const message = err instanceof Error ? err.message : "Calendar sync failed";
           setErrorMessage(message);
@@ -504,7 +542,7 @@ export const useTasksHubModule = () => {
         }
       }, delayMs);
     },
-    [calendarState?.connected, loadCalendarStatus, session?.access_token]
+    [calendarState?.connected, loadCalendarStatus, pollSyncRun, session?.access_token]
   );
 
   const createTaskFromDraft = useCallback(
@@ -875,7 +913,11 @@ export const useTasksHubModule = () => {
         failed: result.failed,
         failures: result.failures || [],
       });
-      await loadCalendarStatus();
+      if (result.run_id) {
+        await pollSyncRun(result.run_id, { timeoutMs: 90_000, pollEveryMs: 1_100 });
+      } else {
+        await loadCalendarStatus();
+      }
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to sync calendar now";
@@ -884,7 +926,7 @@ export const useTasksHubModule = () => {
     } finally {
       setCalendarBusy(false);
     }
-  }, [loadCalendarStatus, session?.access_token]);
+  }, [loadCalendarStatus, pollSyncRun, session?.access_token]);
 
   return {
     allListsKey: ALL_LISTS_KEY,

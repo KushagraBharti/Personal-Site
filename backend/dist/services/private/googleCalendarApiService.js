@@ -407,10 +407,11 @@ const deleteGoogleEvent = (accessToken, calendarId, eventId) => __awaiter(void 0
 });
 exports.deleteGoogleEvent = deleteGoogleEvent;
 const listGoogleEventsDelta = (params) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const query = {
         singleEvents: "false",
         showDeleted: "true",
-        maxResults: "2500",
+        maxResults: String(Math.max(1, Math.min((_a = params.maxResults) !== null && _a !== void 0 ? _a : 500, 2500))),
     };
     if (params.syncToken)
         query.syncToken = params.syncToken;

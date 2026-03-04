@@ -26,7 +26,7 @@ router.post("/google/webhook", (req, res) => __awaiter(void 0, void 0, void 0, f
         const webhookMeta = yield (0, calendarWebhookService_1.handleGoogleWebhook)(supabaseAdmin, req.headers);
         // Hobby-friendly: process a small bounded batch immediately so we do not depend
         // on high-frequency platform crons for webhook-driven updates.
-        yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ userId: webhookMeta.userId, batchSize: 6 });
+        yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ userId: webhookMeta.userId, batchSize: 1 });
         return res.status(200).json({ ok: true });
     }
     catch (error) {
@@ -172,28 +172,38 @@ router.post("/sync-now", requireUser_1.requireUser, (req, res) => __awaiter(void
         return res.status(503).json({ error: "Calendar sync disabled" });
     try {
         const supabaseAdmin = (0, calendarSyncQueueService_1.getSupabaseAdmin)();
-        yield (0, taskCalendarSyncService_1.queueManualSyncForUser)(supabaseAdmin, req.user.id);
-        // Keep this bounded to avoid serverless timeouts.
-        const processedResults = yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ userId: req.user.id, batchSize: 4 });
-        const processed = processedResults.length;
-        const failureRows = processedResults
-            .filter((item) => !item.ok)
-            .map((item) => ({
-            id: item.id,
-            error: item.error || "Unknown sync error",
-        }));
-        const failed = failureRows.length;
+        const runId = yield (0, taskCalendarSyncService_1.queueManualSyncForUser)(supabaseAdmin, req.user.id);
         return res.json({
             ok: true,
-            processed,
-            failed,
+            run_id: runId,
+            processed: 0,
+            failed: 0,
             queued: true,
-            failures: failureRows.slice(0, 5),
+            failures: [],
+            tick_processed: 0,
         });
     }
     catch (error) {
         console.error("Failed to sync calendar now", error);
         return res.status(500).json({ error: "Failed to sync calendar" });
+    }
+}));
+router.get("/sync-progress", requireUser_1.requireUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!isCalendarSyncEnabled())
+        return res.status(503).json({ error: "Calendar sync disabled" });
+    const runId = typeof req.query.run_id === "string" ? req.query.run_id.trim() : "";
+    if (!runId)
+        return res.status(400).json({ error: "run_id is required" });
+    try {
+        const supabaseAdmin = (0, calendarSyncQueueService_1.getSupabaseAdmin)();
+        // Bounded worker tick to steadily drain queue across client polls.
+        yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ userId: req.user.id, batchSize: 1 });
+        const progress = yield (0, taskCalendarSyncService_1.getSyncProgressForRun)(supabaseAdmin, req.user.id, runId);
+        return res.json(Object.assign({ ok: true }, progress));
+    }
+    catch (error) {
+        console.error("Failed to fetch sync progress", error);
+        return res.status(500).json({ error: "Failed to fetch sync progress" });
     }
 }));
 exports.default = router;

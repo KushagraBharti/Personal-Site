@@ -3,6 +3,7 @@ import {
   CalendarConnectionState,
   ListUpdateInput,
   SyncNowResult,
+  SyncProgressResult,
   SortDirection,
   TaskList,
   TaskSortMode,
@@ -279,6 +280,24 @@ export const triggerCalendarSyncNow = async (accessToken: string): Promise<SyncN
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || "Failed to sync calendar");
+  }
+  return res.json();
+};
+
+export const getCalendarSyncProgress = async (
+  accessToken: string,
+  runId: string
+): Promise<SyncProgressResult> => {
+  const res = await fetch(
+    `${API_BASE}/api/private/calendar/sync-progress?run_id=${encodeURIComponent(runId)}`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(accessToken),
+    }
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Failed to fetch sync progress");
   }
   return res.json();
 };

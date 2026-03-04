@@ -16,7 +16,7 @@ const runCalendarSync = async (req: Request, res: Response) => {
   if (!isCalendarSyncEnabled()) return res.json({ ok: true, disabled: true });
   try {
     // Keep cron execution bounded for serverless limits.
-    const results = await processCalendarSyncJobs({ batchSize: 20 });
+    const results = await processCalendarSyncJobs({ batchSize: 1 });
     return res.json({
       ok: true,
       processed: results.length,

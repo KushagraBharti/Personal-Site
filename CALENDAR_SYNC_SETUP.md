@@ -71,10 +71,23 @@ Notes:
    - OAuth callback auto-creates/selects calendar named `Tracker Tasks`
 3. For each list to sync, enable the new sync checkbox in the list row.
 4. Use **Sync now** for immediate processing.
-   - `POST /api/private/calendar/sync-now` enqueues + processes a small bounded batch immediately
-   - Response includes processed/failed counts and top failure messages
+   - `POST /api/private/calendar/sync-now` enqueues a manual sync run and returns fast with `run_id`
+   - `GET /api/private/calendar/sync-progress?run_id=...` returns live progress and top failure messages
+   - UI polls progress until the run is done.
 
-## 6) Behavior implemented
+## 6) Sync runtime model (timeout-safe)
+
+- Job queue uses small units:
+  - `inbound_delta` (one Google delta page/token per job)
+  - `full_backfill` (one app page/cursor per job)
+  - `task_upsert` (single task)
+  - `task_delete` (single task)
+  - `renew_watch`
+- Backfill and delta jobs use continuation cursors/tokens to split large work.
+- Each job is bounded so one HTTP request never drains the whole queue.
+- Manual `sync-now` no longer does a full in-request drain, preventing serverless timeout failures.
+
+## 7) Behavior implemented
 
 - App is source of truth for completion.
 - Google edits sync back for:
