@@ -14,6 +14,7 @@ import {
   fetchGoogleUserEmail,
   getValidGoogleAccessToken,
   googleEventToTaskDueAtIso,
+  googleEventToTaskTimeZone,
   hashChannelToken,
   insertGoogleEvent,
   isDateOnlyIso,
@@ -92,6 +93,16 @@ const isAuthFatalSyncError = (error: unknown) => {
 const isGoogleNotFoundError = (error: unknown) => {
   const err = error as any;
   return err?.response?.status === 404;
+};
+
+const isMissingDueTimezoneColumnError = (error: unknown) => {
+  const message =
+    error instanceof Error
+      ? error.message.toLowerCase()
+      : typeof (error as any)?.message === "string"
+        ? (error as any).message.toLowerCase()
+        : "";
+  return message.includes("due_timezone") && message.includes("column");
 };
 
 const isListSyncEnabled = async (supabaseAdmin: SupabaseClient, userId: string, listId: string) => {
@@ -418,19 +429,35 @@ const processInboundDeltaJob = async (supabaseAdmin: SupabaseClient, job: Tracke
       const taskUpdatedMs = new Date(task.updated_at).getTime();
 
       if (Number.isFinite(googleUpdatedMs) && googleUpdatedMs > taskUpdatedMs) {
+        const nextDueAt = googleEventToTaskDueAtIso(event);
+        const nextDueTimeZone =
+          nextDueAt && !isDateOnlyIso(nextDueAt) ? googleEventToTaskTimeZone(event) : null;
         const updates = {
           title: typeof event.summary === "string" && event.summary.trim() ? event.summary.trim() : task.title,
           details: typeof event.description === "string" ? event.description : null,
-          due_at: googleEventToTaskDueAtIso(event),
+          due_at: nextDueAt,
+          due_timezone: nextDueTimeZone,
         };
 
-        const { data: updatedTask, error: updateErr } = await supabaseAdmin
+        let updateAttempt = await supabaseAdmin
           .from("tracker_tasks")
           .update(updates)
           .eq("user_id", job.user_id)
           .eq("id", task.id)
           .select("id, updated_at")
           .single();
+        if (updateAttempt.error && isMissingDueTimezoneColumnError(updateAttempt.error)) {
+          const { due_timezone, ...fallbackUpdates } = updates;
+          updateAttempt = await supabaseAdmin
+            .from("tracker_tasks")
+            .update(fallbackUpdates)
+            .eq("user_id", job.user_id)
+            .eq("id", task.id)
+            .select("id, updated_at")
+            .single();
+        }
+        const updatedTask = updateAttempt.data;
+        const updateErr = updateAttempt.error;
         if (updateErr || !updatedTask) {
           throw new Error(updateErr?.message || "Failed to apply Google update to task");
         }

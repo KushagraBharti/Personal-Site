@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { DateTime } from "luxon";
 import {
   createTask,
   createTaskList,
@@ -51,42 +52,62 @@ const toIsoOrNull = (dateTimeLocal: string): string | null => {
   return parsed.toISOString();
 };
 
+const isValidIanaTimeZone = (timeZone: string | null | undefined) => {
+  if (!timeZone) return false;
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const getBrowserTimeZone = () => {
+  const resolved = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return isValidIanaTimeZone(resolved) ? resolved : "UTC";
+};
+
+const normalizeTaskTimeZone = (timeZone: string | null | undefined) =>
+  isValidIanaTimeZone(timeZone) ? timeZone : null;
+
 const computeNextDueAt = (task: TrackerTask): string | null => {
   if (!task.due_at) return null;
-  const base = new Date(task.due_at);
-  if (Number.isNaN(base.getTime())) return null;
+  const baseUtc = DateTime.fromISO(task.due_at, { zone: "utc" });
+  if (!baseUtc.isValid) return null;
 
   const recurrence = task.recurrence_type;
   if (recurrence === "none") return null;
 
-  const next = new Date(base);
+  const zone = normalizeTaskTimeZone(task.due_timezone) || getBrowserTimeZone();
+  let next = baseUtc.setZone(zone);
 
   if (recurrence === "daily") {
-    next.setDate(next.getDate() + 1);
+    next = next.plus({ days: 1 });
   } else if (recurrence === "weekly") {
-    next.setDate(next.getDate() + 7);
+    next = next.plus({ weeks: 1 });
   } else if (recurrence === "biweekly") {
-    next.setDate(next.getDate() + 14);
+    next = next.plus({ weeks: 2 });
   } else {
     const interval = Math.max(task.recurrence_interval ?? 1, 1);
     const unit = task.recurrence_unit ?? "day";
     if (unit === "month") {
-      next.setMonth(next.getMonth() + interval);
+      next = next.plus({ months: interval });
     } else if (unit === "week") {
-      next.setDate(next.getDate() + interval * 7);
+      next = next.plus({ weeks: interval });
     } else {
-      next.setDate(next.getDate() + interval);
+      next = next.plus({ days: interval });
     }
   }
 
+  const nextUtc = next.toUTC();
   if (task.recurrence_ends_at) {
-    const end = new Date(task.recurrence_ends_at);
-    if (!Number.isNaN(end.getTime()) && next > end) {
+    const endUtc = DateTime.fromISO(task.recurrence_ends_at, { zone: "utc" });
+    if (endUtc.isValid && nextUtc.toMillis() > endUtc.toMillis()) {
       return null;
     }
   }
 
-  return next.toISOString();
+  return nextUtc.toISO() ?? null;
 };
 
 const isRecurring = (recurrenceType: RecurrenceType) => recurrenceType !== "none";
@@ -97,6 +118,7 @@ const buildTaskDraft = (listId: string, parentTaskId: string | null = null): Tas
   title: "",
   details: "",
   due_at: "",
+  due_timezone: getBrowserTimeZone(),
   recurrence_type: "none",
   recurrence_interval: 1,
   recurrence_unit: "week",
@@ -129,6 +151,7 @@ export const useTasksHubModule = () => {
     failures: Array<{ id: number; error: string }>;
   } | null>(null);
   const syncTimerRef = useRef<number | null>(null);
+  const seededDueTimezoneByUserRef = useRef<Record<string, boolean>>({});
 
   const runWithLoading = useCallback(
     async <T>(fn: () => Promise<T>) => {
@@ -187,6 +210,36 @@ export const useTasksHubModule = () => {
     if (!userId) return;
     fetchAll();
   }, [userId, fetchAll]);
+
+  useEffect(() => {
+    if (!userId) return;
+    if (seededDueTimezoneByUserRef.current[userId]) return;
+    if (tasks.length === 0) return;
+
+    const missingTimezoneTasks = tasks.filter((task) => !!task.due_at && !task.due_timezone);
+    seededDueTimezoneByUserRef.current[userId] = true;
+    if (missingTimezoneTasks.length === 0) return;
+
+    const currentZone = getBrowserTimeZone();
+    void (async () => {
+      const results = await Promise.all(
+        missingTimezoneTasks.map((task) =>
+          updateTask(supabase, userId, task.id, { due_timezone: currentZone })
+        )
+      );
+      const successfulById = new Map<string, TrackerTask>();
+      results.forEach((result) => {
+        if (!result.error && result.data) {
+          successfulById.set(result.data.id, result.data as TrackerTask);
+        }
+      });
+      if (successfulById.size > 0) {
+        setTasks((prev) =>
+          prev.map((task) => successfulById.get(task.id) || task)
+        );
+      }
+    })();
+  }, [supabase, tasks, userId]);
 
   const loadCalendarStatus = useCallback(async () => {
     if (!session?.access_token) {
@@ -449,6 +502,7 @@ export const useTasksHubModule = () => {
         title: cleanedTitle,
         details: draft.details.trim() || null,
         due_at: dueAtIso,
+        due_timezone: dueAtIso ? normalizeTaskTimeZone(draft.due_timezone) || getBrowserTimeZone() : null,
         is_completed: false,
         completed_at: null,
         recurrence_type: recurrenceType,
@@ -481,12 +535,26 @@ export const useTasksHubModule = () => {
       }
 
       const currentTask = tasks.find((task) => task.id === taskId) || null;
+      const touchesDueAt = Object.prototype.hasOwnProperty.call(payload, "due_at");
       const touchesRecurrence =
         Object.prototype.hasOwnProperty.call(payload, "recurrence_type") ||
         Object.prototype.hasOwnProperty.call(payload, "recurrence_interval") ||
         Object.prototype.hasOwnProperty.call(payload, "recurrence_unit") ||
         Object.prototype.hasOwnProperty.call(payload, "recurrence_ends_at") ||
-        Object.prototype.hasOwnProperty.call(payload, "due_at");
+        touchesDueAt;
+      if (touchesRecurrence) {
+        const nextDueAt =
+          payload.due_at !== undefined ? payload.due_at : (currentTask?.due_at ?? null);
+        if (nextDueAt) {
+          const nextTimeZone =
+            payload.due_timezone !== undefined
+              ? normalizeTaskTimeZone(payload.due_timezone) || getBrowserTimeZone()
+              : normalizeTaskTimeZone(currentTask?.due_timezone) || getBrowserTimeZone();
+          payload.due_timezone = nextTimeZone;
+        } else if (touchesDueAt && payload.due_at === null) {
+          payload.due_timezone = null;
+        }
+      }
       if (touchesRecurrence) {
         const nextRecurrenceType = payload.recurrence_type ?? currentTask?.recurrence_type ?? "none";
         const nextDueAt =
@@ -555,6 +623,7 @@ export const useTasksHubModule = () => {
             title: task.title,
             details: task.details,
             due_at: nextDueAt,
+            due_timezone: normalizeTaskTimeZone(task.due_timezone) || getBrowserTimeZone(),
             is_completed: false,
             completed_at: null,
             recurrence_type: task.recurrence_type,

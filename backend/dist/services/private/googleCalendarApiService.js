@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fetchGoogleUserEmail = exports.listGoogleEventsDelta = exports.deleteGoogleEvent = exports.patchGoogleEvent = exports.insertGoogleEvent = exports.stopGoogleCalendarWatch = exports.upsertGoogleCalendarWatch = exports.ensureTasksCalendar = exports.updateGoogleCalendarSummary = exports.getGoogleCalendar = exports.createGoogleCalendar = exports.listGoogleCalendars = exports.getValidGoogleAccessToken = exports.loadCalendarConnection = exports.hashChannelToken = exports.taskToGoogleEventPayload = exports.googleEventToTaskDueAtIso = exports.isDateOnlyIso = exports.TRACKER_TASKS_CALENDAR_SUMMARY = void 0;
+exports.fetchGoogleUserEmail = exports.listGoogleEventsDelta = exports.deleteGoogleEvent = exports.patchGoogleEvent = exports.insertGoogleEvent = exports.stopGoogleCalendarWatch = exports.upsertGoogleCalendarWatch = exports.ensureTasksCalendar = exports.updateGoogleCalendarSummary = exports.getGoogleCalendar = exports.createGoogleCalendar = exports.listGoogleCalendars = exports.getValidGoogleAccessToken = exports.loadCalendarConnection = exports.hashChannelToken = exports.taskToGoogleEventPayload = exports.googleEventToTaskTimeZone = exports.googleEventToTaskDueAtIso = exports.isDateOnlyIso = exports.TRACKER_TASKS_CALENDAR_SUMMARY = void 0;
 const axios_1 = __importDefault(require("axios"));
 const crypto_1 = require("crypto");
 const encryptionService_1 = require("./encryptionService");
@@ -20,6 +20,7 @@ const GOOGLE_CALENDAR_API_BASE = "https://www.googleapis.com/calendar/v3";
 const GOOGLE_OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const DATE_ONLY_MARKER_MS = 777;
 const DEFAULT_TIMED_EVENT_DURATION_MS = 30 * 60 * 1000;
+const GOOGLE_EVENT_TIMEZONE = process.env.GOOGLE_EVENT_TIMEZONE || "UTC";
 exports.TRACKER_TASKS_CALENDAR_SUMMARY = "Tracker Tasks";
 const LEGACY_TASKS_CALENDAR_SUMMARY = "Tasks";
 const requiredEnv = (key) => {
@@ -30,6 +31,24 @@ const requiredEnv = (key) => {
     return value;
 };
 const toIsoUtcNoMs = (d) => d.toISOString().replace(/\.\d{3}Z$/, "Z");
+const isValidIanaTimeZone = (timeZone) => {
+    if (!timeZone)
+        return false;
+    try {
+        new Intl.DateTimeFormat("en-US", { timeZone });
+        return true;
+    }
+    catch (_a) {
+        return false;
+    }
+};
+const resolveEventTimeZone = (taskTimeZone) => {
+    if (isValidIanaTimeZone(taskTimeZone))
+        return taskTimeZone;
+    if (isValidIanaTimeZone(GOOGLE_EVENT_TIMEZONE))
+        return GOOGLE_EVENT_TIMEZONE;
+    return "UTC";
+};
 const buildRRule = (task) => {
     var _a, _b;
     if (task.recurrence_type === "none")
@@ -99,6 +118,14 @@ const googleEventToTaskDueAtIso = (event) => {
     return null;
 };
 exports.googleEventToTaskDueAtIso = googleEventToTaskDueAtIso;
+const googleEventToTaskTimeZone = (event) => {
+    var _a, _b;
+    const startTimeZone = typeof ((_a = event === null || event === void 0 ? void 0 : event.start) === null || _a === void 0 ? void 0 : _a.timeZone) === "string" ? event.start.timeZone.trim() : "";
+    const endTimeZone = typeof ((_b = event === null || event === void 0 ? void 0 : event.end) === null || _b === void 0 ? void 0 : _b.timeZone) === "string" ? event.end.timeZone.trim() : "";
+    const candidate = startTimeZone || endTimeZone || "";
+    return isValidIanaTimeZone(candidate) ? candidate : null;
+};
+exports.googleEventToTaskTimeZone = googleEventToTaskTimeZone;
 const taskToGoogleEventPayload = (task) => {
     const payload = {
         summary: task.title,
@@ -111,6 +138,7 @@ const taskToGoogleEventPayload = (task) => {
             },
         },
     };
+    const eventTimeZone = resolveEventTimeZone(task.due_timezone);
     if (task.due_at) {
         if ((0, exports.isDateOnlyIso)(task.due_at)) {
             const datePart = dueAtToDatePart(task.due_at);
@@ -125,8 +153,8 @@ const taskToGoogleEventPayload = (task) => {
             const start = new Date(task.due_at);
             if (!Number.isNaN(start.getTime())) {
                 const end = new Date(start.getTime() + DEFAULT_TIMED_EVENT_DURATION_MS);
-                payload.start = { dateTime: start.toISOString() };
-                payload.end = { dateTime: end.toISOString() };
+                payload.start = { dateTime: start.toISOString(), timeZone: eventTimeZone };
+                payload.end = { dateTime: end.toISOString(), timeZone: eventTimeZone };
             }
         }
     }

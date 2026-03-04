@@ -8,6 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.normalizeDueAtForSync = exports.queueManualSyncForUser = exports.getCalendarStatusForUser = exports.upsertListSyncSetting = exports.listUserSyncEnabledLists = exports.renewExpiringCalendarWatches = exports.disconnectGoogleCalendarForUser = exports.upsertGoogleConnectionFromOAuth = exports.queueFullBackfill = exports.processCalendarSyncJobs = exports.renewCalendarWatchForUser = void 0;
 const crypto_1 = require("crypto");
@@ -69,6 +80,14 @@ const isGoogleNotFoundError = (error) => {
     var _a;
     const err = error;
     return ((_a = err === null || err === void 0 ? void 0 : err.response) === null || _a === void 0 ? void 0 : _a.status) === 404;
+};
+const isMissingDueTimezoneColumnError = (error) => {
+    const message = error instanceof Error
+        ? error.message.toLowerCase()
+        : typeof (error === null || error === void 0 ? void 0 : error.message) === "string"
+            ? error.message.toLowerCase()
+            : "";
+    return message.includes("due_timezone") && message.includes("column");
 };
 const isListSyncEnabled = (supabaseAdmin, userId, listId) => __awaiter(void 0, void 0, void 0, function* () {
     const { data } = yield supabaseAdmin
@@ -359,18 +378,33 @@ const processInboundDeltaJob = (supabaseAdmin, job) => __awaiter(void 0, void 0,
             const googleUpdatedMs = new Date(event.updated || event.created || 0).getTime();
             const taskUpdatedMs = new Date(task.updated_at).getTime();
             if (Number.isFinite(googleUpdatedMs) && googleUpdatedMs > taskUpdatedMs) {
+                const nextDueAt = (0, googleCalendarApiService_1.googleEventToTaskDueAtIso)(event);
+                const nextDueTimeZone = nextDueAt && !(0, googleCalendarApiService_1.isDateOnlyIso)(nextDueAt) ? (0, googleCalendarApiService_1.googleEventToTaskTimeZone)(event) : null;
                 const updates = {
                     title: typeof event.summary === "string" && event.summary.trim() ? event.summary.trim() : task.title,
                     details: typeof event.description === "string" ? event.description : null,
-                    due_at: (0, googleCalendarApiService_1.googleEventToTaskDueAtIso)(event),
+                    due_at: nextDueAt,
+                    due_timezone: nextDueTimeZone,
                 };
-                const { data: updatedTask, error: updateErr } = yield supabaseAdmin
+                let updateAttempt = yield supabaseAdmin
                     .from("tracker_tasks")
                     .update(updates)
                     .eq("user_id", job.user_id)
                     .eq("id", task.id)
                     .select("id, updated_at")
                     .single();
+                if (updateAttempt.error && isMissingDueTimezoneColumnError(updateAttempt.error)) {
+                    const { due_timezone } = updates, fallbackUpdates = __rest(updates, ["due_timezone"]);
+                    updateAttempt = yield supabaseAdmin
+                        .from("tracker_tasks")
+                        .update(fallbackUpdates)
+                        .eq("user_id", job.user_id)
+                        .eq("id", task.id)
+                        .select("id, updated_at")
+                        .single();
+                }
+                const updatedTask = updateAttempt.data;
+                const updateErr = updateAttempt.error;
                 if (updateErr || !updatedTask) {
                     throw new Error((updateErr === null || updateErr === void 0 ? void 0 : updateErr.message) || "Failed to apply Google update to task");
                 }

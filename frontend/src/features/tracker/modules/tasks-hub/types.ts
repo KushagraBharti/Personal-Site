@@ -25,6 +25,7 @@ export interface TrackerTask {
   title: string;
   details: string | null;
   due_at: string | null;
+  due_timezone: string | null;
   is_completed: boolean;
   completed_at: string | null;
   recurrence_type: RecurrenceType;
@@ -52,6 +53,7 @@ export interface TaskDraft {
   title: string;
   details: string;
   due_at: string;
+  due_timezone: string | null;
   recurrence_type: RecurrenceType;
   recurrence_interval: number;
   recurrence_unit: RecurrenceUnit;
@@ -62,6 +64,7 @@ export interface TaskUpdateInput {
   title?: string;
   details?: string | null;
   due_at?: string | null;
+  due_timezone?: string | null;
   is_completed?: boolean;
   completed_at?: string | null;
   recurrence_type?: RecurrenceType;

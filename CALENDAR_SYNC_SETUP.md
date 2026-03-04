@@ -7,6 +7,8 @@ This project now includes two-way Google Calendar sync for the Tracker Tasks mod
 1. Open Supabase SQL Editor.
 2. Run:
    - `backend/sql/calendar_sync_schema.sql`
+   - `backend/sql/2026-03-04_tracker_tasks_due_timezone.sql`
+   - `backend/sql/2026-03-04_tracker_google_sync_jobs_fk_fix.sql`
 3. Verify tables exist:
    - `tracker_google_calendar_connections_public`
    - `tracker_google_calendar_connections_secrets`
@@ -35,6 +37,7 @@ Add these in backend environment (see `backend/.env.example`):
 - `GOOGLE_OAUTH_REDIRECT_URI`
 - `GOOGLE_WEBHOOK_URL` (must be public HTTPS endpoint for `/api/private/calendar/google/webhook`)
 - `GOOGLE_OAUTH_STATE_SECRET` (long random secret)
+- `GOOGLE_EVENT_TIMEZONE` (optional fallback, defaults to `UTC`; used when a task has no stored timezone yet)
 - `TRACKER_FRONTEND_URL` (for callback redirect; e.g. `https://<frontend>/tracker?module=tasks`)
 - `CALENDAR_SYNC_ENABLED=1`
 - existing required vars:
@@ -77,6 +80,8 @@ Notes:
   - description/details
 - Subtasks sync as individual events.
 - Date-only tasks sync as all-day events.
+- Timed tasks store timezone per task (captured from browser timezone at creation/update).
+- Existing timed tasks without timezone are auto-seeded from current browser timezone when loading Tasks.
 - Conflict resolution uses newest edit timestamp.
 - Incremental inbound sync uses sync tokens and handles 410 token resets.
 - Queue has retry + dead-letter behavior.

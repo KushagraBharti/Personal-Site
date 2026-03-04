@@ -61,6 +61,7 @@ export interface TrackerTaskRow {
   title: string;
   details: string | null;
   due_at: string | null;
+  due_timezone: string | null;
   is_completed: boolean;
   completed_at: string | null;
   recurrence_type: "none" | "daily" | "weekly" | "biweekly" | "custom";
@@ -71,4 +72,3 @@ export interface TrackerTaskRow {
   created_at: string;
   updated_at: string;
 }
-

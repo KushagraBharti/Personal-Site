@@ -8,6 +8,7 @@ const GOOGLE_CALENDAR_API_BASE = "https://www.googleapis.com/calendar/v3";
 const GOOGLE_OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const DATE_ONLY_MARKER_MS = 777;
 const DEFAULT_TIMED_EVENT_DURATION_MS = 30 * 60 * 1000;
+const GOOGLE_EVENT_TIMEZONE = process.env.GOOGLE_EVENT_TIMEZONE || "UTC";
 export const TRACKER_TASKS_CALENDAR_SUMMARY = "Tracker Tasks";
 const LEGACY_TASKS_CALENDAR_SUMMARY = "Tasks";
 
@@ -20,6 +21,22 @@ const requiredEnv = (key: string) => {
 };
 
 const toIsoUtcNoMs = (d: Date) => d.toISOString().replace(/\.\d{3}Z$/, "Z");
+
+const isValidIanaTimeZone = (timeZone: string | null | undefined) => {
+  if (!timeZone) return false;
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const resolveEventTimeZone = (taskTimeZone: string | null | undefined) => {
+  if (isValidIanaTimeZone(taskTimeZone)) return taskTimeZone as string;
+  if (isValidIanaTimeZone(GOOGLE_EVENT_TIMEZONE)) return GOOGLE_EVENT_TIMEZONE;
+  return "UTC";
+};
 
 const buildRRule = (task: TrackerTaskRow): string[] | undefined => {
   if (task.recurrence_type === "none") return undefined;
@@ -81,6 +98,15 @@ export const googleEventToTaskDueAtIso = (event: any): string | null => {
   return null;
 };
 
+export const googleEventToTaskTimeZone = (event: any): string | null => {
+  const startTimeZone =
+    typeof event?.start?.timeZone === "string" ? event.start.timeZone.trim() : "";
+  const endTimeZone =
+    typeof event?.end?.timeZone === "string" ? event.end.timeZone.trim() : "";
+  const candidate = startTimeZone || endTimeZone || "";
+  return isValidIanaTimeZone(candidate) ? candidate : null;
+};
+
 export const taskToGoogleEventPayload = (task: TrackerTaskRow) => {
   const payload: Record<string, unknown> = {
     summary: task.title,
@@ -93,6 +119,8 @@ export const taskToGoogleEventPayload = (task: TrackerTaskRow) => {
       },
     },
   };
+
+  const eventTimeZone = resolveEventTimeZone(task.due_timezone);
 
   if (task.due_at) {
     if (isDateOnlyIso(task.due_at)) {
@@ -107,8 +135,8 @@ export const taskToGoogleEventPayload = (task: TrackerTaskRow) => {
       const start = new Date(task.due_at);
       if (!Number.isNaN(start.getTime())) {
         const end = new Date(start.getTime() + DEFAULT_TIMED_EVENT_DURATION_MS);
-        payload.start = { dateTime: start.toISOString() };
-        payload.end = { dateTime: end.toISOString() };
+        payload.start = { dateTime: start.toISOString(), timeZone: eventTimeZone };
+        payload.end = { dateTime: end.toISOString(), timeZone: eventTimeZone };
       }
     }
   }

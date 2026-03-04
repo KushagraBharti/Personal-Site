@@ -15,6 +15,7 @@
     "@vercel/analytics": "^1.6.1",
     "axios": "^1.7.7",
     "framer-motion": "^12.6.2",
+    "luxon": "^3.7.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-draggable": "^4.4.6",
@@ -29,6 +30,7 @@
   "devDependencies": {
     "@eslint/js": "^9.13.0",
     "@types/express": "^5.0.0",
+    "@types/luxon": "^3.7.1",
     "@types/node": "^22.8.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",

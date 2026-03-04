@@ -28,6 +28,7 @@ interface TaskCreateInput {
   title: string;
   details: string | null;
   due_at: string | null;
+  due_timezone: string | null;
   is_completed: boolean;
   completed_at: string | null;
   recurrence_type: TrackerTask["recurrence_type"];
@@ -41,6 +42,11 @@ const getAuthHeaders = (accessToken: string) => ({
   "Content-Type": "application/json",
   Authorization: `Bearer ${accessToken}`,
 });
+
+const isMissingDueTimezoneColumnError = (error: any) => {
+  const message = typeof error?.message === "string" ? error.message.toLowerCase() : "";
+  return message.includes("due_timezone") && message.includes("column");
+};
 
 export const fetchTaskLists = async (client: SupabaseClient, userId: string) => {
   const { data, error } = await client
@@ -114,13 +120,25 @@ export const deleteTaskList = async (client: SupabaseClient, userId: string, lis
 };
 
 export const createTask = async (client: SupabaseClient, payload: TaskCreateInput) => {
-  const { data, error } = await client
+  let { data, error } = await client
     .from("tracker_tasks")
     .insert(payload)
     .select("*")
     .single();
 
-  return { data: data as TrackerTask | null, error };
+  // Backward compatibility while due_timezone migration rolls out.
+  if (error && isMissingDueTimezoneColumnError(error)) {
+    const { due_timezone, ...fallbackPayload } = payload;
+    const retried = await client
+      .from("tracker_tasks")
+      .insert(fallbackPayload)
+      .select("*")
+      .single();
+    data = retried.data;
+    error = retried.error;
+  }
+
+  return { data: (data as TrackerTask | null) ?? null, error };
 };
 
 export const updateTask = async (
@@ -129,7 +147,7 @@ export const updateTask = async (
   taskId: string,
   updates: TaskUpdateInput
 ) => {
-  const { data, error } = await client
+  let { data, error } = await client
     .from("tracker_tasks")
     .update(updates)
     .eq("user_id", userId)
@@ -137,7 +155,25 @@ export const updateTask = async (
     .select("*")
     .single();
 
-  return { data: data as TrackerTask | null, error };
+  // Backward compatibility while due_timezone migration rolls out.
+  if (
+    error &&
+    isMissingDueTimezoneColumnError(error) &&
+    Object.prototype.hasOwnProperty.call(updates, "due_timezone")
+  ) {
+    const { due_timezone, ...fallbackUpdates } = updates;
+    const retried = await client
+      .from("tracker_tasks")
+      .update(fallbackUpdates)
+      .eq("user_id", userId)
+      .eq("id", taskId)
+      .select("*")
+      .single();
+    data = retried.data;
+    error = retried.error;
+  }
+
+  return { data: (data as TrackerTask | null) ?? null, error };
 };
 
 export const deleteTask = async (client: SupabaseClient, userId: string, taskId: string) => {
