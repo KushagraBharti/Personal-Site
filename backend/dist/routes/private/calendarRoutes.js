@@ -175,8 +175,20 @@ router.post("/sync-now", requireUser_1.requireUser, (req, res) => __awaiter(void
         yield (0, taskCalendarSyncService_1.queueManualSyncForUser)(supabaseAdmin, req.user.id);
         const processedResults = yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ userId: req.user.id, batchSize: 8 });
         const processed = processedResults.length;
-        const failed = processedResults.filter((item) => !item.ok).length;
-        return res.json({ ok: true, processed, failed, queued: true });
+        const failureRows = processedResults
+            .filter((item) => !item.ok)
+            .map((item) => ({
+            id: item.id,
+            error: item.error || "Unknown sync error",
+        }));
+        const failed = failureRows.length;
+        return res.json({
+            ok: true,
+            processed,
+            failed,
+            queued: true,
+            failures: failureRows.slice(0, 5),
+        });
     }
     catch (error) {
         console.error("Failed to sync calendar now", error);

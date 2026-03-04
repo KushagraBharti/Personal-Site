@@ -123,7 +123,11 @@ export const useTasksHubModule = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [calendarState, setCalendarState] = useState<CalendarConnectionState | null>(null);
   const [calendarBusy, setCalendarBusy] = useState(false);
-  const [calendarSyncResult, setCalendarSyncResult] = useState<{ processed: number; failed: number } | null>(null);
+  const [calendarSyncResult, setCalendarSyncResult] = useState<{
+    processed: number;
+    failed: number;
+    failures: Array<{ id: number; error: string }>;
+  } | null>(null);
   const syncTimerRef = useRef<number | null>(null);
 
   const runWithLoading = useCallback(
@@ -407,7 +411,11 @@ export const useTasksHubModule = () => {
       syncTimerRef.current = window.setTimeout(async () => {
         try {
           const result = await triggerCalendarSyncNow(session.access_token);
-          setCalendarSyncResult({ processed: result.processed, failed: result.failed });
+          setCalendarSyncResult({
+            processed: result.processed,
+            failed: result.failed,
+            failures: result.failures || [],
+          });
           await loadCalendarStatus();
         } catch (err) {
           const message = err instanceof Error ? err.message : "Calendar sync failed";
@@ -760,7 +768,11 @@ export const useTasksHubModule = () => {
     setCalendarBusy(true);
     try {
       const result = await triggerCalendarSyncNow(session.access_token);
-      setCalendarSyncResult({ processed: result.processed, failed: result.failed });
+      setCalendarSyncResult({
+        processed: result.processed,
+        failed: result.failed,
+        failures: result.failures || [],
+      });
       await loadCalendarStatus();
       return true;
     } catch (err) {

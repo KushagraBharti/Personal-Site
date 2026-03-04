@@ -797,6 +797,15 @@ const TasksHubTracker: React.FC = () => {
                     Last run: {calendarSyncResult.processed} processed / {calendarSyncResult.failed} failed
                   </p>
                 )}
+                {calendarSyncResult?.failures?.length ? (
+                  <div className="tasks-muted text-xs mt-1" style={{ color: "var(--neo-red)" }}>
+                    {calendarSyncResult.failures.map((failure) => (
+                      <p key={failure.id}>
+                        Job {failure.id}: {failure.error}
+                      </p>
+                    ))}
+                  </div>
+                ) : null}
                 {calendarState?.connection?.last_error && (
                   <p className="tasks-muted text-xs mt-1" style={{ color: "var(--neo-red)" }}>
                     {calendarState.connection.last_error}

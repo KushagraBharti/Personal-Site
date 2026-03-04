@@ -105,4 +105,8 @@ export interface SyncNowResult {
   ok: boolean;
   processed: number;
   failed: number;
+  failures?: Array<{
+    id: number;
+    error: string;
+  }>;
 }

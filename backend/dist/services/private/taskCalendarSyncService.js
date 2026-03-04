@@ -65,6 +65,11 @@ const isAuthFatalSyncError = (error) => {
         message.includes("google calendar connection not found") ||
         message.includes("invalid grant"));
 };
+const isGoogleNotFoundError = (error) => {
+    var _a;
+    const err = error;
+    return ((_a = err === null || err === void 0 ? void 0 : err.response) === null || _a === void 0 ? void 0 : _a.status) === 404;
+};
 const isListSyncEnabled = (supabaseAdmin, userId, listId) => __awaiter(void 0, void 0, void 0, function* () {
     const { data } = yield supabaseAdmin
         .from("tracker_task_list_sync_settings")
@@ -129,7 +134,7 @@ const setConnectionHealth = (supabaseAdmin, userId, values) => __awaiter(void 0,
 });
 const shouldSyncTask = (task) => !task.is_completed && !!task.due_at;
 const processTaskUpsertJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f;
     if (!job.task_id)
         return;
     const task = yield getTaskById(supabaseAdmin, job.user_id, job.task_id);
@@ -148,7 +153,7 @@ const processTaskUpsertJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
             try {
                 yield (0, googleCalendarApiService_1.deleteGoogleEvent)(accessToken, existingLink.calendar_id, existingLink.google_event_id);
             }
-            catch (_e) {
+            catch (_g) {
                 // best effort
             }
             yield upsertLink(supabaseAdmin, {
@@ -175,19 +180,40 @@ const processTaskUpsertJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
     if (!eventPayload.start)
         return;
     if (existingLink && !existingLink.is_deleted) {
-        const patched = yield (0, googleCalendarApiService_1.patchGoogleEvent)(accessToken, existingLink.calendar_id, existingLink.google_event_id, eventPayload);
-        yield upsertLink(supabaseAdmin, {
-            userId: job.user_id,
-            taskId: task.id,
-            calendarId: existingLink.calendar_id,
-            googleEventId: existingLink.google_event_id,
-            etag: (_a = patched.etag) !== null && _a !== void 0 ? _a : null,
-            googleUpdatedAt: (_b = patched.updated) !== null && _b !== void 0 ? _b : nowIso(),
-            lastSyncedTaskUpdatedAt: task.updated_at,
-            lastSyncSource: "app",
-            isDeleted: false,
-        });
-        return;
+        try {
+            const patched = yield (0, googleCalendarApiService_1.patchGoogleEvent)(accessToken, existingLink.calendar_id, existingLink.google_event_id, eventPayload);
+            yield upsertLink(supabaseAdmin, {
+                userId: job.user_id,
+                taskId: task.id,
+                calendarId: existingLink.calendar_id,
+                googleEventId: existingLink.google_event_id,
+                etag: (_a = patched.etag) !== null && _a !== void 0 ? _a : null,
+                googleUpdatedAt: (_b = patched.updated) !== null && _b !== void 0 ? _b : nowIso(),
+                lastSyncedTaskUpdatedAt: task.updated_at,
+                lastSyncSource: "app",
+                isDeleted: false,
+            });
+            return;
+        }
+        catch (error) {
+            // If the linked Google event was deleted outside the app, recreate it and relink.
+            if (!isGoogleNotFoundError(error)) {
+                throw error;
+            }
+            const inserted = yield (0, googleCalendarApiService_1.insertGoogleEvent)(accessToken, calendarId, eventPayload);
+            yield upsertLink(supabaseAdmin, {
+                userId: job.user_id,
+                taskId: task.id,
+                calendarId,
+                googleEventId: inserted.id,
+                etag: (_c = inserted.etag) !== null && _c !== void 0 ? _c : null,
+                googleUpdatedAt: (_d = inserted.updated) !== null && _d !== void 0 ? _d : nowIso(),
+                lastSyncedTaskUpdatedAt: task.updated_at,
+                lastSyncSource: "app",
+                isDeleted: false,
+            });
+            return;
+        }
     }
     const inserted = yield (0, googleCalendarApiService_1.insertGoogleEvent)(accessToken, calendarId, eventPayload);
     yield upsertLink(supabaseAdmin, {
@@ -195,8 +221,8 @@ const processTaskUpsertJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
         taskId: task.id,
         calendarId,
         googleEventId: inserted.id,
-        etag: (_c = inserted.etag) !== null && _c !== void 0 ? _c : null,
-        googleUpdatedAt: (_d = inserted.updated) !== null && _d !== void 0 ? _d : nowIso(),
+        etag: (_e = inserted.etag) !== null && _e !== void 0 ? _e : null,
+        googleUpdatedAt: (_f = inserted.updated) !== null && _f !== void 0 ? _f : nowIso(),
         lastSyncedTaskUpdatedAt: task.updated_at,
         lastSyncSource: "app",
         isDeleted: false,

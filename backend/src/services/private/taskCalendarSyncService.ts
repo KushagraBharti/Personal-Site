@@ -89,6 +89,11 @@ const isAuthFatalSyncError = (error: unknown) => {
   );
 };
 
+const isGoogleNotFoundError = (error: unknown) => {
+  const err = error as any;
+  return err?.response?.status === 404;
+};
+
 const isListSyncEnabled = async (supabaseAdmin: SupabaseClient, userId: string, listId: string) => {
   const { data } = await supabaseAdmin
     .from("tracker_task_list_sync_settings")
@@ -228,24 +233,44 @@ const processTaskUpsertJob = async (supabaseAdmin: SupabaseClient, job: TrackerG
   if (!eventPayload.start) return;
 
   if (existingLink && !existingLink.is_deleted) {
-    const patched = await patchGoogleEvent(
-      accessToken,
-      existingLink.calendar_id,
-      existingLink.google_event_id,
-      eventPayload
-    );
-    await upsertLink(supabaseAdmin, {
-      userId: job.user_id,
-      taskId: task.id,
-      calendarId: existingLink.calendar_id,
-      googleEventId: existingLink.google_event_id,
-      etag: patched.etag ?? null,
-      googleUpdatedAt: patched.updated ?? nowIso(),
-      lastSyncedTaskUpdatedAt: task.updated_at,
-      lastSyncSource: "app",
-      isDeleted: false,
-    });
-    return;
+    try {
+      const patched = await patchGoogleEvent(
+        accessToken,
+        existingLink.calendar_id,
+        existingLink.google_event_id,
+        eventPayload
+      );
+      await upsertLink(supabaseAdmin, {
+        userId: job.user_id,
+        taskId: task.id,
+        calendarId: existingLink.calendar_id,
+        googleEventId: existingLink.google_event_id,
+        etag: patched.etag ?? null,
+        googleUpdatedAt: patched.updated ?? nowIso(),
+        lastSyncedTaskUpdatedAt: task.updated_at,
+        lastSyncSource: "app",
+        isDeleted: false,
+      });
+      return;
+    } catch (error) {
+      // If the linked Google event was deleted outside the app, recreate it and relink.
+      if (!isGoogleNotFoundError(error)) {
+        throw error;
+      }
+      const inserted = await insertGoogleEvent(accessToken, calendarId, eventPayload);
+      await upsertLink(supabaseAdmin, {
+        userId: job.user_id,
+        taskId: task.id,
+        calendarId,
+        googleEventId: inserted.id,
+        etag: inserted.etag ?? null,
+        googleUpdatedAt: inserted.updated ?? nowIso(),
+        lastSyncedTaskUpdatedAt: task.updated_at,
+        lastSyncSource: "app",
+        isDeleted: false,
+      });
+      return;
+    }
   }
 
   const inserted = await insertGoogleEvent(accessToken, calendarId, eventPayload);
