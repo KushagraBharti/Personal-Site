@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build & Development Commands
 
 All commands use **bun** as the package manager.
+Do not use `npm`, `yarn`, or `pnpm` in this repository.
 
 ### Frontend (Vite + React)
 ```bash

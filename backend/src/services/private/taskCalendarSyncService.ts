@@ -35,6 +35,35 @@ const GOOGLE_WEBHOOK_URL = () => {
 
 const nowIso = () => new Date().toISOString();
 
+const isAuthFatalSyncError = (error: unknown) => {
+  const err = error as any;
+  const status = err?.response?.status;
+  const googleErrorCode = err?.response?.data?.error;
+  const message =
+    error instanceof Error
+      ? error.message.toLowerCase()
+      : typeof err?.message === "string"
+        ? err.message.toLowerCase()
+        : "";
+
+  if (status === 401 || status === 403) return true;
+  if (
+    status === 400 &&
+    typeof googleErrorCode === "string" &&
+    ["invalid_grant", "invalid_client", "invalid_request", "unauthorized_client"].includes(
+      googleErrorCode
+    )
+  ) {
+    return true;
+  }
+
+  return (
+    message.includes("no google refresh token available") ||
+    message.includes("google calendar connection not found") ||
+    message.includes("invalid grant")
+  );
+};
+
 const isListSyncEnabled = async (supabaseAdmin: SupabaseClient, userId: string, listId: string) => {
   const { data } = await supabaseAdmin
     .from("tracker_task_list_sync_settings")
@@ -463,15 +492,19 @@ export const processCalendarSyncJobs = async (input?: { userId?: string; batchSi
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       const retryDelay = computeRetryDelayInterval(job.attempt_count + 1);
+      const authFatal = isAuthFatalSyncError(error);
       try {
         await failSyncJob(supabaseAdmin, job.id, message, retryDelay);
       } catch {
         // suppress
       }
-      await setConnectionHealth(supabaseAdmin, job.user_id, {
-        status: "error",
-        last_error: message,
-      }).catch(() => {});
+      await setConnectionHealth(
+        supabaseAdmin,
+        job.user_id,
+        authFatal
+          ? { status: "error", last_error: message }
+          : { last_error: message }
+      ).catch(() => {});
       results.push({ id: job.id, ok: false, error: message });
     }
   }
@@ -499,7 +532,10 @@ export const upsertGoogleConnectionFromOAuth = async (params: {
 }) => {
   const { supabaseAdmin, userId } = params;
   const existing = await loadCalendarConnection(supabaseAdmin, userId);
-  const tasksCalendar = await ensureTasksCalendar(params.accessToken);
+  const tasksCalendar = await ensureTasksCalendar({
+    accessToken: params.accessToken,
+    preferredCalendarId: existing.publicRow?.selected_calendar_id || null,
+  });
   const googleEmail = await fetchGoogleUserEmail(params.accessToken);
 
   const existingRefreshEncrypted = existing.secretsRow?.refresh_token_encrypted || null;
@@ -659,7 +695,11 @@ export const getCalendarStatusForUser = async (supabaseAdmin: SupabaseClient, us
   const listSettings = await listUserSyncEnabledLists(supabaseAdmin, userId).catch(() => []);
 
   return {
-    connected: !!publicRow && publicRow.status === "connected" && !!publicRow.selected_calendar_id,
+    connected:
+      !!publicRow &&
+      publicRow.status === "connected" &&
+      !!publicRow.selected_calendar_id &&
+      !!secretsRow?.refresh_token_encrypted,
     connection: publicRow,
     watch_expires_at: secretsRow?.channel_expiration || null,
     list_sync_settings: listSettings,

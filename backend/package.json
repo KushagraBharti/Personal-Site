@@ -1,6 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
+  "packageManager": "bun@1.2.21",
   "main": "src/server.ts",
   "license": "MIT",
   "dependencies": {

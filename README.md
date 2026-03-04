@@ -26,7 +26,7 @@ A dynamic, full-stack portfolio website to showcase my professional experience, 
 ## **Getting Started**
 
 ### **Prerequisites**
-- Node.js, npm, and yarn installed on your system
+- Node.js and Bun installed on your system
 - Basic knowledge of JavaScript, TypeScript, and React
 
 ### **Setup**

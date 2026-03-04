@@ -52,7 +52,8 @@ const toIsoOrNull = (dateTimeLocal: string): string | null => {
 };
 
 const computeNextDueAt = (task: TrackerTask): string | null => {
-  const base = task.due_at ? new Date(task.due_at) : new Date();
+  if (!task.due_at) return null;
+  const base = new Date(task.due_at);
   if (Number.isNaN(base.getTime())) return null;
 
   const recurrence = task.recurrence_type;
@@ -427,6 +428,11 @@ export const useTasksHubModule = () => {
       const recurrenceType = draft.recurrence_type;
       const interval = recurrenceType === "custom" ? Math.max(draft.recurrence_interval || 1, 1) : null;
       const unit = recurrenceType === "custom" ? draft.recurrence_unit : null;
+      const dueAtIso = toIsoOrNull(draft.due_at);
+      if (recurrenceType !== "none" && !dueAtIso) {
+        setErrorMessage("Recurring tasks require a due date.");
+        return null;
+      }
 
       const result = await createTask(supabase, {
         user_id: userId,
@@ -434,7 +440,7 @@ export const useTasksHubModule = () => {
         parent_task_id: draft.parent_task_id,
         title: cleanedTitle,
         details: draft.details.trim() || null,
-        due_at: toIsoOrNull(draft.due_at),
+        due_at: dueAtIso,
         is_completed: false,
         completed_at: null,
         recurrence_type: recurrenceType,
@@ -466,6 +472,23 @@ export const useTasksHubModule = () => {
         payload.title = cleaned;
       }
 
+      const currentTask = tasks.find((task) => task.id === taskId) || null;
+      const touchesRecurrence =
+        Object.prototype.hasOwnProperty.call(payload, "recurrence_type") ||
+        Object.prototype.hasOwnProperty.call(payload, "recurrence_interval") ||
+        Object.prototype.hasOwnProperty.call(payload, "recurrence_unit") ||
+        Object.prototype.hasOwnProperty.call(payload, "recurrence_ends_at") ||
+        Object.prototype.hasOwnProperty.call(payload, "due_at");
+      if (touchesRecurrence) {
+        const nextRecurrenceType = payload.recurrence_type ?? currentTask?.recurrence_type ?? "none";
+        const nextDueAt =
+          payload.due_at !== undefined ? payload.due_at : (currentTask?.due_at ?? null);
+        if (nextRecurrenceType !== "none" && !nextDueAt) {
+          setErrorMessage("Recurring tasks require a due date.");
+          return false;
+        }
+      }
+
       const result = await updateTask(supabase, userId, taskId, payload);
       if (result.error || !result.data) {
         setErrorMessage(result.error?.message || "Failed to save task.");
@@ -477,7 +500,7 @@ export const useTasksHubModule = () => {
       scheduleCalendarSync();
       return true;
     },
-    [scheduleCalendarSync, supabase, userId]
+    [scheduleCalendarSync, supabase, tasks, userId]
   );
 
   const removeTask = useCallback(

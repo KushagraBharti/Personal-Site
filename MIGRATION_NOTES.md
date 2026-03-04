@@ -140,16 +140,16 @@ modules/<module-name>/
 Commands:
 ```bash
 cd backend
-npm run dev
+bun run dev
 
 cd frontend
-npm run dev
+bun run dev
 
 cd backend
-npm run build
+bun run build
 
 cd frontend
-npm run build
+bun run build
 ```
 Manual checks:
 - Home page sections (Intro/About/Education/Experience/Projects) render and animate exactly as before.

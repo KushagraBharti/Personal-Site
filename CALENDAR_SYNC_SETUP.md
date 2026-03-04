@@ -57,7 +57,7 @@ Call these endpoints with `Authorization: Bearer <CRON_SECRET>`:
 1. Open Tracker -> Tasks.
 2. In sidebar, use **Calendar Sync**:
    - Click **Connect Google**
-   - OAuth callback auto-creates/selects calendar named `Tasks`
+   - OAuth callback auto-creates/selects calendar named `Tracker Tasks`
 3. For each list to sync, enable the new sync checkbox in the list row.
 4. Use **Sync now** for immediate processing.
 

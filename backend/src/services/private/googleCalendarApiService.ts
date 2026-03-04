@@ -8,6 +8,8 @@ const GOOGLE_CALENDAR_API_BASE = "https://www.googleapis.com/calendar/v3";
 const GOOGLE_OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const DATE_ONLY_MARKER_MS = 777;
 const DEFAULT_TIMED_EVENT_DURATION_MS = 30 * 60 * 1000;
+export const TRACKER_TASKS_CALENDAR_SUMMARY = "Tracker Tasks";
+const LEGACY_TASKS_CALENDAR_SUMMARY = "Tasks";
 
 const requiredEnv = (key: string) => {
   const value = process.env[key];
@@ -250,13 +252,104 @@ export const createGoogleCalendar = async (accessToken: string, summary: string)
   return { id: data.id, summary: data.summary ?? summary };
 };
 
-export const ensureTasksCalendar = async (accessToken: string) => {
+export const getGoogleCalendar = async (accessToken: string, calendarId: string) => {
+  const data = await authedRequest<{ id: string; summary?: string }>(accessToken, {
+    method: "GET",
+    url: `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}`,
+  });
+  return { id: data.id || calendarId, summary: data.summary ?? null };
+};
+
+export const updateGoogleCalendarSummary = async (
+  accessToken: string,
+  calendarId: string,
+  summary: string
+) => {
+  const data = await authedRequest<{ id: string; summary?: string }>(accessToken, {
+    method: "PATCH",
+    url: `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}`,
+    data: { summary },
+  });
+  return { id: data.id || calendarId, summary: data.summary ?? summary };
+};
+
+const normalizeCalendarSummary = (summary: string | null | undefined) =>
+  (summary || "").trim().toLowerCase();
+
+export const ensureTasksCalendar = async (params: {
+  accessToken: string;
+  preferredCalendarId?: string | null;
+}) => {
+  const { accessToken, preferredCalendarId } = params;
   const calendars = await listGoogleCalendars(accessToken);
-  const existing = calendars.find((item) => (item.summary || "").trim().toLowerCase() === "tasks");
-  if (existing) {
-    return { id: existing.id, summary: existing.summary || "Tasks" };
+
+  const ensureCanonicalSummary = async (calendar: { id: string; summary?: string | null }) => {
+    if (
+      normalizeCalendarSummary(calendar.summary) ===
+      normalizeCalendarSummary(TRACKER_TASKS_CALENDAR_SUMMARY)
+    ) {
+      return {
+        id: calendar.id,
+        summary: calendar.summary || TRACKER_TASKS_CALENDAR_SUMMARY,
+      };
+    }
+
+    try {
+      return await updateGoogleCalendarSummary(
+        accessToken,
+        calendar.id,
+        TRACKER_TASKS_CALENDAR_SUMMARY
+      );
+    } catch {
+      return {
+        id: calendar.id,
+        summary: calendar.summary || TRACKER_TASKS_CALENDAR_SUMMARY,
+      };
+    }
+  };
+
+  if (preferredCalendarId) {
+    const preferredFromList = calendars.find((item) => item.id === preferredCalendarId);
+    if (preferredFromList) {
+      return ensureCanonicalSummary({
+        id: preferredFromList.id,
+        summary: preferredFromList.summary || null,
+      });
+    }
+
+    try {
+      const preferredCalendar = await getGoogleCalendar(accessToken, preferredCalendarId);
+      return ensureCanonicalSummary(preferredCalendar);
+    } catch {
+      // If the previously saved calendar is gone or inaccessible, continue fallback resolution.
+    }
   }
-  return createGoogleCalendar(accessToken, "Tasks");
+
+  const canonicalCalendar = calendars.find(
+    (item) =>
+      normalizeCalendarSummary(item.summary) ===
+      normalizeCalendarSummary(TRACKER_TASKS_CALENDAR_SUMMARY)
+  );
+  if (canonicalCalendar) {
+    return {
+      id: canonicalCalendar.id,
+      summary: canonicalCalendar.summary || TRACKER_TASKS_CALENDAR_SUMMARY,
+    };
+  }
+
+  const legacyCalendar = calendars.find(
+    (item) =>
+      normalizeCalendarSummary(item.summary) ===
+      normalizeCalendarSummary(LEGACY_TASKS_CALENDAR_SUMMARY)
+  );
+  if (legacyCalendar) {
+    return ensureCanonicalSummary({
+      id: legacyCalendar.id,
+      summary: legacyCalendar.summary || LEGACY_TASKS_CALENDAR_SUMMARY,
+    });
+  }
+
+  return createGoogleCalendar(accessToken, TRACKER_TASKS_CALENDAR_SUMMARY);
 };
 
 export const upsertGoogleCalendarWatch = async (params: {

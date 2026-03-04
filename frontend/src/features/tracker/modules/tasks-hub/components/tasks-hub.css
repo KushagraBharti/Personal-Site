@@ -613,33 +613,40 @@
   gap: 6px;
 }
 
+.tasks-hub .tasks-schedule-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(170px, 220px);
+  gap: 6px;
+  align-items: end;
+}
+
 /* ============================================================================
    RECURRENCE
    ============================================================================ */
 
 .tasks-hub .tasks-recurrence-fields {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
   align-items: end;
   width: 100%;
 }
 
-.tasks-hub .tasks-recurrence-fields.tasks-recurrence-fields-basic {
+.tasks-hub .tasks-recurrence-fields.tasks-recurrence-fields-with-until {
   grid-template-columns: minmax(0, 1fr);
 }
 
-.tasks-hub .tasks-recurrence-fields.tasks-recurrence-fields-with-until {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 .tasks-hub .tasks-recurrence-fields.tasks-recurrence-fields-custom {
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.7fr) minmax(0, 0.8fr) minmax(0, 1.2fr);
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1.2fr);
 }
 
 .tasks-hub .tasks-recurrence-item {
   min-width: 0;
   width: 100%;
+}
+
+.tasks-hub .tasks-repeat-field {
+  min-width: 0;
 }
 
 .tasks-hub .tasks-recurrence-until {
@@ -875,6 +882,10 @@
   }
 
   .tasks-hub .tasks-due-inputs {
+    grid-template-columns: 1fr;
+  }
+
+  .tasks-hub .tasks-schedule-row {
     grid-template-columns: 1fr;
   }
 

@@ -76,7 +76,6 @@ Personal-Site/
 │
 ├── frontend/                              # React TypeScript Frontend
 │   ├── package.json                       # Frontend dependencies & scripts
-│   ├── package-lock.json                  # NPM lock file
 │   ├── bun.lock                           # Bun package manager lock
 │   ├── tsconfig.json                      # TypeScript config (references)
 │   ├── tsconfig.app.json                  # App TypeScript settings
@@ -89,7 +88,6 @@ Personal-Site/
 │   ├── .env.local                         # Development environment variables
 │   ├── .env.production                    # Production environment variables
 │   ├── .gitignore                         # Frontend-specific git ignore
-│   ├── .yarnrc.yml                        # Yarn configuration
 │   │
 │   ├── public/                            # Static assets (served as-is)
 │   │   ├── SelfPic.jpg                    # Personal photograph
@@ -160,7 +158,6 @@ Personal-Site/
     ├── .env                               # Environment variables (secrets)
     ├── .env.example                       # Environment template
     ├── .gitignore                         # Backend git ignore
-    ├── .yarnrc.yml                        # Yarn configuration
     │
     └── src/                               # Source code
         ├── server.ts                      # Server entry point
@@ -260,13 +257,9 @@ Personal-Site/
 | **Supabase** | Database + Authentication | URL + Anon Key |
 | **Vercel** | Hosting and deployment | Account-based |
 
-### Package Managers
+### Package Manager
 
-The project supports multiple package managers:
-
-- **Bun** (recommended) - Fast, modern package manager
-- **npm** - Standard Node.js package manager
-- **Yarn** - Alternative package manager (configured via `.yarnrc.yml`)
+The project uses **Bun** as the only package manager.
 
 ---
 
@@ -1513,17 +1506,6 @@ cd ../backend
 bun install
 ```
 
-Using npm:
-```bash
-# Frontend
-cd frontend
-npm install
-
-# Backend
-cd ../backend
-npm install
-```
-
 3. **Configure environment variables:**
 
 Frontend (`frontend/.env.local`):
@@ -1598,7 +1580,7 @@ http://localhost:5173
 
 2. **Configure build settings:**
    - Framework Preset: Vite
-   - Build Command: `npm run build`
+   - Build Command: `bun run build`
    - Output Directory: `dist`
 
 3. **Set environment variables:**
@@ -1615,7 +1597,7 @@ http://localhost:5173
 1. **Build the project locally:**
 ```bash
 cd backend
-npm run build
+bun run build
 ```
 
 2. **Connect to Vercel:**
@@ -1624,7 +1606,7 @@ npm run build
 
 3. **Configure build settings:**
    - Framework Preset: Other
-   - Build Command: `npm run build`
+   - Build Command: `bun run build`
    - Output Directory: `dist`
 
 4. **Set environment variables:**
@@ -2008,7 +1990,7 @@ Production deployment enforces HTTPS via Vercel.
 **Solutions:**
 1. Delete `node_modules` and reinstall
 2. Check TypeScript version compatibility
-3. Run `npm run lint` to find issues
+3. Run `bun run lint` to find issues
 
 #### Supabase Connection Issues
 
