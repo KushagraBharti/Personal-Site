@@ -826,21 +826,13 @@ export const getCalendarStatusForUser = async (supabaseAdmin: SupabaseClient, us
 };
 
 export const queueManualSyncForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
-  const dedupeToken = `${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
   // Queue fast-return manual sync work and let cron workers process it.
   await enqueueSyncJob(supabaseAdmin, {
     userId,
     jobType: "inbound_delta",
     priority: 70,
     payload: { source: "manual_sync_now" },
-    dedupeKey: `manual-inbound:${userId}:${dedupeToken}`,
-  });
-  await enqueueSyncJob(supabaseAdmin, {
-    userId,
-    jobType: "full_backfill",
-    priority: 50,
-    payload: { source: "manual_sync_now" },
-    dedupeKey: `manual-backfill:${userId}:${dedupeToken}`,
+    dedupeKey: `manual-inbound:${userId}:${new Date().toISOString().slice(0, 16)}`,
   });
 };
 

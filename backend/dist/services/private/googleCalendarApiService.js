@@ -21,6 +21,7 @@ const GOOGLE_OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const DATE_ONLY_MARKER_MS = 777;
 const DEFAULT_TIMED_EVENT_DURATION_MS = 30 * 60 * 1000;
 const GOOGLE_EVENT_TIMEZONE = process.env.GOOGLE_EVENT_TIMEZONE || "UTC";
+const GOOGLE_API_TIMEOUT_MS = Number(process.env.GOOGLE_API_TIMEOUT_MS || 4500);
 exports.TRACKER_TASKS_CALENDAR_SUMMARY = "Tracker Tasks";
 const LEGACY_TASKS_CALENDAR_SUMMARY = "Tasks";
 const requiredEnv = (key) => {
@@ -166,7 +167,7 @@ const taskToGoogleEventPayload = (task) => {
 };
 exports.taskToGoogleEventPayload = taskToGoogleEventPayload;
 const authedRequest = (accessToken, config) => __awaiter(void 0, void 0, void 0, function* () {
-    const response = yield axios_1.default.request(Object.assign(Object.assign({}, config), { headers: Object.assign(Object.assign({}, (config.headers || {})), { Authorization: `Bearer ${accessToken}` }) }));
+    const response = yield axios_1.default.request(Object.assign(Object.assign({}, config), { timeout: GOOGLE_API_TIMEOUT_MS, headers: Object.assign(Object.assign({}, (config.headers || {})), { Authorization: `Bearer ${accessToken}` }) }));
     return response.data;
 });
 const hashChannelToken = (rawToken) => (0, crypto_1.createHash)("sha256").update(rawToken).digest("hex");
@@ -200,6 +201,7 @@ const refreshGoogleAccessToken = (refreshToken) => __awaiter(void 0, void 0, voi
     });
     const response = yield axios_1.default.post(GOOGLE_OAUTH_TOKEN_URL, payload.toString(), {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        timeout: GOOGLE_API_TIMEOUT_MS,
     });
     const data = response.data;
     if (!data.access_token) {

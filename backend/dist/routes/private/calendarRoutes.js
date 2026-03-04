@@ -173,15 +173,10 @@ router.post("/sync-now", requireUser_1.requireUser, (req, res) => __awaiter(void
     try {
         const supabaseAdmin = (0, calendarSyncQueueService_1.getSupabaseAdmin)();
         yield (0, taskCalendarSyncService_1.queueManualSyncForUser)(supabaseAdmin, req.user.id);
-        const aggregatedResults = [];
-        for (let pass = 0; pass < 3; pass += 1) {
-            const batchResults = yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ userId: req.user.id, batchSize: 8 });
-            if (batchResults.length === 0)
-                break;
-            aggregatedResults.push(...batchResults);
-        }
-        const processed = aggregatedResults.length;
-        const failureRows = aggregatedResults
+        // Keep this bounded to avoid serverless timeouts.
+        const processedResults = yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ userId: req.user.id, batchSize: 4 });
+        const processed = processedResults.length;
+        const failureRows = processedResults
             .filter((item) => !item.ok)
             .map((item) => ({
             id: item.id,

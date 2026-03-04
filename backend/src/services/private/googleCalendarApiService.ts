@@ -9,6 +9,7 @@ const GOOGLE_OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const DATE_ONLY_MARKER_MS = 777;
 const DEFAULT_TIMED_EVENT_DURATION_MS = 30 * 60 * 1000;
 const GOOGLE_EVENT_TIMEZONE = process.env.GOOGLE_EVENT_TIMEZONE || "UTC";
+const GOOGLE_API_TIMEOUT_MS = Number(process.env.GOOGLE_API_TIMEOUT_MS || 4500);
 export const TRACKER_TASKS_CALENDAR_SUMMARY = "Tracker Tasks";
 const LEGACY_TASKS_CALENDAR_SUMMARY = "Tasks";
 
@@ -152,6 +153,7 @@ export const taskToGoogleEventPayload = (task: TrackerTaskRow) => {
 const authedRequest = async <T = any>(accessToken: string, config: AxiosRequestConfig) => {
   const response = await axios.request<T>({
     ...config,
+    timeout: GOOGLE_API_TIMEOUT_MS,
     headers: {
       ...(config.headers || {}),
       Authorization: `Bearer ${accessToken}`,
@@ -196,6 +198,7 @@ const refreshGoogleAccessToken = async (refreshToken: string) => {
 
   const response = await axios.post(GOOGLE_OAUTH_TOKEN_URL, payload.toString(), {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    timeout: GOOGLE_API_TIMEOUT_MS,
   });
 
   const data = response.data as {

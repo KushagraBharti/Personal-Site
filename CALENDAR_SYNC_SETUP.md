@@ -38,6 +38,7 @@ Add these in backend environment (see `backend/.env.example`):
 - `GOOGLE_WEBHOOK_URL` (must be public HTTPS endpoint for `/api/private/calendar/google/webhook`)
 - `GOOGLE_OAUTH_STATE_SECRET` (long random secret)
 - `GOOGLE_EVENT_TIMEZONE` (optional fallback, defaults to `UTC`; used when a task has no stored timezone yet)
+- `GOOGLE_API_TIMEOUT_MS` (optional per-request Google API timeout in ms, defaults to `4500`)
 - `TRACKER_FRONTEND_URL` (for callback redirect; e.g. `https://<frontend>/tracker?module=tasks`)
 - `CALENDAR_SYNC_ENABLED=1`
 - existing required vars:
@@ -70,7 +71,7 @@ Notes:
    - OAuth callback auto-creates/selects calendar named `Tracker Tasks`
 3. For each list to sync, enable the new sync checkbox in the list row.
 4. Use **Sync now** for immediate processing.
-   - `POST /api/private/calendar/sync-now` enqueues + processes a bounded batch immediately
+   - `POST /api/private/calendar/sync-now` enqueues + processes a small bounded batch immediately
    - Response includes processed/failed counts and top failure messages
 
 ## 6) Behavior implemented

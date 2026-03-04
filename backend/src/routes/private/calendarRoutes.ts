@@ -184,15 +184,10 @@ router.post("/sync-now", requireUser, async (req, res) => {
   try {
     const supabaseAdmin = getSupabaseAdmin();
     await queueManualSyncForUser(supabaseAdmin, req.user!.id);
-    const aggregatedResults: Array<{ id: number; ok: boolean; error?: string }> = [];
-    for (let pass = 0; pass < 3; pass += 1) {
-      const batchResults = await processCalendarSyncJobs({ userId: req.user!.id, batchSize: 8 });
-      if (batchResults.length === 0) break;
-      aggregatedResults.push(...batchResults);
-    }
-
-    const processed = aggregatedResults.length;
-    const failureRows = aggregatedResults
+    // Keep this bounded to avoid serverless timeouts.
+    const processedResults = await processCalendarSyncJobs({ userId: req.user!.id, batchSize: 4 });
+    const processed = processedResults.length;
+    const failureRows = processedResults
       .filter((item) => !item.ok)
       .map((item) => ({
         id: item.id,
