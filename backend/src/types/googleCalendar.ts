@@ -3,7 +3,30 @@ export type CalendarSyncJobType =
   | "task_delete"
   | "inbound_delta"
   | "full_backfill"
+  | "reconcile_app_page"
+  | "reconcile_google_page"
+  | "hard_reset_clear_page"
   | "renew_watch";
+
+export type CalendarSyncLane = "live" | "reconcile" | "rebuild" | "system";
+
+export type CalendarSyncRunMode = "live" | "reconcile" | "rebuild";
+export type CalendarSyncRunStatus = "queued" | "running" | "done" | "failed" | "cancelled";
+
+export interface TrackerGoogleSyncRun {
+  id: string;
+  user_id: string;
+  mode: CalendarSyncRunMode;
+  status: CalendarSyncRunStatus;
+  queued_jobs: number;
+  processed_jobs: number;
+  failed_jobs: number;
+  started_at: string | null;
+  finished_at: string | null;
+  last_error: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface CalendarConnectionPublic {
   id: string;
@@ -38,9 +61,14 @@ export interface CalendarConnectionSecrets {
 export interface TrackerGoogleSyncJob {
   id: number;
   user_id: string;
+  run_id: string | null;
+  lane: CalendarSyncLane;
   task_id: string | null;
+  google_event_id: string | null;
   list_id: string | null;
   job_type: CalendarSyncJobType;
+  source: string | null;
+  dedupe_key: string | null;
   priority: number;
   payload: Record<string, unknown>;
   status: "pending" | "running" | "done" | "failed" | "dead";

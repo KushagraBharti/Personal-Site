@@ -9,9 +9,13 @@ import {
 import {
   disconnectGoogleCalendarForUser,
   getCalendarStatusForUser,
+  getSyncRunDebug,
   getSyncProgressForRun,
+  inferLanesForRunMode,
   processCalendarSyncJobs,
+  queueLivePumpForUser,
   queueManualSyncForUser,
+  queueRebuildRunForUser,
   queueFullBackfill,
   renewCalendarWatchForUser,
   upsertGoogleConnectionFromOAuth,
@@ -34,9 +38,7 @@ router.post("/google/webhook", async (req, res) => {
       supabaseAdmin,
       req.headers as Record<string, string | string[] | undefined>
     );
-    // Hobby-friendly: process a small bounded batch immediately so we do not depend
-    // on high-frequency platform crons for webhook-driven updates.
-    await processCalendarSyncJobs({ userId: webhookMeta.userId, batchSize: 1 });
+    await processCalendarSyncJobs({ userId: webhookMeta.userId, batchSize: 1, lanes: ["system"] });
     return res.status(200).json({ ok: true });
   } catch (error) {
     console.error("Google webhook handling failed", error);
@@ -185,18 +187,40 @@ router.post("/sync-now", requireUser, async (req, res) => {
   try {
     const supabaseAdmin = getSupabaseAdmin();
     const runId = await queueManualSyncForUser(supabaseAdmin, req.user!.id);
+    await processCalendarSyncJobs({ userId: req.user!.id, batchSize: 1, lanes: ["reconcile"] }).catch(() => {});
     return res.json({
       ok: true,
       run_id: runId,
-      processed: 0,
-      failed: 0,
       queued: true,
-      failures: [],
-      tick_processed: 0,
     });
   } catch (error) {
     console.error("Failed to sync calendar now", error);
     return res.status(500).json({ error: "Failed to sync calendar" });
+  }
+});
+
+router.post("/live-pump", requireUser, async (req, res) => {
+  if (!isCalendarSyncEnabled()) return res.status(503).json({ error: "Calendar sync disabled" });
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    const result = await queueLivePumpForUser(supabaseAdmin, req.user!.id);
+    return res.json({ ok: true, ...result });
+  } catch (error) {
+    console.error("Failed to process live sync", error);
+    return res.status(500).json({ error: "Failed to process live sync" });
+  }
+});
+
+router.post("/rebuild", requireUser, async (req, res) => {
+  if (!isCalendarSyncEnabled()) return res.status(503).json({ error: "Calendar sync disabled" });
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    const runId = await queueRebuildRunForUser(supabaseAdmin, req.user!.id);
+    await processCalendarSyncJobs({ userId: req.user!.id, batchSize: 1, lanes: ["rebuild"] }).catch(() => {});
+    return res.json({ ok: true, run_id: runId, queued: true });
+  } catch (error) {
+    console.error("Failed to start calendar rebuild", error);
+    return res.status(500).json({ error: "Failed to start calendar rebuild" });
   }
 });
 
@@ -207,13 +231,33 @@ router.get("/sync-progress", requireUser, async (req, res) => {
 
   try {
     const supabaseAdmin = getSupabaseAdmin();
-    // Bounded worker tick to steadily drain queue across client polls.
-    await processCalendarSyncJobs({ userId: req.user!.id, batchSize: 1 });
+    const snapshot = await getSyncProgressForRun(supabaseAdmin, req.user!.id, runId);
+    if (!snapshot.mode) {
+      return res.json({ ok: true, ...snapshot });
+    }
+    const lanes = inferLanesForRunMode(snapshot.mode);
+    await processCalendarSyncJobs({ userId: req.user!.id, batchSize: 1, lanes }).catch(() => {});
     const progress = await getSyncProgressForRun(supabaseAdmin, req.user!.id, runId);
     return res.json({ ok: true, ...progress });
   } catch (error) {
     console.error("Failed to fetch sync progress", error);
     return res.status(500).json({ error: "Failed to fetch sync progress" });
+  }
+});
+
+router.get("/runs/:runId", requireUser, async (req, res) => {
+  if (!isCalendarSyncEnabled()) return res.status(503).json({ error: "Calendar sync disabled" });
+  const runId = typeof req.params.runId === "string" ? req.params.runId.trim() : "";
+  if (!runId) return res.status(400).json({ error: "run_id is required" });
+
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    const debug = await getSyncRunDebug(supabaseAdmin, req.user!.id, runId);
+    if (!debug) return res.status(404).json({ error: "Sync run not found" });
+    return res.json({ ok: true, ...debug });
+  } catch (error) {
+    console.error("Failed to fetch sync run debug", error);
+    return res.status(500).json({ error: "Failed to fetch sync run debug" });
   }
 });
 

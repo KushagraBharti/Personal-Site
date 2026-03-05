@@ -13,6 +13,8 @@ import {
   getCalendarSyncProgress,
   getGoogleConnectUrl,
   setListSync,
+  triggerCalendarLivePump,
+  triggerCalendarRebuild,
   triggerCalendarSyncNow,
   updateTask,
   updateTaskList,
@@ -145,7 +147,12 @@ export const useTasksHubModule = () => {
     failed: number;
     failures: Array<{ id: number; error: string }>;
   } | null>(null);
-  const syncTimerRef = useRef<number | null>(null);
+  const [calendarLiveResult, setCalendarLiveResult] = useState<{
+    processed: number;
+    failed: number;
+    failures: Array<{ id: number; error: string }>;
+  } | null>(null);
+  const livePumpTimerRef = useRef<number | null>(null);
   const seededDueTimezoneByUserRef = useRef<Record<string, boolean>>({});
   const clearedDateOnlyTimezoneByUserRef = useRef<Record<string, boolean>>({});
 
@@ -514,35 +521,33 @@ export const useTasksHubModule = () => {
     [loadCalendarStatus, session?.access_token]
   );
 
-  const scheduleCalendarSync = useCallback(
+  const scheduleLiveSyncPump = useCallback(
     (immediate = false) => {
       if (!session?.access_token || !calendarState?.connected) return;
-      if (syncTimerRef.current) {
-        window.clearTimeout(syncTimerRef.current);
+      if (livePumpTimerRef.current) {
+        window.clearTimeout(livePumpTimerRef.current);
       }
-      const delayMs = immediate ? 0 : 800;
-      syncTimerRef.current = window.setTimeout(async () => {
+      const delayMs = immediate ? 0 : 450;
+      livePumpTimerRef.current = window.setTimeout(async () => {
         try {
-          const result = await triggerCalendarSyncNow(session.access_token);
-          setCalendarSyncResult({
+          const result = await triggerCalendarLivePump(session.access_token);
+          setCalendarLiveResult({
             processed: result.processed,
             failed: result.failed,
             failures: result.failures || [],
           });
-          if (result.run_id) {
-            await pollSyncRun(result.run_id, { timeoutMs: 25_000, pollEveryMs: 1_000 });
-          } else {
+          if (result.failed > 0) {
             await loadCalendarStatus();
           }
         } catch (err) {
-          const message = err instanceof Error ? err.message : "Calendar sync failed";
+          const message = err instanceof Error ? err.message : "Live calendar sync failed";
           setErrorMessage(message);
         } finally {
-          syncTimerRef.current = null;
+          livePumpTimerRef.current = null;
         }
       }, delayMs);
     },
-    [calendarState?.connected, loadCalendarStatus, pollSyncRun, session?.access_token]
+    [calendarState?.connected, loadCalendarStatus, session?.access_token]
   );
 
   const createTaskFromDraft = useCallback(
@@ -586,10 +591,10 @@ export const useTasksHubModule = () => {
 
       setTasks((prev) => [...prev, result.data as TrackerTask]);
       setErrorMessage("");
-      scheduleCalendarSync();
+      scheduleLiveSyncPump();
       return result.data;
     },
-    [getNextTaskSortOrder, scheduleCalendarSync, supabase, userId]
+    [getNextTaskSortOrder, scheduleLiveSyncPump, supabase, userId]
   );
 
   const saveTask = useCallback(
@@ -642,10 +647,10 @@ export const useTasksHubModule = () => {
 
       setTasks((prev) => prev.map((task) => (task.id === taskId ? (result.data as TrackerTask) : task)));
       setErrorMessage("");
-      scheduleCalendarSync();
+      scheduleLiveSyncPump();
       return true;
     },
-    [scheduleCalendarSync, supabase, tasks, userId]
+    [scheduleLiveSyncPump, supabase, tasks, userId]
   );
 
   const removeTask = useCallback(
@@ -658,10 +663,10 @@ export const useTasksHubModule = () => {
 
       setTasks((prev) => prev.filter((task) => task.id !== taskId && task.parent_task_id !== taskId));
       setErrorMessage("");
-      scheduleCalendarSync();
+      scheduleLiveSyncPump();
       return true;
     },
-    [scheduleCalendarSync, supabase, userId]
+    [scheduleLiveSyncPump, supabase, userId]
   );
 
   const toggleTaskCompletion = useCallback(
@@ -711,10 +716,10 @@ export const useTasksHubModule = () => {
       }
 
       setErrorMessage("");
-      scheduleCalendarSync();
+      scheduleLiveSyncPump();
       return true;
     },
-    [getNextTaskSortOrder, scheduleCalendarSync, supabase, userId]
+    [getNextTaskSortOrder, scheduleLiveSyncPump, supabase, userId]
   );
 
   const reorderTasks = useCallback(
@@ -745,10 +750,10 @@ export const useTasksHubModule = () => {
       }
 
       setErrorMessage("");
-      scheduleCalendarSync();
+      scheduleLiveSyncPump();
       return true;
     },
-    [scheduleCalendarSync, supabase, tasks, userId]
+    [scheduleLiveSyncPump, supabase, tasks, userId]
   );
 
   const reorderLists = useCallback(
@@ -890,9 +895,7 @@ export const useTasksHubModule = () => {
       try {
         await setListSync(session.access_token, listId, enabled);
         await loadCalendarStatus();
-        if (enabled) {
-          scheduleCalendarSync(true);
-        }
+        if (enabled) scheduleLiveSyncPump(true);
         return true;
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to update list sync";
@@ -900,7 +903,7 @@ export const useTasksHubModule = () => {
         return false;
       }
     },
-    [loadCalendarStatus, scheduleCalendarSync, session?.access_token]
+    [loadCalendarStatus, scheduleLiveSyncPump, session?.access_token]
   );
 
   const syncCalendarNow = useCallback(async () => {
@@ -908,11 +911,7 @@ export const useTasksHubModule = () => {
     setCalendarBusy(true);
     try {
       const result = await triggerCalendarSyncNow(session.access_token);
-      setCalendarSyncResult({
-        processed: result.processed,
-        failed: result.failed,
-        failures: result.failures || [],
-      });
+      setCalendarSyncResult({ processed: 0, failed: 0, failures: [] });
       if (result.run_id) {
         await pollSyncRun(result.run_id, { timeoutMs: 90_000, pollEveryMs: 1_100 });
       } else {
@@ -921,6 +920,32 @@ export const useTasksHubModule = () => {
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to sync calendar now";
+      setErrorMessage(message);
+      return false;
+    } finally {
+      setCalendarBusy(false);
+    }
+  }, [loadCalendarStatus, pollSyncRun, session?.access_token]);
+
+  const rebuildCalendarNow = useCallback(async () => {
+    if (!session?.access_token) return false;
+    const confirmed = window.confirm(
+      "Rebuild Tracker Tasks calendar? This will delete all events in that calendar and rebuild from incomplete synced tasks."
+    );
+    if (!confirmed) return false;
+
+    setCalendarBusy(true);
+    try {
+      const result = await triggerCalendarRebuild(session.access_token);
+      setCalendarSyncResult({ processed: 0, failed: 0, failures: [] });
+      if (result.run_id) {
+        await pollSyncRun(result.run_id, { timeoutMs: 180_000, pollEveryMs: 1_200 });
+      } else {
+        await loadCalendarStatus();
+      }
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to rebuild calendar";
       setErrorMessage(message);
       return false;
     } finally {
@@ -951,6 +976,7 @@ export const useTasksHubModule = () => {
     calendarState,
     calendarBusy,
     calendarSyncResult,
+    calendarLiveResult,
     syncEnabledByList,
     errorMessage,
     fetchAll,
@@ -959,6 +985,7 @@ export const useTasksHubModule = () => {
     disconnectGoogleCalendar,
     setListCalendarSync,
     syncCalendarNow,
+    rebuildCalendarNow,
     createList,
     saveList,
     removeList,

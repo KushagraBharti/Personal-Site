@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fetchGoogleUserEmail = exports.listGoogleEventsDelta = exports.deleteGoogleEvent = exports.patchGoogleEvent = exports.insertGoogleEvent = exports.stopGoogleCalendarWatch = exports.upsertGoogleCalendarWatch = exports.ensureTasksCalendar = exports.updateGoogleCalendarSummary = exports.getGoogleCalendar = exports.createGoogleCalendar = exports.listGoogleCalendars = exports.getValidGoogleAccessToken = exports.loadCalendarConnection = exports.hashChannelToken = exports.taskToGoogleEventPayload = exports.googleEventToTaskTimeZone = exports.googleEventToTaskDueAtIso = exports.isDateOnlyIso = exports.TRACKER_TASKS_CALENDAR_SUMMARY = void 0;
+exports.fetchGoogleUserEmail = exports.listGoogleEventsPage = exports.listGoogleEventsDelta = exports.deleteGoogleEvent = exports.patchGoogleEvent = exports.insertGoogleEvent = exports.stopGoogleCalendarWatch = exports.upsertGoogleCalendarWatch = exports.ensureTasksCalendar = exports.updateGoogleCalendarSummary = exports.getGoogleCalendar = exports.createGoogleCalendar = exports.listGoogleCalendars = exports.getValidGoogleAccessToken = exports.loadCalendarConnection = exports.hashChannelToken = exports.taskIdToDeterministicGoogleEventId = exports.taskToGoogleEventPayload = exports.googleEventToTaskTimeZone = exports.googleEventToTaskDueAtIso = exports.isDateOnlyIso = exports.TRACKER_TASKS_CALENDAR_SUMMARY = void 0;
 const axios_1 = __importDefault(require("axios"));
 const crypto_1 = require("crypto");
 const encryptionService_1 = require("./encryptionService");
@@ -166,6 +166,11 @@ const taskToGoogleEventPayload = (task) => {
     return payload;
 };
 exports.taskToGoogleEventPayload = taskToGoogleEventPayload;
+const taskIdToDeterministicGoogleEventId = (taskId) => {
+    const digest = (0, crypto_1.createHash)("sha1").update(taskId).digest("hex");
+    return `trk${digest}`;
+};
+exports.taskIdToDeterministicGoogleEventId = taskIdToDeterministicGoogleEventId;
 const authedRequest = (accessToken, config) => __awaiter(void 0, void 0, void 0, function* () {
     const response = yield axios_1.default.request(Object.assign(Object.assign({}, config), { timeout: GOOGLE_API_TIMEOUT_MS, headers: Object.assign(Object.assign({}, (config.headers || {})), { Authorization: `Bearer ${accessToken}` }) }));
     return response.data;
@@ -426,6 +431,22 @@ const listGoogleEventsDelta = (params) => __awaiter(void 0, void 0, void 0, func
     });
 });
 exports.listGoogleEventsDelta = listGoogleEventsDelta;
+const listGoogleEventsPage = (params) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const query = {
+        singleEvents: "false",
+        showDeleted: "false",
+        maxResults: String(Math.max(1, Math.min((_a = params.maxResults) !== null && _a !== void 0 ? _a : 250, 2500))),
+    };
+    if (params.pageToken)
+        query.pageToken = params.pageToken;
+    return authedRequest(params.accessToken, {
+        method: "GET",
+        url: `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(params.calendarId)}/events`,
+        params: query,
+    });
+});
+exports.listGoogleEventsPage = listGoogleEventsPage;
 const fetchGoogleUserEmail = (accessToken) => __awaiter(void 0, void 0, void 0, function* () {
     const data = yield authedRequest(accessToken, {
         method: "GET",

@@ -449,11 +449,13 @@ const TasksHubTracker: React.FC = () => {
     calendarState,
     calendarBusy,
     calendarSyncResult,
+    calendarLiveResult,
     syncEnabledByList,
     connectGoogleCalendar,
     disconnectGoogleCalendar,
     setListCalendarSync,
     syncCalendarNow,
+    rebuildCalendarNow,
   } = useTasksHubModule();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -760,6 +762,13 @@ const TasksHubTracker: React.FC = () => {
                         Sync now
                       </button>
                       <button
+                        className="neo-btn neo-btn-sm neo-btn-cyan"
+                        onClick={rebuildCalendarNow}
+                        disabled={calendarBusy}
+                      >
+                        Rebuild calendar
+                      </button>
+                      <button
                         className="neo-btn neo-btn-sm neo-btn-white"
                         onClick={disconnectGoogleCalendar}
                         disabled={calendarBusy}
@@ -774,11 +783,25 @@ const TasksHubTracker: React.FC = () => {
                     Last run: {calendarSyncResult.processed} processed / {calendarSyncResult.failed} failed
                   </p>
                 )}
+                {calendarLiveResult && (
+                  <p className="tasks-muted text-xs mt-1">
+                    Live: {calendarLiveResult.processed} processed / {calendarLiveResult.failed} failed
+                  </p>
+                )}
                 {calendarSyncResult?.failures?.length ? (
                   <div className="tasks-muted text-xs mt-1" style={{ color: "var(--neo-red)" }}>
                     {calendarSyncResult.failures.map((failure) => (
                       <p key={failure.id}>
                         Job {failure.id}: {failure.error}
+                      </p>
+                    ))}
+                  </div>
+                ) : null}
+                {calendarLiveResult?.failures?.length ? (
+                  <div className="tasks-muted text-xs mt-1" style={{ color: "var(--neo-red)" }}>
+                    {calendarLiveResult.failures.map((failure) => (
+                      <p key={`live-${failure.id}`}>
+                        Live job {failure.id}: {failure.error}
                       </p>
                     ))}
                   </div>

@@ -54,17 +54,19 @@ const getSupabaseAdmin = () => {
 };
 exports.getSupabaseAdmin = getSupabaseAdmin;
 const enqueueSyncJob = (supabaseAdmin, input) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     const payload = Object.assign({}, (input.payload || {}));
-    if (input.dedupeKey) {
-        payload.dedupe_key = input.dedupeKey;
-    }
     const { error } = yield supabaseAdmin.from("tracker_google_sync_jobs").insert({
         user_id: input.userId,
-        task_id: (_a = input.taskId) !== null && _a !== void 0 ? _a : null,
-        list_id: (_b = input.listId) !== null && _b !== void 0 ? _b : null,
+        run_id: (_a = input.runId) !== null && _a !== void 0 ? _a : null,
+        lane: (_b = input.lane) !== null && _b !== void 0 ? _b : "system",
+        task_id: (_c = input.taskId) !== null && _c !== void 0 ? _c : null,
+        google_event_id: (_d = input.googleEventId) !== null && _d !== void 0 ? _d : null,
+        list_id: (_e = input.listId) !== null && _e !== void 0 ? _e : null,
         job_type: input.jobType,
-        priority: (_c = input.priority) !== null && _c !== void 0 ? _c : 100,
+        source: (_f = input.source) !== null && _f !== void 0 ? _f : null,
+        dedupe_key: (_g = input.dedupeKey) !== null && _g !== void 0 ? _g : null,
+        priority: (_h = input.priority) !== null && _h !== void 0 ? _h : 100,
         payload,
         status: "pending",
     });
@@ -74,10 +76,11 @@ const enqueueSyncJob = (supabaseAdmin, input) => __awaiter(void 0, void 0, void 
     }
 });
 exports.enqueueSyncJob = enqueueSyncJob;
-const claimSyncJobs = (supabaseAdmin_1, ...args_1) => __awaiter(void 0, [supabaseAdmin_1, ...args_1], void 0, function* (supabaseAdmin, batchSize = 25, userId) {
+const claimSyncJobs = (supabaseAdmin_1, ...args_1) => __awaiter(void 0, [supabaseAdmin_1, ...args_1], void 0, function* (supabaseAdmin, batchSize = 25, userId, lanes) {
     const { data, error } = yield supabaseAdmin.rpc("claim_sync_jobs", {
         batch_size: batchSize,
         p_user_id: userId !== null && userId !== void 0 ? userId : null,
+        p_lanes: (lanes === null || lanes === void 0 ? void 0 : lanes.length) ? lanes : null,
     });
     if (error)
         throw new Error(error.message);

@@ -1,6 +1,7 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import {
   CalendarConnectionState,
+  LivePumpResult,
   ListUpdateInput,
   SyncNowResult,
   SyncProgressResult,
@@ -280,6 +281,30 @@ export const triggerCalendarSyncNow = async (accessToken: string): Promise<SyncN
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || "Failed to sync calendar");
+  }
+  return res.json();
+};
+
+export const triggerCalendarLivePump = async (accessToken: string): Promise<LivePumpResult> => {
+  const res = await fetch(`${API_BASE}/api/private/calendar/live-pump`, {
+    method: "POST",
+    headers: getAuthHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Failed to process live sync");
+  }
+  return res.json();
+};
+
+export const triggerCalendarRebuild = async (accessToken: string): Promise<SyncNowResult> => {
+  const res = await fetch(`${API_BASE}/api/private/calendar/rebuild`, {
+    method: "POST",
+    headers: getAuthHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Failed to start rebuild");
   }
   return res.json();
 };

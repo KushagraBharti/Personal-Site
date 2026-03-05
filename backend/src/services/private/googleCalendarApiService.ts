@@ -150,6 +150,11 @@ export const taskToGoogleEventPayload = (task: TrackerTaskRow) => {
   return payload;
 };
 
+export const taskIdToDeterministicGoogleEventId = (taskId: string) => {
+  const digest = createHash("sha1").update(taskId).digest("hex");
+  return `trk${digest}`;
+};
+
 const authedRequest = async <T = any>(accessToken: string, config: AxiosRequestConfig) => {
   const response = await axios.request<T>({
     ...config,
@@ -480,6 +485,29 @@ export const listGoogleEventsDelta = async (params: {
     items?: any[];
     nextPageToken?: string;
     nextSyncToken?: string;
+  }>(params.accessToken, {
+    method: "GET",
+    url: `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(params.calendarId)}/events`,
+    params: query,
+  });
+};
+
+export const listGoogleEventsPage = async (params: {
+  accessToken: string;
+  calendarId: string;
+  pageToken?: string | null;
+  maxResults?: number;
+}) => {
+  const query: Record<string, string> = {
+    singleEvents: "false",
+    showDeleted: "false",
+    maxResults: String(Math.max(1, Math.min(params.maxResults ?? 250, 2500))),
+  };
+  if (params.pageToken) query.pageToken = params.pageToken;
+
+  return authedRequest<{
+    items?: any[];
+    nextPageToken?: string;
   }>(params.accessToken, {
     method: "GET",
     url: `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(params.calendarId)}/events`,

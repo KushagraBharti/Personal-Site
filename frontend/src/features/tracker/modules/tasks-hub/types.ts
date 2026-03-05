@@ -107,11 +107,14 @@ export interface CalendarConnectionState {
 export interface SyncNowResult {
   ok: boolean;
   run_id: string;
+  queued: boolean;
+}
+
+export interface LivePumpResult {
+  ok: boolean;
   processed: number;
   failed: number;
-  queued: boolean;
-  tick_processed?: number;
-  failures?: Array<{
+  failures: Array<{
     id: number;
     error: string;
   }>;
@@ -120,6 +123,8 @@ export interface SyncNowResult {
 export interface SyncProgressResult {
   ok: boolean;
   run_id: string;
+  mode: "live" | "reconcile" | "rebuild" | null;
+  status: "queued" | "running" | "done" | "failed" | "cancelled";
   total: number;
   processed: number;
   failed: number;

@@ -46,8 +46,10 @@ const handleGoogleWebhook = (supabaseAdmin, headers) => __awaiter(void 0, void 0
     // Initial sync notification does not imply actual changes; still queue delta to be safe.
     yield (0, calendarSyncQueueService_1.enqueueSyncJob)(supabaseAdmin, {
         userId: secretRow.user_id,
+        lane: "system",
         jobType: "inbound_delta",
         priority: resourceState === "sync" ? 70 : 80,
+        source: "google_webhook",
         payload: {
             source: "google_webhook",
             resource_state: resourceState || "exists",

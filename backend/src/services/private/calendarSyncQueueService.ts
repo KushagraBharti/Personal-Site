@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { CalendarSyncJobType, TrackerGoogleSyncJob } from "../../types/googleCalendar";
+import { CalendarSyncJobType, CalendarSyncLane, TrackerGoogleSyncJob } from "../../types/googleCalendar";
 
 const parseJwtRole = (jwt: string): string | null => {
   const parts = jwt.split(".");
@@ -51,24 +51,30 @@ export const enqueueSyncJob = async (
   supabaseAdmin: SupabaseClient,
   input: {
     userId: string;
+    runId?: string | null;
+    lane?: CalendarSyncLane;
     taskId?: string | null;
+    googleEventId?: string | null;
     listId?: string | null;
     jobType: CalendarSyncJobType;
+    source?: string | null;
     priority?: number;
     payload?: Record<string, unknown>;
     dedupeKey?: string;
   }
 ) => {
   const payload = { ...(input.payload || {}) } as Record<string, unknown>;
-  if (input.dedupeKey) {
-    payload.dedupe_key = input.dedupeKey;
-  }
 
   const { error } = await supabaseAdmin.from("tracker_google_sync_jobs").insert({
     user_id: input.userId,
+    run_id: input.runId ?? null,
+    lane: input.lane ?? "system",
     task_id: input.taskId ?? null,
+    google_event_id: input.googleEventId ?? null,
     list_id: input.listId ?? null,
     job_type: input.jobType,
+    source: input.source ?? null,
+    dedupe_key: input.dedupeKey ?? null,
     priority: input.priority ?? 100,
     payload,
     status: "pending",
@@ -80,10 +86,16 @@ export const enqueueSyncJob = async (
   }
 };
 
-export const claimSyncJobs = async (supabaseAdmin: SupabaseClient, batchSize = 25, userId?: string) => {
+export const claimSyncJobs = async (
+  supabaseAdmin: SupabaseClient,
+  batchSize = 25,
+  userId?: string,
+  lanes?: CalendarSyncLane[]
+) => {
   const { data, error } = await supabaseAdmin.rpc("claim_sync_jobs", {
     batch_size: batchSize,
     p_user_id: userId ?? null,
+    p_lanes: lanes?.length ? lanes : null,
   });
   if (error) throw new Error(error.message);
   return (data ?? []) as TrackerGoogleSyncJob[];
