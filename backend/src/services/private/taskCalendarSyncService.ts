@@ -70,6 +70,14 @@ const getJobRunId = (job: TrackerGoogleSyncJob) => job.run_id || getJobStringPay
 const withRunPayload = (base: Record<string, unknown>, runId: string | null) =>
   runId ? { ...base, run_id: runId } : base;
 
+const getRawErrorMessage = (error: unknown) => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "object" && error !== null && "message" in error) {
+    return String((error as { message?: unknown }).message ?? "");
+  }
+  return String(error);
+};
+
 const formatSyncErrorMessage = (error: unknown) => {
   const err = error as any;
   const status = err?.response?.status;
@@ -91,6 +99,21 @@ const formatSyncErrorMessage = (error: unknown) => {
   }
   if (apiErrMessage) return apiErrMessage;
   return generic;
+};
+
+const isMissingRebuildSchemaError = (error: unknown) => {
+  const message = getRawErrorMessage(error).toLowerCase();
+  return (
+    message.includes("tracker_google_sync_runs") ||
+    message.includes("run_id") ||
+    message.includes("lane") ||
+    message.includes("dedupe_key") ||
+    message.includes("google_event_id") ||
+    message.includes("p_lanes") ||
+    message.includes("hard_reset_clear_page") ||
+    message.includes("reconcile_google_page") ||
+    message.includes("reconcile_app_page")
+  );
 };
 
 const getSyncErrorCode = (error: unknown): string | null => {
@@ -1098,6 +1121,30 @@ export const queueManualSyncForUser = async (supabaseAdmin: SupabaseClient, user
   return queueReconcileRunForUser(supabaseAdmin, userId);
 };
 
+export const runLegacyManualSyncForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
+  await queueFullBackfill(supabaseAdmin, userId, undefined, { source: "legacy_manual_sync_now" });
+
+  const failures: Array<{ id: number; error: string }> = [];
+  let processed = 0;
+
+  for (let i = 0; i < 15; i += 1) {
+    const results = await processCalendarSyncJobs({ userId, batchSize: 10 });
+    if (results.length === 0) break;
+    processed += results.length;
+    failures.push(
+      ...results
+        .filter((item) => !item.ok)
+        .map((item) => ({ id: item.id, error: item.error || "Unknown sync error" }))
+    );
+  }
+
+  return {
+    processed,
+    failed: failures.length,
+    failures: failures.slice(0, 10),
+  };
+};
+
 export const queueLivePumpForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
   const results = await processCalendarSyncJobs({
     userId,
@@ -1183,6 +1230,59 @@ export const upsertGoogleConnectionFromOAuth = async (params: {
     calendar: tasksCalendar,
   };
 };
+
+export const rebuildCalendarLegacyInlineForUser = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string
+) => {
+  const { accessToken, publicRow } = await getValidGoogleAccessToken(supabaseAdmin, userId);
+  const calendarId = publicRow.selected_calendar_id;
+  if (!calendarId) {
+    throw new Error("No selected Google calendar found.");
+  }
+
+  let deleted = 0;
+  for (let pageIndex = 0; pageIndex < 20; pageIndex += 1) {
+    const page = await listGoogleEventsPage({
+      accessToken,
+      calendarId,
+      maxResults: HARD_RESET_CLEAR_PAGE_SIZE,
+    });
+    const events = (page.items ?? []).filter((event) => !!event?.id);
+    if (events.length === 0) break;
+
+    const deletedIds: string[] = [];
+    for (const event of events) {
+      const eventId = String(event.id);
+      try {
+        await deleteGoogleEvent(accessToken, calendarId, eventId);
+      } catch (error) {
+        if (!isGoogleNotFoundError(error)) throw error;
+      }
+      deletedIds.push(eventId);
+      deleted += 1;
+    }
+
+    if (deletedIds.length > 0) {
+      await supabaseAdmin
+        .from("tracker_task_google_event_links")
+        .update({ is_deleted: true, last_sync_source: "system" })
+        .eq("user_id", userId)
+        .eq("calendar_id", calendarId)
+        .in("google_event_id", deletedIds);
+    }
+  }
+
+  const syncResult = await runLegacyManualSyncForUser(supabaseAdmin, userId);
+
+  return {
+    deleted,
+    ...syncResult,
+  };
+};
+
+export const isCalendarRebuildSchemaUnavailable = (error: unknown) =>
+  isMissingRebuildSchemaError(error);
 
 export const disconnectGoogleCalendarForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
   const { publicRow, secretsRow } = await loadCalendarConnection(supabaseAdmin, userId);

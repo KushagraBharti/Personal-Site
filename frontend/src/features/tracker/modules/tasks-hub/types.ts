@@ -108,6 +108,12 @@ export interface SyncNowResult {
   ok: boolean;
   run_id: string;
   queued: boolean;
+  processed?: number;
+  failed?: number;
+  failures?: Array<{
+    id: number;
+    error: string;
+  }>;
 }
 
 export interface LivePumpResult {

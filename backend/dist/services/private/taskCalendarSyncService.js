@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.normalizeDueAtForSync = exports.inferLanesForRunMode = exports.getSyncRunDebug = exports.getSyncProgressForRun = exports.getCalendarStatusForUser = exports.upsertListSyncSetting = exports.listUserSyncEnabledLists = exports.renewExpiringCalendarWatches = exports.disconnectGoogleCalendarForUser = exports.upsertGoogleConnectionFromOAuth = exports.queueLivePumpForUser = exports.queueManualSyncForUser = exports.queueRebuildRunForUser = exports.queueReconcileRunForUser = exports.queueFullBackfill = exports.processCalendarSyncJobs = exports.renewCalendarWatchForUser = void 0;
+exports.normalizeDueAtForSync = exports.inferLanesForRunMode = exports.getSyncRunDebug = exports.getSyncProgressForRun = exports.getCalendarStatusForUser = exports.upsertListSyncSetting = exports.listUserSyncEnabledLists = exports.renewExpiringCalendarWatches = exports.disconnectGoogleCalendarForUser = exports.isCalendarRebuildSchemaUnavailable = exports.rebuildCalendarLegacyInlineForUser = exports.upsertGoogleConnectionFromOAuth = exports.queueLivePumpForUser = exports.runLegacyManualSyncForUser = exports.queueManualSyncForUser = exports.queueRebuildRunForUser = exports.queueReconcileRunForUser = exports.queueFullBackfill = exports.processCalendarSyncJobs = exports.renewCalendarWatchForUser = void 0;
 const crypto_1 = require("crypto");
 const calendarSyncQueueService_1 = require("./calendarSyncQueueService");
 const googleCalendarApiService_1 = require("./googleCalendarApiService");
@@ -40,6 +40,15 @@ const getJobStringPayload = (job, key) => {
 };
 const getJobRunId = (job) => job.run_id || getJobStringPayload(job, "run_id");
 const withRunPayload = (base, runId) => runId ? Object.assign(Object.assign({}, base), { run_id: runId }) : base;
+const getRawErrorMessage = (error) => {
+    var _a;
+    if (error instanceof Error)
+        return error.message;
+    if (typeof error === "object" && error !== null && "message" in error) {
+        return String((_a = error.message) !== null && _a !== void 0 ? _a : "");
+    }
+    return String(error);
+};
 const formatSyncErrorMessage = (error) => {
     var _a, _b, _c, _d, _e, _f, _g, _h;
     const err = error;
@@ -61,6 +70,18 @@ const formatSyncErrorMessage = (error) => {
     if (apiErrMessage)
         return apiErrMessage;
     return generic;
+};
+const isMissingRebuildSchemaError = (error) => {
+    const message = getRawErrorMessage(error).toLowerCase();
+    return (message.includes("tracker_google_sync_runs") ||
+        message.includes("run_id") ||
+        message.includes("lane") ||
+        message.includes("dedupe_key") ||
+        message.includes("google_event_id") ||
+        message.includes("p_lanes") ||
+        message.includes("hard_reset_clear_page") ||
+        message.includes("reconcile_google_page") ||
+        message.includes("reconcile_app_page"));
 };
 const getSyncErrorCode = (error) => {
     var _a;
@@ -943,6 +964,26 @@ const queueManualSyncForUser = (supabaseAdmin, userId) => __awaiter(void 0, void
     return (0, exports.queueReconcileRunForUser)(supabaseAdmin, userId);
 });
 exports.queueManualSyncForUser = queueManualSyncForUser;
+const runLegacyManualSyncForUser = (supabaseAdmin, userId) => __awaiter(void 0, void 0, void 0, function* () {
+    yield (0, exports.queueFullBackfill)(supabaseAdmin, userId, undefined, { source: "legacy_manual_sync_now" });
+    const failures = [];
+    let processed = 0;
+    for (let i = 0; i < 15; i += 1) {
+        const results = yield (0, exports.processCalendarSyncJobs)({ userId, batchSize: 10 });
+        if (results.length === 0)
+            break;
+        processed += results.length;
+        failures.push(...results
+            .filter((item) => !item.ok)
+            .map((item) => ({ id: item.id, error: item.error || "Unknown sync error" })));
+    }
+    return {
+        processed,
+        failed: failures.length,
+        failures: failures.slice(0, 10),
+    };
+});
+exports.runLegacyManualSyncForUser = runLegacyManualSyncForUser;
 const queueLivePumpForUser = (supabaseAdmin, userId) => __awaiter(void 0, void 0, void 0, function* () {
     const results = yield (0, exports.processCalendarSyncJobs)({
         userId,
@@ -1013,6 +1054,51 @@ const upsertGoogleConnectionFromOAuth = (params) => __awaiter(void 0, void 0, vo
     };
 });
 exports.upsertGoogleConnectionFromOAuth = upsertGoogleConnectionFromOAuth;
+const rebuildCalendarLegacyInlineForUser = (supabaseAdmin, userId) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const { accessToken, publicRow } = yield (0, googleCalendarApiService_1.getValidGoogleAccessToken)(supabaseAdmin, userId);
+    const calendarId = publicRow.selected_calendar_id;
+    if (!calendarId) {
+        throw new Error("No selected Google calendar found.");
+    }
+    let deleted = 0;
+    for (let pageIndex = 0; pageIndex < 20; pageIndex += 1) {
+        const page = yield (0, googleCalendarApiService_1.listGoogleEventsPage)({
+            accessToken,
+            calendarId,
+            maxResults: HARD_RESET_CLEAR_PAGE_SIZE,
+        });
+        const events = ((_a = page.items) !== null && _a !== void 0 ? _a : []).filter((event) => !!(event === null || event === void 0 ? void 0 : event.id));
+        if (events.length === 0)
+            break;
+        const deletedIds = [];
+        for (const event of events) {
+            const eventId = String(event.id);
+            try {
+                yield (0, googleCalendarApiService_1.deleteGoogleEvent)(accessToken, calendarId, eventId);
+            }
+            catch (error) {
+                if (!isGoogleNotFoundError(error))
+                    throw error;
+            }
+            deletedIds.push(eventId);
+            deleted += 1;
+        }
+        if (deletedIds.length > 0) {
+            yield supabaseAdmin
+                .from("tracker_task_google_event_links")
+                .update({ is_deleted: true, last_sync_source: "system" })
+                .eq("user_id", userId)
+                .eq("calendar_id", calendarId)
+                .in("google_event_id", deletedIds);
+        }
+    }
+    const syncResult = yield (0, exports.runLegacyManualSyncForUser)(supabaseAdmin, userId);
+    return Object.assign({ deleted }, syncResult);
+});
+exports.rebuildCalendarLegacyInlineForUser = rebuildCalendarLegacyInlineForUser;
+const isCalendarRebuildSchemaUnavailable = (error) => isMissingRebuildSchemaError(error);
+exports.isCalendarRebuildSchemaUnavailable = isCalendarRebuildSchemaUnavailable;
 const disconnectGoogleCalendarForUser = (supabaseAdmin, userId) => __awaiter(void 0, void 0, void 0, function* () {
     const { publicRow, secretsRow } = yield (0, googleCalendarApiService_1.loadCalendarConnection)(supabaseAdmin, userId);
     if (!publicRow || !secretsRow)

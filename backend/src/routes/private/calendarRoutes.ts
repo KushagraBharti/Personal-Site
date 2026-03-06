@@ -12,12 +12,15 @@ import {
   getSyncRunDebug,
   getSyncProgressForRun,
   inferLanesForRunMode,
+  isCalendarRebuildSchemaUnavailable,
   processCalendarSyncJobs,
   queueLivePumpForUser,
   queueManualSyncForUser,
   queueRebuildRunForUser,
   queueFullBackfill,
+  rebuildCalendarLegacyInlineForUser,
   renewCalendarWatchForUser,
+  runLegacyManualSyncForUser,
   upsertGoogleConnectionFromOAuth,
   upsertListSyncSetting,
 } from "../../services/private/taskCalendarSyncService";
@@ -186,8 +189,21 @@ router.post("/sync-now", requireUser, async (req, res) => {
   if (!isCalendarSyncEnabled()) return res.status(503).json({ error: "Calendar sync disabled" });
   try {
     const supabaseAdmin = getSupabaseAdmin();
-    const runId = await queueManualSyncForUser(supabaseAdmin, req.user!.id);
-    await processCalendarSyncJobs({ userId: req.user!.id, batchSize: 1, lanes: ["reconcile"] }).catch(() => {});
+    let runId: string | null = null;
+    try {
+      runId = await queueManualSyncForUser(supabaseAdmin, req.user!.id);
+      await processCalendarSyncJobs({ userId: req.user!.id, batchSize: 1, lanes: ["reconcile"] }).catch(() => {});
+    } catch (error) {
+      const fallback = await runLegacyManualSyncForUser(supabaseAdmin, req.user!.id);
+      return res.json({
+        ok: true,
+        run_id: "",
+        queued: false,
+        processed: fallback.processed,
+        failed: fallback.failed,
+        failures: fallback.failures,
+      });
+    }
     return res.json({
       ok: true,
       run_id: runId,
@@ -195,7 +211,8 @@ router.post("/sync-now", requireUser, async (req, res) => {
     });
   } catch (error) {
     console.error("Failed to sync calendar now", error);
-    return res.status(500).json({ error: "Failed to sync calendar" });
+    const message = error instanceof Error ? error.message : "Failed to sync calendar";
+    return res.status(500).json({ error: message });
   }
 });
 
@@ -215,12 +232,27 @@ router.post("/rebuild", requireUser, async (req, res) => {
   if (!isCalendarSyncEnabled()) return res.status(503).json({ error: "Calendar sync disabled" });
   try {
     const supabaseAdmin = getSupabaseAdmin();
-    const runId = await queueRebuildRunForUser(supabaseAdmin, req.user!.id);
-    await processCalendarSyncJobs({ userId: req.user!.id, batchSize: 1, lanes: ["rebuild"] }).catch(() => {});
-    return res.json({ ok: true, run_id: runId, queued: true });
+    try {
+      const runId = await queueRebuildRunForUser(supabaseAdmin, req.user!.id);
+      await processCalendarSyncJobs({ userId: req.user!.id, batchSize: 1, lanes: ["rebuild"] }).catch(() => {});
+      return res.json({ ok: true, run_id: runId, queued: true });
+    } catch (error) {
+      if (!isCalendarRebuildSchemaUnavailable(error)) throw error;
+      const fallback = await rebuildCalendarLegacyInlineForUser(supabaseAdmin, req.user!.id);
+      return res.json({
+        ok: true,
+        run_id: "",
+        queued: false,
+        processed: fallback.processed,
+        failed: fallback.failed,
+        failures: fallback.failures,
+        deleted: fallback.deleted,
+      });
+    }
   } catch (error) {
     console.error("Failed to start calendar rebuild", error);
-    return res.status(500).json({ error: "Failed to start calendar rebuild" });
+    const message = error instanceof Error ? error.message : "Failed to start calendar rebuild";
+    return res.status(500).json({ error: message });
   }
 });
 
@@ -241,7 +273,8 @@ router.get("/sync-progress", requireUser, async (req, res) => {
     return res.json({ ok: true, ...progress });
   } catch (error) {
     console.error("Failed to fetch sync progress", error);
-    return res.status(500).json({ error: "Failed to fetch sync progress" });
+    const message = error instanceof Error ? error.message : "Failed to fetch sync progress";
+    return res.status(500).json({ error: message });
   }
 });
 

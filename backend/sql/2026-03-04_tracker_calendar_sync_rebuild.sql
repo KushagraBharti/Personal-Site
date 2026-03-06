@@ -76,6 +76,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_tracker_google_sync_jobs_dedupe_active
   ON public.tracker_google_sync_jobs (dedupe_key)
   WHERE dedupe_key IS NOT NULL AND status IN ('pending','running');
 
+DROP FUNCTION IF EXISTS public.claim_sync_jobs(integer, uuid);
+DROP FUNCTION IF EXISTS public.claim_sync_jobs(integer, uuid, text[]);
+DROP FUNCTION IF EXISTS public.complete_sync_job(bigint);
+DROP FUNCTION IF EXISTS public.fail_sync_job(bigint, text, interval);
+
 CREATE OR REPLACE FUNCTION public.claim_sync_jobs(
   batch_size integer DEFAULT 25,
   p_user_id uuid DEFAULT NULL,

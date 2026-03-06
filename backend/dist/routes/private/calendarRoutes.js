@@ -170,8 +170,22 @@ router.post("/sync-now", requireUser_1.requireUser, (req, res) => __awaiter(void
         return res.status(503).json({ error: "Calendar sync disabled" });
     try {
         const supabaseAdmin = (0, calendarSyncQueueService_1.getSupabaseAdmin)();
-        const runId = yield (0, taskCalendarSyncService_1.queueManualSyncForUser)(supabaseAdmin, req.user.id);
-        yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ userId: req.user.id, batchSize: 1, lanes: ["reconcile"] }).catch(() => { });
+        let runId = null;
+        try {
+            runId = yield (0, taskCalendarSyncService_1.queueManualSyncForUser)(supabaseAdmin, req.user.id);
+            yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ userId: req.user.id, batchSize: 1, lanes: ["reconcile"] }).catch(() => { });
+        }
+        catch (error) {
+            const fallback = yield (0, taskCalendarSyncService_1.runLegacyManualSyncForUser)(supabaseAdmin, req.user.id);
+            return res.json({
+                ok: true,
+                run_id: "",
+                queued: false,
+                processed: fallback.processed,
+                failed: fallback.failed,
+                failures: fallback.failures,
+            });
+        }
         return res.json({
             ok: true,
             run_id: runId,
@@ -180,7 +194,8 @@ router.post("/sync-now", requireUser_1.requireUser, (req, res) => __awaiter(void
     }
     catch (error) {
         console.error("Failed to sync calendar now", error);
-        return res.status(500).json({ error: "Failed to sync calendar" });
+        const message = error instanceof Error ? error.message : "Failed to sync calendar";
+        return res.status(500).json({ error: message });
     }
 }));
 router.post("/live-pump", requireUser_1.requireUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -201,13 +216,30 @@ router.post("/rebuild", requireUser_1.requireUser, (req, res) => __awaiter(void 
         return res.status(503).json({ error: "Calendar sync disabled" });
     try {
         const supabaseAdmin = (0, calendarSyncQueueService_1.getSupabaseAdmin)();
-        const runId = yield (0, taskCalendarSyncService_1.queueRebuildRunForUser)(supabaseAdmin, req.user.id);
-        yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ userId: req.user.id, batchSize: 1, lanes: ["rebuild"] }).catch(() => { });
-        return res.json({ ok: true, run_id: runId, queued: true });
+        try {
+            const runId = yield (0, taskCalendarSyncService_1.queueRebuildRunForUser)(supabaseAdmin, req.user.id);
+            yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ userId: req.user.id, batchSize: 1, lanes: ["rebuild"] }).catch(() => { });
+            return res.json({ ok: true, run_id: runId, queued: true });
+        }
+        catch (error) {
+            if (!(0, taskCalendarSyncService_1.isCalendarRebuildSchemaUnavailable)(error))
+                throw error;
+            const fallback = yield (0, taskCalendarSyncService_1.rebuildCalendarLegacyInlineForUser)(supabaseAdmin, req.user.id);
+            return res.json({
+                ok: true,
+                run_id: "",
+                queued: false,
+                processed: fallback.processed,
+                failed: fallback.failed,
+                failures: fallback.failures,
+                deleted: fallback.deleted,
+            });
+        }
     }
     catch (error) {
         console.error("Failed to start calendar rebuild", error);
-        return res.status(500).json({ error: "Failed to start calendar rebuild" });
+        const message = error instanceof Error ? error.message : "Failed to start calendar rebuild";
+        return res.status(500).json({ error: message });
     }
 }));
 router.get("/sync-progress", requireUser_1.requireUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -229,7 +261,8 @@ router.get("/sync-progress", requireUser_1.requireUser, (req, res) => __awaiter(
     }
     catch (error) {
         console.error("Failed to fetch sync progress", error);
-        return res.status(500).json({ error: "Failed to fetch sync progress" });
+        const message = error instanceof Error ? error.message : "Failed to fetch sync progress";
+        return res.status(500).json({ error: message });
     }
 }));
 router.get("/runs/:runId", requireUser_1.requireUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {

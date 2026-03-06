@@ -915,6 +915,11 @@ export const useTasksHubModule = () => {
       if (result.run_id) {
         await pollSyncRun(result.run_id, { timeoutMs: 90_000, pollEveryMs: 1_100 });
       } else {
+        setCalendarSyncResult({
+          processed: result.processed ?? 0,
+          failed: result.failed ?? 0,
+          failures: result.failures ?? [],
+        });
         await loadCalendarStatus();
       }
       return true;
@@ -941,6 +946,11 @@ export const useTasksHubModule = () => {
       if (result.run_id) {
         await pollSyncRun(result.run_id, { timeoutMs: 180_000, pollEveryMs: 1_200 });
       } else {
+        setCalendarSyncResult({
+          processed: result.processed ?? 0,
+          failed: result.failed ?? 0,
+          failures: result.failures ?? [],
+        });
         await loadCalendarStatus();
       }
       return true;
