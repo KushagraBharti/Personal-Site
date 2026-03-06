@@ -779,17 +779,17 @@ const TasksHubTracker: React.FC = () => {
                   )}
                 </div>
                 {calendarSyncResult && (
-                  <p className="tasks-muted text-xs mt-1">
+                  <p className="tasks-muted text-2xs mt-1">
                     Last run: {calendarSyncResult.processed} processed / {calendarSyncResult.failed} failed
                   </p>
                 )}
                 {calendarLiveResult && (
-                  <p className="tasks-muted text-xs mt-1">
+                  <p className="tasks-muted text-2xs mt-1">
                     Live: {calendarLiveResult.processed} processed / {calendarLiveResult.failed} failed
                   </p>
                 )}
                 {calendarSyncResult?.failures?.length ? (
-                  <div className="tasks-muted text-xs mt-1" style={{ color: "var(--neo-red)" }}>
+                  <div className="tasks-muted text-2xs mt-1" style={{ color: "var(--neo-red)" }}>
                     {calendarSyncResult.failures.map((failure) => (
                       <p key={failure.id}>
                         Job {failure.id}: {failure.error}
