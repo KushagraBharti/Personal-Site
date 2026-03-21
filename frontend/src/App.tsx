@@ -7,6 +7,7 @@ import ScrollProgress from "./components/ScrollProgress";
 
 const Home = lazy(() => import("./pages/Home"));
 const Tracker = lazy(() => import("./pages/Tracker"));
+const AiProfile = lazy(() => import("./pages/AiProfile"));
 
 const GlobalHotkeys: React.FC = () => {
   const navigate = useNavigate();
@@ -44,6 +45,7 @@ const App: React.FC = () => {
       >
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/ai" element={<AiProfile />} />
           <Route path="/tracker" element={<Tracker />} />
         </Routes>
       </Suspense>

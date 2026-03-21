@@ -1,11 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { motion } from "framer-motion";
 import { useTypewriter, Cursor } from "react-simple-typewriter";
 import GlassCard from "./ui/GlassCard";
 import LazyIframe from "./ui/LazyIframe";
+import { getApiBaseUrl } from "../lib/apiBaseUrl";
+import type { PortfolioSnapshot } from "../types/portfolio";
+
+const fallbackAbout = {
+  introHeading: "Hey there! I'm Kushagra Bharti",
+  introBody: "An aspiring founder, but right now I am focused on building my skills and learning.",
+  currentProjects: [
+    "Monopoly Bench - A platform where various LLMs can play Monopoly against each other; I plan to publish a paper connected to this work.",
+    "A light-weight web crawler in Go - A project I am using to learn Go, concurrency, networking performance, and resource management.",
+    "An open-source T3.chat app - A project I am using to sharpen my web development skills, try creative chat UX ideas, and eventually integrate my web crawler as a tool.",
+  ],
+  currentLearning: [
+    "Go, especially concurrency.",
+    "WebSockets and real-time applications.",
+    "Machine learning fundamentals.",
+    "LLMs, including tool-calling and context management.",
+    "Networking performance.",
+    "Resource management.",
+    "Data management.",
+  ],
+  interestsOutsideTechnology: [
+    "I love cooking and have been cooking since I was five years old.",
+    "I love filmmaking, have directed 2 short films, and have contributed to other productions as a videographer and editor.",
+    "I love sports, especially soccer, volleyball, tennis, and table tennis, and I also follow soccer, Formula 1, and the UFC.",
+    "I am interested in finance and the application of technology in finance.",
+    "I am interested in psychology, reading, and the arts.",
+  ],
+};
 
 const About: React.FC = () => {
   const [startTyping, setStartTyping] = useState(false);
+  const [about, setAbout] = useState(fallbackAbout);
+  const [filmPortfolioLink, setFilmPortfolioLink] = useState(
+    "https://drive.google.com/file/d/1m3aFLAK4TE29ybbdOzObLS8zrrX3oJwM/view?usp=sharing"
+  );
   const [typedText] = useTypewriter({
     words: startTyping ? ["About Me"] : [""],
     loop: false,
@@ -13,6 +46,33 @@ const About: React.FC = () => {
     deleteSpeed: 60,
     delaySpeed: 1000,
   });
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const loadProfile = async () => {
+      try {
+        const response = await axios.get<PortfolioSnapshot>(`${getApiBaseUrl()}/api/portfolio`, {
+          signal: controller.signal,
+        });
+        const snapshot = response.data;
+        const filmLink = snapshot.profile.externalLinks.find((link) => link.label === "Film Portfolio");
+
+        setAbout(snapshot.profile.about);
+        if (filmLink) {
+          setFilmPortfolioLink(filmLink.href);
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error("Failed to load about profile content:", error);
+        }
+      }
+    };
+
+    loadProfile();
+
+    return () => controller.abort();
+  }, []);
 
   return (
     <section className="py-16">
@@ -36,11 +96,10 @@ const About: React.FC = () => {
           <GlassCard className="w-full max-w-none mx-0 p-6 text-gray-200 space-y-5">
             <div className="space-y-2">
               <h3 className="text-2xl font-semibold text-gray-50">
-                Hey there! I'm Kushagra Bharti
+                {about.introHeading}
               </h3>
               <p className="text-lg text-gray-100">
-                An aspiring founder, but right now I am focused on building my
-                skills and learning.
+                {about.introBody}
               </p>
             </div>
 
@@ -49,34 +108,9 @@ const About: React.FC = () => {
                 Projects I'm working on
               </h4>
               <ol className="list-decimal list-inside space-y-2">
-                <li>
-                  <span className="font-semibold">Monopoly Bench</span> - This is
-                  a platform where various LLMs (including OpenAI models) can
-                  play Monopoly against each other. I plan to publish a paper in
-                  correlation to this project as well.
-                </li>
-                <li>
-                  <span className="font-semibold">A light-weight web crawler in Go</span>{" "}
-                  - I plan to use this project to learn Go, concurrency,
-                  networking performance, and resource management.
-                </li>
-                <li>
-                  <span className="font-semibold">
-                    An open-source{" "}
-                    <a
-                      href="https://t3.chat"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-100 underline decoration-white/40 underline-offset-4 hover:text-[#D44638] hover:decoration-[#D44638]"
-                    >
-                      T3.chat
-                    </a>{" "}
-                    app
-                  </span>{" "}
-                  - I plan to use this project to fine-tune my web development
-                  skills, implement creative ideas for chat apps, and
-                  implementing my web crawler as a tool.
-                </li>
+                {about.currentProjects.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
               </ol>
             </div>
 
@@ -85,37 +119,9 @@ const About: React.FC = () => {
                 I am currently learning
               </h4>
               <ul className="list-disc list-inside space-y-2">
-                <li>
-                  <span className="font-semibold">Go (concurrency)</span> -
-                  adding another backend language to my arsenal.
-                </li>
-                <li>
-                  <span className="font-semibold">WebSockets</span> - building
-                  and optimizing real-time applications.
-                </li>
-                <li>
-                  <span className="font-semibold">Machine Learning Fundamentals</span>{" "}
-                  - applying ML theory to projects and building models from
-                  scratch.
-                </li>
-                <li>
-                  <span className="font-semibold">
-                    LLMs (tool-calling, context management, etc.)
-                  </span>{" "}
-                  - developing agent frameworks around large language models.
-                </li>
-                <li>
-                  <span className="font-semibold">Networking Performance</span>{" "}
-                  - optimizing network efficiency and throughput.
-                </li>
-                <li>
-                  <span className="font-semibold">Resource Management</span> -
-                  efficient memory and CPU utilization.
-                </li>
-                <li>
-                  <span className="font-semibold">Data Management</span> - best
-                  practices for handling and processing data at scale.
-                </li>
+                {about.currentLearning.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
               </ul>
             </div>
 
@@ -124,48 +130,19 @@ const About: React.FC = () => {
                 Things outside of technology
               </h4>
               <ul className="list-disc list-inside space-y-2">
+                {about.interestsOutsideTechnology.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
                 <li>
-                  I love to <span className="font-semibold">cook</span>, and have
-                  been cooking since I was five years old.
-                </li>
-                <li>
-                  I love <span className="font-semibold">filmmaking</span>{" "}
-                  (
+                  Film portfolio:{" "}
                   <a
-                    href="https://drive.google.com/file/d/1m3aFLAK4TE29ybbdOzObLS8zrrX3oJwM/view?usp=sharing"
+                    href={filmPortfolioLink}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-100 underline decoration-white/40 underline-offset-4 hover:text-[#D44638] hover:decoration-[#D44638]"
                   >
-                    portfolio link
+                    {filmPortfolioLink}
                   </a>
-                  ), I've{" "}
-                  <span className="font-semibold">directed 2 short films</span>,
-                  and have contributed to a few more as videographer and editor.
-                </li>
-                <li>
-                  I love <span className="font-semibold">sports</span>. I play{" "}
-                  <span className="font-semibold">
-                    soccer, volleyball, tennis, and table tennis
-                  </span>
-                  ; and I also watch{" "}
-                  <span className="font-semibold">
-                    soccer (Visca Barca!), Formula 1, and the UFC
-                  </span>
-                  .
-                </li>
-                <li>
-                  I am also interested in{" "}
-                  <span className="font-semibold">finance</span> and the{" "}
-                  <span className="font-semibold">
-                    application of technology in finance
-                  </span>
-                  .
-                </li>
-                <li>
-                  I am also interested in{" "}
-                  <span className="font-semibold">psychology, reading, arts</span>
-                  , etc.
                 </li>
               </ul>
             </div>

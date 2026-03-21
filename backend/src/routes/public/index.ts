@@ -6,6 +6,7 @@ import introRoutes from "./introRoutes";
 import githubRoutes from "./githubRoutes";
 import weatherRoutes from "./weatherRoutes";
 import leetcodeRoutes from "./leetcodeRoutes";
+import portfolioRoutes from "./portfolioRoutes";
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use(introRoutes);
 router.use("/github", githubRoutes);
 router.use("/weather", weatherRoutes);
 router.use("/leetcode", leetcodeRoutes);
+router.use(portfolioRoutes);
 
 export default router;
