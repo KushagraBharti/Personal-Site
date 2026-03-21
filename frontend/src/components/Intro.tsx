@@ -34,7 +34,14 @@ interface IntroResponse {
 const DEFAULT_SITE_URL = "https://www.kushagrabharti.com";
 
 const buildAiSummaryRequestPrompt = (siteUrl: string) =>
-  `Read ${siteUrl}/ai and summarize Kushagra Bharti for a first-time visitor. Use that page as the source of truth.`;
+  [
+    `Read ${siteUrl}/llms.txt as the starting point and source of truth for Kushagra Bharti.`,
+    "Use the most relevant linked pages only if needed to improve accuracy.",
+    "Then write a detailed, high-signal professional summary that helps a first-time reader quickly understand who he is, what he is building, and where he is strongest.",
+    "Focus on his technical strengths, engineering range, research work, internships, education, and standout projects.",
+    "Emphasize concrete evidence, ownership, scope, rigor, and trajectory.",
+    "Keep the tone sharp and credible, avoid hype, avoid generic praise, and highlight the most differentiated details first.",
+  ].join(" ");
 
 const AI_DESTINATIONS = [
   {
@@ -48,10 +55,10 @@ const AI_DESTINATIONS = [
     buildHref: (query: string) => `https://claude.ai/new?q=${encodeURIComponent(query)}`,
   },
   {
-    label: "Google AI",
+    label: "Gemini",
     Icon: SiGooglegemini,
     buildHref: (query: string) =>
-      `https://www.google.com/search?udm=50&source=searchlabs&q=${encodeURIComponent(query)}`,
+      `https://gemini.google.com/app?prompt=${encodeURIComponent(query)}`,
   },
 ];
 
