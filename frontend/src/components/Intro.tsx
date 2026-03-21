@@ -89,6 +89,13 @@ type DesktopStageLayout = {
   cards: Record<DesktopCardKey, CardPosition>;
 };
 
+type DesktopLayoutPreset = {
+  heroWidth: number;
+  heroXRatio: number;
+  heroYRatio: number;
+  cardRatios: Record<DesktopCardKey, CardPosition>;
+};
+
 const DESKTOP_CARD_BASE_LAYER: Record<DesktopCardKey, number> = {
   photo: 8,
   github: 7,
@@ -101,96 +108,128 @@ const DESKTOP_CARD_BASE_LAYER: Record<DesktopCardKey, number> = {
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
+const getDesktopLayoutPreset = (
+  stageWidth: number,
+  stageHeight: number
+): DesktopLayoutPreset => {
+  if (stageWidth >= 1650 && stageHeight >= 880) {
+    return {
+      heroWidth: 560,
+      heroXRatio: 0.33,
+      heroYRatio: 0.285,
+      cardRatios: {
+        photo: { x: 0.04, y: 0.095 },
+        github: { x: 0.008, y: 0.66 },
+        read: { x: 0.63, y: 0.055 },
+        weather: { x: 0.85, y: 0.19 },
+        fact: { x: 0.845, y: 0.51 },
+        latest: { x: 0.41, y: 0.79 },
+        pong: { x: 0.69, y: 0.71 },
+      },
+    };
+  }
+
+  if (stageWidth >= 1480 && stageHeight >= 800) {
+    return {
+      heroWidth: 530,
+      heroXRatio: 0.325,
+      heroYRatio: 0.285,
+      cardRatios: {
+        photo: { x: 0.042, y: 0.105 },
+        github: { x: 0.008, y: 0.64 },
+        read: { x: 0.615, y: 0.055 },
+        weather: { x: 0.845, y: 0.2 },
+        fact: { x: 0.84, y: 0.51 },
+        latest: { x: 0.405, y: 0.78 },
+        pong: { x: 0.67, y: 0.7 },
+      },
+    };
+  }
+
+  if (stageHeight < 760) {
+    return {
+      heroWidth: stageWidth >= 1260 ? 520 : 500,
+      heroXRatio: stageWidth >= 1260 ? 0.315 : 0.305,
+      heroYRatio: 0.245,
+      cardRatios: {
+        photo: { x: 0.04, y: 0.09 },
+        github: { x: 0.004, y: 0.61 },
+        read: { x: 0.595, y: 0.03 },
+        weather: { x: 0.83, y: 0.16 },
+        fact: { x: 0.84, y: 0.34 },
+        latest: { x: 0.41, y: 0.805 },
+        pong: { x: 0.66, y: 0.605 },
+      },
+    };
+  }
+
+  return {
+    heroWidth: stageWidth >= 1260 ? 520 : 500,
+    heroXRatio: stageWidth >= 1260 ? 0.315 : 0.305,
+    heroYRatio: 0.265,
+    cardRatios: {
+      photo: { x: 0.04, y: 0.095 },
+      github: { x: 0.004, y: 0.58 },
+      read: { x: 0.605, y: 0.05 },
+      weather: { x: 0.815, y: 0.175 },
+      fact: { x: 0.81, y: 0.47 },
+      latest: { x: 0.43, y: 0.77 },
+      pong: { x: 0.66, y: 0.59 },
+    },
+  };
+};
+
 const getDesktopStageLayout = (
   viewportWidth: number,
   viewportHeight: number
 ): DesktopStageLayout => {
-  const stageWidth = clamp(viewportWidth - 56, 1180, 1680);
-  const stageHeight = clamp(viewportHeight - 32, 860, 980);
+  // Match the actual absolute stage container, which lives inside px-6 / py-8 padding.
+  const availableWidth = Math.max(viewportWidth - 48, 1180);
+  const availableHeight = Math.max(viewportHeight - 64, 700);
+  const stageWidth = clamp(availableWidth, 1180, 1760);
+  const stageHeight = clamp(availableHeight, 700, 1020);
   const heroHeight = 360;
-  const heroWidth = stageWidth >= 1600 ? 540 : stageWidth >= 1450 ? 510 : stageWidth >= 1280 ? 480 : 450;
-
-  const presetLayout =
-    stageWidth >= 1600
-      ? {
-          hero: { x: 560, y: 252 },
-          cards: {
-            photo: { x: 215, y: 188 },
-            github: { x: 60, y: 504 },
-            read: { x: 1018, y: 120 },
-            weather: { x: 1435, y: 236 },
-            fact: { x: 1450, y: 500 },
-            latest: { x: 742, y: 626 },
-            pong: { x: 1176, y: 662 },
-          },
-        }
-      : stageWidth >= 1450
-        ? {
-            hero: { x: 470, y: 248 },
-            cards: {
-              photo: { x: 122, y: 170 },
-              github: { x: 18, y: 488 },
-              read: { x: 838, y: 116 },
-              weather: { x: 1155, y: 228 },
-              fact: { x: 1178, y: 485 },
-              latest: { x: 610, y: 602 },
-              pong: { x: 935, y: 648 },
-            },
-          }
-        : stageWidth >= 1280
-          ? {
-              hero: { x: 390, y: 245 },
-              cards: {
-                photo: { x: 70, y: 160 },
-                github: { x: 14, y: 470 },
-                read: { x: 710, y: 110 },
-                weather: { x: 960, y: 226 },
-                fact: { x: 980, y: 470 },
-                latest: { x: 505, y: 594 },
-                pong: { x: 760, y: 636 },
-              },
-            }
-          : {
-              hero: { x: 340, y: 238 },
-              cards: {
-                photo: { x: 30, y: 160 },
-                github: { x: 16, y: 468 },
-                read: { x: 585, y: 112 },
-                weather: { x: 805, y: 226 },
-                fact: { x: 822, y: 470 },
-                latest: { x: 438, y: 594 },
-                pong: { x: 610, y: 636 },
-              },
-            };
+  const preset = getDesktopLayoutPreset(stageWidth, stageHeight);
+  const heroWidth = preset.heroWidth;
+  const heroX = clamp(
+    Math.round(stageWidth * preset.heroXRatio),
+    240,
+    stageWidth - heroWidth - 240
+  );
+  const heroY = clamp(
+    Math.round(stageHeight * preset.heroYRatio),
+    138,
+    stageHeight - heroHeight - 168
+  );
 
   const cards = {
     photo: {
-      x: clamp(presetLayout.cards.photo.x, 24, stageWidth - 240),
-      y: clamp(presetLayout.cards.photo.y, 24, stageHeight - 338),
+      x: clamp(Math.round(stageWidth * preset.cardRatios.photo.x), 24, stageWidth - 240),
+      y: clamp(Math.round(stageHeight * preset.cardRatios.photo.y), 24, stageHeight - 338),
     },
     github: {
-      x: clamp(presetLayout.cards.github.x, 18, stageWidth - 240),
-      y: clamp(presetLayout.cards.github.y, 24, stageHeight - 152),
+      x: clamp(Math.round(stageWidth * preset.cardRatios.github.x), 18, stageWidth - 240),
+      y: clamp(Math.round(stageHeight * preset.cardRatios.github.y), 24, stageHeight - 152),
     },
     read: {
-      x: clamp(presetLayout.cards.read.x, 24, stageWidth - 240),
-      y: clamp(presetLayout.cards.read.y, 24, stageHeight - 148),
+      x: clamp(Math.round(stageWidth * preset.cardRatios.read.x), 24, stageWidth - 240),
+      y: clamp(Math.round(stageHeight * preset.cardRatios.read.y), 24, stageHeight - 148),
     },
     weather: {
-      x: clamp(presetLayout.cards.weather.x, 24, stageWidth - 240),
-      y: clamp(presetLayout.cards.weather.y, 24, stageHeight - 148),
+      x: clamp(Math.round(stageWidth * preset.cardRatios.weather.x), 24, stageWidth - 240),
+      y: clamp(Math.round(stageHeight * preset.cardRatios.weather.y), 24, stageHeight - 148),
     },
     fact: {
-      x: clamp(presetLayout.cards.fact.x, 24, stageWidth - 256),
-      y: clamp(presetLayout.cards.fact.y, 24, stageHeight - 170),
+      x: clamp(Math.round(stageWidth * preset.cardRatios.fact.x), 24, stageWidth - 256),
+      y: clamp(Math.round(stageHeight * preset.cardRatios.fact.y), 24, stageHeight - 170),
     },
     latest: {
-      x: clamp(presetLayout.cards.latest.x, 24, stageWidth - 256),
-      y: clamp(presetLayout.cards.latest.y, 24, stageHeight - 164),
+      x: clamp(Math.round(stageWidth * preset.cardRatios.latest.x), 24, stageWidth - 256),
+      y: clamp(Math.round(stageHeight * preset.cardRatios.latest.y), 24, stageHeight - 164),
     },
     pong: {
-      x: clamp(presetLayout.cards.pong.x, 24, stageWidth - 340),
-      y: clamp(presetLayout.cards.pong.y, 24, stageHeight - 316),
+      x: clamp(Math.round(stageWidth * preset.cardRatios.pong.x), 24, stageWidth - 340),
+      y: clamp(Math.round(stageHeight * preset.cardRatios.pong.y), 24, stageHeight - 316),
     },
   } satisfies Record<DesktopCardKey, CardPosition>;
 
@@ -200,8 +239,8 @@ const getDesktopStageLayout = (
     hero: {
       width: heroWidth,
       height: heroHeight,
-      x: presetLayout.hero.x,
-      y: presetLayout.hero.y,
+      x: heroX,
+      y: heroY,
     },
     cards,
   };
@@ -324,6 +363,7 @@ const Intro: React.FC = () => {
     typeof window !== "undefined" ? window.location.origin : DEFAULT_SITE_URL
   );
   const desktopLayout = getDesktopStageLayout(viewportWidth, viewportHeight);
+  const desktopLayoutKey = `${desktopLayout.stageWidth}x${desktopLayout.stageHeight}`;
 
   const liftCard = (cardKey: DesktopCardKey) => {
     setCardLayers((currentLayers) => {
@@ -433,6 +473,7 @@ const Intro: React.FC = () => {
         {/* Draggable Cards in desired order */}
         {/* Photo Card */}
           <DesktopDraggableCard
+            key={`${desktopLayoutKey}-photo`}
             cardKey="photo"
             defaultPosition={desktopLayout.cards.photo}
             layer={cardLayers.photo}
@@ -452,6 +493,7 @@ const Intro: React.FC = () => {
 
         {/* Latest Update */}
           <DesktopDraggableCard
+            key={`${desktopLayoutKey}-latest`}
             cardKey="latest"
             defaultPosition={desktopLayout.cards.latest}
             layer={cardLayers.latest}
@@ -465,6 +507,7 @@ const Intro: React.FC = () => {
 
         {/* My Recent Read */}
           <DesktopDraggableCard
+            key={`${desktopLayoutKey}-read`}
             cardKey="read"
             defaultPosition={desktopLayout.cards.read}
             layer={cardLayers.read}
@@ -485,6 +528,7 @@ const Intro: React.FC = () => {
 
         {/* Fun Fact */}
           <DesktopDraggableCard
+            key={`${desktopLayoutKey}-fact`}
             cardKey="fact"
             defaultPosition={desktopLayout.cards.fact}
             layer={cardLayers.fact}
@@ -498,6 +542,7 @@ const Intro: React.FC = () => {
 
         {/* Pong Game */}
           <DesktopDraggableCard
+            key={`${desktopLayoutKey}-pong`}
             cardKey="pong"
             defaultPosition={desktopLayout.cards.pong}
             layer={cardLayers.pong}
@@ -512,6 +557,7 @@ const Intro: React.FC = () => {
 
         {/* Weather Card */}
           <DesktopDraggableCard
+            key={`${desktopLayoutKey}-weather`}
             cardKey="weather"
             defaultPosition={desktopLayout.cards.weather}
             layer={cardLayers.weather}
@@ -524,6 +570,7 @@ const Intro: React.FC = () => {
 
         {/* GitHub Stats Card */}
           <DesktopDraggableCard
+            key={`${desktopLayoutKey}-github`}
             cardKey="github"
             defaultPosition={desktopLayout.cards.github}
             layer={cardLayers.github}
