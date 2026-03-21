@@ -2,19 +2,23 @@
 
 import React from "react";
 
-interface GlassButtonProps {
+interface GlassButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   className?: string;
-  onClick?: () => void;
   type?: "button" | "submit" | "reset";
 }
 
-const GlassButton: React.FC<GlassButtonProps> = ({ children, className, onClick, type = "button" }) => {
+const GlassButton: React.FC<GlassButtonProps> = ({
+  children,
+  className,
+  type = "button",
+  ...rest
+}) => {
   return (
     <button
       className={`btn-glass text-center ${className ? className : ""}`}
-      onClick={onClick}
       type={type}
+      {...rest}
     >
       {children}
     </button>

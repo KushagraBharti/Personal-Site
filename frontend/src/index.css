@@ -132,6 +132,23 @@ body {
   transform: none !important;
 }
 
+.ai-summary-dialog {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  width: 100vw;
+  max-width: none;
+  height: 100vh;
+  max-height: none;
+}
+
+.ai-summary-dialog::backdrop {
+  background: rgba(2, 6, 23, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
 /* Premium hover overlay for project/education/experience cards */
 .premium-hover-overlay {
   background:
