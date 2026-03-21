@@ -107,39 +107,90 @@ const getDesktopStageLayout = (
 ): DesktopStageLayout => {
   const stageWidth = clamp(viewportWidth - 56, 1180, 1680);
   const stageHeight = clamp(viewportHeight - 32, 860, 980);
-  const heroWidth = stageWidth >= 1520 ? 540 : stageWidth >= 1320 ? 510 : 470;
   const heroHeight = 360;
-  const heroX = Math.round((stageWidth - heroWidth) / 2);
-  const heroY = Math.round(stageHeight * 0.33);
+  const heroWidth = stageWidth >= 1600 ? 540 : stageWidth >= 1450 ? 510 : stageWidth >= 1280 ? 480 : 450;
+
+  const presetLayout =
+    stageWidth >= 1600
+      ? {
+          hero: { x: 560, y: 252 },
+          cards: {
+            photo: { x: 215, y: 188 },
+            github: { x: 60, y: 504 },
+            read: { x: 1018, y: 120 },
+            weather: { x: 1435, y: 236 },
+            fact: { x: 1450, y: 500 },
+            latest: { x: 742, y: 626 },
+            pong: { x: 1176, y: 662 },
+          },
+        }
+      : stageWidth >= 1450
+        ? {
+            hero: { x: 470, y: 248 },
+            cards: {
+              photo: { x: 122, y: 170 },
+              github: { x: 18, y: 488 },
+              read: { x: 838, y: 116 },
+              weather: { x: 1155, y: 228 },
+              fact: { x: 1178, y: 485 },
+              latest: { x: 610, y: 602 },
+              pong: { x: 935, y: 648 },
+            },
+          }
+        : stageWidth >= 1280
+          ? {
+              hero: { x: 390, y: 245 },
+              cards: {
+                photo: { x: 70, y: 160 },
+                github: { x: 14, y: 470 },
+                read: { x: 710, y: 110 },
+                weather: { x: 960, y: 226 },
+                fact: { x: 980, y: 470 },
+                latest: { x: 505, y: 594 },
+                pong: { x: 760, y: 636 },
+              },
+            }
+          : {
+              hero: { x: 340, y: 238 },
+              cards: {
+                photo: { x: 30, y: 160 },
+                github: { x: 16, y: 468 },
+                read: { x: 585, y: 112 },
+                weather: { x: 805, y: 226 },
+                fact: { x: 822, y: 470 },
+                latest: { x: 438, y: 594 },
+                pong: { x: 610, y: 636 },
+              },
+            };
 
   const cards = {
     photo: {
-      x: clamp(heroX - 320, 28, stageWidth - 240),
-      y: clamp(heroY - 94, 36, stageHeight - 338),
+      x: clamp(presetLayout.cards.photo.x, 24, stageWidth - 240),
+      y: clamp(presetLayout.cards.photo.y, 24, stageHeight - 338),
     },
     github: {
-      x: clamp(heroX - 520, 18, stageWidth - 240),
-      y: clamp(heroY + 226, 24, stageHeight - 152),
+      x: clamp(presetLayout.cards.github.x, 18, stageWidth - 240),
+      y: clamp(presetLayout.cards.github.y, 24, stageHeight - 152),
     },
     read: {
-      x: clamp(heroX + heroWidth - 100, 24, stageWidth - 240),
-      y: clamp(heroY - 140, 20, stageHeight - 148),
+      x: clamp(presetLayout.cards.read.x, 24, stageWidth - 240),
+      y: clamp(presetLayout.cards.read.y, 24, stageHeight - 148),
     },
     weather: {
-      x: clamp(heroX + heroWidth + 295, 24, stageWidth - 240),
-      y: clamp(heroY - 18, 24, stageHeight - 148),
+      x: clamp(presetLayout.cards.weather.x, 24, stageWidth - 240),
+      y: clamp(presetLayout.cards.weather.y, 24, stageHeight - 148),
     },
     fact: {
-      x: clamp(heroX + heroWidth + 340, 24, stageWidth - 256),
-      y: clamp(heroY + 190, 24, stageHeight - 170),
+      x: clamp(presetLayout.cards.fact.x, 24, stageWidth - 256),
+      y: clamp(presetLayout.cards.fact.y, 24, stageHeight - 170),
     },
     latest: {
-      x: clamp(heroX + Math.round(heroWidth * 0.26), 24, stageWidth - 256),
-      y: clamp(heroY + heroHeight + 28, 24, stageHeight - 164),
+      x: clamp(presetLayout.cards.latest.x, 24, stageWidth - 256),
+      y: clamp(presetLayout.cards.latest.y, 24, stageHeight - 164),
     },
     pong: {
-      x: clamp(heroX + heroWidth + 108, 24, stageWidth - 340),
-      y: clamp(heroY + heroHeight + 168, 24, stageHeight - 316),
+      x: clamp(presetLayout.cards.pong.x, 24, stageWidth - 340),
+      y: clamp(presetLayout.cards.pong.y, 24, stageHeight - 316),
     },
   } satisfies Record<DesktopCardKey, CardPosition>;
 
@@ -149,8 +200,8 @@ const getDesktopStageLayout = (
     hero: {
       width: heroWidth,
       height: heroHeight,
-      x: heroX,
-      y: heroY,
+      x: presetLayout.hero.x,
+      y: presetLayout.hero.y,
     },
     cards,
   };
