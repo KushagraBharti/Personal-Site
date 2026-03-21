@@ -1,12 +1,13 @@
 // frontend/src/components/Intro.tsx
-import React, { Suspense, useEffect, useRef, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import axios from "axios";
 import Tilt from "react-parallax-tilt";
 import Draggable from "react-draggable";
 import GlassCard from "./ui/GlassCard";
 import GlassButton from "./ui/GlassButton";
 import { FaEnvelope, FaMediumM, FaGithub, FaLinkedin } from "react-icons/fa";
-import { FaCheck, FaCopy, FaWandSparkles, FaXTwitter } from "react-icons/fa6";
+import { FaXTwitter } from "react-icons/fa6";
+import { SiClaude, SiGooglegemini, SiOpenai } from "react-icons/si";
 import selfPic from "/SelfPic.jpg";
 import {
   buildAiSummaryPrompt,
@@ -43,11 +44,22 @@ const BASIC_INFO = {
 };
 
 const AI_DESTINATIONS = [
-  { label: "ChatGPT", href: "https://chatgpt.com/" },
-  { label: "Claude", href: "https://claude.ai/" },
-  { label: "Gemini", href: "https://gemini.google.com/" },
-  { label: "Perplexity", href: "https://www.perplexity.ai/" },
-  { label: "Grok", href: "https://grok.com/" },
+  {
+    label: "ChatGPT",
+    Icon: SiOpenai,
+    buildHref: (query: string) => `https://chat.openai.com/?q=${encodeURIComponent(query)}`,
+  },
+  {
+    label: "Claude",
+    Icon: SiClaude,
+    buildHref: (query: string) => `https://claude.ai/new?q=${encodeURIComponent(query)}`,
+  },
+  {
+    label: "Google AI",
+    Icon: SiGooglegemini,
+    buildHref: (query: string) =>
+      `https://www.google.com/search?udm=50&source=searchlabs&q=${encodeURIComponent(query)}`,
+  },
 ];
 
 // Fallback default data for instant load
@@ -65,15 +77,41 @@ const defaultIntroData: IntroResponse = {
   travelPlans: "No travel plans yet",
 };
 
+const buildFallbackSummaryPrompt = () =>
+  buildAiSummaryPrompt({
+    basicInfo: BASIC_INFO,
+    intro: defaultIntroData,
+    education: [],
+    experiences: [],
+    featuredProjects: [],
+    additionalProjects: [],
+  });
+
+const AiSummaryLaunchBar: React.FC<{ prompt: string }> = ({ prompt }) => (
+  <div className="ai-summary-strip">
+    <p className="ai-summary-strip__label">Request an AI summary of me</p>
+    <div className="ai-summary-strip__icons" aria-label="AI summary destinations">
+      {AI_DESTINATIONS.map(({ label, Icon, buildHref }) => (
+        <a
+          key={label}
+          href={buildHref(prompt)}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`Open ${label} with a prefilled AI summary prompt`}
+          title={label}
+          className="ai-summary-strip__link"
+        >
+          <Icon size={24} />
+        </a>
+      ))}
+    </div>
+  </div>
+);
+
 const Intro: React.FC = () => {
   const [introData, setIntroData] = useState<IntroResponse>(defaultIntroData);
   const [isAtTop, setIsAtTop] = useState(true);
-  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
-  const [summaryPrompt, setSummaryPrompt] = useState("");
-  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
-  const [summaryError, setSummaryError] = useState<string | null>(null);
-  const [copyState, setCopyState] = useState<"idle" | "done">("idle");
-  const summaryDialogRef = useRef<HTMLDialogElement | null>(null);
+  const [summaryPrompt, setSummaryPrompt] = useState<string>(() => buildFallbackSummaryPrompt());
   const MiniCardLoader = ({ title }: { title: string }) => (
     <GlassCard className="p-4 w-60 text-center animate-pulse">
       <h4 className="text-sm font-bold text-white mb-1">{title}</h4>
@@ -120,23 +158,6 @@ const Intro: React.FC = () => {
   const data = introData;
 
   useEffect(() => {
-    const dialog = summaryDialogRef.current;
-    if (!dialog) {
-      return;
-    }
-
-    if (isSummaryOpen && !dialog.open) {
-      dialog.showModal();
-    } else if (!isSummaryOpen && dialog.open) {
-      dialog.close();
-    }
-  }, [isSummaryOpen]);
-
-  useEffect(() => {
-    if (!isSummaryOpen) {
-      return;
-    }
-
     const apiBase = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(
       /\/$/,
       ""
@@ -144,9 +165,6 @@ const Intro: React.FC = () => {
     const controller = new AbortController();
 
     const loadSummaryPrompt = async () => {
-      setIsSummaryLoading(true);
-      setSummaryError(null);
-
       try {
         const [educationResponse, experiencesResponse, projectsResponse] = await Promise.all([
           axios.get<SummaryEducationEntry[]>(`${apiBase}/api/education`, {
@@ -170,15 +188,12 @@ const Intro: React.FC = () => {
           additionalProjects: projects.slice(6),
         });
 
-        setSummaryPrompt(prompt);
+        if (!controller.signal.aborted) {
+          setSummaryPrompt(prompt);
+        }
       } catch (error) {
         if (!controller.signal.aborted) {
           console.error("Error building AI summary prompt:", error);
-          setSummaryError("Unable to build the live summary prompt right now.");
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsSummaryLoading(false);
         }
       }
     };
@@ -188,46 +203,10 @@ const Intro: React.FC = () => {
     return () => {
       controller.abort();
     };
-  }, [data, isSummaryOpen]);
-
-  useEffect(() => {
-    if (copyState !== "done") {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => setCopyState("idle"), 1500);
-    return () => window.clearTimeout(timeoutId);
-  }, [copyState]);
-
-  const handleCopyPrompt = async () => {
-    if (!summaryPrompt) {
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(summaryPrompt);
-      setCopyState("done");
-    } catch (error) {
-      console.error("Failed to copy AI summary prompt:", error);
-      setSummaryError("Copy failed. You can still select the prompt manually.");
-    }
-  };
-
-  const handleOpenAiDestination = async (href: string) => {
-    if (summaryPrompt) {
-      try {
-        await navigator.clipboard.writeText(summaryPrompt);
-        setCopyState("done");
-      } catch (error) {
-        console.error("Failed to copy AI summary prompt before redirect:", error);
-      }
-    }
-
-    window.open(href, "_blank", "noopener,noreferrer");
-  };
+  }, [data]);
 
   return (
-    <section className="full-screen-bg relative overflow-hidden">
+    <section className="full-screen-bg intro-stage relative overflow-hidden">
       {/* Main central card – always rendered */}
       <div className="absolute inset-0 flex items-center justify-center">
         <Tilt
@@ -292,20 +271,8 @@ const Intro: React.FC = () => {
                 <FaXTwitter size={24} />
               </a>
             </div>
-            <div className="mb-6 flex w-full max-w-md flex-col items-center">
-              <GlassButton
-                onClick={() => setIsSummaryOpen(true)}
-                aria-haspopup="dialog"
-                aria-expanded={isSummaryOpen}
-                aria-controls="ai-summary-dialog"
-                className="inline-flex items-center gap-2 px-5 py-3"
-              >
-                <FaWandSparkles size={16} />
-                AI Summary of Me
-              </GlassButton>
-              <p className="mt-2 text-xs uppercase tracking-[0.3em] text-white/60">
-                Live prompt generated from portfolio data
-              </p>
+            <div className="mb-6">
+              <AiSummaryLaunchBar prompt={summaryPrompt} />
             </div>
             <GlassButton
               onClick={() =>
@@ -325,8 +292,8 @@ const Intro: React.FC = () => {
       <div className="hidden md:block">
         {/* Draggable Cards in desired order */}
         {/* Photo Card */}
-        <Draggable>
-          <div className="absolute top-24 left-96 cursor-grab active:cursor-grabbing">
+        <Draggable bounds="parent">
+          <div className="floating-card floating-card--photo cursor-grab active:cursor-grabbing">
             <GlassCard className="p-2 w-60 text-center flex flex-col items-center">
               <img
                 src={selfPic}
@@ -340,8 +307,8 @@ const Intro: React.FC = () => {
         </Draggable>
 
         {/* Latest Update */}
-        <Draggable>
-          <div className="absolute top-[68%] left-[45%] cursor-grab active:cursor-grabbing">
+        <Draggable bounds="parent">
+          <div className="floating-card floating-card--latest cursor-grab active:cursor-grabbing">
             <GlassCard className="p-4 w-64 text-center">
               <h4 className="text-sm font-bold text-white mb-1">Latest Update</h4>
               <p className="text-sm text-gray-200">{data.latestUpdate}</p>
@@ -350,8 +317,8 @@ const Intro: React.FC = () => {
         </Draggable>
 
         {/* My Recent Read */}
-        <Draggable>
-          <div className="absolute top-[5%] left-[55%] cursor-grab active:cursor-grabbing">
+        <Draggable bounds="parent">
+          <div className="floating-card floating-card--read cursor-grab active:cursor-grabbing">
             <GlassCard className="p-4 w-60 text-center">
               <h4 className="text-sm font-bold text-white mb-1">My Recent Read</h4>
               <a
@@ -367,8 +334,8 @@ const Intro: React.FC = () => {
         </Draggable>
 
         {/* Fun Fact */}
-        <Draggable>
-          <div className="absolute top-[47%] left-[82%] cursor-grab active:cursor-grabbing">
+        <Draggable bounds="parent">
+          <div className="floating-card floating-card--fact cursor-grab active:cursor-grabbing">
             <GlassCard className="p-4 w-64 text-center">
               <h4 className="text-sm font-bold text-white mb-1">Fun Fact</h4>
               <p className="text-sm text-gray-200">{data.funFact}</p>
@@ -377,8 +344,8 @@ const Intro: React.FC = () => {
         </Draggable>
 
         {/* Pong Game */}
-        <Draggable>
-          <div className="absolute top-[75%] left-[70%] cursor-grab active:cursor-grabbing">
+        <Draggable bounds="parent">
+          <div className="floating-card floating-card--pong cursor-grab active:cursor-grabbing">
             <GlassCard className="flex flex-col items-center p-8">
               <Suspense fallback={<div className="h-[180px] w-[275px] animate-pulse bg-black/30 rounded" />}>
                 <PongGame />
@@ -388,8 +355,8 @@ const Intro: React.FC = () => {
         </Draggable>
 
         {/* Weather Card */}
-        <Draggable>
-          <div className="absolute top-[15%] left-[80%] cursor-grab active:cursor-grabbing">
+        <Draggable bounds="parent">
+          <div className="floating-card floating-card--weather cursor-grab active:cursor-grabbing">
             <Suspense fallback={<MiniCardLoader title="Weather" />}>
               <WeatherCard />
             </Suspense>
@@ -397,8 +364,8 @@ const Intro: React.FC = () => {
         </Draggable>
 
         {/* GitHub Stats Card */}
-        <Draggable>
-          <div className="absolute top-[45%] left-[10%] cursor-grab active:cursor-grabbing">
+        <Draggable bounds="parent">
+          <div className="floating-card floating-card--github cursor-grab active:cursor-grabbing">
             <GlassCard className="p-4 w-60 text-center">
               <h4 className="text-sm font-bold text-white mb-1">
                 Live GitHub Stats
@@ -482,20 +449,8 @@ const Intro: React.FC = () => {
                   <FaXTwitter size={24} />
                 </a>
               </div>
-              <div className="mb-6 flex w-full max-w-md flex-col items-center">
-                <GlassButton
-                  onClick={() => setIsSummaryOpen(true)}
-                  aria-haspopup="dialog"
-                  aria-expanded={isSummaryOpen}
-                  aria-controls="ai-summary-dialog"
-                  className="inline-flex items-center gap-2 px-5 py-3"
-                >
-                  <FaWandSparkles size={16} />
-                  Open AI Summary
-                </GlassButton>
-                <p className="mt-2 text-xs uppercase tracking-[0.3em] text-white/60">
-                  Live prompt generated from portfolio data
-                </p>
+              <div className="mb-6">
+                <AiSummaryLaunchBar prompt={summaryPrompt} />
               </div>
               <GlassButton
                 onClick={() =>
@@ -544,116 +499,6 @@ const Intro: React.FC = () => {
           )}
         </GlassCard>
       </div>
-
-      <dialog
-        ref={summaryDialogRef}
-        id="ai-summary-dialog"
-        className="ai-summary-dialog"
-        aria-labelledby="ai-summary-title"
-        aria-describedby="ai-summary-desc"
-        onClose={() => setIsSummaryOpen(false)}
-        onCancel={(event) => {
-          event.preventDefault();
-          setIsSummaryOpen(false);
-        }}
-      >
-        <div
-          className="flex min-h-full items-center justify-center bg-black/50 p-4 md:p-8"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) {
-              setIsSummaryOpen(false);
-            }
-          }}
-        >
-          <GlassCard className="modal-glass-card relative w-full max-w-2xl p-6 text-left md:p-8">
-            <button
-              className="absolute right-4 top-4 text-2xl text-gray-200 transition-colors hover:text-white"
-              onClick={() => setIsSummaryOpen(false)}
-              aria-label="Close AI summary"
-              type="button"
-            >
-              ×
-            </button>
-            <p className="text-xs uppercase tracking-[0.35em] text-cyan-100/70">
-              AI Summary
-            </p>
-            <h2
-              id="ai-summary-title"
-              className="mt-2 text-3xl font-playfair text-white md:text-4xl"
-            >
-              Request an AI summary of Kushagra
-            </h2>
-            <p
-              id="ai-summary-desc"
-              className="mt-4 text-base leading-7 text-gray-100 md:text-lg"
-            >
-              This prompt is generated from your live portfolio content, so updates to education,
-              experience, intro data, or projects flow into the next summary request automatically.
-            </p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.3em] text-white/50">Education</p>
-                <p className="mt-2 text-sm text-white">Pulled from your live education section</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.3em] text-white/50">Experience</p>
-                <p className="mt-2 text-sm text-white">Includes all work, research, and leadership entries</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.3em] text-white/50">Projects</p>
-                <p className="mt-2 text-sm text-white">Includes featured projects plus the rest of the portfolio</p>
-              </div>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {AI_DESTINATIONS.map((destination) => (
-                <button
-                  key={destination.label}
-                  type="button"
-                  onClick={() => void handleOpenAiDestination(destination.href)}
-                  className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.24em] text-white/85 transition-colors hover:bg-white/20"
-                >
-                  {destination.label}
-                </button>
-              ))}
-            </div>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <GlassButton
-                type="button"
-                onClick={() => void handleCopyPrompt()}
-                className="inline-flex items-center gap-2 px-4 py-2"
-              >
-                {copyState === "done" ? <FaCheck size={14} /> : <FaCopy size={14} />}
-                {copyState === "done" ? "Copied" : "Copy prompt"}
-              </GlassButton>
-              <p className="text-sm text-white/70">
-                Open any AI app above. The prompt is copied before the tab opens.
-              </p>
-            </div>
-            {summaryError ? (
-              <p className="mt-4 text-sm text-red-200">{summaryError}</p>
-            ) : null}
-            <div className="mt-6 rounded-3xl border border-white/10 bg-slate-950/40 p-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <p className="text-xs uppercase tracking-[0.28em] text-white/50">
-                  Generated Prompt
-                </p>
-                {isSummaryLoading ? (
-                  <p className="text-xs uppercase tracking-[0.28em] text-white/40">Loading...</p>
-                ) : null}
-              </div>
-              <textarea
-                readOnly
-                value={
-                  isSummaryLoading
-                    ? "Building a fresh prompt from your current portfolio content..."
-                    : summaryPrompt
-                }
-                className="min-h-[320px] w-full resize-none rounded-2xl border border-white/10 bg-slate-950/70 p-4 font-mono text-sm leading-6 text-slate-100 outline-none"
-              />
-            </div>
-          </GlassCard>
-        </div>
-      </dialog>
 
       {/* "Scroll for More" indicator – only visible when at the top */}
       {isAtTop && (

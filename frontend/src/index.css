@@ -101,6 +101,10 @@ body {
   @apply min-h-screen flex items-center justify-center;
 }
 
+.intro-stage {
+  isolation: isolate;
+}
+
 /* 8. Icon Hover Effects */
 .icon-hover {
   @apply transition-transform duration-300;
@@ -132,21 +136,162 @@ body {
   transform: none !important;
 }
 
-.ai-summary-dialog {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  width: 100vw;
-  max-width: none;
-  height: 100vh;
-  max-height: none;
+.ai-summary-strip {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.22));
+  color: #22314b;
+  padding: 0.8rem 1.15rem;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
-.ai-summary-dialog::backdrop {
-  background: rgba(2, 6, 23, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+.ai-summary-strip__label {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: #24344e;
+  text-shadow: none !important;
+}
+
+.ai-summary-strip__icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+}
+
+.ai-summary-strip__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  color: #24344e;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  transition: transform 160ms ease, opacity 160ms ease, background 160ms ease, border-color 160ms ease;
+}
+
+.ai-summary-strip__link:hover {
+  transform: translateY(-1px) scale(1.04);
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.34);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.ai-summary-strip__link:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 4px;
+  border-radius: 9999px;
+}
+
+.floating-card {
+  position: absolute;
+}
+
+.floating-card--photo {
+  top: 6.5rem;
+  left: clamp(4rem, 7vw, 8rem);
+}
+
+.floating-card--github {
+  top: 27.5rem;
+  left: clamp(2rem, 5vw, 5rem);
+}
+
+.floating-card--read {
+  top: 3rem;
+  left: clamp(58rem, 60vw, 73rem);
+}
+
+.floating-card--weather {
+  top: 10rem;
+  right: clamp(1.5rem, 4vw, 4rem);
+}
+
+.floating-card--fact {
+  top: 30rem;
+  right: clamp(0.75rem, 3vw, 3rem);
+}
+
+.floating-card--latest {
+  top: 41.25rem;
+  left: calc(50% - 0.5rem);
+}
+
+.floating-card--pong {
+  top: 44rem;
+  right: clamp(6rem, 11vw, 12rem);
+}
+
+@media (min-width: 768px) and (max-width: 1360px) {
+  .floating-card--photo {
+    top: 5.5rem;
+    left: 2.5rem;
+  }
+
+  .floating-card--github {
+    top: 26rem;
+    left: 1.5rem;
+  }
+
+  .floating-card--read {
+    top: 2.5rem;
+    left: auto;
+    right: 17rem;
+  }
+
+  .floating-card--weather {
+    top: 8rem;
+    right: 1.5rem;
+  }
+
+  .floating-card--fact {
+    top: 29rem;
+    right: 0.75rem;
+  }
+
+  .floating-card--latest {
+    top: 40.25rem;
+    left: calc(50% - 1rem);
+  }
+
+  .floating-card--pong {
+    top: 45rem;
+    right: 3rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .ai-summary-strip {
+    width: 100%;
+    max-width: 22rem;
+    flex-direction: column;
+    gap: 0.75rem;
+    border-radius: 1.4rem;
+    padding: 0.95rem 1rem;
+  }
+
+  .ai-summary-strip__label {
+    font-size: 0.92rem;
+    text-wrap: balance;
+    text-align: center;
+  }
+
+  .ai-summary-strip__icons {
+    gap: 0.9rem;
+  }
 }
 
 /* Premium hover overlay for project/education/experience cards */
