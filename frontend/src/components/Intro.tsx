@@ -4,7 +4,6 @@ import axios from "axios";
 import Tilt from "react-parallax-tilt";
 import Draggable from "react-draggable";
 import GlassCard from "./ui/GlassCard";
-import GlassButton from "./ui/GlassButton";
 import { FaEnvelope, FaMediumM, FaGithub, FaLinkedin } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { SiClaude, SiGooglegemini, SiOpenai } from "react-icons/si";
@@ -47,16 +46,19 @@ const AI_DESTINATIONS = [
   {
     label: "ChatGPT",
     Icon: SiOpenai,
+    hoverColor: "hover:text-[#10a37f]",
     buildHref: (query: string) => `https://chat.openai.com/?q=${encodeURIComponent(query)}`,
   },
   {
     label: "Claude",
     Icon: SiClaude,
+    hoverColor: "hover:text-[#da7756]",
     buildHref: (query: string) => `https://claude.ai/new?q=${encodeURIComponent(query)}`,
   },
   {
     label: "Gemini",
     Icon: SiGooglegemini,
+    hoverColor: "hover:text-[#4285f4]",
     buildHref: (query: string) =>
       `https://gemini.google.com/app?prompt=${encodeURIComponent(query)}`,
   },
@@ -281,27 +283,6 @@ const DesktopDraggableCard: React.FC<{
   );
 };
 
-const AiSummaryLaunchBar: React.FC<{ prompt: string }> = ({ prompt }) => (
-  <div className="ai-summary-strip">
-    <p className="ai-summary-strip__label">Request an AI summary of me</p>
-    <div className="ai-summary-strip__icons" aria-label="AI summary destinations">
-      {AI_DESTINATIONS.map(({ label, Icon, buildHref }) => (
-        <a
-          key={label}
-          href={buildHref(prompt)}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`Open ${label} with a prefilled AI summary prompt`}
-          title={label}
-          className="ai-summary-strip__link"
-        >
-          <Icon size={24} />
-        </a>
-      ))}
-    </div>
-  </div>
-);
-
 const Intro: React.FC = () => {
   const [introData, setIntroData] = useState<IntroResponse>(defaultIntroData);
   const [isAtTop, setIsAtTop] = useState(true);
@@ -460,19 +441,36 @@ const Intro: React.FC = () => {
                     <FaXTwitter size={24} />
                   </a>
                 </div>
-                <div className="mb-6">
-                  <AiSummaryLaunchBar prompt={summaryPrompt} />
+                <div className="flex justify-center items-stretch gap-3">
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center rounded-full border border-white/15 px-5 text-xs font-semibold tracking-wider uppercase transition-colors duration-200 hover:bg-white/[0.06] cursor-pointer"
+                    onClick={() =>
+                      window.scrollTo({
+                        top: window.innerHeight,
+                        behavior: "smooth",
+                      })
+                    }
+                  >
+                    Explore
+                  </button>
+                  <div className="inline-flex items-center gap-3.5 rounded-full border border-white/15 px-3.5 py-2 transition-colors duration-200 hover:bg-white/[0.06]">
+                    <span className="text-xs font-semibold tracking-wider uppercase opacity-50 select-none">Ask AI</span>
+                    {AI_DESTINATIONS.map(({ label, Icon, buildHref, hoverColor }) => (
+                      <a
+                        key={label}
+                        href={buildHref(summaryPrompt)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`transition-transform duration-300 hover:scale-110 ${hoverColor}`}
+                        aria-label={`Summarize via ${label}`}
+                        title={`Summarize via ${label}`}
+                      >
+                        <Icon size={22} />
+                      </a>
+                    ))}
+                  </div>
                 </div>
-                <GlassButton
-                  onClick={() =>
-                    window.scrollTo({
-                      top: window.innerHeight,
-                      behavior: "smooth",
-                    })
-                  }
-                >
-                  Explore
-                </GlassButton>
               </GlassCard>
             </Tilt>
           </div>
@@ -666,19 +664,36 @@ const Intro: React.FC = () => {
                   <FaXTwitter size={24} />
                 </a>
               </div>
-              <div className="mb-6">
-                <AiSummaryLaunchBar prompt={summaryPrompt} />
+              <div className="flex justify-center items-stretch gap-3">
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center rounded-full border border-white/15 px-5 text-xs font-semibold tracking-wider uppercase transition-colors duration-200 hover:bg-white/[0.06] cursor-pointer"
+                  onClick={() =>
+                    window.scrollTo({
+                      top: window.innerHeight,
+                      behavior: "smooth",
+                    })
+                  }
+                >
+                  Explore
+                </button>
+                <div className="inline-flex items-center gap-3.5 rounded-full border border-white/15 px-3.5 py-2 transition-colors duration-200 hover:bg-white/[0.06]">
+                  <span className="text-xs font-semibold tracking-wider uppercase opacity-50 select-none">Ask AI</span>
+                  {AI_DESTINATIONS.map(({ label, Icon, buildHref, hoverColor }) => (
+                    <a
+                      key={label}
+                      href={buildHref(summaryPrompt)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`transition-transform duration-300 hover:scale-110 ${hoverColor}`}
+                      aria-label={`Summarize via ${label}`}
+                      title={`Summarize via ${label}`}
+                    >
+                      <Icon size={22} />
+                    </a>
+                  ))}
+                </div>
               </div>
-              <GlassButton
-                onClick={() =>
-                  window.scrollTo({
-                    top: window.innerHeight,
-                    behavior: "smooth",
-                  })
-                }
-              >
-                Explore
-              </GlassButton>
             </GlassCard>
           </Tilt>
         </GlassCard>

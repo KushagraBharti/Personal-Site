@@ -136,65 +136,6 @@ body {
   transform: none !important;
 }
 
-.ai-summary-strip {
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 0.8rem;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.22));
-  color: #22314b;
-  padding: 0.8rem 1.15rem;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-.ai-summary-strip__label {
-  margin: 0;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  color: #24344e;
-  text-shadow: none !important;
-}
-
-.ai-summary-strip__icons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.85rem;
-}
-
-.ai-summary-strip__link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  border-radius: 999px;
-  color: #24344e;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  transition: transform 160ms ease, opacity 160ms ease, background 160ms ease, border-color 160ms ease;
-}
-
-.ai-summary-strip__link:hover {
-  transform: translateY(-1px) scale(1.04);
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.34);
-  border-color: rgba(255, 255, 255, 0.28);
-}
-
-.ai-summary-strip__link:focus-visible {
-  outline: 2px solid #2563eb;
-  outline-offset: 4px;
-  border-radius: 9999px;
-}
 
 .floating-card {
   position: absolute;
@@ -229,26 +170,6 @@ body {
   z-index: 1;
 }
 
-@media (max-width: 767px) {
-  .ai-summary-strip {
-    width: 100%;
-    max-width: 22rem;
-    flex-direction: column;
-    gap: 0.75rem;
-    border-radius: 1.4rem;
-    padding: 0.95rem 1rem;
-  }
-
-  .ai-summary-strip__label {
-    font-size: 0.92rem;
-    text-wrap: balance;
-    text-align: center;
-  }
-
-  .ai-summary-strip__icons {
-    gap: 0.9rem;
-  }
-}
 
 /* Premium hover overlay for project/education/experience cards */
 .premium-hover-overlay {
