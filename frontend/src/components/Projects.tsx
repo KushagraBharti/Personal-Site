@@ -94,42 +94,38 @@ const Projects: React.FC = () => {
         className="h-full"
       >
         <GlassCard className="group relative flex flex-col items-center text-center w-full max-w-none mx-0 h-full px-6 py-6 overflow-hidden">
-          {/* If thumbnail exists, render it */}
           {project.thumbnail && (
             <img
               src={project.thumbnail}
               alt={project.title}
               loading="lazy"
               decoding="async"
-              className="w-full h-auto object-cover rounded mb-4"
+              className="w-full h-auto object-cover rounded-xl mb-4"
             />
           )}
-          {/* Always-visible title and summary */}
           <div className="relative z-20 flex flex-col items-center">
-            <h3 className="text-xl font-semibold text-gray-50 break-words opacity-100 group-hover:opacity-0">
+            <h3 className="text-xl font-semibold text-gray-50 break-words opacity-100 transition-opacity duration-150 delay-100 group-hover:opacity-0 group-hover:delay-0">
               {project.title}
             </h3>
-            <p className="text-gray-200 font-medium opacity-100 group-hover:opacity-0">
+            <p className="text-gray-200/90 font-medium opacity-100 transition-opacity duration-150 delay-100 group-hover:opacity-0 group-hover:delay-0">
               {project.summary}
             </p>
           </div>
-          {/* Background gradient overlay (appears on hover) */}
           <div className="absolute inset-0 z-10 premium-hover-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-          {/* Centered overlay: title at top and buttons below */}
-          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-            <div className="pointer-events-auto text-center mt-4">
-              <h3 className="text-xl font-semibold text-gray-50">{project.title}</h3>
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center opacity-0 transition-opacity duration-150 delay-0 group-hover:opacity-100 group-hover:delay-100 pointer-events-none">
+            <div className="pointer-events-auto text-center">
+              <h3 className="text-xl font-semibold text-white">{project.title}</h3>
             </div>
-            <div className="pointer-events-auto mt-6 flex flex-col sm:flex-row gap-4">
+            <div className="pointer-events-auto mt-5 flex gap-3">
               <button
                 onClick={() => openDetails(project)}
-                className="w-28 px-4 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
+                className="btn-glass-pill"
               >
                 Details
               </button>
               <button
                 onClick={() => handleViewSite(project.githubLink)}
-                className="w-28 px-4 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
+                className="btn-glass-pill"
               >
                 View Github
               </button>
@@ -141,28 +137,28 @@ const Projects: React.FC = () => {
   };
 
   const renderMobileProjectCard = (project: ProjectData, index: number) => (
-    <GlassCard key={`${project.title}-${index}`} className="w-full max-w-none mx-0 text-center p-4">
+    <GlassCard key={`${project.title}-${index}`} className="w-full max-w-none mx-0 text-center p-5">
       {project.thumbnail && (
         <img
           src={project.thumbnail}
           alt={project.title}
           loading="lazy"
           decoding="async"
-          className="w-full h-auto object-cover rounded mb-4"
+          className="w-full h-auto object-cover rounded-xl mb-4"
         />
       )}
       <h3 className="text-lg font-semibold text-gray-50">{project.title}</h3>
-      <p className="text-gray-200 font-medium">{project.summary}</p>
-      <div className="flex justify-center gap-4 mt-4">
+      <p className="text-gray-200/90 font-medium mt-1">{project.summary}</p>
+      <div className="flex justify-center gap-3 mt-4">
         <button
           onClick={() => openDetails(project)}
-          className="w-24 px-3 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
+          className="btn-glass-pill"
         >
           Details
         </button>
         <button
           onClick={() => handleViewSite(project.githubLink)}
-          className="w-24 px-3 py-2 text-white font-semibold bg-black/40 rounded hover:bg-black/70 transition-colors"
+          className="btn-glass-pill"
         >
           View Github
         </button>
@@ -171,7 +167,7 @@ const Projects: React.FC = () => {
   );
 
   return (
-    <section className="py-16">
+    <section className="py-20">
       <div className="container mx-auto max-w-screen-2xl px-4 md:px-10 lg:px-12">
         {/* Typed heading */}
         <motion.div
@@ -180,24 +176,24 @@ const Projects: React.FC = () => {
           onViewportEnter={() => setStartTyping(true)}
           viewport={{ once: true, amount: 0.2, margin: "0px 0px -12% 0px" }}
           transition={{ duration: 1.5 }}
-          className="mb-10"
+          className="mb-12"
         >
-          <h2 className="relative inline-block text-4xl font-bold text-gray-50">
+          <h2 className="relative inline-block text-4xl md:text-5xl font-bold text-gray-50">
             {typedText}
             <Cursor />
-            <span className="block w-16 h-1 bg-primary mx-auto mt-2 rounded"></span>
+            <span className="section-accent-bar"></span>
           </h2>
         </motion.div>
 
-        {/* --- Desktop/Tablet Layout (Draggable Grid) --- */}
+        {/* --- Desktop/Tablet Layout --- */}
         <div className="hidden md:block">
-          <h3 className="text-2xl font-semibold text-gray-50 mb-6">Featured Projects</h3>
+          <h3 className="text-2xl font-semibold text-gray-50 mb-7">Featured Projects</h3>
           <div className="grid gap-8 md:grid-cols-3 items-stretch">
             {featuredProjects.map(renderDesktopProjectCard)}
           </div>
           {otherProjects.length > 0 && (
-            <div className="mt-12">
-              <h3 className="text-2xl font-semibold text-gray-50 mb-6">Other Projects</h3>
+            <div className="mt-14">
+              <h3 className="text-2xl font-semibold text-gray-50 mb-7">Other Projects</h3>
               <div className="grid gap-8 md:grid-cols-2 items-stretch">
                 {otherProjects.map(renderDesktopProjectCard)}
               </div>
@@ -206,14 +202,14 @@ const Projects: React.FC = () => {
         </div>
 
         {/* --- Mobile Layout (Stacked Cards) --- */}
-        <div className="block md:hidden space-y-8">
+        <div className="block md:hidden space-y-10">
           <div>
-            <h3 className="text-xl font-semibold text-gray-50 mb-4">Featured Projects</h3>
+            <h3 className="text-xl font-semibold text-gray-50 mb-5">Featured Projects</h3>
             <div className="space-y-4">{featuredProjects.map(renderMobileProjectCard)}</div>
           </div>
           {otherProjects.length > 0 && (
             <div>
-              <h3 className="text-xl font-semibold text-gray-50 mb-4">Other Projects</h3>
+              <h3 className="text-xl font-semibold text-gray-50 mb-5">Other Projects</h3>
               <div className="space-y-4">{otherProjects.map(renderMobileProjectCard)}</div>
             </div>
           )}
@@ -223,50 +219,45 @@ const Projects: React.FC = () => {
       {/* Modal for Detailed Project Info */}
       {selectedProject && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) closeDetails();
           }}
         >
-          <GlassCard className="relative w-full max-w-[1850px] mx-auto p-8 bg-white/10 backdrop-blur-lg rounded-lg shadow-xl animate-fadeIn">
+          <GlassCard className="relative w-full max-w-[1850px] mx-auto p-7 md:p-8 modal-glass-card animate-fadeIn">
             <button
-              className="absolute top-4 right-4 text-gray-200 hover:text-red-600 text-2xl"
+              className="modal-close-btn"
               onClick={closeDetails}
               aria-label="Close project details"
             >
-              ×
+              &times;
             </button>
             <div className="flex flex-col md:flex-row" style={{ maxHeight: "90vh" }}>
-              {/* Left Column: Project Thumbnail */}
               {selectedProject.thumbnail && (
                 <div className="md:w-1/2 flex items-center justify-center">
                   <img
                     src={selectedProject.thumbnail}
                     alt={selectedProject.title}
-                    className="w-full h-auto object-contain rounded"
+                    className="w-full h-auto object-contain rounded-xl"
                   />
                 </div>
               )}
-              {/* Right Column: Project Details */}
               <div
-                className="md:w-1/2 mt-4 md:mt-0 md:pl-6 overflow-y-auto"
+                className="md:w-1/2 mt-4 md:mt-0 md:pl-8 overflow-y-auto"
                 style={{ maxHeight: "80vh" }}
               >
-                <h3 className="text-3xl font-bold text-white mb-3">
+                <h3 className="text-3xl font-bold text-white mb-3 pr-10">
                   {selectedProject.title}
                 </h3>
-                <p className="text-white/80 mb-4 text-lg">{selectedProject.summary}</p>
-                <ul className="list-disc list-outside pl-6 space-y-2 text-white">
+                <p className="text-white/70 mb-5 text-lg leading-relaxed">{selectedProject.summary}</p>
+                <ul className="list-disc list-outside pl-5 space-y-2.5 text-white/90 leading-relaxed">
                   {selectedProject.description.map((item, idx) => (
                     <li key={idx}>{item}</li>
                   ))}
                 </ul>
-                <div className="flex flex-wrap gap-2 mt-4">
+                <div className="flex flex-wrap gap-2 mt-5 pt-5 border-t border-white/10">
                   {selectedProject.tags.map((tag, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3 py-1 text-base font-semibold text-white bg-white/20 backdrop-blur-md border border-white/30 rounded shadow-sm"
-                    >
+                    <span key={idx} className="tag-pill">
                       {tag}
                     </span>
                   ))}
@@ -276,9 +267,12 @@ const Projects: React.FC = () => {
                     href={selectedProject.githubLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block px-6 py-3 bg-blue-600 text-white text-lg font-semibold rounded hover:bg-blue-700 transition-colors"
+                    className="btn-glass-pill inline-flex items-center gap-2"
                   >
                     View on GitHub
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-4 h-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                    </svg>
                   </a>
                 </div>
               </div>

@@ -29,7 +29,7 @@ export default {
       },
       borderRadius: {
         // Custom border radius for glass elements
-        glass: '15px'
+        glass: '20px'
       },
       keyframes: {
         // Floating animation for cards or other elements

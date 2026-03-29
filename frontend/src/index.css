@@ -40,23 +40,25 @@ body {
   animation: fadeIn 0.5s ease-out forwards;
 }
 
-/* 2. Custom Glassmorphism Utility - More pronounced blur & slightly more opaque background */
+/* 2. Custom Glassmorphism Utility */
 .glass {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 /* 3. Glass Card Component */
 .card {
-  @apply p-6 rounded-glass shadow-glass transition-transform transform;
-  
+  @apply p-6 rounded-glass shadow-glass transition-all duration-300 transform;
+
   &:hover {
-    transform: scale(1.02);
+    transform: scale(1.015);
+    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.15);
   }
-  
+
   /* Subtle text shadow for readability */
   h1, p {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
@@ -67,16 +69,17 @@ body {
 
 /* 4. Glass Button Component */
 .btn-glass {
-  @apply px-6 py-2 rounded-lg text-white font-semibold transition-all;
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  /* Hover & Active States for better interaction feedback */
+  @apply px-6 py-2.5 rounded-full text-white font-semibold transition-all duration-200;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .btn-glass:hover {
   transform: scale(1.02);
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.12);
 }
 .btn-glass:active {
   @apply scale-95;
@@ -136,6 +139,79 @@ body {
   transform: none !important;
 }
 
+/* Section heading accent bar */
+.section-accent-bar {
+  width: 3.5rem;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.9), rgba(14, 116, 144, 0.6));
+  margin-top: 0.6rem;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Glass pill button (for card overlays) */
+.btn-glass-pill {
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 200ms ease;
+  cursor: pointer;
+}
+.btn-glass-pill:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.1);
+}
+
+/* Modal close button */
+.modal-close-btn {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(226, 232, 240, 0.8);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+.modal-close-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+/* Skill/tech tag pill */
+.tag-pill {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(241, 245, 249, 0.92);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
 
 .floating-card {
   position: absolute;
@@ -143,6 +219,12 @@ body {
   left: 0;
   will-change: transform;
   user-select: none;
+  filter: drop-shadow(0 4px 16px rgba(15, 23, 42, 0.1));
+  transition: filter 250ms ease;
+}
+
+.floating-card:hover {
+  filter: drop-shadow(0 8px 28px rgba(15, 23, 42, 0.16));
 }
 
 .floating-card__surface {
@@ -161,8 +243,8 @@ body {
 
 .intro-desktop-stage {
   position: relative;
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
 }
 
 .intro-desktop-hero {
@@ -174,9 +256,10 @@ body {
 /* Premium hover overlay for project/education/experience cards */
 .premium-hover-overlay {
   background:
-    radial-gradient(120% 120% at 10% 10%, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.08) 40%, rgba(15, 23, 42, 0.8) 70%),
-    linear-gradient(135deg, rgba(14, 116, 144, 0.35), rgba(30, 64, 175, 0.35) 45%, rgba(2, 6, 23, 0.9));
-  box-shadow: inset 0 0 40px rgba(15, 23, 42, 0.35);
+    radial-gradient(120% 120% at 10% 10%, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06) 40%, rgba(15, 23, 42, 0.75) 70%),
+    linear-gradient(135deg, rgba(14, 116, 144, 0.25), rgba(30, 64, 175, 0.3) 45%, rgba(2, 6, 23, 0.85));
+  box-shadow: inset 0 0 48px rgba(15, 23, 42, 0.3);
+  border-radius: inherit;
 }
 
 .ai-profile-shell {

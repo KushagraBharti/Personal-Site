@@ -75,7 +75,7 @@ const About: React.FC = () => {
   }, []);
 
   return (
-    <section className="py-16">
+    <section className="py-20">
       <div className="container mx-auto max-w-screen-2xl px-4 md:px-10 lg:px-12">
         <motion.div
           initial={{ opacity: 0 }}
@@ -83,22 +83,22 @@ const About: React.FC = () => {
           onViewportEnter={() => setStartTyping(true)}
           viewport={{ once: true, amount: 0.2, margin: "0px 0px -10% 0px" }}
           transition={{ duration: 1.5 }}
-          className="mb-10 text-left"
+          className="mb-12 text-left"
         >
-          <h2 className="relative inline-block text-4xl font-bold text-gray-50">
+          <h2 className="relative inline-block text-4xl md:text-5xl font-bold text-gray-50">
             {typedText}
             <Cursor />
-            <span className="block w-16 h-1 bg-primary mx-auto mt-2 rounded"></span>
+            <span className="section-accent-bar"></span>
           </h2>
         </motion.div>
 
         <div className="grid gap-8 md:grid-cols-[1.3fr_1fr] xl:grid-cols-[1.6fr_1fr]">
-          <GlassCard className="w-full max-w-none mx-0 p-6 text-gray-200 space-y-5">
-            <div className="space-y-2">
+          <GlassCard className="w-full max-w-none mx-0 p-7 md:p-8 text-gray-200 space-y-6">
+            <div className="space-y-2.5">
               <h3 className="text-2xl font-semibold text-gray-50">
                 {about.introHeading}
               </h3>
-              <p className="text-lg text-gray-100">
+              <p className="text-lg leading-relaxed text-gray-100/90">
                 {about.introBody}
               </p>
             </div>
@@ -107,7 +107,7 @@ const About: React.FC = () => {
               <h4 className="text-xl font-semibold text-gray-50">
                 Projects I'm working on
               </h4>
-              <ol className="list-decimal list-inside space-y-2">
+              <ol className="list-decimal list-inside space-y-2.5 leading-relaxed">
                 {about.currentProjects.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
@@ -118,7 +118,7 @@ const About: React.FC = () => {
               <h4 className="text-xl font-semibold text-gray-50">
                 I am currently learning
               </h4>
-              <ul className="list-disc list-inside space-y-2">
+              <ul className="list-disc list-inside space-y-2 leading-relaxed">
                 {about.currentLearning.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
@@ -129,7 +129,7 @@ const About: React.FC = () => {
               <h4 className="text-xl font-semibold text-gray-50">
                 Things outside of technology
               </h4>
-              <ul className="list-disc list-inside space-y-2">
+              <ul className="list-disc list-inside space-y-2 leading-relaxed">
                 {about.interestsOutsideTechnology.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
@@ -139,7 +139,7 @@ const About: React.FC = () => {
                     href={filmPortfolioLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-100 underline decoration-white/40 underline-offset-4 hover:text-[#D44638] hover:decoration-[#D44638]"
+                    className="text-gray-100 underline decoration-white/30 underline-offset-4 hover:text-[#D44638] hover:decoration-[#D44638] transition-colors duration-200"
                   >
                     {filmPortfolioLink}
                   </a>
@@ -149,30 +149,30 @@ const About: React.FC = () => {
           </GlassCard>
 
           <div className="space-y-6">
-            <GlassCard className="w-full max-w-none mx-0 p-4 text-center text-gray-200">
-              Check out my film work!
+            <GlassCard className="w-full max-w-none mx-0 px-5 py-3.5 text-center">
+              <p className="text-sm font-semibold tracking-wider uppercase text-gray-200/80">Check out my film work</p>
             </GlassCard>
-            <GlassCard className="w-full max-w-none mx-0 overflow-hidden">
+            <GlassCard className="w-full max-w-none mx-0 overflow-hidden p-0">
               <LazyIframe
                 className="aspect-video"
                 src="https://www.youtube.com/embed/WM6RvRfDCX4"
                 title="St. Stephen's Dining Hall Documentary"
                 loadingLabel="Buffering film..."
               />
-              <p className="text-sm text-gray-200 mt-2 text-center">
-                2022 - St. Stephen's Dining Hall Documentary
+              <p className="text-sm text-gray-200/80 py-3 text-center font-medium">
+                2022 &mdash; St. Stephen's Dining Hall Documentary
               </p>
             </GlassCard>
 
-            <GlassCard className="w-full max-w-none mx-0 overflow-hidden">
+            <GlassCard className="w-full max-w-none mx-0 overflow-hidden p-0">
               <LazyIframe
                 className="aspect-video"
                 src="https://www.youtube.com/embed/FS8l8G2p7PM"
                 title="The PB&J Documentary"
                 loadingLabel="Buffering film..."
               />
-              <p className="text-sm text-gray-200 mt-2 text-center">
-                2023 - The PB&J Documentary
+              <p className="text-sm text-gray-200/80 py-3 text-center font-medium">
+                2023 &mdash; The PB&J Documentary
               </p>
             </GlassCard>
           </div>

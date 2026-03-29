@@ -32,35 +32,89 @@ interface IntroResponse {
 
 const DEFAULT_SITE_URL = "https://www.kushagrabharti.com";
 
-const buildAiSummaryRequestPrompt = (siteUrl: string) =>
-  [
-    `Read ${siteUrl}/llms.txt as the starting point and source of truth for Kushagra Bharti.`,
-    "Use the most relevant linked pages only if needed to improve accuracy.",
-    "Then write a detailed, high-signal professional summary that helps a first-time reader quickly understand who he is, what he is building, and where he is strongest.",
-    "Focus on his technical strengths, engineering range, research work, internships, education, and standout projects.",
-    "Emphasize concrete evidence, ownership, scope, rigor, and trajectory.",
-    "Keep the tone sharp and credible, avoid hype, avoid generic praise, and highlight the most differentiated details first.",
-  ].join(" ");
+// ─── Per-LLM prompt builders ────────────────────────────────────────────────
+// Each prompt references both /llms.txt (structured text) and /ai (rendered HTML)
+// and is tuned to the LLM's strengths and browsing capabilities.
 
-const AI_DESTINATIONS = [
+const buildChatGPTPrompt = (siteUrl: string) =>
+  [
+    `Browse these two pages about Kushagra Bharti:`,
+    `1) ${siteUrl}/llms.txt`,
+    `2) ${siteUrl}/ai`,
+    `You can also follow any links you find in those pages (GitHub repos, LinkedIn, etc.) for additional context.`,
+    ``,
+    `Write a professional summary that gives a complete picture of who he is.`,
+    `Start with his professional experience — internships, research positions, and what he actually shipped or contributed in each.`,
+    `Then cover his strongest projects: focus on the ones with real technical depth, deployed systems, or measurable outcomes.`,
+    `Read between the lines: what kind of problems does he gravitate toward, how does he approach engineering, and where does his trajectory point.`,
+    `Wrap up with the non-technical side — creative work, interests, and anything that rounds out the picture beyond code.`,
+    `Use specifics from what you read. Let the work speak for itself.`,
+  ].join("\n");
+
+const buildClaudePrompt = (siteUrl: string) =>
+  [
+    `Read these two pages about Kushagra Bharti:`,
+    `1) ${siteUrl}/llms.txt`,
+    `2) ${siteUrl}/ai`,
+    `You can also follow any links you find in those pages (GitHub repos, LinkedIn, etc.) for additional context.`,
+    ``,
+    `Synthesize a detailed professional summary.`,
+    `Lead with professional experience — internships and research roles, with specifics on what he built and the impact.`,
+    `Then highlight the projects that best demonstrate his technical range — prioritize depth, real deployments, and concrete results over quantity.`,
+    `Read between the lines: what kind of problems does he gravitate toward, how does he approach engineering, and what does his trajectory suggest about where he's heading.`,
+    `Close with the human side — his creative work, personal interests, and the things that make him more than just a resume.`,
+    `Be thorough, be specific, and let the most interesting details surface naturally.`,
+  ].join("\n");
+
+const buildGeminiPrompt = (siteUrl: string) =>
+  [
+    `Read these two pages about Kushagra Bharti:`,
+    `1) ${siteUrl}/llms.txt`,
+    `2) ${siteUrl}/ai`,
+    `You can also follow any links you find in those pages (GitHub repos, LinkedIn, etc.) for additional context.`,
+    ``,
+    `Write a comprehensive professional summary.`,
+    `Start with his professional experience — internships and research, focusing on what he shipped and the outcomes.`,
+    `Then cover his highest-signal projects — the ones that show real technical skill, working systems, or notable results.`,
+    `Read between the lines: what kind of problems does he gravitate toward, how does he approach engineering, and where is his trajectory pointing.`,
+    `End with the non-technical side — creative pursuits, interests, things that round out the full picture.`,
+    `Ground everything in specifics from the sources. Let the work make the case.`,
+  ].join("\n");
+
+type AiDestination = {
+  label: string;
+  Icon: typeof SiOpenai;
+  hoverColor: string;
+  buildPrompt: (siteUrl: string) => string;
+} & (
+  | { mode: "link"; buildHref: (query: string) => string }
+  | { mode: "clipboard"; targetUrl: string }
+);
+
+const AI_DESTINATIONS: AiDestination[] = [
   {
     label: "ChatGPT",
     Icon: SiOpenai,
     hoverColor: "hover:text-[#10a37f]",
+    mode: "link",
+    buildPrompt: buildChatGPTPrompt,
     buildHref: (query: string) => `https://chat.openai.com/?q=${encodeURIComponent(query)}`,
   },
   {
     label: "Claude",
     Icon: SiClaude,
     hoverColor: "hover:text-[#da7756]",
+    mode: "link",
+    buildPrompt: buildClaudePrompt,
     buildHref: (query: string) => `https://claude.ai/new?q=${encodeURIComponent(query)}`,
   },
   {
     label: "Gemini",
     Icon: SiGooglegemini,
     hoverColor: "hover:text-[#4285f4]",
-    buildHref: (query: string) =>
-      `https://gemini.google.com/app?prompt=${encodeURIComponent(query)}`,
+    mode: "clipboard",
+    buildPrompt: buildGeminiPrompt,
+    targetUrl: "https://gemini.google.com/app",
   },
 ];
 
@@ -98,13 +152,6 @@ type DesktopStageLayout = {
   cards: Record<DesktopCardKey, CardPosition>;
 };
 
-type DesktopLayoutPreset = {
-  heroWidth: number;
-  heroXRatio: number;
-  heroYRatio: number;
-  cardRatios: Record<DesktopCardKey, CardPosition>;
-};
-
 const DESKTOP_CARD_BASE_LAYER: Record<DesktopCardKey, number> = {
   photo: 8,
   github: 7,
@@ -117,140 +164,123 @@ const DESKTOP_CARD_BASE_LAYER: Record<DesktopCardKey, number> = {
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
-const getDesktopLayoutPreset = (
-  stageWidth: number,
-  stageHeight: number
-): DesktopLayoutPreset => {
-  if (stageWidth >= 1650 && stageHeight >= 880) {
-    return {
-      heroWidth: 560,
-      heroXRatio: 0.33,
-      heroYRatio: 0.285,
-      cardRatios: {
-        photo: { x: 0.04, y: 0.095 },
-        github: { x: 0.008, y: 0.66 },
-        read: { x: 0.63, y: 0.055 },
-        weather: { x: 0.85, y: 0.19 },
-        fact: { x: 0.845, y: 0.51 },
-        latest: { x: 0.41, y: 0.79 },
-        pong: { x: 0.69, y: 0.71 },
-      },
-    };
-  }
-
-  if (stageWidth >= 1480 && stageHeight >= 800) {
-    return {
-      heroWidth: 530,
-      heroXRatio: 0.325,
-      heroYRatio: 0.285,
-      cardRatios: {
-        photo: { x: 0.042, y: 0.105 },
-        github: { x: 0.008, y: 0.64 },
-        read: { x: 0.615, y: 0.055 },
-        weather: { x: 0.845, y: 0.2 },
-        fact: { x: 0.84, y: 0.51 },
-        latest: { x: 0.405, y: 0.78 },
-        pong: { x: 0.67, y: 0.7 },
-      },
-    };
-  }
-
-  if (stageHeight < 760) {
-    return {
-      heroWidth: stageWidth >= 1260 ? 520 : 500,
-      heroXRatio: stageWidth >= 1260 ? 0.315 : 0.305,
-      heroYRatio: 0.245,
-      cardRatios: {
-        photo: { x: 0.04, y: 0.09 },
-        github: { x: 0.004, y: 0.61 },
-        read: { x: 0.595, y: 0.03 },
-        weather: { x: 0.83, y: 0.16 },
-        fact: { x: 0.84, y: 0.34 },
-        latest: { x: 0.41, y: 0.805 },
-        pong: { x: 0.66, y: 0.605 },
-      },
-    };
-  }
-
-  return {
-    heroWidth: stageWidth >= 1260 ? 520 : 500,
-    heroXRatio: stageWidth >= 1260 ? 0.315 : 0.305,
-    heroYRatio: 0.265,
-    cardRatios: {
-      photo: { x: 0.04, y: 0.095 },
-      github: { x: 0.004, y: 0.58 },
-      read: { x: 0.605, y: 0.05 },
-      weather: { x: 0.815, y: 0.175 },
-      fact: { x: 0.81, y: 0.47 },
-      latest: { x: 0.43, y: 0.77 },
-      pong: { x: 0.66, y: 0.59 },
-    },
-  };
-};
-
+/*
+ * Card positions are computed relative to the centered hero card.
+ *
+ * Instead of fixed ratios that break at different sizes, each card is placed
+ * as a proportional offset into the available space around the hero:
+ *
+ *      L = space left of hero     R = space right of hero
+ *      T = space above hero       B = space below hero
+ *
+ * This means the constellation naturally spreads on large monitors and
+ * tightens on smaller ones — no per-breakpoint tuning needed.
+ *
+ * Conceptual layout (clockwise from top-left):
+ *
+ *    [photo]               [read]       [weather]
+ *
+ *               ┌──────────────┐
+ *               │              │         [fact]
+ *               │    HERO      │
+ *               │              │
+ *               └──────────────┘
+ *    [github]        [latest]       [pong]
+ */
 const getDesktopStageLayout = (
   viewportWidth: number,
   viewportHeight: number
 ): DesktopStageLayout => {
-  // Match the actual absolute stage container, which lives inside px-6 / py-8 padding.
-  const availableWidth = Math.max(viewportWidth - 48, 1180);
-  const availableHeight = Math.max(viewportHeight - 64, 700);
-  const stageWidth = clamp(availableWidth, 1180, 1760);
-  const stageHeight = clamp(availableHeight, 700, 1020);
+  const stageWidth = Math.max(viewportWidth - 48, 1180);
+  const stageHeight = Math.max(viewportHeight - 64, 700);
+
+  // Hero scales with viewport width
+  let heroWidth: number;
+  if (stageWidth >= 1650) heroWidth = 560;
+  else if (stageWidth >= 1480) heroWidth = 530;
+  else if (stageWidth >= 1260) heroWidth = 510;
+  else heroWidth = 480;
+
   const heroHeight = 360;
-  const preset = getDesktopLayoutPreset(stageWidth, stageHeight);
-  const heroWidth = preset.heroWidth;
-  const heroX = clamp(
-    Math.round(stageWidth * preset.heroXRatio),
-    240,
-    stageWidth - heroWidth - 240
-  );
-  const heroY = clamp(
-    Math.round(stageHeight * preset.heroYRatio),
-    138,
-    stageHeight - heroHeight - 168
-  );
+
+  // Center the hero; nudge up slightly so the "Scroll for More" text
+  // at the bottom doesn't make it feel too low.
+  const heroX = Math.round((stageWidth - heroWidth) / 2);
+  const heroY = Math.round((stageHeight - heroHeight) / 2) - 20;
+
+  // Available space from hero edges to stage edges
+  const L = heroX;
+  const R = stageWidth - heroX - heroWidth;
+  const T = heroY;
+  const B = stageHeight - heroY - heroHeight;
+
+  const E = 16; // minimum stage-edge inset
+
+  // ─── Card positions ────────────────────────────────────────────────
+  //
+  // Layout (matching the designer-approved reference):
+  //
+  //   [photo]        [read]              [weather]
+  //   (upper-left)   (above hero)        (right, upper)
+  //
+  //                  ┌──────────┐
+  //                  │   HERO   │        [fact]
+  //                  └──────────┘        (right, lower)
+  //
+  //   [github]                     [pong]
+  //   (left, lower)                (below-right)
+  //
+  //                  [latest]
+  //                  (below, center-left)
 
   const cards = {
+    // ▸ PHOTO (≈240 × 300) — upper-left, well offset from hero
     photo: {
-      x: clamp(Math.round(stageWidth * preset.cardRatios.photo.x), 24, stageWidth - 240),
-      y: clamp(Math.round(stageHeight * preset.cardRatios.photo.y), 24, stageHeight - 338),
+      x: clamp(Math.round(L * 0.28), E, heroX - 260),
+      y: clamp(Math.round(T * 0.12), E, heroY - 40),
     },
-    github: {
-      x: clamp(Math.round(stageWidth * preset.cardRatios.github.x), 18, stageWidth - 240),
-      y: clamp(Math.round(stageHeight * preset.cardRatios.github.y), 24, stageHeight - 152),
-    },
+
+    // ▸ READ (≈240 × 110) — above the hero, near hero's horizontal center
     read: {
-      x: clamp(Math.round(stageWidth * preset.cardRatios.read.x), 24, stageWidth - 240),
-      y: clamp(Math.round(stageHeight * preset.cardRatios.read.y), 24, stageHeight - 148),
+      x: clamp(Math.round(heroX + heroWidth * 0.30), E, stageWidth - 252),
+      y: clamp(Math.round(T * 0.10), E, heroY - 30),
     },
+
+    // ▸ WEATHER (≈240 × 110) — right side, slightly above hero level
     weather: {
-      x: clamp(Math.round(stageWidth * preset.cardRatios.weather.x), 24, stageWidth - 240),
-      y: clamp(Math.round(stageHeight * preset.cardRatios.weather.y), 24, stageHeight - 148),
+      x: clamp(Math.round(heroX + heroWidth + R * 0.42), heroX + heroWidth + 20, stageWidth - 252),
+      y: clamp(Math.round(heroY - T * 0.10), E, stageHeight - 120),
     },
+
+    // ▸ FACT (≈260 × 130) — right side, below weather
     fact: {
-      x: clamp(Math.round(stageWidth * preset.cardRatios.fact.x), 24, stageWidth - 256),
-      y: clamp(Math.round(stageHeight * preset.cardRatios.fact.y), 24, stageHeight - 170),
+      x: clamp(Math.round(heroX + heroWidth + R * 0.48), heroX + heroWidth + 20, stageWidth - 272),
+      y: clamp(Math.round(heroY + heroHeight * 0.50), heroY + 60, stageHeight - 140),
     },
+
+    // ▸ GITHUB (≈240 × 110) — left side, below hero
+    github: {
+      x: clamp(Math.round(L * 0.22), E, heroX - 200),
+      y: clamp(Math.round(heroY + heroHeight + B * 0.18), heroY + heroHeight * 0.65, stageHeight - 120),
+    },
+
+    // ▸ LATEST (≈260 × 130) — below hero, slightly left of center
     latest: {
-      x: clamp(Math.round(stageWidth * preset.cardRatios.latest.x), 24, stageWidth - 256),
-      y: clamp(Math.round(stageHeight * preset.cardRatios.latest.y), 24, stageHeight - 164),
+      x: clamp(Math.round(heroX + heroWidth * 0.06), E, stageWidth - 272),
+      y: clamp(Math.round(heroY + heroHeight + B * 0.52), heroY + heroHeight + 20, stageHeight - 140),
     },
+
+    // ▸ PONG (≈340 × 280) — below-right of hero
     pong: {
-      x: clamp(Math.round(stageWidth * preset.cardRatios.pong.x), 24, stageWidth - 340),
-      y: clamp(Math.round(stageHeight * preset.cardRatios.pong.y), 24, stageHeight - 316),
+      x: clamp(Math.round(heroX + heroWidth + R * 0.08), heroX + heroWidth - 80, stageWidth - 352),
+      y: clamp(Math.round(heroY + heroHeight + B * 0.12), heroY + heroHeight - 80, stageHeight - 292),
     },
   } satisfies Record<DesktopCardKey, CardPosition>;
 
   return {
     stageWidth,
     stageHeight,
-    hero: {
-      width: heroWidth,
-      height: heroHeight,
-      x: heroX,
-      y: heroY,
-    },
+    hero: { width: heroWidth, height: heroHeight, x: heroX, y: heroY },
     cards,
   };
 };
@@ -347,9 +377,22 @@ const Intro: React.FC = () => {
   }, []);
 
   const data = introData;
-  const summaryPrompt = buildAiSummaryRequestPrompt(
-    typeof window !== "undefined" ? window.location.origin : DEFAULT_SITE_URL
-  );
+  const siteUrl = typeof window !== "undefined" ? window.location.origin : DEFAULT_SITE_URL;
+  const [copiedToast, setCopiedToast] = useState(false);
+
+  const handleAiClick = (dest: AiDestination) => {
+    const prompt = dest.buildPrompt(siteUrl);
+    if (dest.mode === "link") {
+      window.open(dest.buildHref(prompt), "_blank", "noopener,noreferrer");
+    } else {
+      navigator.clipboard.writeText(prompt).then(() => {
+        setCopiedToast(true);
+        setTimeout(() => setCopiedToast(false), 3000);
+      });
+      window.open(dest.targetUrl, "_blank", "noopener,noreferrer");
+    }
+  };
+
   const desktopLayout = getDesktopStageLayout(viewportWidth, viewportHeight);
   const desktopLayoutKey = `${desktopLayout.stageWidth}x${desktopLayout.stageHeight}`;
 
@@ -369,7 +412,6 @@ const Intro: React.FC = () => {
       <div className="absolute inset-0 hidden items-center justify-center px-6 py-8 md:flex">
         <div
           className="intro-desktop-stage"
-          style={{ width: desktopLayout.stageWidth, height: desktopLayout.stageHeight }}
         >
           <div
             className="intro-desktop-hero"
@@ -456,18 +498,17 @@ const Intro: React.FC = () => {
                   </button>
                   <div className="inline-flex items-center gap-3.5 rounded-full border border-white/15 px-3.5 py-2 transition-colors duration-200 hover:bg-white/[0.06]">
                     <span className="text-xs font-semibold tracking-wider uppercase opacity-50 select-none">Ask AI</span>
-                    {AI_DESTINATIONS.map(({ label, Icon, buildHref, hoverColor }) => (
-                      <a
-                        key={label}
-                        href={buildHref(summaryPrompt)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`transition-transform duration-300 hover:scale-110 ${hoverColor}`}
-                        aria-label={`Summarize via ${label}`}
-                        title={`Summarize via ${label}`}
+                    {AI_DESTINATIONS.map((dest) => (
+                      <button
+                        key={dest.label}
+                        type="button"
+                        onClick={() => handleAiClick(dest)}
+                        className={`transition-transform duration-300 hover:scale-110 cursor-pointer ${dest.hoverColor}`}
+                        aria-label={`Summarize via ${dest.label}`}
+                        title={dest.mode === "clipboard" ? `Copy prompt & open ${dest.label}` : `Summarize via ${dest.label}`}
                       >
-                        <Icon size={22} />
-                      </a>
+                        <dest.Icon size={22} />
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -679,18 +720,17 @@ const Intro: React.FC = () => {
                 </button>
                 <div className="inline-flex items-center gap-3.5 rounded-full border border-white/15 px-3.5 py-2 transition-colors duration-200 hover:bg-white/[0.06]">
                   <span className="text-xs font-semibold tracking-wider uppercase opacity-50 select-none">Ask AI</span>
-                  {AI_DESTINATIONS.map(({ label, Icon, buildHref, hoverColor }) => (
-                    <a
-                      key={label}
-                      href={buildHref(summaryPrompt)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`transition-transform duration-300 hover:scale-110 ${hoverColor}`}
-                      aria-label={`Summarize via ${label}`}
-                      title={`Summarize via ${label}`}
+                  {AI_DESTINATIONS.map((dest) => (
+                    <button
+                      key={dest.label}
+                      type="button"
+                      onClick={() => handleAiClick(dest)}
+                      className={`transition-transform duration-300 hover:scale-110 cursor-pointer ${dest.hoverColor}`}
+                      aria-label={`Summarize via ${dest.label}`}
+                      title={dest.mode === "clipboard" ? `Copy prompt & open ${dest.label}` : `Summarize via ${dest.label}`}
                     >
-                      <Icon size={22} />
-                    </a>
+                      <dest.Icon size={22} />
+                    </button>
                   ))}
                 </div>
               </div>
@@ -738,6 +778,15 @@ const Intro: React.FC = () => {
           <p className="text-sm text-white/80 animate-bounce pointer-events-auto">
             Scroll for More
           </p>
+        </div>
+      )}
+
+      {/* Clipboard toast for Gemini */}
+      {copiedToast && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[60] animate-fadeIn">
+          <div className="glass rounded-full px-5 py-2.5 text-sm font-medium text-white/90 shadow-lg">
+            Prompt copied — paste it into Gemini!
+          </div>
         </div>
       )}
     </section>
