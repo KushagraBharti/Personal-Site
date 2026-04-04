@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { Request, Response } from "express";
 import { cronAuth } from "../../../middleware/cronAuth";
-import { syncAllFinance } from "../../finance/services/financeSyncService";
 import {
   processCalendarSyncJobs,
   renewExpiringCalendarWatches,
@@ -48,16 +47,6 @@ const runCalendarWatchRenew = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Failed to renew calendar watches" });
   }
 };
-
-router.post("/finance-sync", async (req, res) => {
-  try {
-    const results = await syncAllFinance();
-    return res.json({ ok: true, results });
-  } catch (error) {
-    console.error("Failed to run finance sync", error);
-    return res.status(500).json({ error: "Failed to run finance sync" });
-  }
-});
 
 router.post("/calendar-sync", runCalendarSync);
 router.get("/calendar-sync", runCalendarSync);

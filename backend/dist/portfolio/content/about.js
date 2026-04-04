@@ -22,7 +22,6 @@ exports.portfolioAbout = {
         "I love cooking and have been cooking since I was five years old.",
         "I love filmmaking, have directed 2 short films, and have contributed to other productions as a videographer and editor.",
         "I love sports, especially soccer, volleyball, tennis, and table tennis, and I also follow soccer, Formula 1, and the UFC.",
-        "I am interested in finance and the application of technology in finance.",
         "I am interested in psychology, reading, and the arts.",
     ],
 };

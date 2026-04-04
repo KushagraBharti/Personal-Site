@@ -11,7 +11,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const cronAuth_1 = require("../../../middleware/cronAuth");
-const financeSyncService_1 = require("../../finance/services/financeSyncService");
 const taskCalendarSyncService_1 = require("../../calendar/services/taskCalendarSyncService");
 const router = (0, express_1.Router)();
 const isCalendarSyncEnabled = () => process.env.CALENDAR_SYNC_ENABLED !== "0";
@@ -54,16 +53,6 @@ const runCalendarWatchRenew = (req, res) => __awaiter(void 0, void 0, void 0, fu
         return res.status(500).json({ error: "Failed to renew calendar watches" });
     }
 });
-router.post("/finance-sync", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const results = yield (0, financeSyncService_1.syncAllFinance)();
-        return res.json({ ok: true, results });
-    }
-    catch (error) {
-        console.error("Failed to run finance sync", error);
-        return res.status(500).json({ error: "Failed to run finance sync" });
-    }
-}));
 router.post("/calendar-sync", runCalendarSync);
 router.get("/calendar-sync", runCalendarSync);
 router.post("/calendar-watch-renew", runCalendarWatchRenew);

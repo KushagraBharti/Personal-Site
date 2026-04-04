@@ -2,7 +2,6 @@ import { TrackerModule } from "../shared/types";
 import TasksHubTracker from "../modules/tasks-hub/components/TasksHubTracker";
 import WeeklyTasksTracker from "../modules/tasks/components/TasksTracker";
 import PipelineTracker from "../modules/pipeline/components/PipelineTracker";
-import FinanceTracker from "../modules/finance/components/FinanceTracker";
 
 export const trackerModules: TrackerModule[] = [
   {
@@ -19,11 +18,6 @@ export const trackerModules: TrackerModule[] = [
     id: "pipeline",
     label: "Active Deals",
     Component: PipelineTracker,
-  },
-  {
-    id: "finance",
-    label: "Finance",
-    Component: FinanceTracker,
   },
 ];
 

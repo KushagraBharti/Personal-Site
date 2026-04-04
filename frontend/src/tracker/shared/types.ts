@@ -57,7 +57,7 @@ export interface PipelineItem {
   archived?: boolean;
 }
 
-export type TrackerModuleId = "tasks" | "weekly" | "pipeline" | "finance";
+export type TrackerModuleId = "tasks" | "weekly" | "pipeline";
 
 export interface TrackerModule {
   id: TrackerModuleId;

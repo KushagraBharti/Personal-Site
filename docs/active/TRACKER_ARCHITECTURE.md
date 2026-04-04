@@ -28,7 +28,6 @@ Current module families:
 - `tasks`
 - `tasks-hub`
 - `pipeline`
-- `finance`
 
 Each module generally owns:
 
@@ -48,7 +47,6 @@ Tracker-specific shared code lives under `frontend/src/tracker/shared`, includin
 
 Tracker backend code lives under:
 
-- `backend/src/tracker/finance`
 - `backend/src/tracker/calendar`
 - `backend/src/tracker/cron`
 - `backend/src/tracker/shared`
@@ -59,21 +57,8 @@ Mounting entrypoint:
 
 Current route subtrees:
 
-- `/api/private/finance`
 - `/api/private/calendar`
 - `/api/private/cron`
-
-## Finance
-
-Finance backend code:
-
-- `backend/src/tracker/finance/routes/financeRoutes.ts`
-- `backend/src/tracker/finance/services/financeSyncService.ts`
-- `backend/src/tracker/finance/services/plaidService.ts`
-
-Finance frontend code:
-
-- `frontend/src/tracker/modules/finance`
 
 ## Calendar
 

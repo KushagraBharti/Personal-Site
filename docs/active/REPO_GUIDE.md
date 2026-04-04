@@ -5,7 +5,7 @@
 This repository is split into two product surfaces:
 
 - `portfolio`: the public website, `/ai`, `llms.txt`, public APIs, and public assets
-- `tracker`: the private productivity, finance, and calendar tooling
+- `tracker`: the private productivity and calendar-connected workflow tooling
 
 The split exists in both the frontend and backend.
 
@@ -110,7 +110,6 @@ Live widget endpoints:
 
 Tracker endpoints mount under `/api/private`, with current subtrees:
 
-- `/api/private/finance`
 - `/api/private/calendar`
 - `/api/private/cron`
 
