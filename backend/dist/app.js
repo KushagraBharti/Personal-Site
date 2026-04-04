@@ -9,7 +9,7 @@ const routes_1 = __importDefault(require("./routes"));
 const errorHandler_1 = require("./middleware/errorHandler");
 const app = (0, express_1.default)();
 const allowedOrigins = [
-    "http://localhost:5173",
+    "http://localhost:5173", // Local frontend
     "http://localhost:5174", // Local frontend
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
