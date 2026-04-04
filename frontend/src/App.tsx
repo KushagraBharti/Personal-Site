@@ -12,7 +12,7 @@ const AiProfilePage = lazy(() => import("./portfolio/pages/AiProfilePage"));
 
 const LazyRouteFallback: React.FC = () => (
   <div className="min-h-screen flex items-center justify-center text-white/80">
-    Loading experience
+    Loading experience...
   </div>
 );
 
