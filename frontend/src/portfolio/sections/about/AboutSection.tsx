@@ -3,12 +3,12 @@ import { motion } from "framer-motion";
 import { useTypewriter, Cursor } from "react-simple-typewriter";
 import GlassCard from "../../../shared/components/ui/GlassCard";
 import LazyIframe from "../../../shared/components/ui/LazyIframe";
-import { fetchPortfolioSnapshot } from "../../api/portfolioApi";
+import { fetchPortfolioSnapshot, getCachedPortfolioSnapshot } from "../../api/portfolioApi";
 import type { PortfolioSnapshot } from "../../api/contracts";
 
 const About: React.FC = () => {
   const [startTyping, setStartTyping] = useState(false);
-  const [snapshot, setSnapshot] = useState<PortfolioSnapshot | null>(null);
+  const [snapshot, setSnapshot] = useState<PortfolioSnapshot | null>(() => getCachedPortfolioSnapshot());
   const [typedText] = useTypewriter({
     words: startTyping ? ["About Me"] : [""],
     loop: false,

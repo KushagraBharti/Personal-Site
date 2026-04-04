@@ -2,6 +2,7 @@ import React, { Suspense, useEffect } from "react";
 import SectionSidebar from "../components/SectionSidebar";
 import GlassCard from "../../shared/components/ui/GlassCard";
 import IntroSection from "../sections/intro/IntroSection";
+import { prefetchPortfolioSnapshot } from "../api/portfolioApi";
 
 const About = React.lazy(() => import("../sections/about/AboutSection"));
 const Education = React.lazy(() => import("../sections/education/EducationSection"));
@@ -31,35 +32,17 @@ const SectionFallback: React.FC<{ title: string }> = ({ title }) => (
   </div>
 );
 
-type IdleWindow = Window & {
-  requestIdleCallback?: (
-    callback: IdleRequestCallback,
-    options?: IdleRequestOptions
-  ) => number;
-  cancelIdleCallback?: (handle: number) => void;
-};
-
 const HomePage: React.FC = () => {
   useEffect(() => {
-    const preloadSections = () => sectionPrefetchers.forEach((loader) => loader());
-    const idleWindow = window as IdleWindow;
-    const idle = idleWindow.requestIdleCallback;
-    let idleId: number | undefined;
-    let timeoutId: number | undefined;
-
-    if (typeof idle === "function") {
-      idleId = idle(preloadSections, { timeout: 1500 });
-    } else {
-      timeoutId = window.setTimeout(preloadSections, 600);
-    }
+    const frameId = window.requestAnimationFrame(() => {
+      prefetchPortfolioSnapshot();
+      sectionPrefetchers.forEach((loader) => {
+        void loader();
+      });
+    });
 
     return () => {
-      if (typeof idle === "function" && idleId) {
-        idleWindow.cancelIdleCallback?.(idleId);
-      }
-      if (timeoutId) {
-        window.clearTimeout(timeoutId);
-      }
+      window.cancelAnimationFrame(frameId);
     };
   }, []);
 

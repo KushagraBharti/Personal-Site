@@ -43,10 +43,9 @@ const Projects: React.FC = () => {
       }
     };
 
-    const delayId = window.setTimeout(loadProjects, 250);
+    void loadProjects();
     return () => {
       controller.abort();
-      window.clearTimeout(delayId);
     };
   }, []);
 

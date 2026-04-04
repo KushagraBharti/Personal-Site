@@ -44,10 +44,9 @@ const Experiences: React.FC = () => {
       }
     };
 
-    const delayId = window.setTimeout(loadExperiences, 250);
+    void loadExperiences();
     return () => {
       controller.abort();
-      window.clearTimeout(delayId);
     };
   }, []);
 

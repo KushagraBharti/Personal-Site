@@ -49,7 +49,7 @@ const IntroAiButtons: React.FC<{
             key={provider.slug}
             type="button"
             onClick={() => handleClick(provider)}
-            className={`transition-transform duration-300 hover:scale-110 cursor-pointer ${provider.hoverColorClass}`}
+            className={`text-white/70 transition-transform duration-300 hover:scale-110 hover:text-inherit cursor-pointer ${provider.hoverColorClass}`}
             aria-label={`Summarize via ${provider.label}`}
             title={
               provider.action.type === "clipboard"

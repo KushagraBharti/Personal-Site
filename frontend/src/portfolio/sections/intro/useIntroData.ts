@@ -1,33 +1,58 @@
 import { useEffect, useState } from "react";
-import { fetchGitHubStats } from "../../api/liveWidgetsApi";
-import { fetchIntroSection } from "../../api/portfolioApi";
+import { fetchGitHubStats, getCachedGitHubStats } from "../../api/liveWidgetsApi";
+import { fetchIntroSection, getCachedIntroSection } from "../../api/portfolioApi";
 import type { IntroSectionData } from "./introTypes";
 
 export const useIntroData = () => {
-  const [data, setData] = useState<IntroSectionData | null>(null);
+  const [data, setData] = useState<IntroSectionData | null>(() => {
+    const cachedIntro = getCachedIntroSection();
+    if (!cachedIntro) return null;
+
+    return {
+      ...cachedIntro,
+      githubStats: getCachedGitHubStats(),
+    };
+  });
 
   useEffect(() => {
     const controller = new AbortController();
-    const delayId = window.setTimeout(async () => {
+
+    const loadIntro = async () => {
       try {
-        const [intro, githubStats] = await Promise.all([
-          fetchIntroSection(controller.signal),
-          fetchGitHubStats(controller.signal).catch(() => null),
-        ]);
+        const intro = await fetchIntroSection(controller.signal);
         setData({
           ...intro,
-          githubStats,
+          githubStats: getCachedGitHubStats(),
         });
       } catch (error) {
         if (!controller.signal.aborted) {
           console.error("Failed to load intro section data:", error);
         }
       }
-    }, 180);
+    };
+
+    const loadGitHubStats = async () => {
+      try {
+        const githubStats = await fetchGitHubStats(controller.signal);
+        setData((currentData) => {
+          if (!currentData) return currentData;
+          return {
+            ...currentData,
+            githubStats,
+          };
+        });
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error("Failed to load GitHub stats:", error);
+        }
+      }
+    };
+
+    void loadIntro();
+    void loadGitHubStats();
 
     return () => {
       controller.abort();
-      window.clearTimeout(delayId);
     };
   }, []);
 

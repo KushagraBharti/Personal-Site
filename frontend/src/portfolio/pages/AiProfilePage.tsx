@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import GlassCard from "../../shared/components/ui/GlassCard";
-import { fetchPortfolioSnapshot } from "../api/portfolioApi";
+import { fetchPortfolioSnapshot, getCachedPortfolioSnapshot } from "../api/portfolioApi";
 import type { PortfolioSnapshot } from "../api/contracts";
 
 const sectionClasses =
   "w-full max-w-none mx-0 p-6 md:p-8 text-slate-100 space-y-5 ai-profile-card";
 
 const AiProfile: React.FC = () => {
-  const [snapshot, setSnapshot] = useState<PortfolioSnapshot | null>(null);
+  const [snapshot, setSnapshot] = useState<PortfolioSnapshot | null>(() => getCachedPortfolioSnapshot());
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

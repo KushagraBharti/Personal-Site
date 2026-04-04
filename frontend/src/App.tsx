@@ -5,9 +5,16 @@ import { BrowserRouter as Router, Route, Routes, useNavigate } from "react-route
 import { Analytics } from "@vercel/analytics/react";
 import ScrollProgress from "./shared/components/app/ScrollProgress";
 
-const HomePage = lazy(() => import("./portfolio/pages/HomePage"));
+import HomePage from "./portfolio/pages/HomePage";
+
 const TrackerPage = lazy(() => import("./tracker/pages/TrackerPage"));
 const AiProfilePage = lazy(() => import("./portfolio/pages/AiProfilePage"));
+
+const LazyRouteFallback: React.FC = () => (
+  <div className="min-h-screen flex items-center justify-center text-white/80">
+    Loading experience...
+  </div>
+);
 
 const GlobalHotkeys: React.FC = () => {
   const navigate = useNavigate();
@@ -36,19 +43,25 @@ const App: React.FC = () => {
       <ScrollProgress />
       <GlobalHotkeys />
       <Analytics />
-      <Suspense
-        fallback={
-          <div className="min-h-screen flex items-center justify-center text-white/80">
-            Loading experience...
-          </div>
-        }
-        >
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/ai" element={<AiProfilePage />} />
-          <Route path="/tracker" element={<TrackerPage />} />
-        </Routes>
-      </Suspense>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route
+          path="/ai"
+          element={
+            <Suspense fallback={<LazyRouteFallback />}>
+              <AiProfilePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/tracker"
+          element={
+            <Suspense fallback={<LazyRouteFallback />}>
+              <TrackerPage />
+            </Suspense>
+          }
+        />
+      </Routes>
     </Router>
   );
 };

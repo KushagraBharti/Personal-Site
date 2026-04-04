@@ -43,10 +43,9 @@ const Education: React.FC = () => {
       }
     };
 
-    const delayId = window.setTimeout(loadEducation, 250);
+    void loadEducation();
     return () => {
       controller.abort();
-      window.clearTimeout(delayId);
     };
   }, []);
 

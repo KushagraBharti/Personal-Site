@@ -1,8 +1,43 @@
 import React, { useEffect, useState } from "react";
+import GlassCard from "../../../shared/components/ui/GlassCard";
 import IntroDesktop from "./IntroDesktop";
 import IntroMobile from "./IntroMobile";
 import { DESKTOP_CARD_BASE_LAYER, type DesktopCardKey } from "./introLayout";
 import { useIntroData } from "./useIntroData";
+
+const IntroShellFallback: React.FC = () => (
+  <section className="full-screen-bg intro-stage relative overflow-hidden">
+    <div className="absolute inset-0 hidden items-center justify-center px-6 py-8 md:flex">
+      <div className="intro-desktop-stage">
+        <div className="intro-desktop-hero" style={{ width: 520, left: "50%", top: "50%", transform: "translate(-50%, -55%)" }}>
+          <GlassCard className="flex flex-col items-center text-center p-10">
+            <div className="h-14 w-72 rounded-full bg-white/10" />
+            <div className="mt-5 h-6 w-56 rounded-full bg-white/10" />
+            <div className="mt-8 flex gap-4">
+              <div className="h-6 w-6 rounded-full bg-white/10" />
+              <div className="h-6 w-6 rounded-full bg-white/10" />
+              <div className="h-6 w-6 rounded-full bg-white/10" />
+              <div className="h-6 w-6 rounded-full bg-white/10" />
+              <div className="h-6 w-6 rounded-full bg-white/10" />
+            </div>
+            <div className="mt-8 flex gap-3">
+              <div className="h-10 w-28 rounded-full bg-white/10" />
+              <div className="h-10 w-44 rounded-full bg-white/10" />
+            </div>
+          </GlassCard>
+        </div>
+      </div>
+    </div>
+
+    <div className="flex min-h-screen items-center justify-center px-4 md:hidden">
+      <GlassCard className="w-full max-w-md p-8 text-center">
+        <div className="mx-auto h-10 w-40 rounded-full bg-white/10" />
+        <div className="mx-auto mt-4 h-5 w-32 rounded-full bg-white/10" />
+        <div className="mx-auto mt-8 h-48 w-48 rounded-3xl bg-white/10" />
+      </GlassCard>
+    </div>
+  </section>
+);
 
 const IntroSection: React.FC = () => {
   const data = useIntroData();
@@ -48,15 +83,7 @@ const IntroSection: React.FC = () => {
   };
 
   if (!data) {
-    return (
-      <section className="full-screen-bg intro-stage relative overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="glass rounded-3xl px-8 py-6 text-white/90 shadow-lg">
-            Loading intro...
-          </div>
-        </div>
-      </section>
-    );
+    return <IntroShellFallback />;
   }
 
   return (
