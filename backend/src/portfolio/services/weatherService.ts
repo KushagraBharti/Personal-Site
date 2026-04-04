@@ -1,5 +1,7 @@
 import axios from "axios";
 
+const DEFAULT_WEATHER_CITY = "Austin";
+
 export const fetchWeather = async (params: {
   lat?: string;
   lon?: string;
@@ -25,5 +27,8 @@ export const fetchWeather = async (params: {
     return response.data;
   }
 
-  throw new Error("No location provided");
+  const response = await axios.get("https://api.openweathermap.org/data/2.5/weather", {
+    params: { q: DEFAULT_WEATHER_CITY, units: "imperial", appid: apiKey },
+  });
+  return response.data;
 };

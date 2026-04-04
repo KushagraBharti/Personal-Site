@@ -5,6 +5,41 @@ import { fetchGitHubStats } from "../services/githubStatsService";
 import { fetchLeetCodeStats } from "../services/leetcodeService";
 import { fetchWeather } from "../services/weatherService";
 
+const getHeaderValue = (req: Parameters<RequestHandler>[0], name: string) => {
+  const value = req.header(name);
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+};
+
+const resolveWeatherQueryFromRequest = (req: Parameters<RequestHandler>[0]) => {
+  const lat = typeof req.query.lat === "string" ? req.query.lat : undefined;
+  const lon = typeof req.query.lon === "string" ? req.query.lon : undefined;
+  const q = typeof req.query.q === "string" ? req.query.q : undefined;
+
+  if (lat && lon) {
+    return { lat, lon };
+  }
+
+  if (q) {
+    return { q };
+  }
+
+  const headerLat = getHeaderValue(req, "x-vercel-ip-latitude");
+  const headerLon = getHeaderValue(req, "x-vercel-ip-longitude");
+  if (headerLat && headerLon) {
+    return { lat: headerLat, lon: headerLon };
+  }
+
+  const city = getHeaderValue(req, "x-vercel-ip-city");
+  const region = getHeaderValue(req, "x-vercel-ip-country-region");
+  const country = getHeaderValue(req, "x-vercel-ip-country");
+  const locationParts = [city, region, country].filter(Boolean);
+  if (locationParts.length > 0) {
+    return { q: locationParts.join(", ") };
+  }
+
+  return {};
+};
+
 export const getGitHubStats: RequestHandler = async (req, res) => {
   if (!GITHUB_USERNAME) {
     res.status(500).json({ error: "GitHub username is not configured" });
@@ -26,12 +61,8 @@ export const getGitHubStats: RequestHandler = async (req, res) => {
 };
 
 export const getWeather: RequestHandler = async (req, res) => {
-  const lat = typeof req.query.lat === "string" ? req.query.lat : undefined;
-  const lon = typeof req.query.lon === "string" ? req.query.lon : undefined;
-  const q = typeof req.query.q === "string" ? req.query.q : undefined;
-
   try {
-    const weather = await fetchWeather({ lat, lon, q });
+    const weather = await fetchWeather(resolveWeatherQueryFromRequest(req));
     res.json(weather);
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {

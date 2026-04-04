@@ -3,12 +3,8 @@ import GlassCard from "../../shared/components/ui/GlassCard";
 import { fetchWeather as fetchWeatherData, getCachedWeather } from "../api/liveWidgetsApi";
 import type { WeatherData } from "../api/contracts";
 
-const DEFAULT_WEATHER_QUERY = { city: "Austin" } as const;
-
 const WeatherCard: React.FC = () => {
-  const [weather, setWeather] = useState<WeatherData | null>(() =>
-    getCachedWeather(DEFAULT_WEATHER_QUERY)
-  );
+  const [weather, setWeather] = useState<WeatherData | null>(() => getCachedWeather());
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -16,7 +12,7 @@ const WeatherCard: React.FC = () => {
 
     const loadWeather = async () => {
       try {
-        setWeather(await fetchWeatherData(DEFAULT_WEATHER_QUERY, controller.signal));
+        setWeather(await fetchWeatherData(undefined, controller.signal));
       } catch (err: unknown) {
         if (!controller.signal.aborted) {
           console.error("Error fetching weather:", err);

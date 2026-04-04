@@ -36,8 +36,15 @@ const writeGitHubStatsCache = (value: GitHubStats) => {
 
 export const getCachedGitHubStats = () => readGitHubStatsCache();
 
-const getWeatherCacheKey = (query: { lat: number; lon: number } | { city: string }) =>
-  "city" in query ? `${WEATHER_CACHE_PREFIX}city:${query.city.toLowerCase()}` : `${WEATHER_CACHE_PREFIX}coords:${query.lat},${query.lon}`;
+const getWeatherCacheKey = (query?: { lat: number; lon: number } | { city: string }) => {
+  if (!query) {
+    return `${WEATHER_CACHE_PREFIX}auto`;
+  }
+
+  return "city" in query
+    ? `${WEATHER_CACHE_PREFIX}city:${query.city.toLowerCase()}`
+    : `${WEATHER_CACHE_PREFIX}coords:${query.lat},${query.lon}`;
+};
 
 const readWeatherCache = (key: string) => {
   const cached = weatherCache.get(key);
@@ -65,7 +72,7 @@ const writeWeatherCache = (key: string, value: WeatherData) => {
   }
 };
 
-export const getCachedWeather = (query: { lat: number; lon: number } | { city: string }) =>
+export const getCachedWeather = (query?: { lat: number; lon: number } | { city: string }) =>
   readWeatherCache(getWeatherCacheKey(query));
 
 export const fetchGitHubStats = async (signal?: AbortSignal) => {
@@ -109,7 +116,7 @@ export const fetchLeetCodeStats = async (signal?: AbortSignal) => {
 };
 
 export const fetchWeather = async (
-  query: { lat: number; lon: number } | { city: string },
+  query?: { lat: number; lon: number } | { city: string },
   signal?: AbortSignal
 ) => {
   const cacheKey = getWeatherCacheKey(query);
@@ -125,15 +132,19 @@ export const fetchWeather = async (
     }
   }
 
-  const search =
-    "city" in query
+  const search = !query
+    ? ""
+    : "city" in query
       ? `q=${encodeURIComponent(query.city)}`
       : `lat=${query.lat}&lon=${query.lon}`;
   const request = axios
-    .get<WeatherData>(`${getApiBaseUrl()}/api/weather?${search}`, {
+    .get<WeatherData>(
+      search ? `${getApiBaseUrl()}/api/weather?${search}` : `${getApiBaseUrl()}/api/weather`,
+      {
       signal,
       timeout: 4000,
-    })
+      }
+    )
     .then((response) => {
       writeWeatherCache(cacheKey, response.data);
       return response.data;

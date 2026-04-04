@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fetchWeather = void 0;
 const axios_1 = __importDefault(require("axios"));
+const DEFAULT_WEATHER_CITY = "Austin";
 const fetchWeather = (params) => __awaiter(void 0, void 0, void 0, function* () {
     const apiKey = process.env.OPENWEATHER_API_KEY;
     if (!apiKey) {
@@ -32,6 +33,9 @@ const fetchWeather = (params) => __awaiter(void 0, void 0, void 0, function* () 
         });
         return response.data;
     }
-    throw new Error("No location provided");
+    const response = yield axios_1.default.get("https://api.openweathermap.org/data/2.5/weather", {
+        params: { q: DEFAULT_WEATHER_CITY, units: "imperial", appid: apiKey },
+    });
+    return response.data;
 });
 exports.fetchWeather = fetchWeather;
