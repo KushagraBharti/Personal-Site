@@ -8,9 +8,19 @@ vi.mock("../api/portfolioApi", () => ({
   prefetchPortfolioSnapshot: prefetchPortfolioSnapshotMock,
 }));
 
-vi.mock("../sections/intro/IntroSection", () => ({
-  default: () => <div>Intro ready</div>,
-}));
+vi.mock("../sections/intro/IntroSection", () => {
+  const IntroSectionMock = ({ onLiveWidgetsSettled }: { onLiveWidgetsSettled?: () => void }) => {
+    React.useEffect(() => {
+      onLiveWidgetsSettled?.();
+    }, [onLiveWidgetsSettled]);
+
+    return <div>Intro ready</div>;
+  };
+
+  return {
+    default: IntroSectionMock,
+  };
+});
 
 vi.mock("../sections/about/AboutSection", () => ({
   default: () => <div>About ready</div>,
@@ -33,7 +43,7 @@ describe("HomePage", () => {
     prefetchPortfolioSnapshotMock.mockReset();
   });
 
-  it("renders the intro immediately and prefetches sections on the next frame", async () => {
+  it("renders the intro immediately and warms sections after live widgets settle", async () => {
     const requestAnimationFrameSpy = vi
       .spyOn(window, "requestAnimationFrame")
       .mockImplementation((callback: FrameRequestCallback) => {

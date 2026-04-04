@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from "react";
+import React, { Suspense, useCallback, useState } from "react";
 import SectionSidebar from "../components/SectionSidebar";
 import GlassCard from "../../shared/components/ui/GlassCard";
 import IntroSection from "../sections/intro/IntroSection";
@@ -33,28 +33,46 @@ const SectionFallback: React.FC<{ title: string }> = ({ title }) => (
 );
 
 const HomePage: React.FC = () => {
-  useEffect(() => {
-    const frameId = window.requestAnimationFrame(() => {
-      prefetchPortfolioSnapshot();
-      sectionPrefetchers.forEach((loader) => {
-        void loader();
-      });
-    });
+  const [sectionsPrimed, setSectionsPrimed] = useState(false);
 
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
+  const primeSections = useCallback(() => {
+    setSectionsPrimed((currentValue) => {
+      if (currentValue) {
+        return currentValue;
+      }
+
+      const warmSections = () => {
+        prefetchPortfolioSnapshot();
+        sectionPrefetchers.forEach((loader) => {
+          void loader();
+        });
+      };
+
+      const idleScheduler = (
+        window as Window & {
+          requestIdleCallback?: (callback: IdleRequestCallback) => number;
+        }
+      ).requestIdleCallback;
+
+      if (idleScheduler) {
+        idleScheduler(() => warmSections());
+      } else {
+        window.requestAnimationFrame(() => warmSections());
+      }
+
+      return true;
+    });
   }, []);
 
   return (
     <div>
       <SectionSidebar />
       <section id="intro">
-        <IntroSection />
+        <IntroSection onLiveWidgetsSettled={primeSections} />
       </section>
       <section id="about">
         <Suspense fallback={<SectionFallback title="About" />}>
-          <About />
+          <About eagerMedia={sectionsPrimed} />
         </Suspense>
       </section>
       <section id="education">

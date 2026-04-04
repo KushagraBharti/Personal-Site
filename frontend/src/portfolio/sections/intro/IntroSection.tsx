@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import GlassCard from "../../../shared/components/ui/GlassCard";
 import IntroDesktop from "./IntroDesktop";
 import IntroMobile from "./IntroMobile";
@@ -39,8 +39,10 @@ const IntroShellFallback: React.FC = () => (
   </section>
 );
 
-const IntroSection: React.FC = () => {
-  const data = useIntroData();
+const IntroSection: React.FC<{
+  onLiveWidgetsSettled?: () => void;
+}> = ({ onLiveWidgetsSettled }) => {
+  const { data, weather, liveWidgetsSettled } = useIntroData();
   const [isAtTop, setIsAtTop] = useState(true);
   const [viewportWidth, setViewportWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : 1440
@@ -51,6 +53,7 @@ const IntroSection: React.FC = () => {
   const [cardLayers, setCardLayers] =
     useState<Record<DesktopCardKey, number>>(DESKTOP_CARD_BASE_LAYER);
   const [copiedToast, setCopiedToast] = useState(false);
+  const hasNotifiedLiveWidgetsRef = useRef(false);
 
   useEffect(() => {
     const handleScroll = () => setIsAtTop(window.scrollY === 0);
@@ -82,6 +85,15 @@ const IntroSection: React.FC = () => {
     window.setTimeout(() => setCopiedToast(false), 3000);
   };
 
+  useEffect(() => {
+    if (!liveWidgetsSettled || hasNotifiedLiveWidgetsRef.current) {
+      return;
+    }
+
+    hasNotifiedLiveWidgetsRef.current = true;
+    onLiveWidgetsSettled?.();
+  }, [liveWidgetsSettled, onLiveWidgetsSettled]);
+
   if (!data) {
     return <IntroShellFallback />;
   }
@@ -95,6 +107,8 @@ const IntroSection: React.FC = () => {
         cardLayers={cardLayers}
         onLift={liftCard}
         onCopied={handleCopied}
+        weather={weather}
+        isWeatherLoading={!weather}
       />
       <IntroMobile data={data} onCopied={handleCopied} />
 

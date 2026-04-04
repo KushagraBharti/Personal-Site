@@ -3,10 +3,20 @@ import GlassCard from "../../shared/components/ui/GlassCard";
 import { fetchWeather as fetchWeatherData, getCachedWeather } from "../api/liveWidgetsApi";
 import type { WeatherData } from "../api/contracts";
 
-const WeatherCard: React.FC = () => {
-  const [weather, setWeather] = useState<WeatherData | null>(() => getCachedWeather());
+const WeatherCard: React.FC<{
+  weather?: WeatherData | null;
+  isLoading?: boolean;
+}> = ({ weather: controlledWeather, isLoading: controlledLoading }) => {
+  const isControlled = controlledWeather !== undefined || controlledLoading !== undefined;
+  const [weather, setWeather] = useState<WeatherData | null>(() =>
+    isControlled ? controlledWeather ?? null : getCachedWeather()
+  );
 
   useEffect(() => {
+    if (isControlled) {
+      return;
+    }
+
     const controller = new AbortController();
 
     const loadWeather = async () => {
@@ -21,9 +31,12 @@ const WeatherCard: React.FC = () => {
 
     loadWeather();
     return () => controller.abort();
-  }, []);
+  }, [isControlled]);
 
-  if (!weather) {
+  const effectiveWeather = isControlled ? controlledWeather ?? null : weather;
+  const isLoading = isControlled ? controlledLoading ?? effectiveWeather === null : effectiveWeather === null;
+
+  if (isLoading || !effectiveWeather) {
     return (
       <GlassCard className="p-4 w-60 text-center">
         <h4 className="text-sm font-bold text-white mb-1">Weather</h4>
@@ -36,9 +49,9 @@ const WeatherCard: React.FC = () => {
     <GlassCard className="p-4 w-60 text-center">
       <h4 className="text-sm font-bold text-white mb-1">Weather</h4>
       <p className="text-sm text-gray-200">
-        {weather.name}: {weather.main.temp}&deg;F
+        {effectiveWeather.name}: {effectiveWeather.main.temp}&deg;F
         <br />
-        {weather.weather[0].description}
+        {effectiveWeather.weather[0].description}
       </p>
     </GlassCard>
   );

@@ -9,6 +9,7 @@ interface LazyIframeProps {
   allow?: string;
   allowFullScreen?: boolean;
   loadingLabel?: string;
+  eager?: boolean;
 }
 
 const LazyIframe: React.FC<LazyIframeProps> = ({
@@ -18,11 +19,17 @@ const LazyIframe: React.FC<LazyIframeProps> = ({
   allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
   allowFullScreen = true,
   loadingLabel = "Loading content...",
+  eager = false,
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(eager);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    if (eager) {
+      setIsVisible(true);
+      return;
+    }
+
     const element = containerRef.current;
     if (!element) return;
 
@@ -40,7 +47,7 @@ const LazyIframe: React.FC<LazyIframeProps> = ({
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  }, [eager]);
 
   return (
     <div ref={containerRef} className={className}>

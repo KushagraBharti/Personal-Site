@@ -6,6 +6,7 @@ import IntroHero from "./IntroHero";
 import IntroFloatingCard from "./IntroFloatingCard";
 import { getDesktopStageLayout, type DesktopCardKey } from "./introLayout";
 import type { IntroSectionData } from "./introTypes";
+import type { WeatherData } from "../../api/contracts";
 
 const IntroDesktop: React.FC<{
   data: IntroSectionData;
@@ -14,7 +15,9 @@ const IntroDesktop: React.FC<{
   cardLayers: Record<DesktopCardKey, number>;
   onLift: (cardKey: DesktopCardKey) => void;
   onCopied: () => void;
-}> = ({ data, viewportWidth, viewportHeight, cardLayers, onLift, onCopied }) => {
+  weather: WeatherData | null;
+  isWeatherLoading: boolean;
+}> = ({ data, viewportWidth, viewportHeight, cardLayers, onLift, onCopied, weather, isWeatherLoading }) => {
   const desktopLayout = getDesktopStageLayout(viewportWidth, viewportHeight);
   const desktopLayoutKey = `${desktopLayout.stageWidth}x${desktopLayout.stageHeight}`;
 
@@ -124,7 +127,7 @@ const IntroDesktop: React.FC<{
           layer={cardLayers.weather}
           onLift={onLift}
         >
-          <WeatherCard />
+          <WeatherCard weather={weather} isLoading={isWeatherLoading} />
         </IntroFloatingCard>
 
         <IntroFloatingCard

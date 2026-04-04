@@ -6,7 +6,9 @@ import LazyIframe from "../../../shared/components/ui/LazyIframe";
 import { fetchPortfolioSnapshot, getCachedPortfolioSnapshot } from "../../api/portfolioApi";
 import type { PortfolioSnapshot } from "../../api/contracts";
 
-const About: React.FC = () => {
+const About: React.FC<{
+  eagerMedia?: boolean;
+}> = ({ eagerMedia = false }) => {
   const [startTyping, setStartTyping] = useState(false);
   const [snapshot, setSnapshot] = useState<PortfolioSnapshot | null>(() => getCachedPortfolioSnapshot());
   const [typedText] = useTypewriter({
@@ -122,6 +124,7 @@ const About: React.FC = () => {
                   src={item.embedUrl}
                   title={item.title}
                   loadingLabel="Buffering film..."
+                  eager={eagerMedia}
                 />
                 <p className="text-sm text-gray-200/80 py-3 text-center font-medium">
                   {item.subtitle} - {item.title}
