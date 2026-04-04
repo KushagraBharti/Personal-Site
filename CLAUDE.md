@@ -34,12 +34,14 @@ Routes:
 ## Non-Negotiable Decisions
 
 - Portfolio content is backend-owned. Edit `backend/src/portfolio/content/*` first.
-- The frontend presents portfolio data; it should not become a second content source.
-- Frontend API contracts live in `frontend/src/portfolio/api/contracts.ts`. Do not import backend runtime files into the frontend just to share types.
+- The frontend renders portfolio data; it should not become a second content source.
+- Frontend API contracts live in `frontend/src/portfolio/api/contracts.ts`.
 - `llms.txt` is generated from backend services and synced into `frontend/public/llms.txt` by `frontend/scripts/sync-portfolio-exports.ts`.
-- The homepage must stay fast. `/` is eager; `/ai` and `/tracker` are lazy; intro renders first; non-critical data hydrates later.
-- Weather is backend-driven and must not trigger browser location prompts. Vercel geo headers are used when available; Austin is the fallback.
+- `/` is eager; `/ai` and `/tracker` are lazy; intro renders first; non-critical data hydrates later.
+- Weather is backend-driven and must not trigger browser location prompts.
 - GitHub stats should revalidate on mount and prefer the GraphQL contribution path.
+- The active public portfolio uses GitHub and weather as its only live widgets.
+- Finance is removed. Do not reintroduce tracker finance structure or docs.
 
 ## Where To Work
 
@@ -72,12 +74,16 @@ Frontend local env:
 Backend env:
 
 - use `backend/.env.example`
-- key portfolio vars are `GITHUB_USERNAME`, `GITHUB_TOKEN`, `LEETCODE_USERNAME`, and `OPENWEATHER_API_KEY`
+- key portfolio vars are `GITHUB_USERNAME`, `GITHUB_TOKEN`, and `OPENWEATHER_API_KEY`
 - tracker setup uses the Supabase and Google Calendar vars in the example file
 
 ## Workflow
 
-This repo is Bun-only.
+This repo is Bun-first, with one exception:
+
+- use Bun for normal app work, installs, dev servers, builds, and linting
+- use the repo-level `verify` commands for testing
+- the `verify` commands are allowed to use npm internally because Bun is unreliable for the test toolchain in this Windows + OneDrive environment
 
 Frontend:
 
@@ -100,15 +106,30 @@ bun run lint
 bun run start
 ```
 
+Repo checks:
+
+```bash
+bun install
+bun run verify
+bun run verify:full
+```
+
+Verification tiers:
+
+- `bun run verify` -> npm-backed installs, then build, lint, unit, integration
+- `bun run verify:live` -> `verify` plus live backend checks
+- `bun run verify:full` -> `verify` plus Playwright smoke and mocked E2E
+- `bun run verify:full:live` -> everything
+
 ## Tooling
 
 Use the relevant tools instead of guessing:
 
 - `frontend-design` for major UI work
-- `vercel-react-best-practices` for React performance or rendering behavior
-- Vercel MCP for deploy/runtime checks
+- `vercel-react-best-practices` for React performance and rendering behavior
+- Vercel tooling for deploy/runtime checks
 - Playwright tooling for browser verification
-- Supabase or Convex tooling only when the task actually touches those systems
+- Supabase tooling only when the task actually touches auth or tracker persistence
 
 ## Editing Rules
 

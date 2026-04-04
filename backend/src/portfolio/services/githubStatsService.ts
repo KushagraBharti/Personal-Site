@@ -56,61 +56,65 @@ const fetchCommitContributionCount = async (profile: GitHubUserProfile) => {
 
   const start = profile.created_at ? new Date(profile.created_at) : new Date();
   const end = new Date();
-  const yearlyCounts: number[] = [];
+  const windows: Array<{ from: string; to: string }> = [];
 
   for (let cursor = new Date(start); cursor < end; ) {
     const next = new Date(cursor);
     next.setUTCFullYear(next.getUTCFullYear() + 1);
     const windowEnd = next < end ? next : end;
-    const from = cursor.toISOString();
-    const to = windowEnd.toISOString();
-
-    const response = await axios.post<{
-      data?: {
-        user?: {
-          contributionsCollection?: {
-            totalCommitContributions?: number;
-          };
-        };
-      };
-      errors?: Array<{ message?: string }>;
-    }>(
-      "https://api.github.com/graphql",
-      {
-        query: `
-          query GitHubCommitContributions($login: String!, $from: DateTime!, $to: DateTime!) {
-            user(login: $login) {
-              contributionsCollection(from: $from, to: $to) {
-                totalCommitContributions
-              }
-            }
-          },
-        `,
-        variables: {
-          login: GITHUB_USERNAME,
-          from,
-          to,
-        },
-      },
-      {
-        headers: graphqlHeaders,
-      }
-    );
-
-    if (response.data.errors?.length) {
-      throw new Error(
-        response.data.errors
-          .map((error) => error.message)
-          .filter(Boolean)
-          .join("; ") || "GitHub GraphQL commit contributions query failed"
-      );
-    }
-
-    yearlyCounts.push(
-      Number(response.data.data?.user?.contributionsCollection?.totalCommitContributions || 0)
-    );
+    windows.push({
+      from: cursor.toISOString(),
+      to: windowEnd.toISOString(),
+    });
     cursor = windowEnd;
   }
+
+  const yearlyCounts = await Promise.all(
+    windows.map(async ({ from, to }) => {
+      const response = await axios.post<{
+        data?: {
+          user?: {
+            contributionsCollection?: {
+              totalCommitContributions?: number;
+            };
+          };
+        };
+        errors?: Array<{ message?: string }>;
+      }>(
+        "https://api.github.com/graphql",
+        {
+          query: `
+            query GitHubCommitContributions($login: String!, $from: DateTime!, $to: DateTime!) {
+              user(login: $login) {
+                contributionsCollection(from: $from, to: $to) {
+                  totalCommitContributions
+                }
+              }
+            },
+          `,
+          variables: {
+            login: GITHUB_USERNAME,
+            from,
+            to,
+          },
+        },
+        {
+          headers: graphqlHeaders,
+        }
+      );
+
+      if (response.data.errors?.length) {
+        throw new Error(
+          response.data.errors
+            .map((error) => error.message)
+            .filter(Boolean)
+            .join("; ") || "GitHub GraphQL commit contributions query failed"
+        );
+      }
+
+      return Number(response.data.data?.user?.contributionsCollection?.totalCommitContributions || 0);
+    })
+  );
 
   return yearlyCounts.reduce((sum, count) => sum + count, 0);
 };

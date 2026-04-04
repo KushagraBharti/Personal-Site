@@ -12,11 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getLeetCodeStats = exports.getWeather = exports.getGitHubStats = void 0;
+exports.getWeather = exports.getGitHubStats = void 0;
 const axios_1 = __importDefault(require("axios"));
 const github_1 = require("../../config/github");
 const githubStatsService_1 = require("../services/githubStatsService");
-const leetcodeService_1 = require("../services/leetcodeService");
 const weatherService_1 = require("../services/weatherService");
 const INVALID_HEADER_VALUES = new Set(["", "null", "undefined", "unknown"]);
 const getHeaderValue = (req, name) => {
@@ -96,16 +95,3 @@ const getWeather = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.getWeather = getWeather;
-const getLeetCodeStats = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const stats = yield (0, leetcodeService_1.fetchLeetCodeStats)();
-        res.json(stats);
-    }
-    catch (error) {
-        console.error("Error fetching LeetCode stats:", error);
-        const message = error instanceof Error ? error.message : "Failed to fetch LeetCode stats";
-        const statusCode = message === "LEETCODE_USERNAME is not configured" ? 400 : 500;
-        res.status(statusCode).json({ error: message });
-    }
-});
-exports.getLeetCodeStats = getLeetCodeStats;

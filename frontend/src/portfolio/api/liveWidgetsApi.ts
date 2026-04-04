@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getApiBaseUrl } from "../../shared/lib/apiBaseUrl";
-import type { GitHubStats, LeetCodeStats, WeatherData } from "./contracts";
+import type { GitHubStats, WeatherData } from "./contracts";
 
 const GITHUB_STATS_CACHE_KEY = "github-stats-cache-v1";
 const WEATHER_CACHE_PREFIX = "weather-cache-v1:";
@@ -126,14 +126,6 @@ export const fetchGitHubStats = async (
   }
 
   return request;
-};
-
-export const fetchLeetCodeStats = async (signal?: AbortSignal) => {
-  const response = await axios.get<LeetCodeStats>(`${getApiBaseUrl()}/api/leetcode/stats`, {
-    signal,
-    timeout: 4000,
-  });
-  return response.data;
 };
 
 export const fetchWeather = async (

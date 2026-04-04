@@ -165,14 +165,15 @@ Tags: Next.js 15, TypeScript, Supabase, Realtime, PostgreSQL, OpenRouter, Anthro
 GitHub: https://github.com/KushagraBharti/PseudoLawyer
 
 ### Personal Portfolio Website
-Summary: A dynamic, full-stack portfolio website showcasing professional experience, education, and projects.
+Summary: A backend-authored portfolio and personal tracker split into two product surfaces, with live GitHub and weather widgets, machine-readable `/ai` output, and a generated `llms.txt` snapshot.
 Highlights:
-- Developed a responsive single-page application using a TypeScript-based Node.js/Express backend and a React/TailwindCSS frontend, ensuring fast load times and seamless navigation.
-- Implemented modular RESTful API endpoints to serve dynamic content (projects, education, experiences, intro) with secure CORS configurations and environment-based settings.
-- Integrated external APIs for live updates, including GitHub stats, weather data, and LeetCode challenges, to reflect real-time achievements.
-- Enhanced user experience through interactive UI elements such as draggable cards, parallax tilt effects, custom cursors, and animated transitions.
-- Deployed the application on Vercel, optimizing for both development and production environments with robust TypeScript tooling.
-Tags: TypeScript, Node.js, Express, React, TailwindCSS, Vite, REST API, Full-Stack Development, API Integration
+- Architected the repository as two clearly separated surfaces: a public portfolio and a private tracker, each with its own frontend and backend boundaries so public content, private workflows, and shared utilities stay organized.
+- Moved all portfolio-authored copy, metadata, project lists, and AI-provider prompts into backend content modules, making the backend the source of truth for the public-facing site and keeping the frontend focused on rendering and interaction.
+- Built modular API layers for portfolio sections, slug-based detail pages, and live widgets so the homepage, `/ai`, and `llms.txt` all derive from the same canonical snapshot instead of duplicated frontend content.
+- Integrated live GitHub and weather widgets with backend caching and graceful fallbacks, then wired the intro experience to hydrate those values progressively so the page feels immediate instead of blocked on slow network calls.
+- Designed the portfolio UI around draggable floating cards, animated hero states, responsive layouts, and a visually distinct presentation style so the homepage feels like a crafted product rather than a static résumé.
+- Added a comprehensive verification workflow with unit, integration, smoke, E2E, and live checks to keep the codebase dependable as the portfolio and tracker continue to evolve.
+Tags: TypeScript, Node.js, Express, React, TailwindCSS, Vite, REST API, Full-Stack Development, API Integration, System Design, Testing, Content Architecture
 GitHub: https://github.com/KushagraBharti/Personal-Site
 
 ### AutoHDR ML Lens Correction

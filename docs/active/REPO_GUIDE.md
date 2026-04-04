@@ -2,55 +2,59 @@
 
 ## Overview
 
-This repository is split into two product surfaces:
+This repo has two product surfaces:
 
-- `portfolio`: the public website, `/ai`, `llms.txt`, public APIs, and public assets
-- `tracker`: the private productivity and calendar-connected workflow tooling
+- `portfolio`: the public site, `/ai`, `llms.txt`, public assets, and public APIs
+- `tracker`: the private task/workflow/calendar application
 
-The split exists in both the frontend and backend.
+That split exists in both frontend and backend and should stay intact.
 
 ## Top-Level Layout
 
-- `frontend`: Vite + React application
-- `backend`: Express + TypeScript API
-- `docs/active`: current documentation
-- `docs/archive`: historical docs that are no longer the source of truth
+- `frontend` -> Vite + React app
+- `backend` -> Express + TypeScript API
+- `docs/active` -> current docs
+- `docs/archive` -> historical docs only
 
 ## Frontend Layout
 
-Primary folders under `frontend/src`:
+Main folders under `frontend/src`:
 
-- `portfolio`: public site pages, sections, APIs, and live widgets
-- `tracker`: private tracker pages, shell, modules, and tracker-specific shared code
-- `shared`: cross-surface UI primitives and app helpers
-- `types`: shared frontend-only types
+- `portfolio`
+- `tracker`
+- `shared`
+- `types`
 
-Key frontend routes:
+Primary routes:
 
 - `/` -> `frontend/src/portfolio/pages/HomePage.tsx`
 - `/ai` -> `frontend/src/portfolio/pages/AiProfilePage.tsx`
 - `/tracker` -> `frontend/src/tracker/pages/TrackerPage.tsx`
 
-`HomePage` is eagerly loaded. `/ai` and `/tracker` are lazy-loaded.
+Route behavior:
+
+- `/` is eager-loaded
+- `/ai` and `/tracker` are lazy-loaded
+- intro/hero content renders first and live widgets hydrate later
 
 ## Backend Layout
 
-Primary folders under `backend/src`:
+Main folders under `backend/src`:
 
-- `portfolio`: public content, services, controllers, and routes
-- `tracker`: private tracker services and routes
-- `routes`: app-level route composition
-- `config`: environment-backed configuration
-- `middleware`: Express middleware
+- `portfolio`
+- `tracker`
+- `routes`
+- `config`
+- `middleware`
 
-App mounting:
+Mounting:
 
-- `/api` -> `backend/src/portfolio/routes`
-- `/api/private` -> `backend/src/tracker`
+- `/api` -> portfolio routes
+- `/api/private` -> tracker routes
 
 ## Portfolio Source Of Truth
 
-Portfolio-authored data lives in backend TypeScript modules under:
+Portfolio-authored data lives in backend content modules:
 
 - `backend/src/portfolio/content/profile.ts`
 - `backend/src/portfolio/content/about.ts`
@@ -61,36 +65,26 @@ Portfolio-authored data lives in backend TypeScript modules under:
 - `backend/src/portfolio/content/experiences.ts`
 - `backend/src/portfolio/content/projects.ts`
 
-These files are the canonical content source for the public site.
-
-The frontend should render this data. It should not redefine portfolio content in components.
+Frontend components render that data. They should not become a second content source.
 
 ## Contracts And Data Flow
 
-Canonical backend contract shapes live in:
+Backend contract shapes live under:
 
 - `backend/src/portfolio/contracts`
 
-The frontend currently keeps its own local API-facing contract definitions in:
+Frontend API-facing contracts live under:
 
 - `frontend/src/portfolio/api/contracts.ts`
 
-That is intentional. The frontend no longer imports backend source files directly for runtime typing.
+Frontend data entrypoints:
 
-Frontend portfolio data flow:
-
-- authored content APIs -> `frontend/src/portfolio/api/portfolioApi.ts`
-- live widget APIs -> `frontend/src/portfolio/api/liveWidgetsApi.ts`
-
-Current frontend caching behavior:
-
-- portfolio snapshot and intro data are cached in `sessionStorage`
-- GitHub stats are shown from cache first and then force-refreshed on mount
-- weather responses are cached in `sessionStorage` by query key
+- `frontend/src/portfolio/api/portfolioApi.ts`
+- `frontend/src/portfolio/api/liveWidgetsApi.ts`
 
 ## Public APIs
 
-Authored content endpoints:
+Authored content:
 
 - `/api/portfolio`
 - `/api/portfolio/llms.txt`
@@ -102,18 +96,19 @@ Authored content endpoints:
 - `/api/education`
 - `/api/education/:slug`
 
-Live widget endpoints:
+Live widgets:
 
 - `/api/github/stats`
 - `/api/weather`
-- `/api/leetcode/stats`
 
-Tracker endpoints mount under `/api/private`, with current subtrees:
+The public site currently uses only GitHub and weather as live portfolio widgets.
+
+Tracker:
 
 - `/api/private/calendar`
 - `/api/private/cron`
 
-## llms.txt Export Flow
+## llms.txt Flow
 
 The backend owns snapshot and `llms.txt` generation:
 
@@ -121,52 +116,65 @@ The backend owns snapshot and `llms.txt` generation:
 - `backend/src/portfolio/services/llmsTextService.ts`
 - `backend/src/portfolio/services/portfolioExportService.ts`
 
-The frontend sync script:
-
-- `frontend/scripts/sync-portfolio-exports.ts`
-
-imports the backend export function and writes:
+The frontend syncs the generated text into:
 
 - `frontend/public/llms.txt`
 
-Frontend `dev` and `build` both run that sync step first.
+via:
 
-## Public Assets
+- `frontend/scripts/sync-portfolio-exports.ts`
 
-Portfolio assets live under:
+## Assets
+
+Public portfolio assets live under:
 
 - `frontend/public/portfolio/profile`
 - `frontend/public/portfolio/projects`
-- `frontend/public/portfolio/media`
 - `frontend/public/portfolio/icons`
 
-Use stable, slug-style filenames and public paths rooted at `/portfolio/...`.
+Use stable slug-style names and public paths rooted at `/portfolio/...`.
 
 ## Runtime Notes
 
 GitHub stats:
 
-- repo count uses the public GitHub repo count
-- commit count prefers GitHub GraphQL commit contributions and falls back if needed
-- frontend forces a refresh on mount so reloads do not stay stuck on stale session data
+- repo count uses public repo count
+- commit count prefers GitHub GraphQL contribution totals
+- frontend shows cached data first, then force-refreshes
 
 Weather:
 
-- frontend calls `/api/weather` without asking the browser for location permission
+- frontend calls backend only
 - backend uses Vercel geo headers when available
-- invalid location guesses fall back to Austin
-- local development usually falls back to Austin because Vercel geo headers are not present locally
+- local fallback is Austin
+- no browser location prompt
 
 Analytics:
 
 - Vercel Analytics is mounted in the frontend app
-- `ERR_BLOCKED_BY_CLIENT` in the browser console is usually caused by an extension or privacy blocker, not by the app failing to serve the script
+- `ERR_BLOCKED_BY_CLIENT` is usually an extension/privacy blocker, not an app-serving failure
 
-## Bun Workflow
+## Workflow
 
-This repository is Bun-only.
+This repo is Bun-first.
 
-Frontend:
+Use Bun for:
+
+- installs during normal development
+- dev servers
+- builds
+- linting
+
+Use repo-level verification for testing:
+
+- `bun run verify`
+- `bun run verify:live`
+- `bun run verify:full`
+- `bun run verify:full:live`
+
+Those verification commands are allowed to use npm internally because Bun is unreliable for the current test toolchain in this Windows + OneDrive environment.
+
+Typical commands:
 
 ```bash
 cd frontend
@@ -176,12 +184,18 @@ bun run build
 bun run lint
 ```
 
-Backend:
-
 ```bash
 cd backend
 bun install
 bun run dev
 bun run build
 bun run lint
+```
+
+Repo-level verification:
+
+```bash
+bun install
+bun run verify
+bun run verify:full
 ```

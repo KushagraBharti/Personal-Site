@@ -2,9 +2,18 @@
 
 ## Scope
 
-The tracker is the private application surface. The current refactor reorganized tracker code into clearer frontend and backend boundaries without intentionally redesigning tracker behavior.
+The tracker is the private application surface. It is separate from the public portfolio and should stay separate in both frontend and backend.
 
-## Frontend Tracker Layout
+Current scope:
+
+- tasks
+- tasks hub
+- pipeline/workflow tracking
+- calendar-connected planning
+
+Finance is not part of the active tracker anymore.
+
+## Frontend Layout
 
 Tracker frontend code lives under:
 
@@ -18,7 +27,7 @@ Primary entrypoint:
 
 - `frontend/src/tracker/pages/TrackerPage.tsx`
 
-Shell and module registration:
+Shell and registry:
 
 - `frontend/src/tracker/shell/TrackerShell.tsx`
 - `frontend/src/tracker/shell/registry.ts`
@@ -29,21 +38,14 @@ Current module families:
 - `tasks-hub`
 - `pipeline`
 
-Each module generally owns:
+Each module generally owns its own:
 
 - `api.ts`
 - `hooks.ts`
 - `types.ts`
 - `components/`
 
-Tracker-specific shared code lives under `frontend/src/tracker/shared`, including:
-
-- auth/context hooks
-- Supabase clients
-- tracker utilities
-- tracker-only shared types and styles
-
-## Backend Tracker Layout
+## Backend Layout
 
 Tracker backend code lives under:
 
@@ -55,14 +57,14 @@ Mounting entrypoint:
 
 - `backend/src/tracker/index.ts`
 
-Current route subtrees:
+Route subtrees:
 
 - `/api/private/calendar`
 - `/api/private/cron`
 
 ## Calendar
 
-Calendar backend code:
+Calendar backend files include:
 
 - `backend/src/tracker/calendar/routes/calendarRoutes.ts`
 - `backend/src/tracker/calendar/services/googleCalendarApiService.ts`
@@ -71,43 +73,39 @@ Calendar backend code:
 - `backend/src/tracker/calendar/services/calendarWebhookService.ts`
 - `backend/src/tracker/calendar/services/calendarSyncQueueService.ts`
 
-Calendar functionality is exposed through `/api/private/calendar`.
-
 ## Cron
 
-Cron backend code:
+Cron backend routing lives in:
 
 - `backend/src/tracker/cron/routes/cronRoutes.ts`
 
-Current Vercel cron entries are defined in:
+Current Vercel cron config is in:
 
 - `backend/vercel.json`
 
-Current schedules target:
+Current scheduled endpoints target:
 
 - `/api/private/cron/calendar-sync`
 - `/api/private/cron/calendar-watch-renew`
 
 ## Shared Backend Services
 
-Tracker backend shared services currently live in:
+Tracker-wide backend utilities belong in:
 
-- `backend/src/tracker/shared/services/encryptionService.ts`
+- `backend/src/tracker/shared`
 
-If a tracker concern is used across multiple tracker domains, it belongs in `backend/src/tracker/shared`, not under the public portfolio tree.
+If a tracker concern is reused across multiple tracker domains, keep it there rather than moving it into portfolio code.
 
 ## Working Rules
 
-Tracker code should follow these rules:
-
 - keep tracker concerns inside `frontend/src/tracker` and `backend/src/tracker`
-- do not move tracker-specific logic into the public portfolio tree
-- prefer module-local APIs/hooks/types unless a concern is genuinely shared
-- treat behavior changes as separate work from structural cleanup
+- do not move tracker-specific logic into portfolio folders
+- prefer module-local APIs/hooks/types unless the concern is genuinely shared
+- treat structural cleanup and behavior changes as separate work
 
-## When Updating Tracker Code
+## Verification
 
-Typical verification commands:
+Typical checks after tracker edits:
 
 ```bash
 cd frontend
@@ -119,4 +117,10 @@ cd backend
 bun run build
 ```
 
-If tracker API shapes change, also verify the relevant module integration manually through `/tracker`, since the tracker surface is still a larger interactive app with multiple moving parts.
+For broader checks from the repo root:
+
+```bash
+bun run verify
+```
+
+If tracker API shapes or browser flows changed, also run the relevant tests and verify `/tracker` manually.

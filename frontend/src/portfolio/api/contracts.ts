@@ -128,13 +128,6 @@ export interface GitHubStats {
   totalCommits: number;
 }
 
-export interface LeetCodeStats {
-  totalSolved: number;
-  easySolved: number;
-  mediumSolved: number;
-  hardSolved: number;
-}
-
 export interface WeatherData {
   name: string;
   main: { temp: number };

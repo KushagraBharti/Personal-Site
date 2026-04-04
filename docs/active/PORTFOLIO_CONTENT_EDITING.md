@@ -1,8 +1,8 @@
 # Portfolio Content Editing
 
-## Canonical Editing Rule
+## Rule
 
-Portfolio content is edited in backend content modules, not in frontend section components.
+Portfolio content is edited in backend content modules, not in frontend components.
 
 Primary authored files:
 
@@ -15,7 +15,7 @@ Primary authored files:
 - `backend/src/portfolio/content/experiences.ts`
 - `backend/src/portfolio/content/projects.ts`
 
-If you need to change public copy, links, featured items, AI provider metadata, school/work history, or project metadata, start there.
+If public copy, links, project metadata, work history, AI metadata, or featured content changes, start there.
 
 ## What Lives Where
 
@@ -30,10 +30,10 @@ If you need to change public copy, links, featured items, AI provider metadata, 
 
 `about.ts`
 
-- About page heading/body content
-- current projects
+- about-page heading and body
+- current work
 - current learning
-- non-technical interests
+- interests
 
 `intro.ts`
 
@@ -41,20 +41,19 @@ If you need to change public copy, links, featured items, AI provider metadata, 
 - fun fact
 - featured read
 - travel plans
-- personal photo path
+- hero image path
 
 `media.ts`
 
-- creative/film media cards
+- creative/media cards
 - embed URLs
 - subtitles
 
 `ai.ts`
 
 - AI provider list
-- provider icons and labels
-- prompt templates
-- provider actions
+- provider labels/icons
+- prompts/actions
 
 `education.ts`, `experiences.ts`, `projects.ts`
 
@@ -62,58 +61,49 @@ If you need to change public copy, links, featured items, AI provider metadata, 
 
 ## Record Rules
 
-Public collection records must include:
+Public collection items must include:
 
 - `slug`
 - `order`
 
-These are required for:
+That keeps routes stable and rendering deterministic.
 
-- stable detail routes
-- deterministic rendering order
-- asset naming consistency
+## Links And Asset Paths
 
-## Links And Paths
-
-When editing content:
+When editing:
 
 - remove placeholder links like `#`
 - omit invalid optional links instead of leaving empty strings
 - use public asset paths rooted at `/portfolio/...`
-- keep thumbnails and images aligned with files in `frontend/public/portfolio/...`
 
 Examples:
 
 - profile image -> `/portfolio/profile/...`
 - project thumbnail -> `/portfolio/projects/...`
-- media asset -> `/portfolio/media/...`
+- icon -> `/portfolio/icons/...`
 
 ## Frontend Constraints
 
-The frontend may format portfolio data, but it should not become an alternate content source.
+Frontend sections can format the data, but they should not redefine the data.
 
-Current intent:
+Important frontend areas:
 
-- `frontend/src/portfolio/sections/about` controls About layout
-- `frontend/src/portfolio/sections/intro` controls hero layout, floating cards, motion, and interactions
-- authored text and metadata should continue to come from backend content files
-
-The frontend currently keeps local API type definitions in:
-
+- `frontend/src/portfolio/sections/about`
+- `frontend/src/portfolio/sections/intro`
 - `frontend/src/portfolio/api/contracts.ts`
 
-Those types should be updated if the API response shape changes, but they are not the content source.
+If the API shape changes, update frontend contracts and the affected section together.
 
-## Build And Verification After Editing
+## Build After Changes
 
-After portfolio content changes, run:
+Run:
 
 ```bash
 cd backend
 bun run build
 ```
 
-Then run:
+Then:
 
 ```bash
 cd frontend
@@ -124,37 +114,17 @@ Frontend build will also refresh:
 
 - `frontend/public/llms.txt`
 
-via:
-
-- `frontend/scripts/sync-portfolio-exports.ts`
-
-## Content Changes That Also Need Code Changes
-
-If you change portfolio data shape, you may also need to update:
-
-- `backend/src/portfolio/contracts/portfolio.ts`
-- `backend/src/portfolio/services/portfolioSnapshotService.ts`
-- `frontend/src/portfolio/api/contracts.ts`
-- the affected frontend section or widget
-
-Do not change only one side of the API shape.
-
-## Live Widgets Are Separate
+## Live Widgets
 
 These are not authored in the content modules:
 
 - GitHub stats
 - weather
-- LeetCode stats
 
-They are runtime integrations handled through:
+They live behind runtime services and APIs instead:
 
 - `backend/src/portfolio/services/githubStatsService.ts`
 - `backend/src/portfolio/services/weatherService.ts`
-- `backend/src/portfolio/services/leetcodeService.ts`
-
-and consumed through:
-
 - `frontend/src/portfolio/api/liveWidgetsApi.ts`
 
-Do not try to hardcode live widget values into portfolio content files.
+Do not hardcode live widget values into content files.

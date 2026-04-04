@@ -5,14 +5,18 @@ bun-debug.log*
 lerna-debug.log*
 
 node_modules
+package-lock.json
 dist
 dist-ssr
+coverage
+playwright-report
+test-results
+*.tsbuildinfo
 # Keep backend build output trackable in git (requested).
 !backend/dist/
 !backend/dist/**
+backend/dist/test/
 *.local
-**/package-lock.json
-**/yarn.lock
 **/.yarnrc.yml
 
 # Editor directories and files

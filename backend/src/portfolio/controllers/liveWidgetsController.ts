@@ -2,7 +2,6 @@ import type { RequestHandler } from "express";
 import axios from "axios";
 import { GITHUB_USERNAME } from "../../config/github";
 import { fetchGitHubStats } from "../services/githubStatsService";
-import { fetchLeetCodeStats } from "../services/leetcodeService";
 import { fetchWeather } from "../services/weatherService";
 
 const INVALID_HEADER_VALUES = new Set(["", "null", "undefined", "unknown"]);
@@ -94,18 +93,6 @@ export const getWeather: RequestHandler = async (req, res) => {
     const message = error instanceof Error ? error.message : "Failed to fetch weather data";
     const statusCode = message === "No location provided" ? 400 : 500;
     console.error("Error fetching weather:", error);
-    res.status(statusCode).json({ error: message });
-  }
-};
-
-export const getLeetCodeStats: RequestHandler = async (_req, res) => {
-  try {
-    const stats = await fetchLeetCodeStats();
-    res.json(stats);
-  } catch (error) {
-    console.error("Error fetching LeetCode stats:", error);
-    const message = error instanceof Error ? error.message : "Failed to fetch LeetCode stats";
-    const statusCode = message === "LEETCODE_USERNAME is not configured" ? 400 : 500;
     res.status(statusCode).json({ error: message });
   }
 };
