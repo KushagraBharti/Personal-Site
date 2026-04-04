@@ -33,7 +33,10 @@ export const useIntroData = () => {
 
     const loadGitHubStats = async () => {
       try {
-        const githubStats = await fetchGitHubStats(controller.signal);
+        const githubStats = await fetchGitHubStats({
+          signal: controller.signal,
+          forceRefresh: true,
+        });
         setData((currentData) => {
           if (!currentData) return currentData;
           return {

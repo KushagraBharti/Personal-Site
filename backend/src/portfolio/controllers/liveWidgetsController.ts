@@ -5,34 +5,43 @@ import { fetchGitHubStats } from "../services/githubStatsService";
 import { fetchLeetCodeStats } from "../services/leetcodeService";
 import { fetchWeather } from "../services/weatherService";
 
+const INVALID_HEADER_VALUES = new Set(["", "null", "undefined", "unknown"]);
+
 const getHeaderValue = (req: Parameters<RequestHandler>[0], name: string) => {
   const value = req.header(name);
-  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const normalized = decodeURIComponent(value).trim();
+  return INVALID_HEADER_VALUES.has(normalized.toLowerCase()) ? undefined : normalized;
 };
+
+const isFiniteCoordinate = (value?: string) =>
+  value !== undefined && Number.isFinite(Number(value));
 
 const resolveWeatherQueryFromRequest = (req: Parameters<RequestHandler>[0]) => {
   const lat = typeof req.query.lat === "string" ? req.query.lat : undefined;
   const lon = typeof req.query.lon === "string" ? req.query.lon : undefined;
   const q = typeof req.query.q === "string" ? req.query.q : undefined;
 
-  if (lat && lon) {
+  if (isFiniteCoordinate(lat) && isFiniteCoordinate(lon)) {
     return { lat, lon };
   }
 
-  if (q) {
+  if (q?.trim()) {
     return { q };
   }
 
   const headerLat = getHeaderValue(req, "x-vercel-ip-latitude");
   const headerLon = getHeaderValue(req, "x-vercel-ip-longitude");
-  if (headerLat && headerLon) {
+  if (isFiniteCoordinate(headerLat) && isFiniteCoordinate(headerLon)) {
     return { lat: headerLat, lon: headerLon };
   }
 
   const city = getHeaderValue(req, "x-vercel-ip-city");
-  const region = getHeaderValue(req, "x-vercel-ip-country-region");
   const country = getHeaderValue(req, "x-vercel-ip-country");
-  const locationParts = [city, region, country].filter(Boolean);
+  const locationParts = [city, country].filter(Boolean);
   if (locationParts.length > 0) {
     return { q: locationParts.join(", ") };
   }
@@ -51,7 +60,9 @@ export const getGitHubStats: RequestHandler = async (req, res) => {
     const stats = await fetchGitHubStats(force);
     res.set(
       "Cache-Control",
-      `public, max-age=${Math.floor(Number(process.env.GITHUB_STATS_TTL_MS || 600000) / 1000)}`
+      force
+        ? "no-store, max-age=0"
+        : `public, max-age=${Math.floor(Number(process.env.GITHUB_STATS_TTL_MS || 600000) / 1000)}`
     );
     res.json(stats);
   } catch (error) {

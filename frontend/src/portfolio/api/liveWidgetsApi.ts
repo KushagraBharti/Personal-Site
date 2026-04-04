@@ -75,10 +75,31 @@ const writeWeatherCache = (key: string, value: WeatherData) => {
 export const getCachedWeather = (query?: { lat: number; lon: number } | { city: string }) =>
   readWeatherCache(getWeatherCacheKey(query));
 
-export const fetchGitHubStats = async (signal?: AbortSignal) => {
+export const clearGitHubStatsCache = () => {
+  githubStatsCache = null;
+  if (!canUseStorage()) return;
+  try {
+    window.sessionStorage.removeItem(GITHUB_STATS_CACHE_KEY);
+  } catch {
+    // Ignore storage failures.
+  }
+};
+
+export const fetchGitHubStats = async (
+  options?: {
+    signal?: AbortSignal;
+    forceRefresh?: boolean;
+  }
+) => {
+  const signal = options?.signal;
+  const forceRefresh = options?.forceRefresh === true;
   const cached = readGitHubStatsCache();
-  if (cached) {
+  if (cached && !forceRefresh) {
     return cached;
+  }
+
+  if (forceRefresh) {
+    clearGitHubStatsCache();
   }
 
   if (!signal && githubStatsPromise) {
@@ -86,7 +107,7 @@ export const fetchGitHubStats = async (signal?: AbortSignal) => {
   }
 
   const request = axios
-    .get<GitHubStats>(`${getApiBaseUrl()}/api/github/stats`, {
+    .get<GitHubStats>(`${getApiBaseUrl()}/api/github/stats${forceRefresh ? "?force=true" : ""}`, {
       signal,
       timeout: 5000,
     })

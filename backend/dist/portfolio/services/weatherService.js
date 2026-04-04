@@ -15,6 +15,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.fetchWeather = void 0;
 const axios_1 = __importDefault(require("axios"));
 const DEFAULT_WEATHER_CITY = "Austin";
+const OPENWEATHER_URL = "https://api.openweathermap.org/data/2.5/weather";
+const isRetryableLocationError = (error) => { var _a; return axios_1.default.isAxiosError(error) && ((_a = error.response) === null || _a === void 0 ? void 0 : _a.status) === 400; };
+const requestWeather = (apiKey, params) => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield axios_1.default.get(OPENWEATHER_URL, {
+        params: Object.assign(Object.assign({}, params), { units: "imperial", appid: apiKey }),
+    });
+    return response.data;
+});
 const fetchWeather = (params) => __awaiter(void 0, void 0, void 0, function* () {
     const apiKey = process.env.OPENWEATHER_API_KEY;
     if (!apiKey) {
@@ -22,20 +30,25 @@ const fetchWeather = (params) => __awaiter(void 0, void 0, void 0, function* () 
     }
     const { lat, lon, q } = params;
     if (lat && lon) {
-        const response = yield axios_1.default.get("https://api.openweathermap.org/data/2.5/weather", {
-            params: { lat, lon, units: "imperial", appid: apiKey },
-        });
-        return response.data;
+        try {
+            return yield requestWeather(apiKey, { lat, lon });
+        }
+        catch (error) {
+            if (!isRetryableLocationError(error)) {
+                throw error;
+            }
+        }
     }
     if (q) {
-        const response = yield axios_1.default.get("https://api.openweathermap.org/data/2.5/weather", {
-            params: { q, units: "imperial", appid: apiKey },
-        });
-        return response.data;
+        try {
+            return yield requestWeather(apiKey, { q });
+        }
+        catch (error) {
+            if (!isRetryableLocationError(error)) {
+                throw error;
+            }
+        }
     }
-    const response = yield axios_1.default.get("https://api.openweathermap.org/data/2.5/weather", {
-        params: { q: DEFAULT_WEATHER_CITY, units: "imperial", appid: apiKey },
-    });
-    return response.data;
+    return requestWeather(apiKey, { q: DEFAULT_WEATHER_CITY });
 });
 exports.fetchWeather = fetchWeather;

@@ -18,29 +18,34 @@ const github_1 = require("../../config/github");
 const githubStatsService_1 = require("../services/githubStatsService");
 const leetcodeService_1 = require("../services/leetcodeService");
 const weatherService_1 = require("../services/weatherService");
+const INVALID_HEADER_VALUES = new Set(["", "null", "undefined", "unknown"]);
 const getHeaderValue = (req, name) => {
     const value = req.header(name);
-    return typeof value === "string" && value.trim() ? value.trim() : undefined;
+    if (typeof value !== "string") {
+        return undefined;
+    }
+    const normalized = decodeURIComponent(value).trim();
+    return INVALID_HEADER_VALUES.has(normalized.toLowerCase()) ? undefined : normalized;
 };
+const isFiniteCoordinate = (value) => value !== undefined && Number.isFinite(Number(value));
 const resolveWeatherQueryFromRequest = (req) => {
     const lat = typeof req.query.lat === "string" ? req.query.lat : undefined;
     const lon = typeof req.query.lon === "string" ? req.query.lon : undefined;
     const q = typeof req.query.q === "string" ? req.query.q : undefined;
-    if (lat && lon) {
+    if (isFiniteCoordinate(lat) && isFiniteCoordinate(lon)) {
         return { lat, lon };
     }
-    if (q) {
+    if (q === null || q === void 0 ? void 0 : q.trim()) {
         return { q };
     }
     const headerLat = getHeaderValue(req, "x-vercel-ip-latitude");
     const headerLon = getHeaderValue(req, "x-vercel-ip-longitude");
-    if (headerLat && headerLon) {
+    if (isFiniteCoordinate(headerLat) && isFiniteCoordinate(headerLon)) {
         return { lat: headerLat, lon: headerLon };
     }
     const city = getHeaderValue(req, "x-vercel-ip-city");
-    const region = getHeaderValue(req, "x-vercel-ip-country-region");
     const country = getHeaderValue(req, "x-vercel-ip-country");
-    const locationParts = [city, region, country].filter(Boolean);
+    const locationParts = [city, country].filter(Boolean);
     if (locationParts.length > 0) {
         return { q: locationParts.join(", ") };
     }
@@ -54,7 +59,9 @@ const getGitHubStats = (req, res) => __awaiter(void 0, void 0, void 0, function*
     try {
         const force = req.query.force === "true";
         const stats = yield (0, githubStatsService_1.fetchGitHubStats)(force);
-        res.set("Cache-Control", `public, max-age=${Math.floor(Number(process.env.GITHUB_STATS_TTL_MS || 600000) / 1000)}`);
+        res.set("Cache-Control", force
+            ? "no-store, max-age=0"
+            : `public, max-age=${Math.floor(Number(process.env.GITHUB_STATS_TTL_MS || 600000) / 1000)}`);
         res.json(stats);
     }
     catch (error) {
