@@ -1,1 +1,1 @@
-export * from "../features/tracker/shared/types";
+export * from "../tracker/shared/types";

@@ -18,8 +18,6 @@ const allowedOrigins = [
   "https://kushagrabharti.com",
 ];
 
-// More useless edits HAHAHAHHA
-
 const vercelRegex = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i;
 const localLanRegex = /^http:\/\/(?:10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[0-1])\.)[0-9.]+:5173$/i;
 const isDev = process.env.NODE_ENV !== "production";
@@ -64,7 +62,6 @@ app.use((req, res, next) => {
 
 // Routes
 app.use(routes);
-
 
 app.get('/', (req, res) => {
   res.send('Backend server is running!');

@@ -1,0 +1,24 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const educationRoutes_1 = __importDefault(require("./educationRoutes"));
+const experienceRoutes_1 = __importDefault(require("./experienceRoutes"));
+const githubRoutes_1 = __importDefault(require("./githubRoutes"));
+const introRoutes_1 = __importDefault(require("./introRoutes"));
+const leetcodeRoutes_1 = __importDefault(require("./leetcodeRoutes"));
+const portfolioRoutes_1 = __importDefault(require("./portfolioRoutes"));
+const projectRoutes_1 = __importDefault(require("./projectRoutes"));
+const weatherRoutes_1 = __importDefault(require("./weatherRoutes"));
+const router = (0, express_1.Router)();
+router.use(projectRoutes_1.default);
+router.use(experienceRoutes_1.default);
+router.use(educationRoutes_1.default);
+router.use(introRoutes_1.default);
+router.use("/github", githubRoutes_1.default);
+router.use("/weather", weatherRoutes_1.default);
+router.use("/leetcode", leetcodeRoutes_1.default);
+router.use(portfolioRoutes_1.default);
+exports.default = router;

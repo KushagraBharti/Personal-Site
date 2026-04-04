@@ -25,7 +25,6 @@ Travel Plans: Visiting Home for summer break!
 
 ### Other Links
 - Film Portfolio: https://drive.google.com/file/d/1m3aFLAK4TE29ybbdOzObLS8zrrX3oJwM/view?usp=sharing
-- Featured Read: https://a16z.com/the-trillion-dollar-ai-software-development-stack/
 
 ## About Me
 
@@ -264,7 +263,7 @@ Highlights:
 - Includes functionality to load maze configurations from a text file, identify the starting point, and print intermediate maze states for real-time progress tracking.
 - Measures execution time to evaluate performance, offering a concise and efficient educational tool for understanding recursive algorithms.
 Tags: Python, Depth-First Search, Recursion, Maze Solving
-GitHub: #
+GitHub: N/A
 
 ### PCB Design Project
 Summary: A Senior Independent Project in 2023 that provided hands-on experience in designing, ordering, and assembling custom PCBs.

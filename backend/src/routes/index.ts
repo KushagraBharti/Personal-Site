@@ -1,10 +1,10 @@
 import { Router } from "express";
-import publicRoutes from "./public";
-import privateRoutes from "./private";
+import portfolioRoutes from "../portfolio/routes";
+import trackerRoutes from "../tracker";
 
 const router = Router();
 
-router.use("/api", publicRoutes);
-router.use("/api/private", privateRoutes);
+router.use("/api", portfolioRoutes);
+router.use("/api/private", trackerRoutes);
 
 export default router;

@@ -4,9 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const public_1 = __importDefault(require("./public"));
-const private_1 = __importDefault(require("./private"));
+const routes_1 = __importDefault(require("../portfolio/routes"));
+const tracker_1 = __importDefault(require("../tracker"));
 const router = (0, express_1.Router)();
-router.use("/api", public_1.default);
-router.use("/api/private", private_1.default);
+router.use("/api", routes_1.default);
+router.use("/api/private", tracker_1.default);
 exports.default = router;

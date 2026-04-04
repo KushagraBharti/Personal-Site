@@ -5,8 +5,8 @@
   "packageManager": "bun@1.2.21",
   "type": "module",
   "scripts": {
-    "dev": "bun run scripts/generate-llms.ts && vite",
-    "build": "bun run scripts/generate-llms.ts && tsc -b && vite build",
+    "dev": "bun run scripts/sync-portfolio-exports.ts && vite",
+    "build": "bun run scripts/sync-portfolio-exports.ts && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

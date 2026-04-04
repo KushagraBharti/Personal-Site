@@ -3,11 +3,11 @@
 import React, { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, useNavigate } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
-import ScrollProgress from "./components/ScrollProgress";
+import ScrollProgress from "./shared/components/app/ScrollProgress";
 
-const Home = lazy(() => import("./pages/Home"));
-const Tracker = lazy(() => import("./pages/Tracker"));
-const AiProfile = lazy(() => import("./pages/AiProfile"));
+const HomePage = lazy(() => import("./portfolio/pages/HomePage"));
+const TrackerPage = lazy(() => import("./tracker/pages/TrackerPage"));
+const AiProfilePage = lazy(() => import("./portfolio/pages/AiProfilePage"));
 
 const GlobalHotkeys: React.FC = () => {
   const navigate = useNavigate();
@@ -42,11 +42,11 @@ const App: React.FC = () => {
             Loading experience...
           </div>
         }
-      >
+        >
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/ai" element={<AiProfile />} />
-          <Route path="/tracker" element={<Tracker />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/ai" element={<AiProfilePage />} />
+          <Route path="/tracker" element={<TrackerPage />} />
         </Routes>
       </Suspense>
     </Router>

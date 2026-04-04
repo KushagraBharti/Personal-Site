@@ -1,0 +1,7 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const liveWidgetsController_1 = require("../controllers/liveWidgetsController");
+const router = (0, express_1.Router)();
+router.get("/stats", liveWidgetsController_1.getGitHubStats);
+exports.default = router;
