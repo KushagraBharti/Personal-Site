@@ -16,6 +16,7 @@ exports.clearGitHubCache = exports.fetchGitHubStats = void 0;
 const axios_1 = __importDefault(require("axios"));
 const github_1 = require("../../config/github");
 const headers = Object.assign({ Accept: "application/vnd.github+json" }, (github_1.GITHUB_TOKEN ? { Authorization: `token ${github_1.GITHUB_TOKEN}` } : {}));
+const graphqlHeaders = Object.assign({ Accept: "application/vnd.github+json" }, (github_1.GITHUB_TOKEN ? { Authorization: `bearer ${github_1.GITHUB_TOKEN}` } : {}));
 const cacheTtlMs = Number(process.env.GITHUB_STATS_TTL_MS || 10 * 60 * 1000); // 10 minutes default
 let cachedStats = null;
 let lastFetched = 0;
@@ -49,6 +50,46 @@ const fetchCommitSearchCount = () => __awaiter(void 0, void 0, void 0, function*
         },
     });
     return Number(((_a = res.data) === null || _a === void 0 ? void 0 : _a.total_count) || 0);
+});
+const fetchCommitContributionCount = (profile) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!github_1.GITHUB_TOKEN) {
+        throw new Error("GITHUB_TOKEN is required for GraphQL commit contributions");
+    }
+    const createdAt = profile.created_at ? new Date(profile.created_at) : new Date();
+    const startYear = createdAt.getUTCFullYear();
+    const currentYear = new Date().getUTCFullYear();
+    const yearlyCounts = yield Promise.all(Array.from({ length: currentYear - startYear + 1 }, (_, index) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a, _b, _c, _d;
+        const year = startYear + index;
+        const from = `${year}-01-01T00:00:00.000Z`;
+        const to = `${year + 1}-01-01T00:00:00.000Z`;
+        const response = yield axios_1.default.post("https://api.github.com/graphql", {
+            query: `
+            query GitHubCommitContributions($login: String!, $from: DateTime!, $to: DateTime!) {
+              user(login: $login) {
+                contributionsCollection(from: $from, to: $to) {
+                  totalCommitContributions
+                }
+              }
+            }
+          `,
+            variables: {
+                login: github_1.GITHUB_USERNAME,
+                from,
+                to,
+            },
+        }, {
+            headers: graphqlHeaders,
+        });
+        if ((_a = response.data.errors) === null || _a === void 0 ? void 0 : _a.length) {
+            throw new Error(response.data.errors
+                .map((error) => error.message)
+                .filter(Boolean)
+                .join("; ") || "GitHub GraphQL commit contributions query failed");
+        }
+        return Number(((_d = (_c = (_b = response.data.data) === null || _b === void 0 ? void 0 : _b.user) === null || _c === void 0 ? void 0 : _c.contributionsCollection) === null || _d === void 0 ? void 0 : _d.totalCommitContributions) || 0);
+    })));
+    return yearlyCounts.reduce((sum, count) => sum + count, 0);
 });
 const getCommitCountForRepo = (owner, repoName) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
@@ -95,10 +136,18 @@ const fetchCommitCountFallback = () => __awaiter(void 0, void 0, void 0, functio
 });
 const refreshGitHubStats = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const [profile, commitSearchCount] = yield Promise.all([
-            fetchUserProfile(),
-            fetchCommitSearchCount(),
-        ]);
+        const profile = yield fetchUserProfile();
+        try {
+            const commitContributionCount = yield fetchCommitContributionCount(profile);
+            return {
+                totalRepos: Number(profile.public_repos || 0),
+                totalCommits: commitContributionCount,
+            };
+        }
+        catch (graphQlError) {
+            console.warn("GitHub GraphQL commit contributions query failed, falling back to commit search.", graphQlError);
+        }
+        const commitSearchCount = yield fetchCommitSearchCount();
         return {
             totalRepos: Number(profile.public_repos || 0),
             totalCommits: commitSearchCount,

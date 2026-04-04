@@ -5,9 +5,14 @@ const headers = {
   Accept: "application/vnd.github+json",
   ...(GITHUB_TOKEN ? { Authorization: `token ${GITHUB_TOKEN}` } : {}),
 };
+const graphqlHeaders = {
+  Accept: "application/vnd.github+json",
+  ...(GITHUB_TOKEN ? { Authorization: `bearer ${GITHUB_TOKEN}` } : {}),
+};
 
 const cacheTtlMs = Number(process.env.GITHUB_STATS_TTL_MS || 10 * 60 * 1000); // 10 minutes default
 type GitHubStatsResult = { totalRepos: number; totalCommits: number };
+type GitHubUserProfile = { public_repos?: number; created_at?: string };
 
 let cachedStats: GitHubStatsResult | null = null;
 let lastFetched = 0;
@@ -29,7 +34,7 @@ const getAllRepos = async () => {
 const fetchUserProfile = async () => {
   const url = `https://api.github.com/users/${GITHUB_USERNAME}`;
   const res = await axios.get(url, { headers });
-  return res.data as { public_repos?: number };
+  return res.data as GitHubUserProfile;
 };
 
 const fetchCommitSearchCount = async () => {
@@ -42,6 +47,72 @@ const fetchCommitSearchCount = async () => {
     },
   });
   return Number(res.data?.total_count || 0);
+};
+
+const fetchCommitContributionCount = async (profile: GitHubUserProfile) => {
+  if (!GITHUB_TOKEN) {
+    throw new Error("GITHUB_TOKEN is required for GraphQL commit contributions");
+  }
+
+  const start = profile.created_at ? new Date(profile.created_at) : new Date();
+  const end = new Date();
+  const yearlyCounts: number[] = [];
+
+  for (let cursor = new Date(start); cursor < end; ) {
+    const next = new Date(cursor);
+    next.setUTCFullYear(next.getUTCFullYear() + 1);
+    const windowEnd = next < end ? next : end;
+    const from = cursor.toISOString();
+    const to = windowEnd.toISOString();
+
+    const response = await axios.post<{
+      data?: {
+        user?: {
+          contributionsCollection?: {
+            totalCommitContributions?: number;
+          };
+        };
+      };
+      errors?: Array<{ message?: string }>;
+    }>(
+      "https://api.github.com/graphql",
+      {
+        query: `
+          query GitHubCommitContributions($login: String!, $from: DateTime!, $to: DateTime!) {
+            user(login: $login) {
+              contributionsCollection(from: $from, to: $to) {
+                totalCommitContributions
+              }
+            }
+          },
+        `,
+        variables: {
+          login: GITHUB_USERNAME,
+          from,
+          to,
+        },
+      },
+      {
+        headers: graphqlHeaders,
+      }
+    );
+
+    if (response.data.errors?.length) {
+      throw new Error(
+        response.data.errors
+          .map((error) => error.message)
+          .filter(Boolean)
+          .join("; ") || "GitHub GraphQL commit contributions query failed"
+      );
+    }
+
+    yearlyCounts.push(
+      Number(response.data.data?.user?.contributionsCollection?.totalCommitContributions || 0)
+    );
+    cursor = windowEnd;
+  }
+
+  return yearlyCounts.reduce((sum, count) => sum + count, 0);
 };
 
 const getCommitCountForRepo = async (owner: string, repoName: string) => {
@@ -105,10 +176,22 @@ const fetchCommitCountFallback = async () => {
 
 const refreshGitHubStats = async (): Promise<GitHubStatsResult> => {
   try {
-    const [profile, commitSearchCount] = await Promise.all([
-      fetchUserProfile(),
-      fetchCommitSearchCount(),
-    ]);
+    const profile = await fetchUserProfile();
+
+    try {
+      const commitContributionCount = await fetchCommitContributionCount(profile);
+      return {
+        totalRepos: Number(profile.public_repos || 0),
+        totalCommits: commitContributionCount,
+      };
+    } catch (graphQlError) {
+      console.warn(
+        "GitHub GraphQL commit contributions query failed, falling back to commit search.",
+        graphQlError
+      );
+    }
+
+    const commitSearchCount = await fetchCommitSearchCount();
 
     return {
       totalRepos: Number(profile.public_repos || 0),
