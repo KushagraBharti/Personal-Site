@@ -57,12 +57,15 @@ cd Personal-Site
 ```bash
 cd frontend
 bun install
+cp .env.local.example .env.local
 ```
 
-Create `frontend/.env.local` with:
+Populate `frontend/.env.local` with:
 
 ```bash
 VITE_API_BASE_URL=http://localhost:5000
+
+# Supabase Config for Hidden Task Manager (can ignore)
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
 ```
@@ -80,7 +83,7 @@ Copy the env file:
 cp .env.example .env
 ```
 
-At minimum, fill in:
+Populate `backend/.env` with:
 
 ```bash
 GITHUB_USERNAME=
@@ -88,10 +91,6 @@ GITHUB_TOKEN=
 LEETCODE_USERNAME=
 OPENWEATHER_API_KEY=
 ```
-
-Defaults such as `PORT` and `GITHUB_STATS_TTL_MS` already live in `backend/.env.example`.
-
-If you want the tracker locally, you will also need the relevant Supabase and Google Calendar variables from `backend/.env.example`.
 
 ### Run locally
 
