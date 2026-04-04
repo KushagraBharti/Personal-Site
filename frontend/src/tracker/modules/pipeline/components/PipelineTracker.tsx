@@ -242,7 +242,7 @@ const PipelineCard: React.FC<{
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={(e) => { e.stopPropagation(); onArchive(); }}
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); onArchive(); }}
             className="neo-btn neo-btn-sm"
             style={{
               background: item.archived ? "var(--neo-lime)" : "transparent",
@@ -254,7 +254,7 @@ const PipelineCard: React.FC<{
           <motion.button
             whileHover={{ scale: 1.1, rotate: 10 }}
             whileTap={{ scale: 0.9 }}
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); onDelete(); }}
             className="neo-btn neo-btn-sm neo-btn-danger"
           >
             🗑️

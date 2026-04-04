@@ -23,7 +23,7 @@ const requiredEnv = (key) => {
         throw new Error(`${key} must be set`);
     return value;
 };
-const base64UrlEncode = (input) => Buffer.from(input)
+const base64UrlEncode = (input) => (typeof input === "string" ? Buffer.from(input, "utf8") : Buffer.from(input))
     .toString("base64")
     .replace(/\+/g, "-")
     .replace(/\//g, "_")

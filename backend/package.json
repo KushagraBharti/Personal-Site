@@ -5,35 +5,35 @@
   "main": "src/server.ts",
   "license": "MIT",
   "dependencies": {
-    "@supabase/supabase-js": "^2.49.1",
-    "axios": "^1.8.4",
-    "cors": "^2.8.5",
-    "express": "^4.21.1"
+    "@supabase/supabase-js": "2.49.1",
+    "axios": "1.8.4",
+    "cors": "2.8.5",
+    "express": "4.21.1"
   },
   "devDependencies": {
-    "@types/connect": "^3.4.38",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.0",
-    "@types/node": "^22.13.14",
-    "@types/supertest": "^7.2.0",
-    "@vitest/coverage-v8": "^4.1.2",
-    "nodemon": "^3.1.9",
-    "supertest": "^7.2.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.2",
-    "vitest": "^4.1.2"
+    "@types/connect": "3.4.38",
+    "@types/cors": "2.8.17",
+    "@types/express": "4.17.21",
+    "@types/node": "22.13.14",
+    "@types/supertest": "7.2.0",
+    "@vitest/coverage-v8": "4.1.2",
+    "nodemon": "3.1.9",
+    "supertest": "7.1.4",
+    "ts-node": "10.9.2",
+    "typescript": "5.8.2",
+    "vitest": "4.1.2"
   },
   "scripts": {
     "start": "node dist/server.js",
-    "dev": "nodemon --exec \"ts-node src/server.ts\"",
-    "serve:test": "ts-node src/server.ts",
-    "build": "tsc",
-    "typecheck": "tsc --noEmit",
-    "lint": "tsc --noEmit",
+    "dev": "bunx nodemon --exec \"bunx ts-node src/server.ts\"",
+    "serve:test": "bunx ts-node src/server.ts",
+    "build": "bunx tsc",
+    "typecheck": "bunx tsc --noEmit",
+    "lint": "bunx tsc --noEmit",
     "test": "bun run test:unit && bun run test:integration",
-    "test:unit": "vitest run --config vitest.unit.config.mts",
-    "test:integration": "vitest run --config vitest.integration.config.mts",
-    "test:coverage": "vitest run --coverage",
-    "test:live": "vitest run --config vitest.live.config.mts"
+    "test:unit": "bunx vitest run --config vitest.unit.config.mts",
+    "test:integration": "bunx vitest run --config vitest.integration.config.mts",
+    "test:coverage": "bunx vitest run --coverage",
+    "test:live": "bunx vitest run --config vitest.live.config.mts"
   }
 }

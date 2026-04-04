@@ -459,7 +459,7 @@ const SnapshotModal: React.FC<{
         exit={{ scale: 0.9, y: 20 }}
         className="neo-card w-full max-w-2xl max-h-[90vh] overflow-auto"
         style={{ background: "var(--neo-yellow)" }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -844,7 +844,7 @@ const TemplateManagerModal: React.FC<{
         exit={{ scale: 0.9, y: 20 }}
         className="neo-card w-full max-w-4xl my-8"
         style={{ background: "var(--neo-pink)" }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
           <div>

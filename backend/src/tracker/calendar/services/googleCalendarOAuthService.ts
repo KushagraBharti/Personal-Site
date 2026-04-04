@@ -11,7 +11,7 @@ const requiredEnv = (key: string) => {
 };
 
 const base64UrlEncode = (input: string | Buffer) =>
-  Buffer.from(input)
+  (typeof input === "string" ? Buffer.from(input, "utf8") : Buffer.from(input))
     .toString("base64")
     .replace(/\+/g, "-")
     .replace(/\//g, "_")

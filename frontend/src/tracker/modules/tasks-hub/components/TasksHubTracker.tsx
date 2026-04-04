@@ -1071,12 +1071,12 @@ const TasksHubTracker: React.FC = () => {
                       if (!canDragList) return;
                       setDraggingListId(list.id);
                     }}
-                    onDragOver={(e) => {
+                    onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
                       if (!canDragList) return;
                       e.preventDefault();
                       setDragOverListId(list.id);
                     }}
-                    onDrop={async (e) => {
+                    onDrop={async (e: React.DragEvent<HTMLDivElement>) => {
                       if (!canDragList) return;
                       e.preventDefault();
                       await handleListDrop(list.id);
@@ -1310,12 +1310,12 @@ const TasksHubTracker: React.FC = () => {
                                 setDraggingTaskId(task.id);
                                 setDraggingParentId(null);
                               }}
-                              onDragOver={(e) => {
+                              onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
                                 if (!canDrag) return;
                                 e.preventDefault();
                                 setDragOverTaskId(task.id);
                               }}
-                              onDrop={async (e) => {
+                              onDrop={async (e: React.DragEvent<HTMLDivElement>) => {
                                 if (!canDrag) return;
                                 e.preventDefault();
                                 await handleTaskDrop(list.id, null, activeRootTasks.map((item) => item.id), task.id);
@@ -1401,12 +1401,12 @@ const TasksHubTracker: React.FC = () => {
                                         setDraggingTaskId(subtask.id);
                                         setDraggingParentId(task.id);
                                       }}
-                                      onDragOver={(e) => {
+                                      onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
                                         if (!canDrag) return;
                                         e.preventDefault();
                                         setDragOverTaskId(subtask.id);
                                       }}
-                                      onDrop={async (e) => {
+                                      onDrop={async (e: React.DragEvent<HTMLDivElement>) => {
                                         if (!canDrag) return;
                                         e.preventDefault();
                                         await handleTaskDrop(list.id, task.id, activeSubtasks.map((item) => item.id), subtask.id);
