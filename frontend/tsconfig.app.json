@@ -22,5 +22,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "../backend/src/portfolio/contracts/**/*.ts"]
+  "include": ["src"]
 }

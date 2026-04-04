@@ -15,10 +15,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.clearGitHubCache = exports.fetchGitHubStats = void 0;
 const axios_1 = __importDefault(require("axios"));
 const github_1 = require("../../config/github");
-const headers = github_1.GITHUB_TOKEN ? { Authorization: `token ${github_1.GITHUB_TOKEN}` } : {};
+const headers = Object.assign({ Accept: "application/vnd.github+json" }, (github_1.GITHUB_TOKEN ? { Authorization: `token ${github_1.GITHUB_TOKEN}` } : {}));
 const cacheTtlMs = Number(process.env.GITHUB_STATS_TTL_MS || 10 * 60 * 1000); // 10 minutes default
 let cachedStats = null;
 let lastFetched = 0;
+let refreshPromise = null;
 const getAllRepos = () => __awaiter(void 0, void 0, void 0, function* () {
     const repos = [];
     let page = 1;
@@ -32,7 +33,23 @@ const getAllRepos = () => __awaiter(void 0, void 0, void 0, function* () {
     }
     return repos;
 });
-// Much cheaper than paginating commits: uses Link header last page to estimate total commits
+const fetchUserProfile = () => __awaiter(void 0, void 0, void 0, function* () {
+    const url = `https://api.github.com/users/${github_1.GITHUB_USERNAME}`;
+    const res = yield axios_1.default.get(url, { headers });
+    return res.data;
+});
+const fetchCommitSearchCount = () => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const url = "https://api.github.com/search/commits";
+    const res = yield axios_1.default.get(url, {
+        headers,
+        params: {
+            q: `author:${github_1.GITHUB_USERNAME}`,
+            per_page: 1,
+        },
+    });
+    return Number(((_a = res.data) === null || _a === void 0 ? void 0 : _a.total_count) || 0);
+});
 const getCommitCountForRepo = (owner, repoName) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const url = `https://api.github.com/repos/${owner}/${repoName}/commits`;
@@ -52,20 +69,78 @@ const getCommitCountForRepo = (owner, repoName) => __awaiter(void 0, void 0, voi
     }
     return ((_b = res.data) === null || _b === void 0 ? void 0 : _b.length) || 0;
 });
+const mapWithConcurrency = (items, concurrency, mapper) => __awaiter(void 0, void 0, void 0, function* () {
+    const results = new Array(items.length);
+    let nextIndex = 0;
+    const worker = () => __awaiter(void 0, void 0, void 0, function* () {
+        while (true) {
+            const currentIndex = nextIndex;
+            nextIndex += 1;
+            if (currentIndex >= items.length) {
+                return;
+            }
+            results[currentIndex] = yield mapper(items[currentIndex]);
+        }
+    });
+    yield Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, () => worker()));
+    return results;
+});
+const fetchCommitCountFallback = () => __awaiter(void 0, void 0, void 0, function* () {
+    const repos = yield getAllRepos();
+    const commitCounts = yield mapWithConcurrency(repos, 6, (repo) => __awaiter(void 0, void 0, void 0, function* () { return getCommitCountForRepo(repo.owner.login, repo.name); }));
+    return {
+        totalRepos: repos.length,
+        totalCommits: commitCounts.reduce((sum, count) => sum + count, 0),
+    };
+});
+const refreshGitHubStats = () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const [profile, commitSearchCount] = yield Promise.all([
+            fetchUserProfile(),
+            fetchCommitSearchCount(),
+        ]);
+        return {
+            totalRepos: Number(profile.public_repos || 0),
+            totalCommits: commitSearchCount,
+        };
+    }
+    catch (error) {
+        console.warn("Primary GitHub stats query failed, falling back to repo walk.", error);
+        return fetchCommitCountFallback();
+    }
+});
 const fetchGitHubStats = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (forceRefresh = false) {
     const now = Date.now();
     if (!forceRefresh && cachedStats && now - lastFetched < cacheTtlMs) {
         return Object.assign(Object.assign({}, cachedStats), { cached: true });
     }
-    const repos = yield getAllRepos();
-    let totalCommits = 0;
-    for (const repo of repos) {
-        const commits = yield getCommitCountForRepo(repo.owner.login, repo.name);
-        totalCommits += commits;
+    if (!forceRefresh && cachedStats && refreshPromise) {
+        return Object.assign(Object.assign({}, cachedStats), { cached: true, stale: true });
     }
-    const result = { totalRepos: repos.length, totalCommits };
+    if (!forceRefresh && cachedStats) {
+        refreshPromise !== null && refreshPromise !== void 0 ? refreshPromise : (refreshPromise = refreshGitHubStats()
+            .then((result) => {
+            cachedStats = result;
+            lastFetched = Date.now();
+            return result;
+        })
+            .finally(() => {
+            refreshPromise = null;
+        }));
+        return Object.assign(Object.assign({}, cachedStats), { cached: true, stale: true });
+    }
+    refreshPromise !== null && refreshPromise !== void 0 ? refreshPromise : (refreshPromise = refreshGitHubStats()
+        .then((result) => {
+        cachedStats = result;
+        lastFetched = Date.now();
+        return result;
+    })
+        .finally(() => {
+        refreshPromise = null;
+    }));
+    const result = yield refreshPromise;
     cachedStats = result;
-    lastFetched = now;
+    lastFetched = Date.now();
     return result;
 });
 exports.fetchGitHubStats = fetchGitHubStats;

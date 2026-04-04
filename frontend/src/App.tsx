@@ -39,7 +39,12 @@ const GlobalHotkeys: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <Router>
+    <Router
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <ScrollProgress />
       <GlobalHotkeys />
       <Analytics />

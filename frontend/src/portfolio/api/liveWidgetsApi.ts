@@ -3,9 +3,12 @@ import { getApiBaseUrl } from "../../shared/lib/apiBaseUrl";
 import type { GitHubStats, LeetCodeStats, WeatherData } from "./contracts";
 
 const GITHUB_STATS_CACHE_KEY = "github-stats-cache-v1";
+const WEATHER_CACHE_PREFIX = "weather-cache-v1:";
 
 let githubStatsCache: GitHubStats | null = null;
 let githubStatsPromise: Promise<GitHubStats> | null = null;
+const weatherCache = new Map<string, WeatherData>();
+const weatherPromises = new Map<string, Promise<WeatherData>>();
 
 const canUseStorage = () => typeof window !== "undefined" && typeof window.sessionStorage !== "undefined";
 
@@ -32,6 +35,38 @@ const writeGitHubStatsCache = (value: GitHubStats) => {
 };
 
 export const getCachedGitHubStats = () => readGitHubStatsCache();
+
+const getWeatherCacheKey = (query: { lat: number; lon: number } | { city: string }) =>
+  "city" in query ? `${WEATHER_CACHE_PREFIX}city:${query.city.toLowerCase()}` : `${WEATHER_CACHE_PREFIX}coords:${query.lat},${query.lon}`;
+
+const readWeatherCache = (key: string) => {
+  const cached = weatherCache.get(key);
+  if (cached) return cached;
+  if (!canUseStorage()) return null;
+  try {
+    const value = window.sessionStorage.getItem(key);
+    const parsed = value ? (JSON.parse(value) as WeatherData) : null;
+    if (parsed) {
+      weatherCache.set(key, parsed);
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+const writeWeatherCache = (key: string, value: WeatherData) => {
+  weatherCache.set(key, value);
+  if (!canUseStorage()) return;
+  try {
+    window.sessionStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Ignore storage failures.
+  }
+};
+
+export const getCachedWeather = (query: { lat: number; lon: number } | { city: string }) =>
+  readWeatherCache(getWeatherCacheKey(query));
 
 export const fetchGitHubStats = async (signal?: AbortSignal) => {
   const cached = readGitHubStatsCache();
@@ -77,13 +112,41 @@ export const fetchWeather = async (
   query: { lat: number; lon: number } | { city: string },
   signal?: AbortSignal
 ) => {
+  const cacheKey = getWeatherCacheKey(query);
+  const cached = readWeatherCache(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  if (!signal) {
+    const inFlight = weatherPromises.get(cacheKey);
+    if (inFlight) {
+      return inFlight;
+    }
+  }
+
   const search =
     "city" in query
       ? `q=${encodeURIComponent(query.city)}`
       : `lat=${query.lat}&lon=${query.lon}`;
-  const response = await axios.get<WeatherData>(`${getApiBaseUrl()}/api/weather?${search}`, {
-    signal,
-    timeout: 4000,
-  });
-  return response.data;
+  const request = axios
+    .get<WeatherData>(`${getApiBaseUrl()}/api/weather?${search}`, {
+      signal,
+      timeout: 4000,
+    })
+    .then((response) => {
+      writeWeatherCache(cacheKey, response.data);
+      return response.data;
+    })
+    .finally(() => {
+      if (!signal) {
+        weatherPromises.delete(cacheKey);
+      }
+    });
+
+  if (!signal) {
+    weatherPromises.set(cacheKey, request);
+  }
+
+  return request;
 };

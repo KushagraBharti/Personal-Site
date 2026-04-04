@@ -6,6 +6,8 @@ import GlassCard from "../../../shared/components/ui/GlassCard";
 import type { PortfolioSocialLink } from "../../api/contracts";
 import IntroAiButtons from "./IntroAiButtons";
 
+const ICON_BASE_COLOR_CLASS = "text-[#1f2937]";
+
 const socialIcons: Record<string, React.ComponentType<{ size?: number }>> = {
   email: FaEnvelope,
   linkedin: FaLinkedin,
@@ -52,7 +54,7 @@ const IntroHero: React.FC<{
               href={link.href}
               target="_blank"
               rel="noopener noreferrer"
-              className={`transition-transform duration-300 hover:scale-110 ${hoverColors[key] ?? ""}`}
+              className={`${ICON_BASE_COLOR_CLASS} transition-transform duration-300 hover:scale-110 ${hoverColors[key] ?? ""}`}
               aria-label={link.label}
             >
               <Icon size={24} />

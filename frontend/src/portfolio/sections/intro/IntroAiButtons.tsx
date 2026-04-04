@@ -3,11 +3,18 @@ import { SiClaude, SiGooglegemini, SiOpenai } from "react-icons/si";
 import type { PortfolioAiProvider } from "../../api/contracts";
 
 const DEFAULT_SITE_URL = "https://www.kushagrabharti.com";
+const ICON_BASE_COLOR_CLASS = "text-[#1f2937]";
 
 const providerIcons = {
   openai: SiOpenai,
   claude: SiClaude,
   gemini: SiGooglegemini,
+} as const;
+
+const providerHoverColorClasses = {
+  openai: "hover:text-[#10a37f]",
+  claude: "hover:text-[#da7756]",
+  gemini: "hover:text-[#4285f4]",
 } as const;
 
 const buildPrompt = (provider: PortfolioAiProvider, siteUrl: string) => {
@@ -49,7 +56,7 @@ const IntroAiButtons: React.FC<{
             key={provider.slug}
             type="button"
             onClick={() => handleClick(provider)}
-            className={`text-white/70 transition-transform duration-300 hover:scale-110 hover:text-inherit cursor-pointer ${provider.hoverColorClass}`}
+            className={`${ICON_BASE_COLOR_CLASS} ${providerHoverColorClasses[provider.icon]} transition-transform duration-300 hover:scale-110 cursor-pointer`}
             aria-label={`Summarize via ${provider.label}`}
             title={
               provider.action.type === "clipboard"
