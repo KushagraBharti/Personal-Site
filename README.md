@@ -65,7 +65,7 @@ Populate `frontend/.env.local` with:
 ```bash
 VITE_API_BASE_URL=http://localhost:5000
 
-# Supabase Config for Hidden Task Manager (can ignore)
+# Optional Supabase Config for Hidden Task Manager (can ignore)
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
 ```
@@ -75,15 +75,10 @@ VITE_SUPABASE_ANON_KEY=
 ```bash
 cd backend
 bun install
-```
-
-Copy the env file:
-
-```bash
 cp .env.example .env
 ```
 
-Populate `backend/.env` with:
+Populate `backend/.env` with atleast:
 
 ```bash
 GITHUB_USERNAME=
