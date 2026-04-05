@@ -3,6 +3,6 @@ declare module "framer-motion" {
 
   export type Variants = Record<string, unknown>;
 
-  export const motion: Record<string, ComponentType<any>>;
+  export const motion: Record<string, ComponentType<Record<string, unknown>>>;
   export const AnimatePresence: ComponentType<{ children?: ReactNode } & Record<string, unknown>>;
 }
