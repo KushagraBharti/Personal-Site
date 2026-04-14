@@ -128,17 +128,6 @@ Link: https://www.sstx.org/boarding/boarding-student-support
 
 ## Projects
 
-### Algorithmic Trading Quantitative Test Environment
-Summary: A modular platform for automated trading strategy development, backtesting, and paper trading.
-Highlights:
-- Fetched 1-year historical AAPL data (2022–2023) via the Alpaca API, saving both raw and processed datasets for reproducibility.
-- Engineered advanced features like rolling moving averages and returns to drive a dynamic 20/50-day Moving Average Crossover strategy.
-- Performed rigorous backtesting with transaction cost modeling to compute key performance metrics (Sharpe Ratio, Max Drawdown, Final Return) and generate detailed trade logs.
-- Integrated with Alpaca's paper trading system to simulate real-time order placement, monitor execution, and validate strategy performance.
-- Developed visualization tools for plotting equity curves and annotating buy/sell signals, enhancing the interpretability of trading insights.
-Tags: Python, Alpaca API, Pandas, NumPy, Matplotlib, scikit-learn, Algorithmic Trading, Backtesting, Paper Trading
-GitHub: https://github.com/KushagraBharti/Quant-Test-Environment
-
 ### Monopoly LLM Benchmark Platform
 Summary: A deterministic, inspectable multi-agent AI simulation where large language models play full Monopoly games under strict rules, enabling reproducible benchmarking, debugging, and research into strategic reasoning and negotiation.
 Highlights:
@@ -152,6 +141,50 @@ Highlights:
 - Designed the system with benchmarking and research in mind, enabling controlled experiments on long-horizon planning, negotiation dynamics, tool-use reliability, auction behavior, and multi-agent strategic reasoning across different LLMs.
 Tags: Python, TypeScript, FastAPI, React, WebSockets, LLMs, Multi-Agent Systems, AI Benchmarking, Game Simulation, Deterministic Systems, OpenRouter, Prompt Engineering, System Design, Research Infrastructure
 GitHub: https://github.com/KushagraBharti/monopoly-llm-benchmark
+
+### Pact
+Summary: A social accountability app where users create goal-based pacts, lock funds in escrow, submit proof, and let a trusted circle of validators decide the outcome.
+Highlights:
+- Built a full-stack accountability product that turns vague self-improvement goals into credible commitments by combining financial stakes, private social pressure, and validator-based resolution.
+- Developed the complete pact lifecycle end to end: users create circles, invite trusted members, define goal-based commitments, lock funds, submit photo proof, and receive approval or rejection through majority validator voting.
+- Implemented a typed backend with authenticated API routes, server-side authorization, and lifecycle enforcement so protected actions never trust client-supplied user identity or pact state.
+- Integrated Supabase Auth, Postgres, and Storage to support user accounts, circle membership, invite flows, commitment records, validator votes, and proof-image uploads in a single durable system.
+- Engineered escrow mechanics on Solana for real stake locking and release flows, while also supporting robust demo and development workflows for testing end-to-end commitment enforcement.
+- Designed Pact as both a mobile and web experience with a dark, high-signal interface focused on commitment status, proof submission, validator transparency, and financial accountability.
+- Built safety and trust constraints directly into the product logic, including validator membership checks, creator exclusion from self-voting, server-verified access control, and majority-based resolution rules.
+- Shipped the project as a working hackathon product that won 1st place in the Solana track at HackSMU, demonstrating a credible consumer fintech concept backed by a real full-stack and on-chain implementation.
+Tags: TypeScript, React Native, Expo, Expo Router, Fastify, Supabase, PostgreSQL, Solana, Web3, SPL Token, Mobile Development, Full-Stack Development, Fintech, Consumer Social, System Design, Hackathon
+GitHub: https://github.com/KushagraBharti/resolve
+
+### AutoHDR ML Lens Correction
+Summary: Built a competition-grade automatic lens-correction pipeline that combines a CNN with analytic camera geometry (Brown–Conrady) for stable, reproducible distortion correction at full resolution.
+Highlights:
+- Built a geometry-first lens-correction system designed for leaderboard-safe, reproducible submissions: predict warp parameters (and optional residual flow), apply a single full-resolution backward warp, validate via proxy/QA gates, and package deterministic submissions.
+- Model architecture: HybridLensCorrectionModel with a ResNet34 backbone and two heads — (1) an MLP predicting Brown–Conrady lens coefficients (k1,k2,k3,p1,p2,dcx,dcy,scale) and (2) a conv decoder predicting a 2-channel residual displacement field for local corrections.
+- Training approach: staged training (param-only → hybrid → finetune) to progressively introduce the residual path while maintaining stability; cloud training ran on NVIDIA H200.
+- Verified quality progression across stages (cloud): proxy_fullres_slice_total_score improved from 0.8851 (stage1) to 0.8942 (stage3), with validation loss reduced 15.66% (0.09398 → 0.07927).
+- Stability hardening: training warnings dropped from 64 in stage1 to 0 in stage2/stage3 (including non-finite warnings 16 → 0).
+- Data scale handled: 23,118 training pairs (46,238 files; 83 lens models; 99 camera models; 5,575 photoshoots) plus a 1,000-image test set.
+- Benchmarking + sizing: fused hybrid warp p50 latency measured at 2.20ms (128×192) and 15.47ms (512×768) with 7.04× scaling; full predictor p50/p95 latency measured at 295.98ms/322.40ms on a 1367×2048 image.
+- End-to-end inference: processed 1,000 cloud test images in hybrid mode with 0 unsafe triggers/fallbacks recorded in the stage3 handoff metadata.
+- Competition outcome: the solution led to a follow-up call with AutoHDR’s founder and CTO to walk through the system design and discuss potential internship/job opportunities.
+- Engineering rigor: 108/108 tests passing (18 files) covering geometry contracts, inference fallback behavior, training hooks, QA tooling, and submission flows; submission zips are deterministic (bit-identical SHA-256 across rebuilds).
+Tags: Computer Vision, Deep Learning, PyTorch, CNNs, ResNet34, Image Geometry, Lens Distortion Correction, Brown–Conrady Model, Optical Flow, Warping / grid_sample, Model Training, Staged Training, Benchmarking, Reproducible Systems, Testing, QA Tooling, Competition Engineering
+GitHub: https://github.com/satvikh/autohdr-lenscorrection
+
+### NovelBench
+Summary: A live multi-stage LLM benchmark and public arena where frontier models generate, critique, revise, and vote on the same creative prompts to evaluate innovation under pressure.
+Highlights:
+- Built a fully solo benchmarking platform that evaluates whether large language models can actually innovate by competing through a structured creative process rather than a single one-shot response.
+- Designed and implemented a durable multi-stage workflow where 2–8 frontier models generate ideas, critique each other anonymously, revise using aggregated feedback, and participate in final voting to determine comparative performance.
+- Engineered the system around replayable runs, append-only events, live traces, and persisted artifacts so every benchmark can be audited, inspected, and revisited instead of disappearing after execution.
+- Built a Convex-backed backend architecture for run orchestration, durable state management, read models, leaderboard snapshots, archive surfaces, usage tracking, and concurrency control across active benchmark executions.
+- Integrated OpenRouter-based model execution and optional research tooling while handling unreliable model behavior through structured output normalization, scoring logic, failure tolerance, and stage-level workflow resilience.
+- Developed anonymous critique and voting systems to reduce model bias and produce more meaningful comparative rankings, making fairness and evaluation quality a core part of the product rather than an afterthought.
+- Created a polished Next.js product surface with a public landing page, live arena, searchable archive, leaderboard views, and detailed run pages that expose the full benchmark process to users and spectators.
+- Launched the platform live with real usage, producing 47 benchmark runs and 194 generated ideas so far, and positioned it as the foundation for a broader AI startup platform focused on ideation, planning, iteration, and execution.
+Tags: TypeScript, Next.js, React, Convex, OpenRouter, LLMs, AI Benchmarking, Workflow Orchestration, Realtime Systems, System Design, Evaluation Infrastructure, Prompt Engineering, Product Engineering, Research Infrastructure, Startup Tools, Solo Project
+GitHub: https://github.com/KushagraBharti/NovelBench
 
 ### PseudoLawyer
 Summary: An AI-powered real-time contract negotiation platform that uses a virtual mediator to resolve disputes and draft bespoke legal agreements.
@@ -175,21 +208,16 @@ Highlights:
 Tags: TypeScript, Node.js, Express, React, Vite, Tailwind CSS, Framer Motion, Bun, Vitest, Playwright, REST API, Full-Stack Development, API Integration, Live Widgets, System Design, Testing
 GitHub: https://github.com/KushagraBharti/Personal-Site
 
-### AutoHDR ML Lens Correction
-Summary: Built a competition-grade automatic lens-correction pipeline that combines a CNN with analytic camera geometry (Brown–Conrady) for stable, reproducible distortion correction at full resolution.
+### F1 Optimization Project
+Summary: A simulation-based F1 race optimization project using reinforcement learning. Built for HackTX-2024, it integrates a custom Pygame-based race environment with a SAC agent from Ray RLlib to optimize driving strategies on a realistic race track.
 Highlights:
-- Built a geometry-first lens-correction system designed for leaderboard-safe, reproducible submissions: predict warp parameters (and optional residual flow), apply a single full-resolution backward warp, validate via proxy/QA gates, and package deterministic submissions.
-- Model architecture: HybridLensCorrectionModel with a ResNet34 backbone and two heads — (1) an MLP predicting Brown–Conrady lens coefficients (k1,k2,k3,p1,p2,dcx,dcy,scale) and (2) a conv decoder predicting a 2-channel residual displacement field for local corrections.
-- Training approach: staged training (param-only → hybrid → finetune) to progressively introduce the residual path while maintaining stability; cloud training ran on NVIDIA H200.
-- Verified quality progression across stages (cloud): proxy_fullres_slice_total_score improved from 0.8851 (stage1) to 0.8942 (stage3), with validation loss reduced 15.66% (0.09398 → 0.07927).
-- Stability hardening: training warnings dropped from 64 in stage1 to 0 in stage2/stage3 (including non-finite warnings 16 → 0).
-- Data scale handled: 23,118 training pairs (46,238 files; 83 lens models; 99 camera models; 5,575 photoshoots) plus a 1,000-image test set.
-- Benchmarking + sizing: fused hybrid warp p50 latency measured at 2.20ms (128×192) and 15.47ms (512×768) with 7.04× scaling; full predictor p50/p95 latency measured at 295.98ms/322.40ms on a 1367×2048 image.
-- End-to-end inference: processed 1,000 cloud test images in hybrid mode with 0 unsafe triggers/fallbacks recorded in the stage3 handoff metadata.
-- Competition outcome: the solution led to a follow-up call with AutoHDR’s founder and CTO to walk through the system design and discuss potential internship/job opportunities.
-- Engineering rigor: 108/108 tests passing (18 files) covering geometry contracts, inference fallback behavior, training hooks, QA tooling, and submission flows; submission zips are deterministic (bit-identical SHA-256 across rebuilds).
-Tags: Computer Vision, Deep Learning, PyTorch, CNNs, ResNet34, Image Geometry, Lens Distortion Correction, Brown–Conrady Model, Optical Flow, Warping / grid_sample, Model Training, Staged Training, Benchmarking, Reproducible Systems, Testing, QA Tooling, Competition Engineering
-GitHub: https://github.com/satvikh/autohdr-lenscorrection
+- Developed a custom Gymnasium environment ('Race') that simulates an F1 track using Pygame and OpenCV for track extraction.
+- Implemented a Car class with sensor-based perception (echo sensors) to inform both heuristic and RL-based control strategies.
+- Integrated Ray Tune and RLlib's SACTrainer for training an RL agent, with functionality to restore from checkpoints and export training artifacts.
+- Provided both manual control mode (via keyboard input) and an echo-heuristic agent for testing and debugging.
+- Although the codebase contains extra legacy and experimental code snippets, the core functionality demonstrates effective application of RL in a simulated racing context.
+Tags: Reinforcement Learning, Ray RLlib, Pygame, OpenCV, Simulation, F1, Optimization, HackTX 2024, Gymnasium
+GitHub: https://github.com/KushagraBharti/HackTX-2024---F1-Optimization
 
 ### Kaggle Titanic ML
 Summary: Predicted Titanic survival using machine learning. This project involved extensive data cleaning, feature engineering, and model evaluation using various algorithms, with a comprehensive PDF outlining all my learnings.
@@ -201,16 +229,26 @@ Highlights:
 Tags: Machine Learning, Kaggle, Titanic, Data Analysis, Python, Pandas, scikit-learn, EDA, Feature Engineering, Random Forest
 GitHub: https://github.com/KushagraBharti/Kaggle-Titanic-Solution
 
-### F1 Optimization Project
-Summary: A simulation-based F1 race optimization project using reinforcement learning. Built for HackTX-2024, it integrates a custom Pygame-based race environment with a SAC agent from Ray RLlib to optimize driving strategies on a realistic race track.
+### Algorithmic Trading Quantitative Test Environment
+Summary: A modular platform for automated trading strategy development, backtesting, and paper trading.
 Highlights:
-- Developed a custom Gymnasium environment ('Race') that simulates an F1 track using Pygame and OpenCV for track extraction.
-- Implemented a Car class with sensor-based perception (echo sensors) to inform both heuristic and RL-based control strategies.
-- Integrated Ray Tune and RLlib's SACTrainer for training an RL agent, with functionality to restore from checkpoints and export training artifacts.
-- Provided both manual control mode (via keyboard input) and an echo-heuristic agent for testing and debugging.
-- Although the codebase contains extra legacy and experimental code snippets, the core functionality demonstrates effective application of RL in a simulated racing context.
-Tags: Reinforcement Learning, Ray RLlib, Pygame, OpenCV, Simulation, F1, Optimization, HackTX 2024, Gymnasium
-GitHub: https://github.com/KushagraBharti/HackTX-2024---F1-Optimization
+- Fetched 1-year historical AAPL data (2022–2023) via the Alpaca API, saving both raw and processed datasets for reproducibility.
+- Engineered advanced features like rolling moving averages and returns to drive a dynamic 20/50-day Moving Average Crossover strategy.
+- Performed rigorous backtesting with transaction cost modeling to compute key performance metrics (Sharpe Ratio, Max Drawdown, Final Return) and generate detailed trade logs.
+- Integrated with Alpaca's paper trading system to simulate real-time order placement, monitor execution, and validate strategy performance.
+- Developed visualization tools for plotting equity curves and annotating buy/sell signals, enhancing the interpretability of trading insights.
+Tags: Python, Alpaca API, Pandas, NumPy, Matplotlib, scikit-learn, Algorithmic Trading, Backtesting, Paper Trading
+GitHub: https://github.com/KushagraBharti/Quant-Test-Environment
+
+### Age & Gender Recognition
+Summary: Real-time face detection with age and gender prediction using OpenCV and Caffe models.
+Highlights:
+- Developed a real-time system that leverages OpenCV’s dnn module to detect faces in live video streams and dynamically annotate them.
+- Utilized pre-trained Caffe models for age and gender classification, achieving approximately 71% accuracy for gender and 62% for age predictions.
+- Optimized detection by fine-tuning confidence thresholds and applying padding to accurately extract facial regions.
+- Integrated a robust pipeline that draws bounding boxes and overlays prediction labels on faces for intuitive visual feedback.
+Tags: Python, OpenCV, DNN, Caffe, Face Detection, Real-Time Processing
+GitHub: https://github.com/KushagraBharti/Gender-Age-Detection
 
 ### DataDrive: Unified Insights for Data & Fuel Optimization
 Summary: A full-stack AI-driven analytics platform that integrates advanced ML models, real-time data observability, and interactive visualizations for fuel optimization.
@@ -234,16 +272,6 @@ Highlights:
 Tags: Python, YOLOv5, Flask, OpenCV, Computer Vision, Canny Edge Detection, Hough Transform
 GitHub: https://github.com/Hteam121/circuit-seer
 
-### Age & Gender Recognition
-Summary: Real-time face detection with age and gender prediction using OpenCV and Caffe models.
-Highlights:
-- Developed a real-time system that leverages OpenCV’s dnn module to detect faces in live video streams and dynamically annotate them.
-- Utilized pre-trained Caffe models for age and gender classification, achieving approximately 71% accuracy for gender and 62% for age predictions.
-- Optimized detection by fine-tuning confidence thresholds and applying padding to accurately extract facial regions.
-- Integrated a robust pipeline that draws bounding boxes and overlays prediction labels on faces for intuitive visual feedback.
-Tags: Python, OpenCV, DNN, Caffe, Face Detection, Real-Time Processing
-GitHub: https://github.com/KushagraBharti/Gender-Age-Detection
-
 ### Point Cloud Down Sampler
 Summary: A dual-approach tool for reducing dense point clouds via custom voxelization and Open3D’s high-performance voxel grid method.
 Highlights:
@@ -253,16 +281,6 @@ Highlights:
 - Demonstrated versatility by comparing a from-scratch implementation with a state-of-the-art library approach to optimize for both accuracy and processing speed.
 Tags: Python, Pandas, Open3D, Voxelization, Point Cloud, Downsampling, Math Modeling
 GitHub: https://github.com/KushagraBharti/PointCloud-DownSampler
-
-### Maze Traversal
-Summary: A recursive depth-first search maze-solving algorithm in Python.
-Highlights:
-- Implemented a Maze_Crawler class that solves a maze represented as a nested list using recursion and DFS.
-- The algorithm marks the solution path with directional arrows (v, ^, >, <) to visually trace the route from the start ('S') to the exit ('E').
-- Includes functionality to load maze configurations from a text file, identify the starting point, and print intermediate maze states for real-time progress tracking.
-- Measures execution time to evaluate performance, offering a concise and efficient educational tool for understanding recursive algorithms.
-Tags: Python, Depth-First Search, Recursion, Maze Solving
-GitHub: N/A
 
 ### PCB Design Project
 Summary: A Senior Independent Project in 2023 that provided hands-on experience in designing, ordering, and assembling custom PCBs.
@@ -281,4 +299,14 @@ Highlights:
 - Tore apart an RC car, rebuilt its interior with an Arduino Uno and motor shield, and rewired all components (including integrating ultrasonic sensors and new soldering) for improved functionality.
 - Developed C++ code that reads ultrasonic sensor data to implement an obstacle detection and avoidance algorithm, enabling autonomous navigation through complex environments.
 Tags: Arduino, C++, Self-Driving, Autonomous Vehicle, RC Car, Electronics, Ultrasonic Sensors, Hardware
+GitHub: N/A
+
+### Maze Traversal
+Summary: A recursive depth-first search maze-solving algorithm in Python.
+Highlights:
+- Implemented a Maze_Crawler class that solves a maze represented as a nested list using recursion and DFS.
+- The algorithm marks the solution path with directional arrows (v, ^, >, <) to visually trace the route from the start ('S') to the exit ('E').
+- Includes functionality to load maze configurations from a text file, identify the starting point, and print intermediate maze states for real-time progress tracking.
+- Measures execution time to evaluate performance, offering a concise and efficient educational tool for understanding recursive algorithms.
+Tags: Python, Depth-First Search, Recursion, Maze Solving
 GitHub: N/A
