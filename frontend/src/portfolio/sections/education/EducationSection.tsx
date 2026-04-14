@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { useTypewriter, Cursor } from "react-simple-typewriter";
 import GlassCard from "../../../shared/components/ui/GlassCard";
-import { fetchEducation } from "../../api/portfolioApi";
+import { fetchEducation, getCachedPortfolioSnapshot } from "../../api/portfolioApi";
 import type { PortfolioEducation } from "../../api/contracts";
 
 const leftColumnVariants: Variants = {
@@ -16,15 +16,9 @@ const rightColumnVariants: Variants = {
 };
 
 const Education: React.FC = () => {
-  const [education, setEducation] = useState<PortfolioEducation[]>(() => {
-    const cached = sessionStorage.getItem("education-cache");
-    if (!cached) return [];
-    try {
-      return JSON.parse(cached) as PortfolioEducation[];
-    } catch {
-      return [];
-    }
-  });
+  const [education, setEducation] = useState<PortfolioEducation[]>(
+    () => getCachedPortfolioSnapshot()?.education ?? []
+  );
   const [selectedEducation, setSelectedEducation] = useState<PortfolioEducation | null>(null);
 
   // Fetch education data on mount
@@ -35,7 +29,6 @@ const Education: React.FC = () => {
       try {
         const response = await fetchEducation(controller.signal);
         setEducation(response);
-        sessionStorage.setItem("education-cache", JSON.stringify(response));
       } catch (error) {
         if (!controller.signal.aborted) {
           console.error("Error fetching education:", error);

@@ -8,8 +8,9 @@ import type {
   PortfolioSnapshot,
 } from "./contracts";
 
-const PORTFOLIO_SNAPSHOT_CACHE_KEY = "portfolio-snapshot-cache-v1";
-const INTRO_RESPONSE_CACHE_KEY = "portfolio-intro-cache-v1";
+const PORTFOLIO_CACHE_VERSION = "v2";
+const PORTFOLIO_SNAPSHOT_CACHE_KEY = `portfolio-snapshot-cache-${PORTFOLIO_CACHE_VERSION}`;
+const INTRO_RESPONSE_CACHE_KEY = `portfolio-intro-cache-${PORTFOLIO_CACHE_VERSION}`;
 
 let snapshotCache: PortfolioSnapshot | null = null;
 let snapshotPromise: Promise<PortfolioSnapshot> | null = null;
@@ -51,10 +52,6 @@ export const getCachedIntroSection = () => {
 
 export const fetchPortfolioSnapshot = async (signal?: AbortSignal) => {
   const cached = getCachedPortfolioSnapshot();
-  if (cached) {
-    return cached;
-  }
-
   if (!signal && snapshotPromise) {
     return snapshotPromise;
   }
@@ -65,6 +62,12 @@ export const fetchPortfolioSnapshot = async (signal?: AbortSignal) => {
       snapshotCache = response.data;
       writeSessionStorage(PORTFOLIO_SNAPSHOT_CACHE_KEY, response.data);
       return response.data;
+    })
+    .catch((error) => {
+      if (cached) {
+        return cached;
+      }
+      throw error;
     })
     .finally(() => {
       if (!signal) {
@@ -81,10 +84,6 @@ export const fetchPortfolioSnapshot = async (signal?: AbortSignal) => {
 
 export const fetchIntroSection = async (signal?: AbortSignal) => {
   const cached = getCachedIntroSection();
-  if (cached) {
-    return cached;
-  }
-
   if (!signal && introPromise) {
     return introPromise;
   }
@@ -95,6 +94,12 @@ export const fetchIntroSection = async (signal?: AbortSignal) => {
       introCache = response.data;
       writeSessionStorage(INTRO_RESPONSE_CACHE_KEY, response.data);
       return response.data;
+    })
+    .catch((error) => {
+      if (cached) {
+        return cached;
+      }
+      throw error;
     })
     .finally(() => {
       if (!signal) {

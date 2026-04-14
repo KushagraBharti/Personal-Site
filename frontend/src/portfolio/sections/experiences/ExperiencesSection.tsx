@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { useTypewriter, Cursor } from "react-simple-typewriter";
 import GlassCard from "../../../shared/components/ui/GlassCard";
-import { fetchExperiences } from "../../api/portfolioApi";
+import { fetchExperiences, getCachedPortfolioSnapshot } from "../../api/portfolioApi";
 import type { PortfolioExperience } from "../../api/contracts";
 
 // Animation variants for left and right columns (desktop)
@@ -17,15 +17,9 @@ const rightColumnVariants: Variants = {
 };
 
 const Experiences: React.FC = () => {
-  const [experiences, setExperiences] = useState<PortfolioExperience[]>(() => {
-    const cached = sessionStorage.getItem("experiences-cache");
-    if (!cached) return [];
-    try {
-      return JSON.parse(cached) as PortfolioExperience[];
-    } catch {
-      return [];
-    }
-  });
+  const [experiences, setExperiences] = useState<PortfolioExperience[]>(
+    () => getCachedPortfolioSnapshot()?.experiences ?? []
+  );
   const [selectedExperience, setSelectedExperience] = useState<PortfolioExperience | null>(null);
 
   // Fetch experiences from backend
@@ -36,7 +30,6 @@ const Experiences: React.FC = () => {
       try {
         const response = await fetchExperiences(controller.signal);
         setExperiences(response);
-        sessionStorage.setItem("experiences-cache", JSON.stringify(response));
       } catch (error) {
         if (!controller.signal.aborted) {
           console.error("Error fetching experiences:", error);

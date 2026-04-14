@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { useTypewriter, Cursor } from "react-simple-typewriter";
 import GlassCard from "../../../shared/components/ui/GlassCard";
-import { fetchProjects } from "../../api/portfolioApi";
+import { fetchProjects, getCachedPortfolioSnapshot } from "../../api/portfolioApi";
 import type { PortfolioProject } from "../../api/contracts";
 
 const leftColumnVariants: Variants = {
@@ -16,15 +16,9 @@ const rightColumnVariants: Variants = {
 };
 
 const Projects: React.FC = () => {
-  const [projects, setProjects] = useState<PortfolioProject[]>(() => {
-    const cached = sessionStorage.getItem("projects-cache");
-    if (!cached) return [];
-    try {
-      return JSON.parse(cached) as PortfolioProject[];
-    } catch {
-      return [];
-    }
-  });
+  const [projects, setProjects] = useState<PortfolioProject[]>(
+    () => getCachedPortfolioSnapshot()?.projects ?? []
+  );
   const [selectedProject, setSelectedProject] = useState<PortfolioProject | null>(null);
 
   // Fetch projects from backend
@@ -35,7 +29,6 @@ const Projects: React.FC = () => {
       try {
         const response = await fetchProjects(controller.signal);
         setProjects(response);
-        sessionStorage.setItem("projects-cache", JSON.stringify(response));
       } catch (error) {
         if (!controller.signal.aborted) {
           console.error("Error fetching projects:", error);

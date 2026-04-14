@@ -173,7 +173,7 @@ exports.portfolioProjects = [
             "AI Agents",
         ],
         githubLink: "https://github.com/KushagraBharti/PseudoLawyer",
-        thumbnail: "/portfolio/projects/pseudo-lawyer.svg",
+        thumbnail: "/portfolio/projects/pseudo-lawyer.png",
     },
     {
         slug: "personal-site",
