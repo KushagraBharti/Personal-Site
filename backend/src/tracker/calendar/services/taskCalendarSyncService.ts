@@ -87,6 +87,11 @@ const getRawErrorMessage = (error: unknown) => {
   return String(error);
 };
 
+const isMissingProjectionSchemaError = (error: unknown) => {
+  const message = getRawErrorMessage(error).toLowerCase();
+  return message.includes("tracker_task_google_projection_event_links") && message.includes("schema cache");
+};
+
 const formatSyncErrorMessage = (error: unknown) => {
   const err = error as any;
   const status = err?.response?.status;
@@ -264,14 +269,19 @@ const getProjectionLinksByTaskId = async (
   userId: string,
   taskId: string
 ) => {
-  const { data, error } = await supabaseAdmin
-    .from("tracker_task_google_projection_event_links")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("task_id", taskId)
-    .order("projection_index", { ascending: true });
-  if (error) throw new Error(error.message);
-  return (data ?? []) as TrackerTaskGoogleProjectionEventLinkRow[];
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("tracker_task_google_projection_event_links")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("task_id", taskId)
+      .order("projection_index", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []) as TrackerTaskGoogleProjectionEventLinkRow[];
+  } catch (error) {
+    if (isMissingProjectionSchemaError(error)) return [];
+    throw error;
+  }
 };
 
 const getProjectionLinkByEvent = async (
@@ -280,14 +290,19 @@ const getProjectionLinkByEvent = async (
   calendarId: string,
   googleEventId: string
 ) => {
-  const { data } = await supabaseAdmin
-    .from("tracker_task_google_projection_event_links")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("calendar_id", calendarId)
-    .eq("google_event_id", googleEventId)
-    .maybeSingle();
-  return (data as TrackerTaskGoogleProjectionEventLinkRow | null) ?? null;
+  try {
+    const { data } = await supabaseAdmin
+      .from("tracker_task_google_projection_event_links")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("calendar_id", calendarId)
+      .eq("google_event_id", googleEventId)
+      .maybeSingle();
+    return (data as TrackerTaskGoogleProjectionEventLinkRow | null) ?? null;
+  } catch (error) {
+    if (isMissingProjectionSchemaError(error)) return null;
+    throw error;
+  }
 };
 
 const upsertLink = async (
@@ -337,25 +352,30 @@ const upsertProjectionLink = async (
     isDeleted?: boolean;
   }
 ) => {
-  const { error } = await supabaseAdmin
-    .from("tracker_task_google_projection_event_links")
-    .upsert(
-      {
-        user_id: input.userId,
-        task_id: input.taskId,
-        calendar_id: input.calendarId,
-        google_event_id: input.googleEventId,
-        projection_index: input.projectionIndex,
-        projected_due_at: input.projectedDueAt,
-        google_event_etag: input.etag ?? null,
-        google_event_updated_at: input.googleUpdatedAt ?? null,
-        last_synced_task_updated_at: input.lastSyncedTaskUpdatedAt ?? null,
-        last_sync_source: input.lastSyncSource ?? "system",
-        is_deleted: input.isDeleted ?? false,
-      },
-      { onConflict: "user_id,task_id,projection_index" }
-    );
-  if (error) throw new Error(error.message);
+  try {
+    const { error } = await supabaseAdmin
+      .from("tracker_task_google_projection_event_links")
+      .upsert(
+        {
+          user_id: input.userId,
+          task_id: input.taskId,
+          calendar_id: input.calendarId,
+          google_event_id: input.googleEventId,
+          projection_index: input.projectionIndex,
+          projected_due_at: input.projectedDueAt,
+          google_event_etag: input.etag ?? null,
+          google_event_updated_at: input.googleUpdatedAt ?? null,
+          last_synced_task_updated_at: input.lastSyncedTaskUpdatedAt ?? null,
+          last_sync_source: input.lastSyncSource ?? "system",
+          is_deleted: input.isDeleted ?? false,
+        },
+        { onConflict: "user_id,task_id,projection_index" }
+      );
+    if (error) throw new Error(error.message);
+  } catch (error) {
+    if (isMissingProjectionSchemaError(error)) return;
+    throw error;
+  }
 };
 
 const markProjectionLinkDeleted = async (
@@ -364,16 +384,21 @@ const markProjectionLinkDeleted = async (
   lastSyncSource: "app" | "google" | "system",
   lastSyncedTaskUpdatedAt?: string | null
 ) => {
-  const { error } = await supabaseAdmin
-    .from("tracker_task_google_projection_event_links")
-    .update({
-      is_deleted: true,
-      last_sync_source: lastSyncSource,
-      last_synced_task_updated_at: lastSyncedTaskUpdatedAt ?? nowIso(),
-      updated_at: nowIso(),
-    })
-    .eq("id", linkId);
-  if (error) throw new Error(error.message);
+  try {
+    const { error } = await supabaseAdmin
+      .from("tracker_task_google_projection_event_links")
+      .update({
+        is_deleted: true,
+        last_sync_source: lastSyncSource,
+        last_synced_task_updated_at: lastSyncedTaskUpdatedAt ?? nowIso(),
+        updated_at: nowIso(),
+      })
+      .eq("id", linkId);
+    if (error) throw new Error(error.message);
+  } catch (error) {
+    if (isMissingProjectionSchemaError(error)) return;
+    throw error;
+  }
 };
 
 const setConnectionHealth = async (
@@ -1188,12 +1213,16 @@ const processHardResetClearPageJob = async (supabaseAdmin: SupabaseClient, job: 
       .eq("calendar_id", calendarId)
       .in("google_event_id", eventIds);
 
-    await supabaseAdmin
-      .from("tracker_task_google_projection_event_links")
-      .update({ is_deleted: true, last_sync_source: "system" })
-      .eq("user_id", job.user_id)
-      .eq("calendar_id", calendarId)
-      .in("google_event_id", eventIds);
+    try {
+      await supabaseAdmin
+        .from("tracker_task_google_projection_event_links")
+        .update({ is_deleted: true, last_sync_source: "system" })
+        .eq("user_id", job.user_id)
+        .eq("calendar_id", calendarId)
+        .in("google_event_id", eventIds);
+    } catch (error) {
+      if (!isMissingProjectionSchemaError(error)) throw error;
+    }
   }
 
   await enqueueSyncJob(supabaseAdmin, {
@@ -1713,10 +1742,14 @@ export const disconnectGoogleCalendarForUser = async (supabaseAdmin: SupabaseCli
     .eq("user_id", userId);
 
   await supabaseAdmin.from("tracker_task_google_event_links").delete().eq("user_id", userId);
-  await supabaseAdmin
-    .from("tracker_task_google_projection_event_links")
-    .delete()
-    .eq("user_id", userId);
+  try {
+    await supabaseAdmin
+      .from("tracker_task_google_projection_event_links")
+      .delete()
+      .eq("user_id", userId);
+  } catch (error) {
+    if (!isMissingProjectionSchemaError(error)) throw error;
+  }
 };
 
 export const renewExpiringCalendarWatches = async (input?: { userId?: string }) => {
