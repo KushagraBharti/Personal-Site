@@ -3,9 +3,9 @@ import { DateTime } from "luxon";
 import {
   createTask,
   createTaskList,
+  deleteTaskListViaApi,
   disconnectCalendar,
   deleteTask,
-  deleteTaskList,
   fetchSortPreferences,
   fetchTaskLists,
   fetchTasks,
@@ -470,9 +470,14 @@ export const useTasksHubModule = () => {
 
   const removeList = useCallback(
     async (listId: string) => {
-      const result = await deleteTaskList(supabase, userId, listId);
-      if (result.error) {
-        setErrorMessage(result.error.message || "Failed to delete list.");
+      if (!session?.access_token) {
+        setErrorMessage("Missing session token.");
+        return false;
+      }
+      try {
+        await deleteTaskListViaApi(session.access_token, listId);
+      } catch (error) {
+        setErrorMessage(error instanceof Error ? error.message : "Failed to delete list.");
         return false;
       }
 
@@ -485,7 +490,7 @@ export const useTasksHubModule = () => {
       setErrorMessage("");
       return true;
     },
-    [selectedListId, supabase, userId]
+    [selectedListId, session?.access_token]
   );
 
   const pollSyncRun = useCallback(

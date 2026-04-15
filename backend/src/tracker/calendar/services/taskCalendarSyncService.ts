@@ -1864,6 +1864,14 @@ export const getCalendarStatusForUser = async (supabaseAdmin: SupabaseClient, us
     }
   }
 
+  if (connectionRow?.last_error && isMissingProjectionSchemaError(connectionRow.last_error)) {
+    connectionRow = {
+      ...connectionRow,
+      last_error: null,
+    };
+    await setConnectionHealth(supabaseAdmin, userId, { last_error: null }).catch(() => {});
+  }
+
   return {
     connected: !!connectionRow && !!secretsRow?.refresh_token_encrypted,
     connection: connectionRow,

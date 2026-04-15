@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  deleteTaskListViaApi,
   getCalendarStatus,
   getGoogleConnectUrl,
   getCalendarSyncProgress,
@@ -58,5 +59,26 @@ describe("tasks-hub API", () => {
     await expect(getGoogleConnectUrl("token")).rejects.toThrow("Failed to generate Google connect URL");
     await expect(triggerCalendarSyncNow("token")).rejects.toThrow("Failed to sync calendar");
     await expect(getCalendarSyncProgress("token", "run-1")).rejects.toThrow("Failed to fetch sync progress");
+  });
+
+  it("calls the backend delete-list endpoint with auth", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ ok: true }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await deleteTaskListViaApi("token", "list-1");
+
+    expect(result).toEqual({ ok: true });
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/api/private/lists/list-1"),
+      expect.objectContaining({
+        method: "DELETE",
+        headers: expect.objectContaining({
+          Authorization: "Bearer token",
+        }),
+      })
+    );
   });
 });

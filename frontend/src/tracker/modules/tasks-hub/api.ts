@@ -124,6 +124,21 @@ export const deleteTaskList = async (client: SupabaseClient, userId: string, lis
   return { error };
 };
 
+export const deleteTaskListViaApi = async (
+  accessToken: string,
+  listId: string
+): Promise<{ ok: boolean }> => {
+  const res = await fetch(`${API_BASE}/api/private/lists/${encodeURIComponent(listId)}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Failed to delete list");
+  }
+  return res.json();
+};
+
 export const createTask = async (client: SupabaseClient, payload: TaskCreateInput) => {
   let { data, error } = await client
     .from("tracker_tasks")

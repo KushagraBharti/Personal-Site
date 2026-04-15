@@ -1555,6 +1555,10 @@ const getCalendarStatusForUser = (supabaseAdmin, userId) => __awaiter(void 0, vo
             yield setConnectionHealth(supabaseAdmin, userId, { last_error: message }).catch(() => { });
         }
     }
+    if ((connectionRow === null || connectionRow === void 0 ? void 0 : connectionRow.last_error) && isMissingProjectionSchemaError(connectionRow.last_error)) {
+        connectionRow = Object.assign(Object.assign({}, connectionRow), { last_error: null });
+        yield setConnectionHealth(supabaseAdmin, userId, { last_error: null }).catch(() => { });
+    }
     return {
         connected: !!connectionRow && !!(secretsRow === null || secretsRow === void 0 ? void 0 : secretsRow.refresh_token_encrypted),
         connection: connectionRow,
