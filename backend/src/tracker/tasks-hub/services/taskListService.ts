@@ -110,6 +110,13 @@ export const deleteTaskListForUser = async (
   if (sortPrefError) throw new Error(sortPrefError.message);
 
   if (taskIds.length > 0) {
+    const { error: clearParentRefsError } = await supabaseAdmin
+      .from("tracker_tasks")
+      .update({ parent_task_id: null })
+      .eq("user_id", userId)
+      .in("parent_task_id", taskIds);
+    if (clearParentRefsError) throw new Error(clearParentRefsError.message);
+
     try {
       const { error: projectionLinkError } = await supabaseAdmin
         .from("tracker_task_google_projection_event_links")
