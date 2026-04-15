@@ -12,13 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fetchGoogleUserEmail = exports.listGoogleEventsPage = exports.listGoogleEventsDelta = exports.deleteGoogleEvent = exports.patchGoogleEvent = exports.insertGoogleEvent = exports.stopGoogleCalendarWatch = exports.upsertGoogleCalendarWatch = exports.ensureTasksCalendar = exports.updateGoogleCalendarSummary = exports.getGoogleCalendar = exports.createGoogleCalendar = exports.listGoogleCalendars = exports.getValidGoogleAccessToken = exports.loadCalendarConnection = exports.hashChannelToken = exports.taskIdToDeterministicGoogleEventId = exports.taskToGoogleEventPayload = exports.googleEventToTaskTimeZone = exports.googleEventToTaskDueAtIso = exports.isDateOnlyIso = exports.TRACKER_TASKS_CALENDAR_SUMMARY = void 0;
+exports.fetchGoogleUserEmail = exports.listGoogleEventsPage = exports.listGoogleEventsDelta = exports.deleteGoogleEvent = exports.patchGoogleEvent = exports.insertGoogleEvent = exports.stopGoogleCalendarWatch = exports.upsertGoogleCalendarWatch = exports.ensureTasksCalendar = exports.updateGoogleCalendarSummary = exports.getGoogleCalendar = exports.createGoogleCalendar = exports.listGoogleCalendars = exports.getValidGoogleAccessToken = exports.loadCalendarConnection = exports.hashChannelToken = exports.googleEventToTrackerProjectionIndex = exports.googleEventToTrackerEventKind = exports.taskProjectionToDeterministicGoogleEventId = exports.taskIdToDeterministicGoogleEventId = exports.taskToGoogleEventPayload = exports.googleEventToTaskTimeZone = exports.googleEventToTaskDueAtIso = exports.TRACKER_TASKS_CALENDAR_SUMMARY = void 0;
 const axios_1 = __importDefault(require("axios"));
 const crypto_1 = require("crypto");
 const encryptionService_1 = require("../../shared/services/encryptionService");
+const taskCalendarEventUtils_1 = require("./taskCalendarEventUtils");
 const GOOGLE_CALENDAR_API_BASE = "https://www.googleapis.com/calendar/v3";
 const GOOGLE_OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
-const DATE_ONLY_MARKER_MS = 777;
 const DEFAULT_TIMED_EVENT_DURATION_MS = 30 * 60 * 1000;
 const GOOGLE_EVENT_TIMEZONE = process.env.GOOGLE_EVENT_TIMEZONE || "UTC";
 const GOOGLE_API_TIMEOUT_MS = Number(process.env.GOOGLE_API_TIMEOUT_MS || 4500);
@@ -50,54 +50,12 @@ const resolveEventTimeZone = (taskTimeZone) => {
         return GOOGLE_EVENT_TIMEZONE;
     return "UTC";
 };
-const buildRRule = (task) => {
-    var _a, _b;
-    if (task.recurrence_type === "none")
-        return undefined;
-    const parts = [];
-    if (task.recurrence_type === "daily") {
-        parts.push("FREQ=DAILY");
-    }
-    else if (task.recurrence_type === "weekly") {
-        parts.push("FREQ=WEEKLY");
-    }
-    else if (task.recurrence_type === "biweekly") {
-        parts.push("FREQ=WEEKLY", "INTERVAL=2");
-    }
-    else {
-        const interval = Math.max((_a = task.recurrence_interval) !== null && _a !== void 0 ? _a : 1, 1);
-        const unit = (_b = task.recurrence_unit) !== null && _b !== void 0 ? _b : "day";
-        if (unit === "day")
-            parts.push("FREQ=DAILY");
-        if (unit === "week")
-            parts.push("FREQ=WEEKLY");
-        if (unit === "month")
-            parts.push("FREQ=MONTHLY");
-        parts.push(`INTERVAL=${interval}`);
-    }
-    if (task.recurrence_ends_at) {
-        const end = new Date(task.recurrence_ends_at);
-        if (!Number.isNaN(end.getTime())) {
-            parts.push(`UNTIL=${toIsoUtcNoMs(end).replace(/[-:]/g, "")}`);
-        }
-    }
-    return parts.length ? [`RRULE:${parts.join(";")}`] : undefined;
-};
 const dueAtToDatePart = (isoString) => {
     const d = new Date(isoString);
     if (Number.isNaN(d.getTime()))
         return null;
     return d.toISOString().slice(0, 10);
 };
-const isDateOnlyIso = (isoString) => {
-    if (!isoString)
-        return false;
-    const parsed = new Date(isoString);
-    if (Number.isNaN(parsed.getTime()))
-        return false;
-    return parsed.getMilliseconds() === DATE_ONLY_MARKER_MS;
-};
-exports.isDateOnlyIso = isDateOnlyIso;
 const googleEventToTaskDueAtIso = (event) => {
     const start = event === null || event === void 0 ? void 0 : event.start;
     if (!start)
@@ -106,7 +64,7 @@ const googleEventToTaskDueAtIso = (event) => {
         const parsed = new Date(`${start.date}T12:00:00.000Z`);
         if (Number.isNaN(parsed.getTime()))
             return null;
-        parsed.setMilliseconds(DATE_ONLY_MARKER_MS);
+        parsed.setMilliseconds(taskCalendarEventUtils_1.DATE_ONLY_MARKER_MS);
         return parsed.toISOString();
     }
     if (start.dateTime) {
@@ -127,22 +85,35 @@ const googleEventToTaskTimeZone = (event) => {
     return isValidIanaTimeZone(candidate) ? candidate : null;
 };
 exports.googleEventToTaskTimeZone = googleEventToTaskTimeZone;
-const taskToGoogleEventPayload = (task) => {
+const buildTrackerEventMetadata = (input) => ({
+    tracker_task_id: input.task.id,
+    tracker_user_id: input.task.user_id,
+    tracker_parent_task_id: input.task.parent_task_id || "",
+    tracker_event_kind: input.eventKind,
+    tracker_projection_index: input.eventKind === "projection" && typeof input.projectionIndex === "number"
+        ? String(input.projectionIndex)
+        : "",
+});
+const taskToGoogleEventPayload = (task, options) => {
+    var _a, _b, _c;
+    const dueAt = (_a = options === null || options === void 0 ? void 0 : options.dueAt) !== null && _a !== void 0 ? _a : task.due_at;
+    const titleMode = (_b = options === null || options === void 0 ? void 0 : options.titleMode) !== null && _b !== void 0 ? _b : "default";
+    const eventKind = (_c = options === null || options === void 0 ? void 0 : options.eventKind) !== null && _c !== void 0 ? _c : "primary";
     const payload = {
-        summary: task.title,
+        summary: (0, taskCalendarEventUtils_1.formatTaskEventTitle)(task.title, titleMode),
         description: task.details || "",
         extendedProperties: {
-            private: {
-                tracker_task_id: task.id,
-                tracker_user_id: task.user_id,
-                tracker_parent_task_id: task.parent_task_id || "",
-            },
+            private: buildTrackerEventMetadata({
+                task,
+                eventKind,
+                projectionIndex: options === null || options === void 0 ? void 0 : options.projectionIndex,
+            }),
         },
     };
     const eventTimeZone = resolveEventTimeZone(task.due_timezone);
-    if (task.due_at) {
-        if ((0, exports.isDateOnlyIso)(task.due_at)) {
-            const datePart = dueAtToDatePart(task.due_at);
+    if (dueAt) {
+        if ((0, taskCalendarEventUtils_1.isDateOnlyIso)(dueAt)) {
+            const datePart = dueAtToDatePart(dueAt);
             if (datePart) {
                 const nextDay = new Date(`${datePart}T00:00:00.000Z`);
                 nextDay.setUTCDate(nextDay.getUTCDate() + 1);
@@ -151,17 +122,13 @@ const taskToGoogleEventPayload = (task) => {
             }
         }
         else {
-            const start = new Date(task.due_at);
+            const start = new Date(dueAt);
             if (!Number.isNaN(start.getTime())) {
                 const end = new Date(start.getTime() + DEFAULT_TIMED_EVENT_DURATION_MS);
                 payload.start = { dateTime: start.toISOString(), timeZone: eventTimeZone };
                 payload.end = { dateTime: end.toISOString(), timeZone: eventTimeZone };
             }
         }
-    }
-    const recurrence = buildRRule(task);
-    if (recurrence) {
-        payload.recurrence = recurrence;
     }
     return payload;
 };
@@ -171,6 +138,26 @@ const taskIdToDeterministicGoogleEventId = (taskId) => {
     return `trk${digest}`;
 };
 exports.taskIdToDeterministicGoogleEventId = taskIdToDeterministicGoogleEventId;
+const taskProjectionToDeterministicGoogleEventId = (taskId, projectionIndex) => {
+    const digest = (0, crypto_1.createHash)("sha1")
+        .update(`${taskId}:projection:${projectionIndex}`)
+        .digest("hex");
+    return `trkp${digest}`;
+};
+exports.taskProjectionToDeterministicGoogleEventId = taskProjectionToDeterministicGoogleEventId;
+const googleEventToTrackerEventKind = (event) => {
+    var _a, _b;
+    const rawKind = (_b = (_a = event === null || event === void 0 ? void 0 : event.extendedProperties) === null || _a === void 0 ? void 0 : _a.private) === null || _b === void 0 ? void 0 : _b.tracker_event_kind;
+    return rawKind === "projection" ? "projection" : "primary";
+};
+exports.googleEventToTrackerEventKind = googleEventToTrackerEventKind;
+const googleEventToTrackerProjectionIndex = (event) => {
+    var _a, _b;
+    const rawIndex = (_b = (_a = event === null || event === void 0 ? void 0 : event.extendedProperties) === null || _a === void 0 ? void 0 : _a.private) === null || _b === void 0 ? void 0 : _b.tracker_projection_index;
+    const parsed = Number(rawIndex);
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+};
+exports.googleEventToTrackerProjectionIndex = googleEventToTrackerProjectionIndex;
 const authedRequest = (accessToken, config) => __awaiter(void 0, void 0, void 0, function* () {
     const response = yield axios_1.default.request(Object.assign(Object.assign({}, config), { timeout: GOOGLE_API_TIMEOUT_MS, headers: Object.assign(Object.assign({}, (config.headers || {})), { Authorization: `Bearer ${accessToken}` }) }));
     return response.data;

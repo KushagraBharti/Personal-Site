@@ -89,7 +89,13 @@ const getRawErrorMessage = (error: unknown) => {
 
 const isMissingProjectionSchemaError = (error: unknown) => {
   const message = getRawErrorMessage(error).toLowerCase();
-  return message.includes("tracker_task_google_projection_event_links") && message.includes("schema cache");
+  if (!message.includes("tracker_task_google_projection_event_links")) return false;
+  return (
+    message.includes("schema cache") ||
+    message.includes("does not exist") ||
+    message.includes("relation") ||
+    message.includes("not found")
+  );
 };
 
 const formatSyncErrorMessage = (error: unknown) => {
@@ -1693,12 +1699,16 @@ export const rebuildCalendarLegacyInlineForUser = async (
         .eq("calendar_id", calendarId)
         .in("google_event_id", deletedIds);
 
-      await supabaseAdmin
-        .from("tracker_task_google_projection_event_links")
-        .update({ is_deleted: true, last_sync_source: "system" })
-        .eq("user_id", userId)
-        .eq("calendar_id", calendarId)
-        .in("google_event_id", deletedIds);
+      try {
+        await supabaseAdmin
+          .from("tracker_task_google_projection_event_links")
+          .update({ is_deleted: true, last_sync_source: "system" })
+          .eq("user_id", userId)
+          .eq("calendar_id", calendarId)
+          .in("google_event_id", deletedIds);
+      } catch (error) {
+        if (!isMissingProjectionSchemaError(error)) throw error;
+      }
     }
   }
 

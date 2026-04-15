@@ -9,11 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.normalizeDueAtForSync = exports.inferLanesForRunMode = exports.getSyncRunDebug = exports.getSyncProgressForRun = exports.getCalendarStatusForUser = exports.upsertListSyncSetting = exports.listUserSyncEnabledLists = exports.renewExpiringCalendarWatches = exports.disconnectGoogleCalendarForUser = exports.isCalendarRebuildSchemaUnavailable = exports.rebuildCalendarLegacyInlineForUser = exports.upsertGoogleConnectionFromOAuth = exports.queueLivePumpForUser = exports.runLegacyManualSyncForUser = exports.queueManualSyncForUser = exports.queueRebuildRunForUser = exports.queueReconcileRunForUser = exports.queueFullBackfill = exports.processCalendarSyncJobs = exports.renewCalendarWatchForUser = void 0;
+exports.normalizeDueAtForSync = exports.inferLanesForRunMode = exports.getSyncRunDebug = exports.getSyncProgressForRun = exports.getCalendarStatusForUser = exports.upsertListSyncSetting = exports.listUserSyncEnabledLists = exports.renewExpiringCalendarWatches = exports.disconnectGoogleCalendarForUser = exports.isCalendarRebuildSchemaUnavailable = exports.rebuildCalendarLegacyInlineForUser = exports.upsertGoogleConnectionFromOAuth = exports.queueLivePumpForUser = exports.runLegacyManualSyncForUser = exports.queueManualSyncForUser = exports.queueRebuildRunForUser = exports.queueReconcileRunForUser = exports.queueFullBackfill = exports.processCalendarSyncJobs = exports.renewCalendarWatchForUser = exports.processTaskDeleteJob = exports.processTaskUpsertJob = void 0;
 const crypto_1 = require("crypto");
 const calendarSyncQueueService_1 = require("./calendarSyncQueueService");
 const googleCalendarApiService_1 = require("./googleCalendarApiService");
 const encryptionService_1 = require("../../shared/services/encryptionService");
+const taskCalendarEventUtils_1 = require("./taskCalendarEventUtils");
 const GOOGLE_WEBHOOK_URL = () => {
     const value = process.env.GOOGLE_WEBHOOK_URL;
     if (!value)
@@ -48,6 +49,15 @@ const getRawErrorMessage = (error) => {
         return String((_a = error.message) !== null && _a !== void 0 ? _a : "");
     }
     return String(error);
+};
+const isMissingProjectionSchemaError = (error) => {
+    const message = getRawErrorMessage(error).toLowerCase();
+    if (!message.includes("tracker_task_google_projection_event_links"))
+        return false;
+    return (message.includes("schema cache") ||
+        message.includes("does not exist") ||
+        message.includes("relation") ||
+        message.includes("not found"));
 };
 const formatSyncErrorMessage = (error) => {
     var _a, _b, _c, _d, _e, _f, _g, _h;
@@ -187,6 +197,42 @@ const getLinkByEvent = (supabaseAdmin, userId, calendarId, googleEventId) => __a
         .maybeSingle();
     return data;
 });
+const getProjectionLinksByTaskId = (supabaseAdmin, userId, taskId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { data, error } = yield supabaseAdmin
+            .from("tracker_task_google_projection_event_links")
+            .select("*")
+            .eq("user_id", userId)
+            .eq("task_id", taskId)
+            .order("projection_index", { ascending: true });
+        if (error)
+            throw new Error(error.message);
+        return (data !== null && data !== void 0 ? data : []);
+    }
+    catch (error) {
+        if (isMissingProjectionSchemaError(error))
+            return [];
+        throw error;
+    }
+});
+const getProjectionLinkByEvent = (supabaseAdmin, userId, calendarId, googleEventId) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { data } = yield supabaseAdmin
+            .from("tracker_task_google_projection_event_links")
+            .select("*")
+            .eq("user_id", userId)
+            .eq("calendar_id", calendarId)
+            .eq("google_event_id", googleEventId)
+            .maybeSingle();
+        return (_a = data) !== null && _a !== void 0 ? _a : null;
+    }
+    catch (error) {
+        if (isMissingProjectionSchemaError(error))
+            return null;
+        throw error;
+    }
+});
 const upsertLink = (supabaseAdmin, input) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e;
     const { error } = yield supabaseAdmin.from("tracker_task_google_event_links").upsert({
@@ -203,6 +249,53 @@ const upsertLink = (supabaseAdmin, input) => __awaiter(void 0, void 0, void 0, f
     if (error)
         throw new Error(error.message);
 });
+const upsertProjectionLink = (supabaseAdmin, input) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d, _e;
+    try {
+        const { error } = yield supabaseAdmin
+            .from("tracker_task_google_projection_event_links")
+            .upsert({
+            user_id: input.userId,
+            task_id: input.taskId,
+            calendar_id: input.calendarId,
+            google_event_id: input.googleEventId,
+            projection_index: input.projectionIndex,
+            projected_due_at: input.projectedDueAt,
+            google_event_etag: (_a = input.etag) !== null && _a !== void 0 ? _a : null,
+            google_event_updated_at: (_b = input.googleUpdatedAt) !== null && _b !== void 0 ? _b : null,
+            last_synced_task_updated_at: (_c = input.lastSyncedTaskUpdatedAt) !== null && _c !== void 0 ? _c : null,
+            last_sync_source: (_d = input.lastSyncSource) !== null && _d !== void 0 ? _d : "system",
+            is_deleted: (_e = input.isDeleted) !== null && _e !== void 0 ? _e : false,
+        }, { onConflict: "user_id,task_id,projection_index" });
+        if (error)
+            throw new Error(error.message);
+    }
+    catch (error) {
+        if (isMissingProjectionSchemaError(error))
+            return;
+        throw error;
+    }
+});
+const markProjectionLinkDeleted = (supabaseAdmin, linkId, lastSyncSource, lastSyncedTaskUpdatedAt) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { error } = yield supabaseAdmin
+            .from("tracker_task_google_projection_event_links")
+            .update({
+            is_deleted: true,
+            last_sync_source: lastSyncSource,
+            last_synced_task_updated_at: lastSyncedTaskUpdatedAt !== null && lastSyncedTaskUpdatedAt !== void 0 ? lastSyncedTaskUpdatedAt : nowIso(),
+            updated_at: nowIso(),
+        })
+            .eq("id", linkId);
+        if (error)
+            throw new Error(error.message);
+    }
+    catch (error) {
+        if (isMissingProjectionSchemaError(error))
+            return;
+        throw error;
+    }
+});
 const setConnectionHealth = (supabaseAdmin, userId, values) => __awaiter(void 0, void 0, void 0, function* () {
     const { error } = yield supabaseAdmin
         .from("tracker_google_calendar_connections_public")
@@ -211,7 +304,9 @@ const setConnectionHealth = (supabaseAdmin, userId, values) => __awaiter(void 0,
     if (error)
         throw new Error(error.message);
 });
-const shouldSyncTask = (task, listEnabled) => listEnabled && !task.is_completed && !!task.due_at;
+const shouldRetainPrimaryCalendarEvent = (task, listEnabled) => listEnabled && !!task.due_at && (!task.is_completed || !(0, taskCalendarEventUtils_1.isRecurringTask)(task));
+const shouldRetainProjectedCalendarEvents = (task, listEnabled) => listEnabled && !!task.due_at && !task.is_completed && (0, taskCalendarEventUtils_1.isRecurringTask)(task);
+const shouldMarkCompletedNonRecurringTask = (task) => task.is_completed && !(0, taskCalendarEventUtils_1.isRecurringTask)(task);
 const createSyncRun = (supabaseAdmin, userId, mode) => __awaiter(void 0, void 0, void 0, function* () {
     const runId = createRunId(mode);
     const { error } = yield supabaseAdmin.from("tracker_google_sync_runs").insert({
@@ -311,8 +406,192 @@ const enqueueTaskDelete = (input) => __awaiter(void 0, void 0, void 0, function*
         dedupeKey: input.dedupeKey,
     });
 });
-const processTaskUpsertJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
+const deletePrimaryEventLink = (input) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!input.link || input.link.is_deleted)
+        return;
+    try {
+        yield (0, googleCalendarApiService_1.deleteGoogleEvent)(input.accessToken, input.link.calendar_id, input.link.google_event_id);
+    }
+    catch (error) {
+        if (!isGoogleNotFoundError(error))
+            throw error;
+    }
+    yield upsertLink(input.supabaseAdmin, {
+        userId: input.task.user_id,
+        taskId: input.task.id,
+        calendarId: input.link.calendar_id,
+        googleEventId: input.link.google_event_id,
+        etag: input.link.google_event_etag,
+        googleUpdatedAt: input.link.google_event_updated_at,
+        lastSyncedTaskUpdatedAt: input.task.updated_at,
+        lastSyncSource: "app",
+        isDeleted: true,
+    });
+});
+const deleteProjectionEventLink = (input) => __awaiter(void 0, void 0, void 0, function* () {
+    if (input.link.is_deleted)
+        return;
+    try {
+        yield (0, googleCalendarApiService_1.deleteGoogleEvent)(input.accessToken, input.link.calendar_id, input.link.google_event_id);
+    }
+    catch (error) {
+        if (!isGoogleNotFoundError(error))
+            throw error;
+    }
+    yield markProjectionLinkDeleted(input.supabaseAdmin, input.link.id, "app", input.task.updated_at);
+});
+const syncPrimaryEventForTask = (input) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f;
+    const titleMode = shouldMarkCompletedNonRecurringTask(input.task) ? "done" : "default";
+    const eventPayload = (0, googleCalendarApiService_1.taskToGoogleEventPayload)(input.task, {
+        titleMode,
+        eventKind: "primary",
+    });
+    if (!eventPayload.start)
+        return;
+    if (input.existingLink && !input.existingLink.is_deleted) {
+        try {
+            const patched = yield (0, googleCalendarApiService_1.patchGoogleEvent)(input.accessToken, input.existingLink.calendar_id, input.existingLink.google_event_id, eventPayload);
+            yield upsertLink(input.supabaseAdmin, {
+                userId: input.task.user_id,
+                taskId: input.task.id,
+                calendarId: input.existingLink.calendar_id,
+                googleEventId: input.existingLink.google_event_id,
+                etag: (_a = patched.etag) !== null && _a !== void 0 ? _a : null,
+                googleUpdatedAt: (_b = patched.updated) !== null && _b !== void 0 ? _b : nowIso(),
+                lastSyncedTaskUpdatedAt: input.task.updated_at,
+                lastSyncSource: "app",
+                isDeleted: false,
+            });
+            return;
+        }
+        catch (error) {
+            if (!isGoogleNotFoundError(error))
+                throw error;
+        }
+    }
+    const deterministicEventId = (0, googleCalendarApiService_1.taskIdToDeterministicGoogleEventId)(input.task.id);
+    try {
+        const inserted = yield (0, googleCalendarApiService_1.insertGoogleEvent)(input.accessToken, input.calendarId, Object.assign(Object.assign({}, eventPayload), { id: deterministicEventId }));
+        yield upsertLink(input.supabaseAdmin, {
+            userId: input.task.user_id,
+            taskId: input.task.id,
+            calendarId: input.calendarId,
+            googleEventId: inserted.id,
+            etag: (_c = inserted.etag) !== null && _c !== void 0 ? _c : null,
+            googleUpdatedAt: (_d = inserted.updated) !== null && _d !== void 0 ? _d : nowIso(),
+            lastSyncedTaskUpdatedAt: input.task.updated_at,
+            lastSyncSource: "app",
+            isDeleted: false,
+        });
+        return;
+    }
+    catch (error) {
+        if (!isGoogleConflictError(error))
+            throw error;
+    }
+    const patched = yield (0, googleCalendarApiService_1.patchGoogleEvent)(input.accessToken, input.calendarId, deterministicEventId, eventPayload);
+    yield upsertLink(input.supabaseAdmin, {
+        userId: input.task.user_id,
+        taskId: input.task.id,
+        calendarId: input.calendarId,
+        googleEventId: deterministicEventId,
+        etag: (_e = patched.etag) !== null && _e !== void 0 ? _e : null,
+        googleUpdatedAt: (_f = patched.updated) !== null && _f !== void 0 ? _f : nowIso(),
+        lastSyncedTaskUpdatedAt: input.task.updated_at,
+        lastSyncSource: "app",
+        isDeleted: false,
+    });
+});
+const syncProjectedEventsForTask = (input) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d, _e, _f, _g;
+    const desiredProjections = (0, taskCalendarEventUtils_1.buildRecurringProjectionDueAts)(input.task);
+    const desiredByIndex = new Map(desiredProjections.map((projection) => [projection.projectionIndex, projection]));
+    const existingLinks = yield getProjectionLinksByTaskId(input.supabaseAdmin, input.task.user_id, input.task.id);
+    for (const existingLink of existingLinks) {
+        if (existingLink.is_deleted)
+            continue;
+        if (desiredByIndex.has(existingLink.projection_index))
+            continue;
+        yield deleteProjectionEventLink({
+            supabaseAdmin: input.supabaseAdmin,
+            accessToken: input.accessToken,
+            task: input.task,
+            link: existingLink,
+        });
+    }
+    for (const projection of desiredProjections) {
+        const eventPayload = (0, googleCalendarApiService_1.taskToGoogleEventPayload)(input.task, {
+            dueAt: projection.dueAt,
+            titleMode: "upcoming",
+            eventKind: "projection",
+            projectionIndex: projection.projectionIndex,
+        });
+        if (!eventPayload.start)
+            continue;
+        const existingLink = (_a = existingLinks.find((item) => item.projection_index === projection.projectionIndex)) !== null && _a !== void 0 ? _a : null;
+        if (existingLink && !existingLink.is_deleted) {
+            try {
+                const patched = yield (0, googleCalendarApiService_1.patchGoogleEvent)(input.accessToken, existingLink.calendar_id, existingLink.google_event_id, eventPayload);
+                yield upsertProjectionLink(input.supabaseAdmin, {
+                    userId: input.task.user_id,
+                    taskId: input.task.id,
+                    calendarId: existingLink.calendar_id,
+                    googleEventId: existingLink.google_event_id,
+                    projectionIndex: projection.projectionIndex,
+                    projectedDueAt: projection.dueAt,
+                    etag: (_b = patched.etag) !== null && _b !== void 0 ? _b : null,
+                    googleUpdatedAt: (_c = patched.updated) !== null && _c !== void 0 ? _c : nowIso(),
+                    lastSyncedTaskUpdatedAt: input.task.updated_at,
+                    lastSyncSource: "app",
+                    isDeleted: false,
+                });
+                continue;
+            }
+            catch (error) {
+                if (!isGoogleNotFoundError(error))
+                    throw error;
+            }
+        }
+        const deterministicEventId = (0, googleCalendarApiService_1.taskProjectionToDeterministicGoogleEventId)(input.task.id, projection.projectionIndex);
+        try {
+            const inserted = yield (0, googleCalendarApiService_1.insertGoogleEvent)(input.accessToken, input.calendarId, Object.assign(Object.assign({}, eventPayload), { id: deterministicEventId }));
+            yield upsertProjectionLink(input.supabaseAdmin, {
+                userId: input.task.user_id,
+                taskId: input.task.id,
+                calendarId: input.calendarId,
+                googleEventId: inserted.id,
+                projectionIndex: projection.projectionIndex,
+                projectedDueAt: projection.dueAt,
+                etag: (_d = inserted.etag) !== null && _d !== void 0 ? _d : null,
+                googleUpdatedAt: (_e = inserted.updated) !== null && _e !== void 0 ? _e : nowIso(),
+                lastSyncedTaskUpdatedAt: input.task.updated_at,
+                lastSyncSource: "app",
+                isDeleted: false,
+            });
+            continue;
+        }
+        catch (error) {
+            if (!isGoogleConflictError(error))
+                throw error;
+        }
+        const patched = yield (0, googleCalendarApiService_1.patchGoogleEvent)(input.accessToken, input.calendarId, deterministicEventId, eventPayload);
+        yield upsertProjectionLink(input.supabaseAdmin, {
+            userId: input.task.user_id,
+            taskId: input.task.id,
+            calendarId: input.calendarId,
+            googleEventId: deterministicEventId,
+            projectionIndex: projection.projectionIndex,
+            projectedDueAt: projection.dueAt,
+            etag: (_f = patched.etag) !== null && _f !== void 0 ? _f : null,
+            googleUpdatedAt: (_g = patched.updated) !== null && _g !== void 0 ? _g : nowIso(),
+            lastSyncedTaskUpdatedAt: input.task.updated_at,
+            lastSyncSource: "app",
+            isDeleted: false,
+        });
+    }
+});
+const processTaskUpsertJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
     if (!job.task_id)
         return;
     const task = yield getTaskById(supabaseAdmin, job.user_id, job.task_id);
@@ -324,119 +603,89 @@ const processTaskUpsertJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
     if (!calendarId)
         return;
     const existingLink = yield getLinkByTaskId(supabaseAdmin, job.user_id, task.id);
-    if (!shouldSyncTask(task, listEnabled)) {
-        if (existingLink && !existingLink.is_deleted) {
-            try {
-                yield (0, googleCalendarApiService_1.deleteGoogleEvent)(accessToken, existingLink.calendar_id, existingLink.google_event_id);
-            }
-            catch (_g) {
-                // best effort
-            }
-            yield upsertLink(supabaseAdmin, {
-                userId: job.user_id,
-                taskId: task.id,
-                calendarId: existingLink.calendar_id,
-                googleEventId: existingLink.google_event_id,
-                etag: existingLink.google_event_etag,
-                googleUpdatedAt: existingLink.google_event_updated_at,
-                lastSyncedTaskUpdatedAt: task.updated_at,
-                lastSyncSource: "app",
-                isDeleted: true,
-            });
-        }
-        return;
-    }
-    const eventPayload = (0, googleCalendarApiService_1.taskToGoogleEventPayload)(task);
-    if (!eventPayload.start)
-        return;
-    if (existingLink && !existingLink.is_deleted) {
-        try {
-            const patched = yield (0, googleCalendarApiService_1.patchGoogleEvent)(accessToken, existingLink.calendar_id, existingLink.google_event_id, eventPayload);
-            yield upsertLink(supabaseAdmin, {
-                userId: job.user_id,
-                taskId: task.id,
-                calendarId: existingLink.calendar_id,
-                googleEventId: existingLink.google_event_id,
-                etag: (_a = patched.etag) !== null && _a !== void 0 ? _a : null,
-                googleUpdatedAt: (_b = patched.updated) !== null && _b !== void 0 ? _b : nowIso(),
-                lastSyncedTaskUpdatedAt: task.updated_at,
-                lastSyncSource: "app",
-                isDeleted: false,
-            });
-            return;
-        }
-        catch (error) {
-            if (!isGoogleNotFoundError(error))
-                throw error;
-        }
-    }
-    const deterministicEventId = (0, googleCalendarApiService_1.taskIdToDeterministicGoogleEventId)(task.id);
-    try {
-        const inserted = yield (0, googleCalendarApiService_1.insertGoogleEvent)(accessToken, calendarId, Object.assign(Object.assign({}, eventPayload), { id: deterministicEventId }));
-        yield upsertLink(supabaseAdmin, {
-            userId: job.user_id,
-            taskId: task.id,
+    if (shouldRetainPrimaryCalendarEvent(task, listEnabled)) {
+        yield syncPrimaryEventForTask({
+            supabaseAdmin,
+            accessToken,
             calendarId,
-            googleEventId: inserted.id,
-            etag: (_c = inserted.etag) !== null && _c !== void 0 ? _c : null,
-            googleUpdatedAt: (_d = inserted.updated) !== null && _d !== void 0 ? _d : nowIso(),
-            lastSyncedTaskUpdatedAt: task.updated_at,
-            lastSyncSource: "app",
-            isDeleted: false,
+            task,
+            existingLink,
+        });
+    }
+    else {
+        yield deletePrimaryEventLink({
+            supabaseAdmin,
+            accessToken,
+            task,
+            link: existingLink,
+        });
+    }
+    if (shouldRetainProjectedCalendarEvents(task, listEnabled)) {
+        yield syncProjectedEventsForTask({
+            supabaseAdmin,
+            accessToken,
+            calendarId,
+            task,
         });
         return;
     }
-    catch (error) {
-        if (!isGoogleConflictError(error))
-            throw error;
+    const projectionLinks = yield getProjectionLinksByTaskId(supabaseAdmin, job.user_id, task.id);
+    for (const projectionLink of projectionLinks) {
+        yield deleteProjectionEventLink({
+            supabaseAdmin,
+            accessToken,
+            task,
+            link: projectionLink,
+        });
     }
-    const patched = yield (0, googleCalendarApiService_1.patchGoogleEvent)(accessToken, calendarId, deterministicEventId, eventPayload);
-    yield upsertLink(supabaseAdmin, {
-        userId: job.user_id,
-        taskId: task.id,
-        calendarId,
-        googleEventId: deterministicEventId,
-        etag: (_e = patched.etag) !== null && _e !== void 0 ? _e : null,
-        googleUpdatedAt: (_f = patched.updated) !== null && _f !== void 0 ? _f : nowIso(),
-        lastSyncedTaskUpdatedAt: task.updated_at,
-        lastSyncSource: "app",
-        isDeleted: false,
-    });
 });
+exports.processTaskUpsertJob = processTaskUpsertJob;
 const processTaskDeleteJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const payloadEventId = getJobStringPayload(job, "google_event_id");
     const payloadCalendarId = getJobStringPayload(job, "calendar_id");
     let googleEventId = job.google_event_id || payloadEventId || null;
     let calendarId = payloadCalendarId || null;
     let link = null;
+    let projectionLink = null;
+    let projectionLinks = [];
     if (job.task_id) {
         link = yield getLinkByTaskId(supabaseAdmin, job.user_id, job.task_id);
         if (!googleEventId && (link === null || link === void 0 ? void 0 : link.google_event_id))
             googleEventId = String(link.google_event_id);
         if (!calendarId && (link === null || link === void 0 ? void 0 : link.calendar_id))
             calendarId = String(link.calendar_id);
+        projectionLinks = yield getProjectionLinksByTaskId(supabaseAdmin, job.user_id, job.task_id);
+        if (!calendarId) {
+            const firstProjectionCalendarId = (_a = projectionLinks.find((item) => !item.is_deleted)) === null || _a === void 0 ? void 0 : _a.calendar_id;
+            if (firstProjectionCalendarId)
+                calendarId = firstProjectionCalendarId;
+        }
     }
-    if (!googleEventId)
-        return;
     const { accessToken, publicRow } = yield (0, googleCalendarApiService_1.getValidGoogleAccessToken)(supabaseAdmin, job.user_id);
     if (!calendarId)
         calendarId = publicRow.selected_calendar_id;
     if (!calendarId)
         return;
-    try {
-        yield (0, googleCalendarApiService_1.deleteGoogleEvent)(accessToken, calendarId, googleEventId);
-    }
-    catch (error) {
-        if (!isGoogleNotFoundError(error))
-            throw error;
+    if (googleEventId) {
+        try {
+            yield (0, googleCalendarApiService_1.deleteGoogleEvent)(accessToken, calendarId, googleEventId);
+        }
+        catch (error) {
+            if (!isGoogleNotFoundError(error))
+                throw error;
+        }
     }
     if (!link && job.task_id) {
         link = yield getLinkByTaskId(supabaseAdmin, job.user_id, job.task_id);
     }
-    if (!link) {
+    if (!link && googleEventId) {
         link = yield getLinkByEvent(supabaseAdmin, job.user_id, calendarId, googleEventId);
     }
-    if (link === null || link === void 0 ? void 0 : link.id) {
+    if (!projectionLink && googleEventId) {
+        projectionLink = yield getProjectionLinkByEvent(supabaseAdmin, job.user_id, calendarId, googleEventId);
+    }
+    if ((link === null || link === void 0 ? void 0 : link.id) && link.google_event_id === googleEventId) {
         const { error } = yield supabaseAdmin
             .from("tracker_task_google_event_links")
             .update({
@@ -448,7 +697,25 @@ const processTaskDeleteJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
         if (error)
             throw new Error(error.message);
     }
+    if (projectionLink === null || projectionLink === void 0 ? void 0 : projectionLink.id) {
+        yield markProjectionLinkDeleted(supabaseAdmin, projectionLink.id, "app");
+    }
+    for (const currentProjectionLink of projectionLinks) {
+        if (currentProjectionLink.is_deleted)
+            continue;
+        if (currentProjectionLink.google_event_id === googleEventId)
+            continue;
+        try {
+            yield (0, googleCalendarApiService_1.deleteGoogleEvent)(accessToken, currentProjectionLink.calendar_id, currentProjectionLink.google_event_id);
+        }
+        catch (error) {
+            if (!isGoogleNotFoundError(error))
+                throw error;
+        }
+        yield markProjectionLinkDeleted(supabaseAdmin, currentProjectionLink.id, "app");
+    }
 });
+exports.processTaskDeleteJob = processTaskDeleteJob;
 const processReconcileAppPageJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
     const runId = getJobRunId(job);
     const cursorAfter = getJobStringPayload(job, "cursor_after");
@@ -459,10 +726,9 @@ const processReconcileAppPageJob = (supabaseAdmin, job) => __awaiter(void 0, voi
         return;
     let query = supabaseAdmin
         .from("tracker_tasks")
-        .select("id,list_id,updated_at,due_at,is_completed")
+        .select("id,list_id,updated_at,due_at,is_completed,recurrence_type")
         .eq("user_id", job.user_id)
         .in("list_id", enabledListIds)
-        .eq("is_completed", false)
         .not("due_at", "is", null)
         .order("id", { ascending: true })
         .limit(RECONCILE_APP_PAGE_SIZE);
@@ -475,16 +741,21 @@ const processReconcileAppPageJob = (supabaseAdmin, job) => __awaiter(void 0, voi
         throw new Error(error.message);
     const page = rows !== null && rows !== void 0 ? rows : [];
     for (const row of page) {
+        const typedRow = row;
+        if (!typedRow.due_at ||
+            !shouldRetainPrimaryCalendarEvent(typedRow, true)) {
+            continue;
+        }
         yield enqueueTaskUpsert({
             supabaseAdmin,
             userId: job.user_id,
-            taskId: String(row.id),
-            listId: String(row.list_id),
+            taskId: String(typedRow.id),
+            listId: String(typedRow.list_id),
             lane: job.lane,
             runId,
             priority: PRIORITY_TASK_FROM_RECONCILE,
             source: "reconcile_app_page",
-            dedupeKey: `reconcile:upsert:${row.id}:${row.updated_at || "na"}`,
+            dedupeKey: `reconcile:upsert:${typedRow.id}:${typedRow.updated_at || "na"}`,
         });
     }
     if (page.length === RECONCILE_APP_PAGE_SIZE) {
@@ -507,7 +778,7 @@ const processReconcileAppPageJob = (supabaseAdmin, job) => __awaiter(void 0, voi
     }
 });
 const processReconcileGooglePageJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
     const runId = getJobRunId(job);
     const pageToken = getJobStringPayload(job, "page_token");
     const { accessToken, publicRow } = yield (0, googleCalendarApiService_1.getValidGoogleAccessToken)(supabaseAdmin, job.user_id);
@@ -538,13 +809,15 @@ const processReconcileGooglePageJob = (supabaseAdmin, job) => __awaiter(void 0, 
             const typed = task;
             if (!enabledListIds.has(typed.list_id))
                 continue;
-            if (typed.is_completed || !typed.due_at)
+            if (!shouldRetainPrimaryCalendarEvent(typed, true))
                 continue;
             scopedTasksById.set(typed.id, typed);
         }
     }
     for (const event of events) {
         const googleEventId = String(event.id);
+        const eventKind = (0, googleCalendarApiService_1.googleEventToTrackerEventKind)(event);
+        const projectionIndex = (0, googleCalendarApiService_1.googleEventToTrackerProjectionIndex)(event);
         const taskIdRaw = (_c = (_b = event === null || event === void 0 ? void 0 : event.extendedProperties) === null || _b === void 0 ? void 0 : _b.private) === null || _c === void 0 ? void 0 : _c.tracker_task_id;
         const trackerTaskId = typeof taskIdRaw === "string" && taskIdRaw.trim() ? taskIdRaw.trim() : null;
         if (!trackerTaskId) {
@@ -557,6 +830,21 @@ const processReconcileGooglePageJob = (supabaseAdmin, job) => __awaiter(void 0, 
                 calendarId,
                 source: "reconcile_orphan_google_event",
                 dedupeKey: `reconcile:delete-orphan:${googleEventId}`,
+                priority: PRIORITY_TASK_FROM_RECONCILE,
+            });
+            continue;
+        }
+        if (eventKind === "projection" && !projectionIndex) {
+            yield enqueueTaskDelete({
+                supabaseAdmin,
+                userId: job.user_id,
+                lane: job.lane,
+                runId,
+                taskId: trackerTaskId,
+                googleEventId,
+                calendarId,
+                source: "reconcile_invalid_projection_event",
+                dedupeKey: `reconcile:delete-invalid-projection:${trackerTaskId}:${googleEventId}`,
                 priority: PRIORITY_TASK_FROM_RECONCILE,
             });
             continue;
@@ -577,17 +865,34 @@ const processReconcileGooglePageJob = (supabaseAdmin, job) => __awaiter(void 0, 
             });
             continue;
         }
-        yield upsertLink(supabaseAdmin, {
-            userId: job.user_id,
-            taskId: scopedTask.id,
-            calendarId,
-            googleEventId,
-            etag: (_d = event.etag) !== null && _d !== void 0 ? _d : null,
-            googleUpdatedAt: (_e = event.updated) !== null && _e !== void 0 ? _e : null,
-            lastSyncedTaskUpdatedAt: scopedTask.updated_at,
-            lastSyncSource: "system",
-            isDeleted: false,
-        });
+        if (eventKind === "projection") {
+            yield upsertProjectionLink(supabaseAdmin, {
+                userId: job.user_id,
+                taskId: scopedTask.id,
+                calendarId,
+                googleEventId,
+                projectionIndex: projectionIndex,
+                projectedDueAt: (_e = (_d = (0, exports.normalizeDueAtForSync)((0, googleCalendarApiService_1.googleEventToTaskDueAtIso)(event))) !== null && _d !== void 0 ? _d : scopedTask.due_at) !== null && _e !== void 0 ? _e : nowIso(),
+                etag: (_f = event.etag) !== null && _f !== void 0 ? _f : null,
+                googleUpdatedAt: (_g = event.updated) !== null && _g !== void 0 ? _g : null,
+                lastSyncedTaskUpdatedAt: scopedTask.updated_at,
+                lastSyncSource: "system",
+                isDeleted: false,
+            });
+        }
+        else {
+            yield upsertLink(supabaseAdmin, {
+                userId: job.user_id,
+                taskId: scopedTask.id,
+                calendarId,
+                googleEventId,
+                etag: (_h = event.etag) !== null && _h !== void 0 ? _h : null,
+                googleUpdatedAt: (_j = event.updated) !== null && _j !== void 0 ? _j : null,
+                lastSyncedTaskUpdatedAt: scopedTask.updated_at,
+                lastSyncSource: "system",
+                isDeleted: false,
+            });
+        }
         yield enqueueTaskUpsert({
             supabaseAdmin,
             userId: job.user_id,
@@ -663,6 +968,18 @@ const processHardResetClearPageJob = (supabaseAdmin, job) => __awaiter(void 0, v
             .eq("user_id", job.user_id)
             .eq("calendar_id", calendarId)
             .in("google_event_id", eventIds);
+        try {
+            yield supabaseAdmin
+                .from("tracker_task_google_projection_event_links")
+                .update({ is_deleted: true, last_sync_source: "system" })
+                .eq("user_id", job.user_id)
+                .eq("calendar_id", calendarId)
+                .in("google_event_id", eventIds);
+        }
+        catch (error) {
+            if (!isMissingProjectionSchemaError(error))
+                throw error;
+        }
     }
     yield (0, calendarSyncQueueService_1.enqueueSyncJob)(supabaseAdmin, {
         userId: job.user_id,
@@ -805,9 +1122,9 @@ const processRenewWatchJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
 });
 const processOneJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
     if (job.job_type === "task_upsert")
-        return processTaskUpsertJob(supabaseAdmin, job);
+        return (0, exports.processTaskUpsertJob)(supabaseAdmin, job);
     if (job.job_type === "task_delete")
-        return processTaskDeleteJob(supabaseAdmin, job);
+        return (0, exports.processTaskDeleteJob)(supabaseAdmin, job);
     if (job.job_type === "reconcile_app_page")
         return processReconcileAppPageJob(supabaseAdmin, job);
     if (job.job_type === "reconcile_google_page")
@@ -1091,6 +1408,18 @@ const rebuildCalendarLegacyInlineForUser = (supabaseAdmin, userId) => __awaiter(
                 .eq("user_id", userId)
                 .eq("calendar_id", calendarId)
                 .in("google_event_id", deletedIds);
+            try {
+                yield supabaseAdmin
+                    .from("tracker_task_google_projection_event_links")
+                    .update({ is_deleted: true, last_sync_source: "system" })
+                    .eq("user_id", userId)
+                    .eq("calendar_id", calendarId)
+                    .in("google_event_id", deletedIds);
+            }
+            catch (error) {
+                if (!isMissingProjectionSchemaError(error))
+                    throw error;
+            }
         }
     }
     const syncResult = yield (0, exports.runLegacyManualSyncForUser)(supabaseAdmin, userId);
@@ -1126,6 +1455,16 @@ const disconnectGoogleCalendarForUser = (supabaseAdmin, userId) => __awaiter(voi
         .delete()
         .eq("user_id", userId);
     yield supabaseAdmin.from("tracker_task_google_event_links").delete().eq("user_id", userId);
+    try {
+        yield supabaseAdmin
+            .from("tracker_task_google_projection_event_links")
+            .delete()
+            .eq("user_id", userId);
+    }
+    catch (error) {
+        if (!isMissingProjectionSchemaError(error))
+            throw error;
+    }
 });
 exports.disconnectGoogleCalendarForUser = disconnectGoogleCalendarForUser;
 const renewExpiringCalendarWatches = (input) => __awaiter(void 0, void 0, void 0, function* () {
@@ -1349,7 +1688,7 @@ const normalizeDueAtForSync = (isoValue) => {
     const parsed = new Date(isoValue);
     if (Number.isNaN(parsed.getTime()))
         return null;
-    if ((0, googleCalendarApiService_1.isDateOnlyIso)(isoValue)) {
+    if ((0, taskCalendarEventUtils_1.isDateOnlyIso)(isoValue)) {
         parsed.setMilliseconds(777);
         return parsed.toISOString();
     }
