@@ -73,6 +73,13 @@ Calendar backend files include:
 - `backend/src/tracker/calendar/services/calendarWebhookService.ts`
 - `backend/src/tracker/calendar/services/calendarSyncQueueService.ts`
 
+Current calendar sync behavior:
+
+- sync stays fragmented through the queue lanes (`live`, `reconcile`, `rebuild`, `system`)
+- recurring tracker tasks are synced as single Google events, not Google RRULE series
+- overdue recurring tasks may project a small number of Google-only future placeholder events
+- non-recurring completed tasks can remain in Google Calendar as completed history
+
 ## Cron
 
 Cron backend routing lives in:

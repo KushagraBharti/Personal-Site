@@ -935,7 +935,7 @@ export const useTasksHubModule = () => {
   const rebuildCalendarNow = useCallback(async () => {
     if (!session?.access_token) return false;
     const confirmed = window.confirm(
-      "Rebuild Tracker Tasks calendar? This will delete all events in that calendar and rebuild from incomplete synced tasks."
+      "Rebuild Tracker Tasks calendar? This will delete all events in that calendar and rebuild from the tracker tasks that should currently appear there."
     );
     if (!confirmed) return false;
 

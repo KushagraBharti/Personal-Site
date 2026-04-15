@@ -13,16 +13,19 @@ import {
   deleteGoogleEvent,
   ensureTasksCalendar,
   fetchGoogleUserEmail,
+  googleEventToTaskDueAtIso,
   getValidGoogleAccessToken,
+  googleEventToTrackerEventKind,
+  googleEventToTrackerProjectionIndex,
   hashChannelToken,
   insertGoogleEvent,
-  isDateOnlyIso,
   listGoogleEventsDelta,
   listGoogleEventsPage,
   loadCalendarConnection,
   patchGoogleEvent,
   stopGoogleCalendarWatch,
   taskIdToDeterministicGoogleEventId,
+  taskProjectionToDeterministicGoogleEventId,
   taskToGoogleEventPayload,
   upsertGoogleCalendarWatch,
 } from "./googleCalendarApiService";
@@ -32,9 +35,15 @@ import {
   CalendarSyncRunMode,
   TrackerGoogleSyncJob,
   TrackerGoogleSyncRun,
+  TrackerTaskGoogleProjectionEventLinkRow,
   TrackerTaskRow,
 } from "../../../types/googleCalendar";
 import { encryptToBase64 } from "../../shared/services/encryptionService";
+import {
+  buildRecurringProjectionDueAts,
+  isDateOnlyIso,
+  isRecurringTask,
+} from "./taskCalendarEventUtils";
 
 const GOOGLE_WEBHOOK_URL = () => {
   const value = process.env.GOOGLE_WEBHOOK_URL;
@@ -250,6 +259,37 @@ const getLinkByEvent = async (
   return data as any | null;
 };
 
+const getProjectionLinksByTaskId = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  taskId: string
+) => {
+  const { data, error } = await supabaseAdmin
+    .from("tracker_task_google_projection_event_links")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("task_id", taskId)
+    .order("projection_index", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as TrackerTaskGoogleProjectionEventLinkRow[];
+};
+
+const getProjectionLinkByEvent = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  calendarId: string,
+  googleEventId: string
+) => {
+  const { data } = await supabaseAdmin
+    .from("tracker_task_google_projection_event_links")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("calendar_id", calendarId)
+    .eq("google_event_id", googleEventId)
+    .maybeSingle();
+  return (data as TrackerTaskGoogleProjectionEventLinkRow | null) ?? null;
+};
+
 const upsertLink = async (
   supabaseAdmin: SupabaseClient,
   input: {
@@ -281,6 +321,61 @@ const upsertLink = async (
   if (error) throw new Error(error.message);
 };
 
+const upsertProjectionLink = async (
+  supabaseAdmin: SupabaseClient,
+  input: {
+    userId: string;
+    taskId: string;
+    calendarId: string;
+    googleEventId: string;
+    projectionIndex: number;
+    projectedDueAt: string;
+    etag?: string | null;
+    googleUpdatedAt?: string | null;
+    lastSyncedTaskUpdatedAt?: string | null;
+    lastSyncSource?: "app" | "google" | "system";
+    isDeleted?: boolean;
+  }
+) => {
+  const { error } = await supabaseAdmin
+    .from("tracker_task_google_projection_event_links")
+    .upsert(
+      {
+        user_id: input.userId,
+        task_id: input.taskId,
+        calendar_id: input.calendarId,
+        google_event_id: input.googleEventId,
+        projection_index: input.projectionIndex,
+        projected_due_at: input.projectedDueAt,
+        google_event_etag: input.etag ?? null,
+        google_event_updated_at: input.googleUpdatedAt ?? null,
+        last_synced_task_updated_at: input.lastSyncedTaskUpdatedAt ?? null,
+        last_sync_source: input.lastSyncSource ?? "system",
+        is_deleted: input.isDeleted ?? false,
+      },
+      { onConflict: "user_id,task_id,projection_index" }
+    );
+  if (error) throw new Error(error.message);
+};
+
+const markProjectionLinkDeleted = async (
+  supabaseAdmin: SupabaseClient,
+  linkId: number,
+  lastSyncSource: "app" | "google" | "system",
+  lastSyncedTaskUpdatedAt?: string | null
+) => {
+  const { error } = await supabaseAdmin
+    .from("tracker_task_google_projection_event_links")
+    .update({
+      is_deleted: true,
+      last_sync_source: lastSyncSource,
+      last_synced_task_updated_at: lastSyncedTaskUpdatedAt ?? nowIso(),
+      updated_at: nowIso(),
+    })
+    .eq("id", linkId);
+  if (error) throw new Error(error.message);
+};
+
 const setConnectionHealth = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
@@ -293,8 +388,14 @@ const setConnectionHealth = async (
   if (error) throw new Error(error.message);
 };
 
-const shouldSyncTask = (task: TrackerTaskRow, listEnabled: boolean) =>
-  listEnabled && !task.is_completed && !!task.due_at;
+const shouldRetainPrimaryCalendarEvent = (task: TrackerTaskRow, listEnabled: boolean) =>
+  listEnabled && !!task.due_at && (!task.is_completed || !isRecurringTask(task));
+
+const shouldRetainProjectedCalendarEvents = (task: TrackerTaskRow, listEnabled: boolean) =>
+  listEnabled && !!task.due_at && !task.is_completed && isRecurringTask(task);
+
+const shouldMarkCompletedNonRecurringTask = (task: TrackerTaskRow) =>
+  task.is_completed && !isRecurringTask(task);
 const createSyncRun = async (supabaseAdmin: SupabaseClient, userId: string, mode: CalendarSyncRunMode) => {
   const runId = createRunId(mode);
   const { error } = await supabaseAdmin.from("tracker_google_sync_runs").insert({
@@ -423,7 +524,260 @@ const enqueueTaskDelete = async (input: {
   });
 };
 
-const processTaskUpsertJob = async (supabaseAdmin: SupabaseClient, job: TrackerGoogleSyncJob) => {
+const deletePrimaryEventLink = async (input: {
+  supabaseAdmin: SupabaseClient;
+  accessToken: string;
+  task: TrackerTaskRow;
+  link: any | null;
+}) => {
+  if (!input.link || input.link.is_deleted) return;
+  try {
+    await deleteGoogleEvent(
+      input.accessToken,
+      input.link.calendar_id,
+      input.link.google_event_id
+    );
+  } catch (error) {
+    if (!isGoogleNotFoundError(error)) throw error;
+  }
+
+  await upsertLink(input.supabaseAdmin, {
+    userId: input.task.user_id,
+    taskId: input.task.id,
+    calendarId: input.link.calendar_id,
+    googleEventId: input.link.google_event_id,
+    etag: input.link.google_event_etag,
+    googleUpdatedAt: input.link.google_event_updated_at,
+    lastSyncedTaskUpdatedAt: input.task.updated_at,
+    lastSyncSource: "app",
+    isDeleted: true,
+  });
+};
+
+const deleteProjectionEventLink = async (input: {
+  supabaseAdmin: SupabaseClient;
+  accessToken: string;
+  task: TrackerTaskRow;
+  link: TrackerTaskGoogleProjectionEventLinkRow;
+}) => {
+  if (input.link.is_deleted) return;
+  try {
+    await deleteGoogleEvent(
+      input.accessToken,
+      input.link.calendar_id,
+      input.link.google_event_id
+    );
+  } catch (error) {
+    if (!isGoogleNotFoundError(error)) throw error;
+  }
+
+  await markProjectionLinkDeleted(
+    input.supabaseAdmin,
+    input.link.id,
+    "app",
+    input.task.updated_at
+  );
+};
+
+const syncPrimaryEventForTask = async (input: {
+  supabaseAdmin: SupabaseClient;
+  accessToken: string;
+  calendarId: string;
+  task: TrackerTaskRow;
+  existingLink: any | null;
+}) => {
+  const titleMode = shouldMarkCompletedNonRecurringTask(input.task) ? "done" : "default";
+  const eventPayload = taskToGoogleEventPayload(input.task, {
+    titleMode,
+    eventKind: "primary",
+  });
+  if (!eventPayload.start) return;
+
+  if (input.existingLink && !input.existingLink.is_deleted) {
+    try {
+      const patched = await patchGoogleEvent(
+        input.accessToken,
+        input.existingLink.calendar_id,
+        input.existingLink.google_event_id,
+        eventPayload
+      );
+      await upsertLink(input.supabaseAdmin, {
+        userId: input.task.user_id,
+        taskId: input.task.id,
+        calendarId: input.existingLink.calendar_id,
+        googleEventId: input.existingLink.google_event_id,
+        etag: patched.etag ?? null,
+        googleUpdatedAt: patched.updated ?? nowIso(),
+        lastSyncedTaskUpdatedAt: input.task.updated_at,
+        lastSyncSource: "app",
+        isDeleted: false,
+      });
+      return;
+    } catch (error) {
+      if (!isGoogleNotFoundError(error)) throw error;
+    }
+  }
+
+  const deterministicEventId = taskIdToDeterministicGoogleEventId(input.task.id);
+  try {
+    const inserted = await insertGoogleEvent(input.accessToken, input.calendarId, {
+      ...eventPayload,
+      id: deterministicEventId,
+    });
+    await upsertLink(input.supabaseAdmin, {
+      userId: input.task.user_id,
+      taskId: input.task.id,
+      calendarId: input.calendarId,
+      googleEventId: inserted.id,
+      etag: inserted.etag ?? null,
+      googleUpdatedAt: inserted.updated ?? nowIso(),
+      lastSyncedTaskUpdatedAt: input.task.updated_at,
+      lastSyncSource: "app",
+      isDeleted: false,
+    });
+    return;
+  } catch (error) {
+    if (!isGoogleConflictError(error)) throw error;
+  }
+
+  const patched = await patchGoogleEvent(
+    input.accessToken,
+    input.calendarId,
+    deterministicEventId,
+    eventPayload
+  );
+  await upsertLink(input.supabaseAdmin, {
+    userId: input.task.user_id,
+    taskId: input.task.id,
+    calendarId: input.calendarId,
+    googleEventId: deterministicEventId,
+    etag: patched.etag ?? null,
+    googleUpdatedAt: patched.updated ?? nowIso(),
+    lastSyncedTaskUpdatedAt: input.task.updated_at,
+    lastSyncSource: "app",
+    isDeleted: false,
+  });
+};
+
+const syncProjectedEventsForTask = async (input: {
+  supabaseAdmin: SupabaseClient;
+  accessToken: string;
+  calendarId: string;
+  task: TrackerTaskRow;
+}) => {
+  const desiredProjections = buildRecurringProjectionDueAts(input.task);
+  const desiredByIndex = new Map(
+    desiredProjections.map((projection) => [projection.projectionIndex, projection])
+  );
+  const existingLinks = await getProjectionLinksByTaskId(
+    input.supabaseAdmin,
+    input.task.user_id,
+    input.task.id
+  );
+
+  for (const existingLink of existingLinks) {
+    if (existingLink.is_deleted) continue;
+    if (desiredByIndex.has(existingLink.projection_index)) continue;
+    await deleteProjectionEventLink({
+      supabaseAdmin: input.supabaseAdmin,
+      accessToken: input.accessToken,
+      task: input.task,
+      link: existingLink,
+    });
+  }
+
+  for (const projection of desiredProjections) {
+    const eventPayload = taskToGoogleEventPayload(input.task, {
+      dueAt: projection.dueAt,
+      titleMode: "upcoming",
+      eventKind: "projection",
+      projectionIndex: projection.projectionIndex,
+    });
+    if (!eventPayload.start) continue;
+
+    const existingLink =
+      existingLinks.find((item) => item.projection_index === projection.projectionIndex) ?? null;
+
+    if (existingLink && !existingLink.is_deleted) {
+      try {
+        const patched = await patchGoogleEvent(
+          input.accessToken,
+          existingLink.calendar_id,
+          existingLink.google_event_id,
+          eventPayload
+        );
+        await upsertProjectionLink(input.supabaseAdmin, {
+          userId: input.task.user_id,
+          taskId: input.task.id,
+          calendarId: existingLink.calendar_id,
+          googleEventId: existingLink.google_event_id,
+          projectionIndex: projection.projectionIndex,
+          projectedDueAt: projection.dueAt,
+          etag: patched.etag ?? null,
+          googleUpdatedAt: patched.updated ?? nowIso(),
+          lastSyncedTaskUpdatedAt: input.task.updated_at,
+          lastSyncSource: "app",
+          isDeleted: false,
+        });
+        continue;
+      } catch (error) {
+        if (!isGoogleNotFoundError(error)) throw error;
+      }
+    }
+
+    const deterministicEventId = taskProjectionToDeterministicGoogleEventId(
+      input.task.id,
+      projection.projectionIndex
+    );
+    try {
+      const inserted = await insertGoogleEvent(input.accessToken, input.calendarId, {
+        ...eventPayload,
+        id: deterministicEventId,
+      });
+      await upsertProjectionLink(input.supabaseAdmin, {
+        userId: input.task.user_id,
+        taskId: input.task.id,
+        calendarId: input.calendarId,
+        googleEventId: inserted.id,
+        projectionIndex: projection.projectionIndex,
+        projectedDueAt: projection.dueAt,
+        etag: inserted.etag ?? null,
+        googleUpdatedAt: inserted.updated ?? nowIso(),
+        lastSyncedTaskUpdatedAt: input.task.updated_at,
+        lastSyncSource: "app",
+        isDeleted: false,
+      });
+      continue;
+    } catch (error) {
+      if (!isGoogleConflictError(error)) throw error;
+    }
+
+    const patched = await patchGoogleEvent(
+      input.accessToken,
+      input.calendarId,
+      deterministicEventId,
+      eventPayload
+    );
+    await upsertProjectionLink(input.supabaseAdmin, {
+      userId: input.task.user_id,
+      taskId: input.task.id,
+      calendarId: input.calendarId,
+      googleEventId: deterministicEventId,
+      projectionIndex: projection.projectionIndex,
+      projectedDueAt: projection.dueAt,
+      etag: patched.etag ?? null,
+      googleUpdatedAt: patched.updated ?? nowIso(),
+      lastSyncedTaskUpdatedAt: input.task.updated_at,
+      lastSyncSource: "app",
+      isDeleted: false,
+    });
+  }
+};
+
+export const processTaskUpsertJob = async (
+  supabaseAdmin: SupabaseClient,
+  job: TrackerGoogleSyncJob
+) => {
   if (!job.task_id) return;
   const task = await getTaskById(supabaseAdmin, job.user_id, job.task_id);
   if (!task) return;
@@ -435,125 +789,95 @@ const processTaskUpsertJob = async (supabaseAdmin: SupabaseClient, job: TrackerG
 
   const existingLink = await getLinkByTaskId(supabaseAdmin, job.user_id, task.id);
 
-  if (!shouldSyncTask(task, listEnabled)) {
-    if (existingLink && !existingLink.is_deleted) {
-      try {
-        await deleteGoogleEvent(accessToken, existingLink.calendar_id, existingLink.google_event_id);
-      } catch {
-        // best effort
-      }
-      await upsertLink(supabaseAdmin, {
-        userId: job.user_id,
-        taskId: task.id,
-        calendarId: existingLink.calendar_id,
-        googleEventId: existingLink.google_event_id,
-        etag: existingLink.google_event_etag,
-        googleUpdatedAt: existingLink.google_event_updated_at,
-        lastSyncedTaskUpdatedAt: task.updated_at,
-        lastSyncSource: "app",
-        isDeleted: true,
-      });
-    }
-    return;
-  }
-
-  const eventPayload = taskToGoogleEventPayload(task);
-  if (!eventPayload.start) return;
-
-  if (existingLink && !existingLink.is_deleted) {
-    try {
-      const patched = await patchGoogleEvent(
-        accessToken,
-        existingLink.calendar_id,
-        existingLink.google_event_id,
-        eventPayload
-      );
-      await upsertLink(supabaseAdmin, {
-        userId: job.user_id,
-        taskId: task.id,
-        calendarId: existingLink.calendar_id,
-        googleEventId: existingLink.google_event_id,
-        etag: patched.etag ?? null,
-        googleUpdatedAt: patched.updated ?? nowIso(),
-        lastSyncedTaskUpdatedAt: task.updated_at,
-        lastSyncSource: "app",
-        isDeleted: false,
-      });
-      return;
-    } catch (error) {
-      if (!isGoogleNotFoundError(error)) throw error;
-    }
-  }
-
-  const deterministicEventId = taskIdToDeterministicGoogleEventId(task.id);
-  try {
-    const inserted = await insertGoogleEvent(accessToken, calendarId, {
-      ...eventPayload,
-      id: deterministicEventId,
-    });
-    await upsertLink(supabaseAdmin, {
-      userId: job.user_id,
-      taskId: task.id,
+  if (shouldRetainPrimaryCalendarEvent(task, listEnabled)) {
+    await syncPrimaryEventForTask({
+      supabaseAdmin,
+      accessToken,
       calendarId,
-      googleEventId: inserted.id,
-      etag: inserted.etag ?? null,
-      googleUpdatedAt: inserted.updated ?? nowIso(),
-      lastSyncedTaskUpdatedAt: task.updated_at,
-      lastSyncSource: "app",
-      isDeleted: false,
+      task,
+      existingLink,
     });
-    return;
-  } catch (error) {
-    if (!isGoogleConflictError(error)) throw error;
+  } else {
+    await deletePrimaryEventLink({
+      supabaseAdmin,
+      accessToken,
+      task,
+      link: existingLink,
+    });
   }
 
-  const patched = await patchGoogleEvent(accessToken, calendarId, deterministicEventId, eventPayload);
-  await upsertLink(supabaseAdmin, {
-    userId: job.user_id,
-    taskId: task.id,
-    calendarId,
-    googleEventId: deterministicEventId,
-    etag: patched.etag ?? null,
-    googleUpdatedAt: patched.updated ?? nowIso(),
-    lastSyncedTaskUpdatedAt: task.updated_at,
-    lastSyncSource: "app",
-    isDeleted: false,
-  });
+  if (shouldRetainProjectedCalendarEvents(task, listEnabled)) {
+    await syncProjectedEventsForTask({
+      supabaseAdmin,
+      accessToken,
+      calendarId,
+      task,
+    });
+    return;
+  }
+
+  const projectionLinks = await getProjectionLinksByTaskId(supabaseAdmin, job.user_id, task.id);
+  for (const projectionLink of projectionLinks) {
+    await deleteProjectionEventLink({
+      supabaseAdmin,
+      accessToken,
+      task,
+      link: projectionLink,
+    });
+  }
 };
 
-const processTaskDeleteJob = async (supabaseAdmin: SupabaseClient, job: TrackerGoogleSyncJob) => {
+export const processTaskDeleteJob = async (
+  supabaseAdmin: SupabaseClient,
+  job: TrackerGoogleSyncJob
+) => {
   const payloadEventId = getJobStringPayload(job, "google_event_id");
   const payloadCalendarId = getJobStringPayload(job, "calendar_id");
   let googleEventId = job.google_event_id || payloadEventId || null;
   let calendarId = payloadCalendarId || null;
   let link: any | null = null;
+  let projectionLink: TrackerTaskGoogleProjectionEventLinkRow | null = null;
+  let projectionLinks: TrackerTaskGoogleProjectionEventLinkRow[] = [];
 
   if (job.task_id) {
     link = await getLinkByTaskId(supabaseAdmin, job.user_id, job.task_id);
     if (!googleEventId && link?.google_event_id) googleEventId = String(link.google_event_id);
     if (!calendarId && link?.calendar_id) calendarId = String(link.calendar_id);
+    projectionLinks = await getProjectionLinksByTaskId(supabaseAdmin, job.user_id, job.task_id);
+    if (!calendarId) {
+      const firstProjectionCalendarId = projectionLinks.find((item) => !item.is_deleted)?.calendar_id;
+      if (firstProjectionCalendarId) calendarId = firstProjectionCalendarId;
+    }
   }
-
-  if (!googleEventId) return;
 
   const { accessToken, publicRow } = await getValidGoogleAccessToken(supabaseAdmin, job.user_id);
   if (!calendarId) calendarId = publicRow.selected_calendar_id;
   if (!calendarId) return;
 
-  try {
-    await deleteGoogleEvent(accessToken, calendarId, googleEventId);
-  } catch (error) {
-    if (!isGoogleNotFoundError(error)) throw error;
+  if (googleEventId) {
+    try {
+      await deleteGoogleEvent(accessToken, calendarId, googleEventId);
+    } catch (error) {
+      if (!isGoogleNotFoundError(error)) throw error;
+    }
   }
 
   if (!link && job.task_id) {
     link = await getLinkByTaskId(supabaseAdmin, job.user_id, job.task_id);
   }
-  if (!link) {
+  if (!link && googleEventId) {
     link = await getLinkByEvent(supabaseAdmin, job.user_id, calendarId, googleEventId);
   }
+  if (!projectionLink && googleEventId) {
+    projectionLink = await getProjectionLinkByEvent(
+      supabaseAdmin,
+      job.user_id,
+      calendarId,
+      googleEventId
+    );
+  }
 
-  if (link?.id) {
+  if (link?.id && link.google_event_id === googleEventId) {
     const { error } = await supabaseAdmin
       .from("tracker_task_google_event_links")
       .update({
@@ -563,6 +887,24 @@ const processTaskDeleteJob = async (supabaseAdmin: SupabaseClient, job: TrackerG
       })
       .eq("id", link.id);
     if (error) throw new Error(error.message);
+  }
+  if (projectionLink?.id) {
+    await markProjectionLinkDeleted(supabaseAdmin, projectionLink.id, "app");
+  }
+
+  for (const currentProjectionLink of projectionLinks) {
+    if (currentProjectionLink.is_deleted) continue;
+    if (currentProjectionLink.google_event_id === googleEventId) continue;
+    try {
+      await deleteGoogleEvent(
+        accessToken,
+        currentProjectionLink.calendar_id,
+        currentProjectionLink.google_event_id
+      );
+    } catch (error) {
+      if (!isGoogleNotFoundError(error)) throw error;
+    }
+    await markProjectionLinkDeleted(supabaseAdmin, currentProjectionLink.id, "app");
   }
 };
 const processReconcileAppPageJob = async (supabaseAdmin: SupabaseClient, job: TrackerGoogleSyncJob) => {
@@ -576,10 +918,9 @@ const processReconcileAppPageJob = async (supabaseAdmin: SupabaseClient, job: Tr
 
   let query = supabaseAdmin
     .from("tracker_tasks")
-    .select("id,list_id,updated_at,due_at,is_completed")
+    .select("id,list_id,updated_at,due_at,is_completed,recurrence_type")
     .eq("user_id", job.user_id)
     .in("list_id", enabledListIds)
-    .eq("is_completed", false)
     .not("due_at", "is", null)
     .order("id", { ascending: true })
     .limit(RECONCILE_APP_PAGE_SIZE);
@@ -592,16 +933,26 @@ const processReconcileAppPageJob = async (supabaseAdmin: SupabaseClient, job: Tr
 
   const page = rows ?? [];
   for (const row of page) {
+    const typedRow = row as Pick<
+      TrackerTaskRow,
+      "id" | "list_id" | "updated_at" | "due_at" | "is_completed" | "recurrence_type"
+    >;
+    if (
+      !typedRow.due_at ||
+      !shouldRetainPrimaryCalendarEvent(typedRow as TrackerTaskRow, true)
+    ) {
+      continue;
+    }
     await enqueueTaskUpsert({
       supabaseAdmin,
       userId: job.user_id,
-      taskId: String(row.id),
-      listId: String(row.list_id),
+      taskId: String(typedRow.id),
+      listId: String(typedRow.list_id),
       lane: job.lane,
       runId,
       priority: PRIORITY_TASK_FROM_RECONCILE,
       source: "reconcile_app_page",
-      dedupeKey: `reconcile:upsert:${row.id}:${row.updated_at || "na"}`,
+      dedupeKey: `reconcile:upsert:${typedRow.id}:${typedRow.updated_at || "na"}`,
     });
   }
 
@@ -666,13 +1017,15 @@ const processReconcileGooglePageJob = async (supabaseAdmin: SupabaseClient, job:
     for (const task of tasks ?? []) {
       const typed = task as TrackerTaskRow;
       if (!enabledListIds.has(typed.list_id)) continue;
-      if (typed.is_completed || !typed.due_at) continue;
+      if (!shouldRetainPrimaryCalendarEvent(typed, true)) continue;
       scopedTasksById.set(typed.id, typed);
     }
   }
 
   for (const event of events) {
     const googleEventId = String(event.id);
+    const eventKind = googleEventToTrackerEventKind(event);
+    const projectionIndex = googleEventToTrackerProjectionIndex(event);
     const taskIdRaw = event?.extendedProperties?.private?.tracker_task_id;
     const trackerTaskId = typeof taskIdRaw === "string" && taskIdRaw.trim() ? taskIdRaw.trim() : null;
 
@@ -686,6 +1039,22 @@ const processReconcileGooglePageJob = async (supabaseAdmin: SupabaseClient, job:
         calendarId,
         source: "reconcile_orphan_google_event",
         dedupeKey: `reconcile:delete-orphan:${googleEventId}`,
+        priority: PRIORITY_TASK_FROM_RECONCILE,
+      });
+      continue;
+    }
+
+    if (eventKind === "projection" && !projectionIndex) {
+      await enqueueTaskDelete({
+        supabaseAdmin,
+        userId: job.user_id,
+        lane: job.lane,
+        runId,
+        taskId: trackerTaskId,
+        googleEventId,
+        calendarId,
+        source: "reconcile_invalid_projection_event",
+        dedupeKey: `reconcile:delete-invalid-projection:${trackerTaskId}:${googleEventId}`,
         priority: PRIORITY_TASK_FROM_RECONCILE,
       });
       continue;
@@ -708,17 +1077,34 @@ const processReconcileGooglePageJob = async (supabaseAdmin: SupabaseClient, job:
       continue;
     }
 
-    await upsertLink(supabaseAdmin, {
-      userId: job.user_id,
-      taskId: scopedTask.id,
-      calendarId,
-      googleEventId,
-      etag: event.etag ?? null,
-      googleUpdatedAt: event.updated ?? null,
-      lastSyncedTaskUpdatedAt: scopedTask.updated_at,
-      lastSyncSource: "system",
-      isDeleted: false,
-    });
+    if (eventKind === "projection") {
+      await upsertProjectionLink(supabaseAdmin, {
+        userId: job.user_id,
+        taskId: scopedTask.id,
+        calendarId,
+        googleEventId,
+        projectionIndex: projectionIndex as number,
+        projectedDueAt:
+          normalizeDueAtForSync(googleEventToTaskDueAtIso(event)) ?? scopedTask.due_at ?? nowIso(),
+        etag: event.etag ?? null,
+        googleUpdatedAt: event.updated ?? null,
+        lastSyncedTaskUpdatedAt: scopedTask.updated_at,
+        lastSyncSource: "system",
+        isDeleted: false,
+      });
+    } else {
+      await upsertLink(supabaseAdmin, {
+        userId: job.user_id,
+        taskId: scopedTask.id,
+        calendarId,
+        googleEventId,
+        etag: event.etag ?? null,
+        googleUpdatedAt: event.updated ?? null,
+        lastSyncedTaskUpdatedAt: scopedTask.updated_at,
+        lastSyncSource: "system",
+        isDeleted: false,
+      });
+    }
 
     await enqueueTaskUpsert({
       supabaseAdmin,
@@ -797,6 +1183,13 @@ const processHardResetClearPageJob = async (supabaseAdmin: SupabaseClient, job: 
   if (eventIds.length > 0) {
     await supabaseAdmin
       .from("tracker_task_google_event_links")
+      .update({ is_deleted: true, last_sync_source: "system" })
+      .eq("user_id", job.user_id)
+      .eq("calendar_id", calendarId)
+      .in("google_event_id", eventIds);
+
+    await supabaseAdmin
+      .from("tracker_task_google_projection_event_links")
       .update({ is_deleted: true, last_sync_source: "system" })
       .eq("user_id", job.user_id)
       .eq("calendar_id", calendarId)
@@ -1270,6 +1663,13 @@ export const rebuildCalendarLegacyInlineForUser = async (
         .eq("user_id", userId)
         .eq("calendar_id", calendarId)
         .in("google_event_id", deletedIds);
+
+      await supabaseAdmin
+        .from("tracker_task_google_projection_event_links")
+        .update({ is_deleted: true, last_sync_source: "system" })
+        .eq("user_id", userId)
+        .eq("calendar_id", calendarId)
+        .in("google_event_id", deletedIds);
     }
   }
 
@@ -1313,6 +1713,10 @@ export const disconnectGoogleCalendarForUser = async (supabaseAdmin: SupabaseCli
     .eq("user_id", userId);
 
   await supabaseAdmin.from("tracker_task_google_event_links").delete().eq("user_id", userId);
+  await supabaseAdmin
+    .from("tracker_task_google_projection_event_links")
+    .delete()
+    .eq("user_id", userId);
 };
 
 export const renewExpiringCalendarWatches = async (input?: { userId?: string }) => {

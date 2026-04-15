@@ -100,3 +100,20 @@ export interface TrackerTaskRow {
   created_at: string;
   updated_at: string;
 }
+
+export interface TrackerTaskGoogleProjectionEventLinkRow {
+  id: number;
+  user_id: string;
+  task_id: string;
+  calendar_id: string;
+  google_event_id: string;
+  projection_index: number;
+  projected_due_at: string;
+  google_event_etag: string | null;
+  google_event_updated_at: string | null;
+  last_synced_task_updated_at: string | null;
+  last_sync_source: "app" | "google" | "system";
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
+}

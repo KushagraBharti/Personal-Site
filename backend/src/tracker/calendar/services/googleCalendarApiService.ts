@@ -3,10 +3,16 @@ import { createHash, randomUUID } from "crypto";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { decryptFromBase64, encryptToBase64 } from "../../shared/services/encryptionService";
 import { CalendarConnectionPublic, CalendarConnectionSecrets, TrackerTaskRow } from "../../../types/googleCalendar";
+import {
+  TrackerGoogleEventKind,
+  TrackerGoogleTitleMode,
+  DATE_ONLY_MARKER_MS,
+  formatTaskEventTitle,
+  isDateOnlyIso,
+} from "./taskCalendarEventUtils";
 
 const GOOGLE_CALENDAR_API_BASE = "https://www.googleapis.com/calendar/v3";
 const GOOGLE_OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
-const DATE_ONLY_MARKER_MS = 777;
 const DEFAULT_TIMED_EVENT_DURATION_MS = 30 * 60 * 1000;
 const GOOGLE_EVENT_TIMEZONE = process.env.GOOGLE_EVENT_TIMEZONE || "UTC";
 const GOOGLE_API_TIMEOUT_MS = Number(process.env.GOOGLE_API_TIMEOUT_MS || 4500);
@@ -39,46 +45,10 @@ const resolveEventTimeZone = (taskTimeZone: string | null | undefined) => {
   return "UTC";
 };
 
-const buildRRule = (task: TrackerTaskRow): string[] | undefined => {
-  if (task.recurrence_type === "none") return undefined;
-
-  const parts: string[] = [];
-  if (task.recurrence_type === "daily") {
-    parts.push("FREQ=DAILY");
-  } else if (task.recurrence_type === "weekly") {
-    parts.push("FREQ=WEEKLY");
-  } else if (task.recurrence_type === "biweekly") {
-    parts.push("FREQ=WEEKLY", "INTERVAL=2");
-  } else {
-    const interval = Math.max(task.recurrence_interval ?? 1, 1);
-    const unit = task.recurrence_unit ?? "day";
-    if (unit === "day") parts.push("FREQ=DAILY");
-    if (unit === "week") parts.push("FREQ=WEEKLY");
-    if (unit === "month") parts.push("FREQ=MONTHLY");
-    parts.push(`INTERVAL=${interval}`);
-  }
-
-  if (task.recurrence_ends_at) {
-    const end = new Date(task.recurrence_ends_at);
-    if (!Number.isNaN(end.getTime())) {
-      parts.push(`UNTIL=${toIsoUtcNoMs(end).replace(/[-:]/g, "")}`);
-    }
-  }
-
-  return parts.length ? [`RRULE:${parts.join(";")}`] : undefined;
-};
-
 const dueAtToDatePart = (isoString: string) => {
   const d = new Date(isoString);
   if (Number.isNaN(d.getTime())) return null;
   return d.toISOString().slice(0, 10);
-};
-
-export const isDateOnlyIso = (isoString: string | null | undefined) => {
-  if (!isoString) return false;
-  const parsed = new Date(isoString);
-  if (Number.isNaN(parsed.getTime())) return false;
-  return parsed.getMilliseconds() === DATE_ONLY_MARKER_MS;
 };
 
 export const googleEventToTaskDueAtIso = (event: any): string | null => {
@@ -108,24 +78,50 @@ export const googleEventToTaskTimeZone = (event: any): string | null => {
   return isValidIanaTimeZone(candidate) ? candidate : null;
 };
 
-export const taskToGoogleEventPayload = (task: TrackerTaskRow) => {
+const buildTrackerEventMetadata = (input: {
+  task: TrackerTaskRow;
+  eventKind: TrackerGoogleEventKind;
+  projectionIndex?: number;
+}) => ({
+  tracker_task_id: input.task.id,
+  tracker_user_id: input.task.user_id,
+  tracker_parent_task_id: input.task.parent_task_id || "",
+  tracker_event_kind: input.eventKind,
+  tracker_projection_index:
+    input.eventKind === "projection" && typeof input.projectionIndex === "number"
+      ? String(input.projectionIndex)
+      : "",
+});
+
+export const taskToGoogleEventPayload = (
+  task: TrackerTaskRow,
+  options?: {
+    dueAt?: string | null;
+    titleMode?: TrackerGoogleTitleMode;
+    eventKind?: TrackerGoogleEventKind;
+    projectionIndex?: number;
+  }
+) => {
+  const dueAt = options?.dueAt ?? task.due_at;
+  const titleMode = options?.titleMode ?? "default";
+  const eventKind = options?.eventKind ?? "primary";
   const payload: Record<string, unknown> = {
-    summary: task.title,
+    summary: formatTaskEventTitle(task.title, titleMode),
     description: task.details || "",
     extendedProperties: {
-      private: {
-        tracker_task_id: task.id,
-        tracker_user_id: task.user_id,
-        tracker_parent_task_id: task.parent_task_id || "",
-      },
+      private: buildTrackerEventMetadata({
+        task,
+        eventKind,
+        projectionIndex: options?.projectionIndex,
+      }),
     },
   };
 
   const eventTimeZone = resolveEventTimeZone(task.due_timezone);
 
-  if (task.due_at) {
-    if (isDateOnlyIso(task.due_at)) {
-      const datePart = dueAtToDatePart(task.due_at);
+  if (dueAt) {
+    if (isDateOnlyIso(dueAt)) {
+      const datePart = dueAtToDatePart(dueAt);
       if (datePart) {
         const nextDay = new Date(`${datePart}T00:00:00.000Z`);
         nextDay.setUTCDate(nextDay.getUTCDate() + 1);
@@ -133,7 +129,7 @@ export const taskToGoogleEventPayload = (task: TrackerTaskRow) => {
         payload.end = { date: nextDay.toISOString().slice(0, 10) };
       }
     } else {
-      const start = new Date(task.due_at);
+      const start = new Date(dueAt);
       if (!Number.isNaN(start.getTime())) {
         const end = new Date(start.getTime() + DEFAULT_TIMED_EVENT_DURATION_MS);
         payload.start = { dateTime: start.toISOString(), timeZone: eventTimeZone };
@@ -142,17 +138,33 @@ export const taskToGoogleEventPayload = (task: TrackerTaskRow) => {
     }
   }
 
-  const recurrence = buildRRule(task);
-  if (recurrence) {
-    payload.recurrence = recurrence;
-  }
-
   return payload;
 };
 
 export const taskIdToDeterministicGoogleEventId = (taskId: string) => {
   const digest = createHash("sha1").update(taskId).digest("hex");
   return `trk${digest}`;
+};
+
+export const taskProjectionToDeterministicGoogleEventId = (
+  taskId: string,
+  projectionIndex: number
+) => {
+  const digest = createHash("sha1")
+    .update(`${taskId}:projection:${projectionIndex}`)
+    .digest("hex");
+  return `trkp${digest}`;
+};
+
+export const googleEventToTrackerEventKind = (event: any): TrackerGoogleEventKind => {
+  const rawKind = event?.extendedProperties?.private?.tracker_event_kind;
+  return rawKind === "projection" ? "projection" : "primary";
+};
+
+export const googleEventToTrackerProjectionIndex = (event: any) => {
+  const rawIndex = event?.extendedProperties?.private?.tracker_projection_index;
+  const parsed = Number(rawIndex);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 };
 
 const authedRequest = async <T = any>(accessToken: string, config: AxiosRequestConfig) => {
