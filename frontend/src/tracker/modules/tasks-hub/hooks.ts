@@ -470,6 +470,10 @@ export const useTasksHubModule = () => {
 
   const removeList = useCallback(
     async (listId: string) => {
+      if (lists.length <= 1) {
+        setErrorMessage("Create another list before deleting your last remaining list.");
+        return false;
+      }
       if (!session?.access_token) {
         setErrorMessage("Missing session token.");
         return false;
@@ -490,7 +494,7 @@ export const useTasksHubModule = () => {
       setErrorMessage("");
       return true;
     },
-    [selectedListId, session?.access_token]
+    [lists.length, selectedListId, session?.access_token]
   );
 
   const pollSyncRun = useCallback(

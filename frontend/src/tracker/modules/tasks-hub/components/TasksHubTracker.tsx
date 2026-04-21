@@ -919,12 +919,15 @@ const TasksHubTracker: React.FC = () => {
                       <motion.button
                         className="tasks-icon-btn"
                         onClick={async () => {
-                          if (lists.length <= 1) return;
                           await removeList(list.id);
                         }}
-                        disabled={lists.length <= 1}
-                        whileHover={lists.length > 1 ? { scale: 1.05 } : {}}
-                        whileTap={lists.length > 1 ? { scale: 0.9 } : {}}
+                        title={
+                          lists.length <= 1
+                            ? "Create another list before deleting your last remaining list."
+                            : undefined
+                        }
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.9 }}
                       >
                         Del
                       </motion.button>
