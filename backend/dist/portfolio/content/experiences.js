@@ -5,6 +5,7 @@ exports.portfolioExperiences = [
     {
         slug: "ut-dallas-undergraduate-researcher-optimization",
         order: 1,
+        dateRange: "2024 - Present",
         position: "Undergraduate Researcher at UT Dallas (supervised by Prof. Ovidiu Daescu)",
         summary: "Building paper-faithful optimization solvers and a solver-labeled dataset pipeline for 1D drone coverage planning, with benchmarks + QC gates to support supervised learning, GNN, and RL experiments on optimal tour planning.",
         description: [
@@ -47,6 +48,7 @@ exports.portfolioExperiences = [
     {
         slug: "ut-dallas-undergraduate-researcher-monopolybench",
         order: 2,
+        dateRange: "2024 - Present",
         position: "Undergraduate Researcher at UT Dallas (mentored by PhD Candidate Parth Padalkar)",
         summary: "Built a deterministic, replayable Monopoly benchmark where LLMs play head-to-head via schema-typed tool calls, enabling research on long-horizon planning, negotiation/deception, and bias under fully logged, inspectable runs.",
         description: [
@@ -102,6 +104,7 @@ exports.portfolioExperiences = [
     {
         slug: "consult-your-community",
         order: 3,
+        dateRange: "2023 - 2024",
         position: "Consultant at Consult Your Community (Club)",
         summary: "Led data analytics to transform multi-source data into actionable insights.",
         description: [
@@ -115,6 +118,7 @@ exports.portfolioExperiences = [
     {
         slug: "abilitie-software-engineering-intern",
         order: 4,
+        dateRange: "2024",
         position: "Software Engineering Intern at Abilitie",
         summary: "Worked on a production role-play chatbot by benchmarking model choices, running prompt/model experiments, adding inference telemetry, and shipping performance + UI reliability improvements.",
         description: [
@@ -142,6 +146,7 @@ exports.portfolioExperiences = [
     {
         slug: "st-stephens-dorm-proctor",
         order: 5,
+        dateRange: "2021 - 2022",
         position: "Dorm Proctor at St. Stephen's Episcopal School",
         summary: "Guided and supported students in their transition to boarding school life.",
         description: [
