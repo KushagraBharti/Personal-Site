@@ -61,6 +61,7 @@ export interface PortfolioEducation {
 export interface PortfolioExperience {
   slug: string;
   order: number;
+  dateRange: string;
   position: string;
   summary: string;
   description: string[];

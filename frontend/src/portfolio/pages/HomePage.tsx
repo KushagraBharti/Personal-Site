@@ -1,20 +1,14 @@
-import React, { Suspense, useCallback, useState } from "react";
-import SectionSidebar from "../components/SectionSidebar";
+import React, { Suspense } from "react";
 import GlassCard from "../../shared/components/ui/GlassCard";
-import IntroSection from "../sections/intro/IntroSection";
-import { prefetchPortfolioSnapshot } from "../api/portfolioApi";
+import PortfolioNavbar from "../components/PortfolioNavbar";
+import HeroLandingSection from "../sections/hero/HeroLandingSection";
 
 const About = React.lazy(() => import("../sections/about/AboutSection"));
-const Education = React.lazy(() => import("../sections/education/EducationSection"));
+const Featured = React.lazy(() => import("../sections/featured/FeaturedSection"));
 const Experiences = React.lazy(() => import("../sections/experiences/ExperiencesSection"));
 const Projects = React.lazy(() => import("../sections/projects/ProjectsSection"));
-
-const sectionPrefetchers = [
-  () => import("../sections/about/AboutSection"),
-  () => import("../sections/education/EducationSection"),
-  () => import("../sections/experiences/ExperiencesSection"),
-  () => import("../sections/projects/ProjectsSection"),
-];
+const Film = React.lazy(() => import("../sections/film/FilmSection"));
+const Misc = React.lazy(() => import("../sections/misc/MiscSection"));
 
 const SectionFallback: React.FC<{ title: string }> = ({ title }) => (
   <div className="container mx-auto max-w-screen-xl px-4 md:px-16 py-10">
@@ -33,51 +27,20 @@ const SectionFallback: React.FC<{ title: string }> = ({ title }) => (
 );
 
 const HomePage: React.FC = () => {
-  const [sectionsPrimed, setSectionsPrimed] = useState(false);
-
-  const primeSections = useCallback(() => {
-    setSectionsPrimed((currentValue) => {
-      if (currentValue) {
-        return currentValue;
-      }
-
-      const warmSections = () => {
-        prefetchPortfolioSnapshot();
-        sectionPrefetchers.forEach((loader) => {
-          void loader();
-        });
-      };
-
-      const idleScheduler = (
-        window as Window & {
-          requestIdleCallback?: (callback: IdleRequestCallback) => number;
-        }
-      ).requestIdleCallback;
-
-      if (idleScheduler) {
-        idleScheduler(() => warmSections());
-      } else {
-        window.requestAnimationFrame(() => warmSections());
-      }
-
-      return true;
-    });
-  }, []);
-
   return (
-    <div>
-      <SectionSidebar />
+    <div className="portfolio-overhaul-page">
+      <PortfolioNavbar />
       <section id="intro">
-        <IntroSection onLiveWidgetsSettled={primeSections} />
+        <HeroLandingSection />
       </section>
       <section id="about">
         <Suspense fallback={<SectionFallback title="About" />}>
-          <About eagerMedia={sectionsPrimed} />
+          <About />
         </Suspense>
       </section>
-      <section id="education">
-        <Suspense fallback={<SectionFallback title="Education" />}>
-          <Education />
+      <section id="featured">
+        <Suspense fallback={<SectionFallback title="Featured" />}>
+          <Featured />
         </Suspense>
       </section>
       <section id="experiences">
@@ -88,6 +51,16 @@ const HomePage: React.FC = () => {
       <section id="projects">
         <Suspense fallback={<SectionFallback title="Projects" />}>
           <Projects />
+        </Suspense>
+      </section>
+      <section id="film">
+        <Suspense fallback={<SectionFallback title="Film" />}>
+          <Film />
+        </Suspense>
+      </section>
+      <section id="misc">
+        <Suspense fallback={<SectionFallback title="Misc" />}>
+          <Misc />
         </Suspense>
       </section>
     </div>
