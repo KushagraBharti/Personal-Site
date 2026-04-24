@@ -4,6 +4,7 @@ import React, { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, useNavigate } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import ScrollProgress from "./shared/components/app/ScrollProgress";
+import CustomCursor from "./shared/components/ui/CustomCursor";
 
 import HomePage from "./portfolio/pages/HomePage";
 
@@ -41,6 +42,7 @@ const App: React.FC = () => {
   return (
     <Router>
       <ScrollProgress />
+      <CustomCursor />
       <GlobalHotkeys />
       <Analytics />
       <Routes>

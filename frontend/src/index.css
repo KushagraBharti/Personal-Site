@@ -36,6 +36,58 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  html,
+  body,
+  a,
+  button,
+  input,
+  textarea,
+  select,
+  [role="button"] {
+    cursor: none !important;
+  }
+
+  .custom-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    width: 0.72rem;
+    height: 0.72rem;
+    border-radius: 999px;
+    background: #0f0d0b;
+    border: 2px solid transparent;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate3d(-100px, -100px, 0);
+    translate: -50% -50%;
+    transition:
+      width 180ms ease,
+      height 180ms ease,
+      border-color 180ms ease,
+      opacity 160ms ease;
+    will-change: transform;
+  }
+
+  .custom-cursor.is-visible {
+    opacity: 1;
+  }
+
+  .custom-cursor.is-interactive {
+    width: 1.3rem;
+    height: 1.3rem;
+    border-width: 4px;
+    border-color: var(--portfolio-accent);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .custom-cursor {
+    display: none;
+  }
+}
+
 .portfolio-overhaul-page {
   min-height: 100vh;
   background:
