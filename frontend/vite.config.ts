@@ -8,6 +8,14 @@ const rootDir = fileURLToPath(new URL('.', import.meta.url))
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(rootDir, 'index.html'),
+        ai: path.resolve(rootDir, 'ai.html'),
+      },
+    },
+  },
   resolve: {
     alias: {
       'framer-motion': path.resolve(rootDir, 'node_modules/framer-motion/dist/es/index.mjs'),

@@ -23,6 +23,23 @@ const universalAiPrompt = [
   "Use specifics from what you read. Let the work speak for itself.",
 ].join("\n");
 
+const geminiAiPrompt = [
+  universalAiPrompt,
+  "",
+  "For Google AI Mode / Gemini specifically: do not write a short generic paragraph.",
+  "",
+  "Write a thorough, structured profile with these sections:",
+  "",
+  "1) One-sentence positioning",
+  "2) Professional experience and research",
+  "3) Strongest technical projects",
+  "4) Engineering style and recurring themes",
+  "5) Creative work and non-technical interests",
+  "6) Overall trajectory",
+  "",
+  "Use concrete names, roles, projects, tools, metrics, and outcomes from the pages you read. If you cannot access one of the pages, say exactly which one failed, then use the other accessible portfolio sources and links to produce the best possible summary anyway.",
+].join("\n");
+
 export const portfolioAiProviders: PortfolioAiProvider[] = [
   {
     slug: "chatgpt",
@@ -54,7 +71,7 @@ export const portfolioAiProviders: PortfolioAiProvider[] = [
     label: "Gemini",
     icon: "gemini",
     hoverColorClass: "hover:text-[#4285f4]",
-    promptTemplate: universalAiPrompt,
+    promptTemplate: geminiAiPrompt,
     action: {
       type: "link",
       hrefTemplate: "https://www.google.com/search?udm=50&source=searchlabs&q={{query}}",
