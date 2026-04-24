@@ -26,7 +26,7 @@ const universalAiPrompt = [
 const geminiAiPrompt = [
   universalAiPrompt,
   "",
-  "For Google AI Mode / Gemini specifically: do not write a short generic paragraph.",
+  "BE EXTREMEMELY THOROUGH AND DETAILED. WRITE A LOT. MUCH MORE.",
   "",
   "Write a thorough, structured profile with these sections:",
   "",
