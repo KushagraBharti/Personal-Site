@@ -28,6 +28,7 @@ const HeroLandingSection: React.FC = () => {
   const [introData, setIntroData] = useState<PortfolioIntroResponse>(
     () => getCachedIntroSection() ?? introBootstrap
   );
+  const [clipboardProvider, setClipboardProvider] = useState<PortfolioAiProvider | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -48,6 +49,16 @@ const HeroLandingSection: React.FC = () => {
     return () => controller.abort();
   }, []);
 
+  useEffect(() => {
+    if (!clipboardProvider) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setClipboardProvider(null);
+    }, 10000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [clipboardProvider]);
+
   const socialLinks = preferredSocialLabels
     .map((label) => introData.profile.socialLinks.find((link) => link.label === label))
     .filter((link): link is NonNullable<typeof link> => Boolean(link));
@@ -63,8 +74,13 @@ const HeroLandingSection: React.FC = () => {
       return;
     }
 
-    void navigator.clipboard.writeText(prompt);
-    window.open(provider.action.targetUrl, "_blank", "noopener,noreferrer");
+    void navigator.clipboard.writeText(prompt).catch((error) => {
+      console.error(`Failed to copy ${provider.label} prompt:`, error);
+    });
+    setClipboardProvider(provider);
+    if (provider.action.targetUrl) {
+      window.open(provider.action.targetUrl, "_blank", "noopener,noreferrer");
+    }
   };
 
   return (
@@ -83,11 +99,7 @@ const HeroLandingSection: React.FC = () => {
           </div>
 
           <p className="hero-landing__summary">
-            I build systems at the
-            <br />
-            intersection of AI, data,
-            <br />
-            and real-world impact.
+            I build systems at the intersection of AI, data, and real-world impact.
           </p>
 
           <div className="hero-landing__links" aria-label="Social and AI links">
@@ -123,6 +135,41 @@ const HeroLandingSection: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {clipboardProvider ? (
+          <div className="hero-ai-modal" role="status" aria-live="polite">
+            <div className="hero-ai-modal__panel">
+              <div className="hero-ai-modal__copy">
+                <div className="hero-ai-modal__header">
+                  <span className="hero-ai-modal__mark" aria-hidden="true">
+                    {clipboardProvider.label.slice(0, 1)}
+                  </span>
+                  <p className="hero-ai-modal__eyebrow">Prompt copied</p>
+                </div>
+                <h2>Gemini needs a manual paste.</h2>
+                <p>
+                  {clipboardProvider.action.type === "clipboard" && clipboardProvider.action.message
+                    ? clipboardProvider.action.message
+                    : `${clipboardProvider.label} does not support pre-filled prompt links reliably, so the prompt has been copied to your clipboard.`}
+                </p>
+                <div className="hero-ai-modal__actions">
+                  <a href="https://gemini.google.com/app" target="_blank" rel="noreferrer">
+                    Open gemini.google.com
+                  </a>
+                  <span>then paste the copied prompt.</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="hero-ai-modal__close"
+                onClick={() => setClipboardProvider(null)}
+                aria-label="Close Gemini prompt notice"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        ) : null}
 
         <div className="hero-landing__visual" aria-label="Portrait placeholder">
           <div className="hero-landing__ring hero-landing__ring--outer" />

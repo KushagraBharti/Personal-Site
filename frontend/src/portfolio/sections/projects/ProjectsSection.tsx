@@ -5,6 +5,7 @@ import type { PortfolioProject } from "../../api/contracts";
 const PROJECT_CARD_LIMIT = 6;
 
 const ProjectsSection: React.FC = () => {
+  const [showAllProjects, setShowAllProjects] = useState(false);
   const [projects, setProjects] = useState<PortfolioProject[]>(
     () => getCachedPortfolioSnapshot()?.projects ?? []
   );
@@ -30,7 +31,7 @@ const ProjectsSection: React.FC = () => {
     };
   }, []);
 
-  const visibleProjects = projects.slice(0, PROJECT_CARD_LIMIT);
+  const visibleProjects = showAllProjects ? projects : projects.slice(0, PROJECT_CARD_LIMIT);
 
   return (
     <section className="projects-editorial" aria-labelledby="projects-title">
@@ -45,8 +46,14 @@ const ProjectsSection: React.FC = () => {
             </p>
           </div>
 
-          <p className="projects-editorial__filter">Filter Projects +</p>
-          <p className="projects-editorial__view-all">View All &rarr;</p>
+          <button
+            type="button"
+            className="projects-editorial__all-button"
+            onClick={() => setShowAllProjects(true)}
+            disabled={showAllProjects || projects.length <= PROJECT_CARD_LIMIT}
+          >
+            {showAllProjects ? "All Projects Shown" : "All Projects +"}
+          </button>
         </aside>
 
         <div className="projects-editorial__grid" role="list" aria-label="Projects">

@@ -87,7 +87,8 @@ export interface PortfolioAiProviderLinkAction {
 
 export interface PortfolioAiProviderClipboardAction {
   type: "clipboard";
-  targetUrl: string;
+  targetUrl?: string;
+  message?: string;
 }
 
 export type PortfolioAiProviderAction =

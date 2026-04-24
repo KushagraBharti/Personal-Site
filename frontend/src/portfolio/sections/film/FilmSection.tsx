@@ -92,15 +92,6 @@ const FilmSection: React.FC = () => {
             </h2>
             <p className="film-editorial__summary">Stories move people. I love telling them through the lens.</p>
           </div>
-
-          <a
-            className="film-editorial__view-all"
-            href={activeFilm.watchUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            View All Films &rarr;
-          </a>
         </aside>
 
         <div className="film-editorial__main">
@@ -122,6 +113,17 @@ const FilmSection: React.FC = () => {
               {activeFilm.year} / {activeFilm.type === "youtube" ? "Film" : "Recap"}
             </p>
             <h3 className="film-editorial__active-title">{activeFilm.shortTitle}</h3>
+
+            {activeFilm.notes?.length ? (
+              <div className="film-editorial__recognition" aria-label="Film recognition">
+                <ul>
+                  {activeFilm.notes.map((note) => (
+                    <li key={note}>{note}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
             <p className="film-editorial__active-description">{activeFilm.description}</p>
 
             <div className="film-editorial__actions">
@@ -174,14 +176,6 @@ const FilmSection: React.FC = () => {
               <li key={role}>{role}</li>
             ))}
           </ul>
-
-          {activeFilm.notes?.length ? (
-            <ul className="film-editorial__notes" aria-label="Film notes">
-              {activeFilm.notes.map((note) => (
-                <li key={note}>{note}</li>
-              ))}
-            </ul>
-          ) : null}
         </div>
       </div>
     </section>

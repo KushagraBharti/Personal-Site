@@ -73,8 +73,8 @@ export const portfolioAiProviders: PortfolioAiProvider[] = [
     hoverColorClass: "hover:text-[#4285f4]",
     promptTemplate: geminiAiPrompt,
     action: {
-      type: "link",
-      hrefTemplate: "https://www.google.com/search?udm=50&source=searchlabs&q={{query}}",
+      type: "clipboard",
+      message: "Gemini does not support pre-filled prompt links reliably, so the prompt has been copied to your clipboard.",
     },
   },
   {

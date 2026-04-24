@@ -58,7 +58,7 @@ const aiHtml = `<!doctype html>
     <meta name="description" content="AI-readable portfolio profile for Kushagra Bharti, including experience, projects, education, links, and creative work." />
     <title>Kushagra Bharti - AI Portfolio</title>
   </head>
-  <body class="bg-sky-400 text-gray-800 font-inter">
+  <body class="text-gray-800 font-inter">
     <div id="root">
       <main>
         <h1>Kushagra Bharti AI Portfolio</h1>

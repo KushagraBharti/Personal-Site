@@ -43,7 +43,9 @@ const IntroAiButtons: React.FC<{
     }
 
     navigator.clipboard.writeText(prompt).then(() => onCopied());
-    window.open(provider.action.targetUrl, "_blank", "noopener,noreferrer");
+    if (provider.action.targetUrl) {
+      window.open(provider.action.targetUrl, "_blank", "noopener,noreferrer");
+    }
   };
 
   return (

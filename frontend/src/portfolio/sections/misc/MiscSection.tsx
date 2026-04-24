@@ -49,8 +49,6 @@ const MiscSection: React.FC = () => {
     .map((label) => profile.socialLinks.find((link) => link.label === label))
     .filter((link): link is PortfolioSocialLink => Boolean(link));
 
-  const year = new Date().getFullYear();
-
   return (
     <section className="misc-editorial" aria-labelledby="misc-title">
       <div className="misc-editorial__inner">
@@ -73,8 +71,6 @@ const MiscSection: React.FC = () => {
               </div>
             ))}
           </div>
-
-          <p className="misc-editorial__coordinates">25.2048° N, 55.2708° E</p>
         </div>
 
         <div className="misc-editorial__visual" aria-hidden="true">
@@ -86,7 +82,6 @@ const MiscSection: React.FC = () => {
         </div>
       </div>
 
-      <p className="misc-editorial__footer">© {year} KB</p>
     </section>
   );
 };

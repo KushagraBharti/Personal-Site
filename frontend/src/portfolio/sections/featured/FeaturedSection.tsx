@@ -51,14 +51,12 @@ const FeaturedSection: React.FC = () => {
       <div className="featured-editorial__inner">
         <div className="featured-editorial__intro">
           <h2 className="featured-editorial__title">
-            <span>Selected</span>
-            <span>Work</span>
+            <span>Recent</span>
+            <span>Works</span>
           </h2>
 
           <p className="featured-editorial__summary">
-            Explorations in systems,
-            <br />
-            intelligence, and impact.
+            Explorations in systems, intelligence, and impact.
           </p>
         </div>
 

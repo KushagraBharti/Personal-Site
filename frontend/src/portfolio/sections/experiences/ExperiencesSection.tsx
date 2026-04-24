@@ -31,16 +31,8 @@ const ExperiencesSection: React.FC = () => {
         <div className="experiences-editorial__intro">
           <h2 className="experiences-editorial__title">Experiences</h2>
           <p className="experiences-editorial__summary">
-            Places, teams, and
-            <br />
-            problems that shaped
-            <br />
-            how I build.
+            Places, teams, and problems that shaped how I build.
           </p>
-          <a href="#projects" className="experiences-editorial__cta">
-            <span>TIMELINE VIEW</span>
-            <span aria-hidden="true">↗</span>
-          </a>
         </div>
 
         <div className="experiences-editorial__timeline" aria-label="Experience timeline">

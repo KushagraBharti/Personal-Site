@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 const navItems: Array<{ label: string; href: string }> = [
   { label: "home", href: "#top" },
   { label: "about me", href: "#about" },
-  { label: "featured", href: "#featured" },
+  { label: "recents", href: "#featured" },
   { label: "experiences", href: "#experiences" },
   { label: "projects", href: "#projects" },
   { label: "film", href: "#film" },

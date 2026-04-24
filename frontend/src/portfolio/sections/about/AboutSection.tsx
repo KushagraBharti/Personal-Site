@@ -37,11 +37,6 @@ const AboutSection: React.FC<{
               ))}
             </ul>
           </div>
-
-          <a className="about-editorial__resume" href="#misc">
-            <span>CV / RESUME</span>
-            <span aria-hidden="true">↗</span>
-          </a>
         </div>
 
         <div className="about-editorial__visual">

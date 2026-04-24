@@ -22,12 +22,14 @@
 
 /* 1. Global Styles - Enhanced gradient */
 body {
-  /* Remove any Tailwind bg-gradient classes if present */
-  background: linear-gradient(45deg, #6c88ae, #2c3d59, #4b76b1, #16223a);
-  background-size: 400% 400%;
-  animation: gradientAnimation 12s ease infinite;
+  background: var(--portfolio-paper);
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+#root {
+  min-height: 100vh;
+  background: var(--portfolio-paper);
 }
 
 html {
@@ -227,6 +229,139 @@ html {
 .hero-landing__link-row button:hover {
   color: var(--portfolio-accent);
   transform: translateY(-1px);
+}
+
+.hero-ai-modal {
+  position: fixed;
+  left: 4.8rem;
+  bottom: 2.15rem;
+  z-index: 120;
+  width: min(28rem, calc(100vw - 2rem));
+  pointer-events: none;
+}
+
+.hero-ai-modal__panel {
+  position: relative;
+  display: block;
+  padding: 1.1rem 3.1rem 1.15rem 1.2rem;
+  border: 1px solid rgba(23, 21, 18, 0.14);
+  background:
+    radial-gradient(circle at 8% 18%, rgba(207, 106, 64, 0.12), transparent 30%),
+    linear-gradient(135deg, rgba(255, 253, 248, 0.96), rgba(238, 231, 221, 0.92)),
+    var(--portfolio-paper);
+  box-shadow:
+    0 18px 45px rgba(23, 21, 18, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  color: var(--portfolio-ink);
+  pointer-events: auto;
+}
+
+.hero-ai-modal__copy {
+  display: grid;
+  gap: 0.48rem;
+}
+
+.hero-ai-modal__header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.hero-ai-modal__mark {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 999px;
+  background: #15120f;
+  color: var(--portfolio-paper);
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.12rem;
+  line-height: 1;
+}
+
+.hero-ai-modal__eyebrow,
+.hero-ai-modal__copy p,
+.hero-ai-modal__actions,
+.hero-ai-modal__close {
+  margin: 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.hero-ai-modal__eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(23, 21, 18, 0.5);
+}
+
+.hero-ai-modal__copy h2 {
+  margin: 0;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.46rem;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.hero-ai-modal__copy p {
+  max-width: 22rem;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: rgba(23, 21, 18, 0.7);
+}
+
+.hero-ai-modal__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.42rem 0.7rem;
+  padding-top: 0.1rem;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.hero-ai-modal__actions a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.32rem 0.58rem;
+  border: 1px solid rgba(207, 106, 64, 0.34);
+  background: rgba(207, 106, 64, 0.08);
+  color: var(--portfolio-accent);
+  text-decoration: none;
+}
+
+.hero-ai-modal__actions a::after {
+  content: "↗";
+  margin-left: 0.36rem;
+}
+
+.hero-ai-modal__actions span {
+  color: rgba(23, 21, 18, 0.56);
+}
+
+.hero-ai-modal__close {
+  position: absolute;
+  top: 0.78rem;
+  right: 0.78rem;
+  display: grid;
+  place-items: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  padding: 0;
+  border: 1px solid rgba(23, 21, 18, 0.13);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.36);
+  color: var(--portfolio-ink);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.hero-ai-modal__close:hover {
+  background: var(--portfolio-ink);
+  color: var(--portfolio-paper);
 }
 
 .hero-landing__visual {
@@ -746,15 +881,15 @@ html {
   position: relative;
   display: grid;
   gap: 2.9rem;
-  padding-left: 11.25rem;
+  padding-left: 8rem;
   padding-right: 0;
 }
 
 .experiences-editorial__rail {
   position: absolute;
-  left: 2.45rem;
-  top: 0.15rem;
-  bottom: 0.15rem;
+  left: 2.8rem;
+  top: 0.72rem;
+  bottom: 0.72rem;
   width: 2px;
   background: rgba(28, 24, 20, 0.18);
 }
@@ -766,8 +901,8 @@ html {
 
 .experiences-editorial__marker {
   position: absolute;
-  left: -8.95rem;
-  top: 0.7rem;
+  left: -5.7rem;
+  top: 0.62rem;
   width: 1rem;
   height: 1rem;
   border-radius: 999px;
@@ -844,6 +979,11 @@ html {
 
   .hero-landing__visual {
     min-height: 32rem;
+  }
+
+  .hero-ai-modal {
+    left: 1.5rem;
+    bottom: 1.5rem;
   }
 
   .hero-landing__ring--outer {
@@ -970,6 +1110,17 @@ html {
 
   .hero-landing__visual {
     min-height: 24rem;
+  }
+
+  .hero-ai-modal {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    max-width: none;
+  }
+
+  .hero-ai-modal__panel {
+    padding-right: 2.9rem;
   }
 
   .hero-landing__ring--outer {
@@ -1137,7 +1288,7 @@ html {
   }
 
   .experiences-editorial__marker {
-    left: -2.45rem;
+    left: -2.6rem;
   }
 
   .experiences-editorial__role,
@@ -1441,23 +1592,31 @@ html {
   color: rgba(29, 29, 29, 0.82);
 }
 
-.projects-editorial__filter,
-.projects-editorial__view-all {
+.projects-editorial__all-button {
   margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.95rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #191919;
+  text-align: left;
+  cursor: pointer;
 }
 
-.projects-editorial__filter {
+.projects-editorial__all-button {
   margin-top: 1.75rem;
 }
 
-.projects-editorial__view-all {
-  margin-top: auto;
-  padding-bottom: 0.25rem;
+.projects-editorial__all-button:hover:not(:disabled) {
+  color: var(--portfolio-accent);
+}
+
+.projects-editorial__all-button:disabled {
+  cursor: default;
+  color: rgba(25, 25, 25, 0.48);
 }
 
 .projects-editorial__grid {
@@ -1565,8 +1724,7 @@ html {
     max-width: 28rem;
   }
 
-  .projects-editorial__filter,
-  .projects-editorial__view-all {
+  .projects-editorial__all-button {
     margin-top: 0;
   }
 
@@ -1692,7 +1850,7 @@ html {
 .film-editorial__active-kicker,
 .film-editorial__active-description,
 .film-editorial__roles,
-.film-editorial__notes {
+.film-editorial__recognition {
   margin: 0;
   font-family: "IBM Plex Mono", monospace;
 }
@@ -1727,6 +1885,32 @@ html {
   flex-wrap: wrap;
   gap: 1.15rem 1.5rem;
   padding-top: 0.25rem;
+}
+
+.film-editorial__recognition {
+  display: grid;
+  margin-top: 0.2rem;
+  max-width: 36rem;
+}
+
+.film-editorial__recognition ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.film-editorial__recognition li {
+  padding: 0.42rem 0.65rem;
+  border: 1px solid rgba(207, 106, 64, 0.28);
+  background: rgba(207, 106, 64, 0.07);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(31, 28, 25, 0.78);
 }
 
 .film-editorial__watch-link,
@@ -1805,16 +1989,14 @@ html {
   opacity: 0;
 }
 
-.film-editorial__roles,
-.film-editorial__notes {
+.film-editorial__roles {
   padding: 0;
   list-style: none;
   display: grid;
   gap: 0.7rem;
 }
 
-.film-editorial__roles li,
-.film-editorial__notes li {
+.film-editorial__roles li {
   position: relative;
   padding-left: 1rem;
   font-size: 0.95rem;
@@ -1823,8 +2005,7 @@ html {
   text-transform: uppercase;
 }
 
-.film-editorial__roles li::before,
-.film-editorial__notes li::before {
+.film-editorial__roles li::before {
   content: "•";
   position: absolute;
   left: 0;
@@ -1956,9 +2137,7 @@ html {
   gap: 0.25rem;
 }
 
-.misc-editorial__contact-label,
-.misc-editorial__coordinates,
-.misc-editorial__footer {
+.misc-editorial__contact-label {
   margin: 0;
   font-family: "IBM Plex Mono", monospace;
 }
@@ -1977,13 +2156,6 @@ html {
   color: #171513;
   text-decoration: none;
   word-break: break-word;
-}
-
-.misc-editorial__coordinates {
-  padding-top: 2rem;
-  font-size: 0.95rem;
-  letter-spacing: 0.06em;
-  color: rgba(28, 24, 20, 0.42);
 }
 
 .misc-editorial__visual {
@@ -2155,9 +2327,6 @@ html {
     height: 28rem;
   }
 
-  .misc-editorial__footer {
-    width: min(100%, calc(100vw - 4rem));
-  }
 }
 
 @media (max-width: 640px) {
@@ -2165,8 +2334,7 @@ html {
     padding: 4rem 1.25rem 3rem;
   }
 
-  .misc-editorial__inner,
-  .misc-editorial__footer {
+  .misc-editorial__inner {
     width: min(100%, calc(100vw - 2.5rem));
   }
 
@@ -2175,9 +2343,7 @@ html {
   }
 
   .misc-editorial__contact-label,
-  .misc-editorial__contact-value,
-  .misc-editorial__coordinates,
-  .misc-editorial__footer {
+  .misc-editorial__contact-value {
     font-size: 0.88rem;
   }
 
