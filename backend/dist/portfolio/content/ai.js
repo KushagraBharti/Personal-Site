@@ -26,7 +26,7 @@ const universalAiPrompt = [
 const geminiAiPrompt = [
     universalAiPrompt,
     "",
-    "For Google AI Mode / Gemini specifically: do not write a short generic paragraph.",
+    "BE EXTREMEMELY THOROUGH AND DETAILED. WRITE A LOT. MUCH MORE.",
     "",
     "Write a thorough, structured profile with these sections:",
     "",
@@ -86,18 +86,6 @@ exports.portfolioAiProviders = [
         action: {
             type: "link",
             hrefTemplate: "https://grok.com/?q={{query}}",
-        },
-    },
-    {
-        slug: "perplexity",
-        order: 5,
-        label: "Perplexity",
-        icon: "perplexity",
-        hoverColorClass: "hover:text-[#20808d]",
-        promptTemplate: universalAiPrompt,
-        action: {
-            type: "link",
-            hrefTemplate: "https://www.perplexity.ai/?q={{query}}",
         },
     },
 ];

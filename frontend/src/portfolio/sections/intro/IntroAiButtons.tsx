@@ -1,5 +1,5 @@
 import React from "react";
-import { SiClaude, SiGooglegemini, SiOpenai, SiPerplexity, SiX } from "react-icons/si";
+import { SiClaude, SiGooglegemini, SiOpenai, SiX } from "react-icons/si";
 import type { PortfolioAiProvider } from "../../api/contracts";
 
 const DEFAULT_SITE_URL = "https://www.kushagrabharti.com";
@@ -10,7 +10,6 @@ const providerIcons = {
   claude: SiClaude,
   gemini: SiGooglegemini,
   x: SiX,
-  perplexity: SiPerplexity,
 } as const;
 
 const providerHoverColorClasses = {
@@ -18,7 +17,6 @@ const providerHoverColorClasses = {
   claude: "hover:text-[#da7756]",
   gemini: "hover:text-[#4285f4]",
   x: "hover:text-[#111111]",
-  perplexity: "hover:text-[#20808d]",
 } as const;
 
 const buildPrompt = (provider: PortfolioAiProvider, siteUrl: string) => {

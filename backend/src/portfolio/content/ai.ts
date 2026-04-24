@@ -89,16 +89,4 @@ export const portfolioAiProviders: PortfolioAiProvider[] = [
       hrefTemplate: "https://grok.com/?q={{query}}",
     },
   },
-  {
-    slug: "perplexity",
-    order: 5,
-    label: "Perplexity",
-    icon: "perplexity",
-    hoverColorClass: "hover:text-[#20808d]",
-    promptTemplate: universalAiPrompt,
-    action: {
-      type: "link",
-      hrefTemplate: "https://www.perplexity.ai/?q={{query}}",
-    },
-  },
 ];
