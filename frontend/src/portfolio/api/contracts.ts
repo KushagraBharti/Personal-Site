@@ -98,7 +98,7 @@ export interface PortfolioAiProvider {
   slug: string;
   order: number;
   label: string;
-  icon: "openai" | "claude" | "gemini";
+  icon: "openai" | "claude" | "gemini" | "x" | "perplexity";
   hoverColorClass: string;
   promptTemplate: string;
   action: PortfolioAiProviderAction;

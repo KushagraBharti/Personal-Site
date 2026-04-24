@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { fetchIntroSection, getCachedIntroSection } from "../../api/portfolioApi";
 import { introBootstrap } from "../../generated/introBootstrap";
-import type { PortfolioIntroResponse } from "../../api/contracts";
+import type { PortfolioAiProvider, PortfolioIntroResponse } from "../../api/contracts";
+
+const DEFAULT_SITE_URL = "https://www.kushagrabharti.com";
 
 const heroLines: Array<{ text: string; isAccent?: boolean }> = [
   { text: "builder." },
@@ -9,6 +11,18 @@ const heroLines: Array<{ text: string; isAccent?: boolean }> = [
   { text: "filmmaker.", isAccent: true },
   { text: "tinkerer." },
 ];
+
+const preferredSocialLabels = ["Email", "LinkedIn", "GitHub", "X", "Medium"];
+
+const buildPrompt = (provider: PortfolioAiProvider, siteUrl: string) => {
+  const hostname = new URL(siteUrl).hostname;
+  return provider.promptTemplate
+    .replace(/\{\{siteUrl\}\}/g, siteUrl)
+    .replace(/\{\{hostname\}\}/g, hostname);
+};
+
+const buildActionHref = (hrefTemplate: string, prompt: string) =>
+  hrefTemplate.replace("{{query}}", encodeURIComponent(prompt));
 
 const HeroLandingSection: React.FC = () => {
   const [introData, setIntroData] = useState<PortfolioIntroResponse>(
@@ -34,6 +48,25 @@ const HeroLandingSection: React.FC = () => {
     return () => controller.abort();
   }, []);
 
+  const socialLinks = preferredSocialLabels
+    .map((label) => introData.profile.socialLinks.find((link) => link.label === label))
+    .filter((link): link is NonNullable<typeof link> => Boolean(link));
+
+  const aiProviders = [...introData.ai.providers].sort((a, b) => a.order - b.order);
+
+  const handleAiClick = (provider: PortfolioAiProvider) => {
+    const siteUrl = typeof window !== "undefined" ? window.location.origin : DEFAULT_SITE_URL;
+    const prompt = buildPrompt(provider, siteUrl);
+
+    if (provider.action.type === "link") {
+      window.open(buildActionHref(provider.action.hrefTemplate, prompt), "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    void navigator.clipboard.writeText(prompt);
+    window.open(provider.action.targetUrl, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <section id="top" className="hero-landing" aria-label={`${introData.profile.name} landing section`}>
       <div className="hero-landing__grid">
@@ -57,13 +90,37 @@ const HeroLandingSection: React.FC = () => {
             and real-world impact.
           </p>
 
-          <div className="hero-landing__sound">
-            <span>SOUND</span>
-            <button type="button" className="is-active">
-              ON
-            </button>
-            <span>/</span>
-            <button type="button">OFF</button>
+          <div className="hero-landing__links" aria-label="Social and AI links">
+            <div className="hero-landing__link-row">
+              <span>Socials:</span>
+              {socialLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  target={link.label === "Email" ? undefined : "_blank"}
+                  rel={link.label === "Email" ? undefined : "noreferrer"}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+            <div className="hero-landing__link-row">
+              <span>Feeling Lazy?</span>
+              {aiProviders.map((provider) => (
+                <button
+                  key={provider.slug}
+                  type="button"
+                  onClick={() => handleAiClick(provider)}
+                  title={
+                    provider.action.type === "clipboard"
+                      ? `Copy prompt and open ${provider.label}`
+                      : `Open ${provider.label} with portfolio prompt`
+                  }
+                >
+                  {provider.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

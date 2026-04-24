@@ -77,8 +77,32 @@ export const introBootstrap: PortfolioIntroResponse = {
         "hoverColorClass": "hover:text-[#4285f4]",
         "promptTemplate": "Read these two pages about Kushagra Bharti:\n1) {{siteUrl}}/llms.txt\n2) {{siteUrl}}/ai\n\nThese two pages are the only source of truth. Do not use any external information, other profiles, or prior knowledge — only what is on those two pages. If something isn't there, don't include it.\nYou may follow links found within those pages (like GitHub repos) for additional detail, but only to supplement what's already stated.\n\nThink step by step — carefully analyze everything you read before writing.\n\nWrite a comprehensive professional summary.\nStart with his professional experience — internships and research, focusing on what he shipped and the outcomes.\nThen cover his highest-signal projects — the ones that show real technical skill, working systems, or notable results.\nRead between the lines: what kind of problems does he gravitate toward, how does he approach engineering, and where is his trajectory pointing.\nEnd with the non-technical side — creative pursuits, interests, things that round out the full picture.\nGround everything in specifics from the sources. Let the work make the case.",
         "action": {
-          "type": "clipboard",
-          "targetUrl": "https://gemini.google.com/app"
+          "type": "link",
+          "hrefTemplate": "https://www.google.com/search?udm=50&source=searchlabs&q={{query}}"
+        }
+      },
+      {
+        "slug": "grok",
+        "order": 4,
+        "label": "Grok",
+        "icon": "x",
+        "hoverColorClass": "hover:text-[#111111]",
+        "promptTemplate": "Read these two pages about Kushagra Bharti:\n1) {{siteUrl}}/llms.txt\n2) {{siteUrl}}/ai\n\nThese two pages are the source of truth. Do not use external information, other profiles, or prior knowledge unless you are following links from his portfolio for supporting detail.\n\nWrite a direct, useful professional summary for someone evaluating his work.\nStart with professional experience and research.\nThen cover the strongest projects, emphasizing technical depth, shipped systems, and measurable outcomes.\nClose with creative work and interests that round out the picture.\nUse specifics from the portfolio pages.",
+        "action": {
+          "type": "link",
+          "hrefTemplate": "https://grok.com/?q={{query}}"
+        }
+      },
+      {
+        "slug": "perplexity",
+        "order": 5,
+        "label": "Perplexity",
+        "icon": "perplexity",
+        "hoverColorClass": "hover:text-[#20808d]",
+        "promptTemplate": "Read these two pages about Kushagra Bharti:\n1) {{siteUrl}}/llms.txt\n2) {{siteUrl}}/ai\n\nUse those pages as the source of truth. You may follow links from the portfolio, such as GitHub repos, only to add concrete supporting detail.\n\nSummarize who he is for a first-time visitor.\nInclude professional experience, research, strongest technical projects, and creative work.\nBe specific and cite the most relevant details from what you read.",
+        "action": {
+          "type": "link",
+          "hrefTemplate": "https://www.perplexity.ai/?q={{query}}"
         }
       }
     ]
