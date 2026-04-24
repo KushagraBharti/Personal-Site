@@ -44,7 +44,7 @@ const AboutSection: React.FC<{
           <div className="about-editorial__frame about-editorial__frame--front">
             <div className="about-editorial__tape" />
             <img
-              src="/portfolio/profile/kushagra-bharti.jpg"
+              src="/portfolio/profile/headshot.png"
               alt="Kushagra Bharti portrait"
               className="about-editorial__image"
               loading="lazy"

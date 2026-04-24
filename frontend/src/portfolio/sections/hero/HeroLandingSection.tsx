@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { fetchIntroSection, getCachedIntroSection } from "../../api/portfolioApi";
 import { introBootstrap } from "../../generated/introBootstrap";
 import type { PortfolioAiProvider, PortfolioIntroResponse } from "../../api/contracts";
+
+const SculptureScene = React.lazy(() => import("./SculptureScene"));
 
 const DEFAULT_SITE_URL = "https://www.kushagrabharti.com";
 
@@ -171,16 +173,22 @@ const HeroLandingSection: React.FC = () => {
           </div>
         ) : null}
 
-        <div className="hero-landing__visual" aria-label="Portrait placeholder">
+        <div className="hero-landing__visual" aria-label="3D Portrait Sculpture">
           <div className="hero-landing__ring hero-landing__ring--outer" />
           <div className="hero-landing__ring hero-landing__ring--inner" />
           <div className="hero-landing__dust hero-landing__dust--one" />
           <div className="hero-landing__dust hero-landing__dust--two" />
-          <div className="hero-landing__portrait-placeholder">
-            <div className="hero-landing__portrait-figure" />
-            <span>portrait placeholder</span>
+          <div style={{ position: "absolute", inset: 0, zIndex: 10 }}>
+            <Suspense fallback={
+              <div className="hero-landing__portrait-placeholder">
+                <div className="hero-landing__portrait-figure" />
+                <span>loading 3d...</span>
+              </div>
+            }>
+              <SculptureScene />
+            </Suspense>
           </div>
-          <div className="hero-landing__coordinates">30.2672 N, 85.2708 E</div>
+          <div className="hero-landing__coordinates" style={{ zIndex: 20 }}>30.2672 N, 85.2708 E</div>
         </div>
       </div>
     </section>

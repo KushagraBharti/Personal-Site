@@ -26,7 +26,7 @@ export const portfolioSnapshotFixture: PortfolioSnapshot = {
     interestsOutsideTechnology: ["Cooking", "Filmmaking"],
   },
   intro: {
-    personalPhoto: "/portfolio/profile/kushagra-bharti.jpg",
+    personalPhoto: "/portfolio/profile/headshot.png",
     latestUpdate: "Currently applying for Summer 2026 internships",
     funFact: "A film I made screened at AMC Theatres in Times Square.",
     featuredRead: {

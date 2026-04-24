@@ -1,7 +1,7 @@
 import type { PortfolioIntroContent } from "../contracts";
 
 export const portfolioIntro: PortfolioIntroContent = {
-  personalPhoto: "/portfolio/profile/kushagra-bharti.jpg",
+  personalPhoto: "/portfolio/profile/headshot.png",
   latestUpdate: "Currently applying for Summer 2026 internships and leetcoding!",
   funFact: "A film I made was screened at AMC Theatres in Times Square!",
   featuredRead: {

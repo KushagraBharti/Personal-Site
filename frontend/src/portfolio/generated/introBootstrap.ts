@@ -29,7 +29,7 @@ export const introBootstrap: PortfolioIntroResponse = {
     ]
   },
   "intro": {
-    "personalPhoto": "/portfolio/profile/kushagra-bharti.jpg",
+    "personalPhoto": "/portfolio/profile/headshot.png",
     "latestUpdate": "Currently applying for Summer 2026 internships",
     "funFact": "A film I made was screened at AMC Theatres in Times Square!",
     "featuredRead": {

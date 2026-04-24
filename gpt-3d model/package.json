@@ -1,0 +1,14 @@
+{
+  "name": "gpt-portfolio-hero-sculpture",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build-scene.mjs",
+    "render": "node render-screenshot.mjs",
+    "all": "node build-scene.mjs && node render-screenshot.mjs"
+  },
+  "dependencies": {
+    "three": "^0.181.2"
+  }
+}
