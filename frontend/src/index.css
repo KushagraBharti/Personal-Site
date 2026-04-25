@@ -580,15 +580,16 @@ html {
 }
 
 .about-editorial {
-  padding: 7.4rem 3.9rem 12rem 4.8rem;
+  padding: 7.4rem 3.9rem 12rem 5.6rem;
 }
 
 .about-editorial__inner {
   display: grid;
-  grid-template-columns: minmax(13.5rem, 15.5rem) minmax(0, 1fr);
+  grid-template-columns: minmax(28rem, 33rem) minmax(28rem, 1fr);
   align-items: start;
-  gap: 8.5rem;
-  width: min(100%, 96rem);
+  gap: clamp(3.5rem, 5vw, 5.2rem);
+  width: 100%;
+  max-width: 96rem;
   margin: 0 auto;
 }
 
@@ -599,22 +600,27 @@ html {
 .about-editorial__title {
   margin: 0;
   font-family: "Cormorant Garamond", serif;
-  font-size: clamp(4.35rem, 5.8vw, 5.35rem);
-  line-height: 0.92;
+  font-size: clamp(4.7rem, 6.35vw, 6.1rem);
+  line-height: 0.9;
   font-weight: 500;
   letter-spacing: -0.04em;
   color: #120f0d;
+  white-space: nowrap;
+}
+
+.about-editorial__title span {
+  color: var(--portfolio-accent);
 }
 
 .about-editorial__body {
   display: grid;
-  gap: 2.65rem;
-  margin-top: 3rem;
+  gap: 2.1rem;
+  margin-top: 2.85rem;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.01rem;
-  line-height: 1.92;
+  font-size: 0.98rem;
+  line-height: 1.9;
   color: rgba(28, 24, 20, 0.82);
-  max-width: 19rem;
+  max-width: 31rem;
 }
 
 .about-editorial__body p,
@@ -624,7 +630,7 @@ html {
 }
 
 .about-editorial__values {
-  margin-top: 4.15rem;
+  margin-top: 3.55rem;
   font-family: "IBM Plex Mono", monospace;
   color: rgba(28, 24, 20, 0.78);
 }
@@ -639,12 +645,12 @@ html {
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 1.05rem;
+  gap: 1.02rem;
 }
 
 .about-editorial__values li {
   display: grid;
-  grid-template-columns: 2.5rem auto;
+  grid-template-columns: 2.6rem minmax(0, 1fr);
   align-items: center;
   column-gap: 1.75rem;
   font-size: 0.98rem;
@@ -666,26 +672,29 @@ html {
   position: relative;
   min-height: 39rem;
   padding-top: 0.4rem;
+  transform: translateY(-2.35rem);
 }
 
 .about-editorial__frame {
   position: absolute;
-  background: #181614;
+  background: rgba(232, 224, 211, 0.56);
 }
 
 .about-editorial__frame--back {
-  top: 14.2rem;
-  left: 41.6rem;
-  width: min(27.8rem, calc(100% - 10rem));
-  height: 27.9rem;
-  opacity: 0.88;
+  top: 3.35rem;
+  right: 5.2rem;
+  width: min(25.6rem, calc(100% - 10rem));
+  height: 31.2rem;
+  border: 1px solid rgba(34, 28, 22, 0.14);
+  opacity: 0.82;
+  box-shadow: 0 1.6rem 4rem rgba(32, 26, 20, 0.05);
 }
 
 .about-editorial__frame--front {
-  top: 12.9rem;
-  left: 37.95rem;
-  width: min(28.9rem, calc(100% - 6.8rem));
-  height: 29.7rem;
+  top: 2.15rem;
+  right: 8rem;
+  width: min(26.4rem, calc(100% - 6.8rem));
+  height: 33rem;
   overflow: visible;
   background: #1b1917;
   box-shadow: 0 22px 55px rgba(18, 15, 12, 0.06);
@@ -693,12 +702,16 @@ html {
 
 .about-editorial__tape {
   position: absolute;
-  top: -0.55rem;
+  top: -0.92rem;
   left: 50%;
-  width: 7rem;
-  height: 1.7rem;
+  width: min(8.35rem, 29%);
+  height: 1.75rem;
   transform: translateX(-50%);
-  background: rgba(199, 183, 161, 0.5);
+  background:
+    linear-gradient(90deg, rgba(190, 174, 151, 0.38), rgba(218, 207, 190, 0.72), rgba(185, 169, 147, 0.42));
+  box-shadow:
+    0 0.28rem 0.75rem rgba(80, 62, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
   z-index: 2;
 }
 
@@ -723,69 +736,17 @@ html {
   pointer-events: none;
 }
 
-.about-editorial__flower {
-  position: absolute;
-  right: 1.15rem;
-  bottom: -4.2rem;
-  width: 6.4rem;
-  height: 13.8rem;
-}
-
-.about-editorial__flower-stem {
-  position: absolute;
-  right: 1.05rem;
-  bottom: 0;
-  width: 2px;
-  height: 11.2rem;
-  background: rgba(145, 100, 58, 0.84);
-  transform: rotate(2.4deg);
-}
-
-.about-editorial__flower-bloom {
-  position: absolute;
-  width: 1.15rem;
-  height: 1.15rem;
-  border-radius: 999px;
-  background: rgba(145, 100, 58, 0.92);
-}
-
-.about-editorial__flower .bloom-a {
-  right: 0.1rem;
-  top: 0.2rem;
-  width: 1.35rem;
-  height: 1.35rem;
-}
-
-.about-editorial__flower .bloom-b {
-  right: 1.9rem;
-  top: 1.7rem;
-}
-
-.about-editorial__flower .bloom-c {
-  right: -0.05rem;
-  top: 4.25rem;
-}
-
-.about-editorial__flower .bloom-d {
-  right: 1.35rem;
-  top: 6.2rem;
-  width: 1.28rem;
-  height: 1.28rem;
-}
-
-.about-editorial__flower .bloom-e {
-  right: 0.35rem;
-  top: 8.25rem;
-}
-
 .about-editorial__coordinates {
   position: absolute;
-  right: 0.35rem;
-  bottom: -8.5rem;
+  right: 5.25rem;
+  bottom: 0.1rem;
+  display: grid;
+  gap: 0.28rem;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.95rem;
-  letter-spacing: 0.06em;
-  color: rgba(28, 24, 20, 0.42);
+  font-size: 0.82rem;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  color: rgba(28, 24, 20, 0.34);
 }
 
 .featured-editorial {
@@ -1098,6 +1059,7 @@ html {
   .about-editorial__inner {
     grid-template-columns: 1fr;
     gap: 3.25rem;
+    width: min(100%, 96rem);
   }
 
   .about-editorial__copy {
@@ -1106,6 +1068,7 @@ html {
 
   .about-editorial__visual {
     min-height: 34rem;
+    transform: none;
   }
 
   .featured-editorial {
@@ -1243,21 +1206,22 @@ html {
   }
 
   .about-editorial {
-    padding: 3rem 1rem 3.6rem;
+    padding: 3.25rem 1rem 4.25rem;
   }
 
   .about-editorial__title {
-    font-size: clamp(3.25rem, 13vw, 4.2rem);
+    font-size: clamp(3.65rem, 15vw, 4.55rem);
   }
 
   .about-editorial__body {
-    margin-top: 2rem;
+    margin-top: 2.15rem;
     gap: 1.65rem;
     font-size: 0.92rem;
+    max-width: none;
   }
 
   .about-editorial__values {
-    margin-top: 2.8rem;
+    margin-top: 2.65rem;
   }
 
   .about-editorial__resume {
@@ -1267,6 +1231,7 @@ html {
 
   .about-editorial__visual {
     min-height: 24rem;
+    transform: none;
   }
 
   .about-editorial__frame--back {
@@ -1284,15 +1249,8 @@ html {
   }
 
   .about-editorial__tape {
-    width: 5.4rem;
-    height: 1.25rem;
-  }
-
-  .about-editorial__flower {
-    right: 0.25rem;
-    bottom: 2.6rem;
-    transform: scale(0.78);
-    transform-origin: bottom right;
+    width: 5.8rem;
+    height: 1.35rem;
   }
 
   .about-editorial__coordinates {

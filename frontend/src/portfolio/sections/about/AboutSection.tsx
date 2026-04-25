@@ -9,17 +9,18 @@ const values = [
 
 const AboutSection: React.FC<{
   eagerMedia?: boolean;
-}> = () => {
+}> = ({ eagerMedia = false }) => {
   return (
     <section className="about-editorial">
       <div className="about-editorial__inner">
         <div className="about-editorial__copy">
-          <h2 className="about-editorial__title">About me</h2>
+          <h2 className="about-editorial__title">
+            About <span>me</span>
+          </h2>
 
           <div className="about-editorial__body">
             <p>
-              I&apos;m Kushagra. I love building things that solve meaningful problems and
-              create leverage.
+              I build systems that make complex behavior easier to see, test, and improve.
             </p>
             <p>
               Curious by nature. Driven by impact. Always learning.
@@ -37,6 +38,7 @@ const AboutSection: React.FC<{
               ))}
             </ul>
           </div>
+
         </div>
 
         <div className="about-editorial__visual">
@@ -47,19 +49,14 @@ const AboutSection: React.FC<{
               src="/portfolio/profile/headshot.png"
               alt="Kushagra Bharti portrait"
               className="about-editorial__image"
-              loading="lazy"
+              loading={eagerMedia ? "eager" : "lazy"}
               decoding="async"
             />
           </div>
-          <div className="about-editorial__flower" aria-hidden="true">
-            <span className="about-editorial__flower-stem" />
-            <span className="about-editorial__flower-bloom bloom-a" />
-            <span className="about-editorial__flower-bloom bloom-b" />
-            <span className="about-editorial__flower-bloom bloom-c" />
-            <span className="about-editorial__flower-bloom bloom-d" />
-            <span className="about-editorial__flower-bloom bloom-e" />
-          </div>
-          <p className="about-editorial__coordinates">25.2048° N, 55.2708° E</p>
+          <p className="about-editorial__coordinates">
+            <span>25.2048° N, 55.2708° E</span>
+            <span>+</span>
+          </p>
         </div>
       </div>
     </section>
