@@ -418,8 +418,38 @@ html {
 
 .hero-landing__visual {
   position: relative;
-  min-height: 33.5rem;
+  min-height: clamp(38rem, 49vw, 44rem);
+  margin-left: clamp(-9.5rem, -10vw, -6.5rem);
   margin-top: 0.2rem;
+}
+
+.hero-landing__scene {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.hero-landing__model-canvas {
+  width: clamp(40rem, 48vw, 47rem);
+  height: clamp(40rem, 48vw, 47rem);
+  aspect-ratio: 1;
+  pointer-events: auto;
+  transform: translateY(-0.55rem) scale(0.96);
+  transform-origin: center center;
+}
+
+.hero-landing__model-canvas canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  cursor: grab;
+}
+
+.hero-landing__model-canvas canvas:active {
+  cursor: grabbing;
 }
 
 .hero-landing__ring {
@@ -429,10 +459,11 @@ html {
 }
 
 .hero-landing__ring--outer {
-  top: 2.9rem;
-  right: 2.8rem;
-  width: min(34vw, 29.5rem);
-  height: min(34vw, 29.5rem);
+  top: 0.35rem;
+  right: 50%;
+  transform: translateX(50%);
+  width: clamp(35.5rem, 44vw, 42rem);
+  height: clamp(35.5rem, 44vw, 42rem);
   border: 4px solid rgba(19, 17, 14, 0.68);
   opacity: 0.95;
   box-shadow:
@@ -441,10 +472,11 @@ html {
 }
 
 .hero-landing__ring--inner {
-  top: 4.3rem;
-  right: 4.6rem;
-  width: min(29.4vw, 25.8rem);
-  height: min(29.4vw, 25.8rem);
+  top: 2.1rem;
+  right: 50%;
+  transform: translateX(50%);
+  width: clamp(31rem, 39vw, 37.2rem);
+  height: clamp(31rem, 39vw, 37.2rem);
   border: 2px dashed rgba(30, 26, 23, 0.24);
 }
 
@@ -530,14 +562,21 @@ html {
   color: var(--portfolio-muted);
 }
 
-.hero-landing__coordinates {
+.hero-landing__model-note {
   position: absolute;
-  right: 1rem;
-  bottom: 2.55rem;
+  left: 50%;
+  bottom: -0.55rem;
+  z-index: 22;
+  width: min(34rem, 92%);
+  margin: 0;
+  transform: translateX(-50%);
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.92rem;
-  letter-spacing: 0.08em;
-  color: rgba(23, 21, 18, 0.38);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: rgba(23, 21, 18, 0.42);
+  pointer-events: none;
 }
 
 .about-editorial {
@@ -1032,7 +1071,14 @@ html {
   }
 
   .hero-landing__visual {
-    min-height: 32rem;
+    min-height: 39rem;
+    margin-left: 0;
+  }
+
+  .hero-landing__model-canvas {
+    width: clamp(33rem, 76vw, 39rem);
+    height: clamp(33rem, 76vw, 39rem);
+    transform: translateY(-0.45rem) scale(0.92);
   }
 
   .hero-ai-modal {
@@ -1040,22 +1086,7 @@ html {
     bottom: 1.5rem;
   }
 
-  .hero-landing__ring--outer {
-    right: 50%;
-    transform: translateX(50%);
-  }
-
-  .hero-landing__ring--inner {
-    right: 50%;
-    transform: translateX(50%);
-  }
-
   .hero-landing__portrait-placeholder {
-    right: 50%;
-    transform: translateX(50%);
-  }
-
-  .hero-landing__coordinates {
     right: 50%;
     transform: translateX(50%);
   }
@@ -1163,7 +1194,14 @@ html {
   }
 
   .hero-landing__visual {
-    min-height: 24rem;
+    min-height: 27rem;
+    margin-left: 0;
+  }
+
+  .hero-landing__model-canvas {
+    width: clamp(24rem, 104vw, 30rem);
+    height: clamp(24rem, 104vw, 30rem);
+    transform: translateY(-0.25rem) scale(0.88);
   }
 
   .hero-ai-modal {
@@ -1178,15 +1216,15 @@ html {
   }
 
   .hero-landing__ring--outer {
-    top: 1.75rem;
-    width: 18.5rem;
-    height: 18.5rem;
+    top: 0.6rem;
+    width: min(92vw, 26rem);
+    height: min(92vw, 26rem);
   }
 
   .hero-landing__ring--inner {
-    top: 2.8rem;
-    width: 15.5rem;
-    height: 15.5rem;
+    top: 1.8rem;
+    width: min(79vw, 22.6rem);
+    height: min(79vw, 22.6rem);
   }
 
   .hero-landing__portrait-placeholder {
@@ -1199,9 +1237,9 @@ html {
     font-size: 0.64rem;
   }
 
-  .hero-landing__coordinates {
-    bottom: 1rem;
-    font-size: 0.72rem;
+  .hero-landing__model-note {
+    bottom: -0.35rem;
+    font-size: 0.62rem;
   }
 
   .about-editorial {

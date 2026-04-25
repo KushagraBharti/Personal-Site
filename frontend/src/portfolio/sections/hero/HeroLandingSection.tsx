@@ -178,7 +178,7 @@ const HeroLandingSection: React.FC = () => {
           <div className="hero-landing__ring hero-landing__ring--inner" />
           <div className="hero-landing__dust hero-landing__dust--one" />
           <div className="hero-landing__dust hero-landing__dust--two" />
-          <div style={{ position: "absolute", inset: 0, zIndex: 10 }}>
+          <div className="hero-landing__scene">
             <Suspense fallback={
               <div className="hero-landing__portrait-placeholder">
                 <div className="hero-landing__portrait-figure" />
@@ -188,7 +188,9 @@ const HeroLandingSection: React.FC = () => {
               <SculptureScene />
             </Suspense>
           </div>
-          <div className="hero-landing__coordinates" style={{ zIndex: 20 }}>30.2672 N, 85.2708 E</div>
+          <p className="hero-landing__model-note">
+            this 3d model is a work in progress, quality will become better LOL
+          </p>
         </div>
       </div>
     </section>
