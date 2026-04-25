@@ -2,6 +2,15 @@ import React, { useEffect, useState } from "react";
 import { fetchExperiences, getCachedPortfolioSnapshot } from "../../api/portfolioApi";
 import type { PortfolioExperience } from "../../api/contracts";
 
+const getExperienceCategory = (experience: PortfolioExperience) => {
+  if (experience.category) return experience.category;
+  if (experience.slug.includes("researcher")) return "Research";
+  if (experience.slug.includes("abilitie")) return "Industry";
+  if (experience.slug.includes("consult")) return "Consulting";
+  if (experience.slug.includes("proctor")) return "Leadership";
+  return "Experience";
+};
+
 const ExperiencesSection: React.FC = () => {
   const [experiences, setExperiences] = useState<PortfolioExperience[]>(
     () => getCachedPortfolioSnapshot()?.experiences ?? []
@@ -42,6 +51,9 @@ const ExperiencesSection: React.FC = () => {
               <span className="experiences-editorial__marker" aria-hidden="true" />
               <div className="experiences-editorial__content">
                 <p className="experiences-editorial__date">{experience.dateRange}</p>
+                <p className="experiences-editorial__category">
+                  {getExperienceCategory(experience)}
+                </p>
                 <h3 className="experiences-editorial__role">{experience.position}</h3>
                 <p className="experiences-editorial__description">{experience.summary}</p>
               </div>

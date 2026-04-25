@@ -68,6 +68,7 @@ Link: https://www.sstx.org/boarding/boarding-student-support
 ## Experiences
 
 ### Undergraduate Researcher at UT Dallas (supervised by Prof. Ovidiu Daescu)
+Category: Research
 Summary: Building paper-faithful optimization solvers and a solver-labeled dataset pipeline for 1D drone coverage planning, with benchmarks + QC gates to support supervised learning, GNN, and RL experiments on optimal tour planning.
 Highlights:
 - Implemented 4 paper-faithful solvers for 1D drone coverage planning (greedy + DP), including exact plan reconstruction (cost → tours) for solver-faithful labeling.
@@ -80,6 +81,7 @@ Tags: Optimization, Algorithms, Dynamic Programming, Greedy Algorithms, Computat
 Link: https://personal.utdallas.edu/~daescu/
 
 ### Undergraduate Researcher at UT Dallas (mentored by PhD Candidate Parth Padalkar)
+Category: Research
 Summary: Built a deterministic, replayable Monopoly benchmark where LLMs play head-to-head via schema-typed tool calls, enabling research on long-horizon planning, negotiation/deception, and bias under fully logged, inspectable runs.
 Highlights:
 - Built MonopolyBench: deterministic rules engine + LLM arena + telemetry + live UI, designed for reproducible benchmarking and dataset generation from full-game trajectories.
@@ -92,6 +94,7 @@ Tags: Deterministic Simulation, Event Sourcing, Replayable Benchmarks, Contracts
 Link: https://github.com/KushagraBharti/MonopolyBench
 
 ### Consultant at Consult Your Community (Club)
+Category: Consulting
 Summary: Led data analytics to transform multi-source data into actionable insights.
 Highlights:
 - Led data strategy for Made2Polish, architecting & deploying an end-to-end analytics solution (React, Flask, Python, Looker Studio) translating raw multi-source data (sales, inventory, social) into actionable business insights.
@@ -101,6 +104,7 @@ Tags: Data Analytics, Python, Flask, Looker Studio
 Link: https://www.utdcyc.com/
 
 ### Software Engineering Intern at Abilitie
+Category: Industry
 Summary: Worked on a production role-play chatbot by benchmarking model choices, running prompt/model experiments, adding inference telemetry, and shipping performance + UI reliability improvements.
 Highlights:
 - Reduced LLM cost per conversation by ~70% by supporting a production migration from GPT-4-32k → GPT-4o and further cutting prompt tokens per request by ~20% and retries by ~8% while maintaining role-play quality.
@@ -115,6 +119,7 @@ Tags: LLMs, Prompt Engineering, Evaluation, Telemetry, DynamoDB, AWS, React, Typ
 Link: https://www.abilitie.com/
 
 ### Dorm Proctor at St. Stephen's Episcopal School
+Category: Leadership
 Summary: Guided and supported students in their transition to boarding school life.
 Highlights:
 - Supported new students in their transition to boarding school, helping them adjust to routines and environment through active guidance and personalized support.

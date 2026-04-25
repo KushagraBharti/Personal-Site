@@ -51,6 +51,7 @@ vi.mock("../content", () => ({
     {
       slug: "exp-second",
       order: 2,
+      category: "Industry",
       position: "Second Experience",
       summary: "Summary",
       description: ["Detail"],
@@ -60,6 +61,7 @@ vi.mock("../content", () => ({
     {
       slug: "exp-first",
       order: 1,
+      category: "Research",
       position: "First Experience",
       summary: "Summary",
       description: ["Detail"],

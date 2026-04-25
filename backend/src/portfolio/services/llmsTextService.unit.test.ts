@@ -41,6 +41,7 @@ const snapshot = {
     {
       slug: "experience",
       order: 1,
+      category: "Research",
       position: "Undergraduate Researcher",
       summary: "Researching optimization.",
       description: ["Built solvers."],

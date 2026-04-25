@@ -25,6 +25,7 @@ const formatExperiences = (experiences: PortfolioSnapshot["experiences"]) =>
     .map((entry) =>
       [
         `### ${entry.position}`,
+        `Category: ${entry.category}`,
         `Summary: ${entry.summary}`,
         "Highlights:",
         ...entry.description.map((detail) => `- ${detail}`),
