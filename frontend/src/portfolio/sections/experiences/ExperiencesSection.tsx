@@ -43,17 +43,15 @@ const ExperiencesSection: React.FC = () => {
                 className={`experiences-editorial__item is-${experience.timelineTone}`}
               >
                 <div className="experiences-editorial__track" aria-hidden="true">
-                  <span className="experiences-editorial__track-segment experiences-editorial__track-segment--before" />
                   <span className="experiences-editorial__marker" />
-                  <span className="experiences-editorial__track-segment experiences-editorial__track-segment--after" />
                 </div>
                 <p className="experiences-editorial__date">{experience.dateRange}</p>
                 <div className="experiences-editorial__content">
-                <p className="experiences-editorial__category">
-                  {experience.category}
-                </p>
-                <h3 className="experiences-editorial__role">{experience.position}</h3>
-                <p className="experiences-editorial__description">{experience.summary}</p>
+                  <p className="experiences-editorial__category">
+                    {experience.category}
+                  </p>
+                  <h3 className="experiences-editorial__role">{experience.position}</h3>
+                  <p className="experiences-editorial__description">{experience.summary}</p>
                 </div>
               </article>
             );
