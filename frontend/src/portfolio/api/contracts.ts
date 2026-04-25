@@ -63,6 +63,7 @@ export interface PortfolioExperience {
   order: number;
   dateRange: string;
   category: string;
+  timelineTone: "active" | "past";
   position: string;
   summary: string;
   description: string[];
