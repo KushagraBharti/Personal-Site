@@ -13,30 +13,34 @@ const featuredProjects: FeaturedProject[] = [
   {
     index: "01",
     title: "MonopolyBench",
-    description: "LLM benchmark for strategic reasoning and decision making.",
+    description:
+      "Benchmarking long-horizon strategic reasoning in LLM agents through repeatable Monopoly simulations, schema-typed tool calls, and inspectable decision traces. Open to collaborators interested in turning this into a publishable research paper.",
     image: "/portfolio/projects/monopoly-llm-benchmark.svg",
     imageAlt: "Monopoly board visual",
   },
   {
     index: "02",
-    title: "PseudoLawyer",
-    description: "AI mediator for negotiation and contract drafting.",
-    image: "/portfolio/projects/pseudo-lawyer.png",
-    imageAlt: "PseudoLawyer workflow visual",
-  },
-  {
-    index: "03",
-    title: "Quant Trading Lab",
-    description: "Backtesting, strategies, and market research.",
+    title: "IMC Prosperity",
+    description:
+      "Competing in IMC's global trading challenge, combining manual strategy with Python-based algorithmic trading across simulated markets. Currently top 7% globally by overall score.",
     image: "/portfolio/projects/quant-test-environment.svg",
     imageAlt: "Quant trading chart visual",
   },
   {
+    index: "03",
+    title: "LeetCode Practice",
+    description:
+      "Solving difficult algorithm problems daily in Python, keeping paper notes alongside code to sharpen pattern recognition, implementation speed, and proof-level reasoning.",
+    image: "/portfolio/projects/data-drive.svg",
+    imageAlt: "Algorithm practice visual",
+  },
+  {
     index: "04",
-    title: "More Projects",
-    description: "A collection of experiments and prototypes.",
-    imageAlt: "More projects placeholder",
-    isPlaceholder: true,
+    title: "F1 Optimization",
+    description:
+      "Rebuilding the racing optimization project with a 2D physics simulation, then extending it into a multi-agent PPO reinforcement learning system for strategy and control.",
+    image: "/portfolio/projects/f1-optimization.svg",
+    imageAlt: "Formula 1 optimization visual",
   },
 ];
 
