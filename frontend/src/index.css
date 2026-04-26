@@ -856,7 +856,7 @@ html {
 
 .featured-editorial__index {
   font-size: 0.94rem;
-  color: rgba(28, 24, 20, 0.8);
+  color: var(--portfolio-accent);
 }
 
 .featured-editorial__item-title {
