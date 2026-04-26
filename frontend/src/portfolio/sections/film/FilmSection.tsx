@@ -4,16 +4,22 @@ type FilmEntry = {
   id: string;
   index: string;
   year: string;
+  genre: string;
+  duration: string;
   title: string;
   shortTitle: string;
   summary: string;
   description: string;
-  linkLabel: string;
   watchUrl: string;
   embedUrl: string;
   type: "youtube" | "drive";
   roles: string[];
   notes?: string[];
+  actions: {
+    label: string;
+    url: string;
+    variant?: "primary" | "secondary";
+  }[];
 };
 
 const films: FilmEntry[] = [
@@ -21,12 +27,13 @@ const films: FilmEntry[] = [
     id: "dining-hall-documentary",
     index: "01",
     year: "2022",
+    genre: "Documentary",
+    duration: "11 min",
     title: "St. Stephen's Dining Hall Documentary",
     shortTitle: "Dining Hall Documentary",
     summary: "A documentary on the dining hall staff and the people behind the daily experience.",
     description:
       "A documentary following the St. Stephen's dining hall staff from the start of their day to the end, combining observational footage, intimate interviews, and a close look at the full dining hall experience.",
-    linkLabel: "Watch",
     watchUrl: "https://youtu.be/WM6RvRfDCX4",
     embedUrl: "https://www.youtube-nocookie.com/embed/WM6RvRfDCX4",
     type: "youtube",
@@ -35,42 +42,58 @@ const films: FilmEntry[] = [
       "Nominated for The All-American High School Film Festival 2023.",
       "Screened at AMC Theatres in New York City.",
     ],
+    actions: [
+      { label: "Watch", url: "https://youtu.be/WM6RvRfDCX4", variant: "primary" },
+      {
+        label: "Festival Selection",
+        url: "https://www.hsfilmfest.com/2023-official-selections",
+        variant: "secondary",
+      },
+    ],
   },
   {
     id: "pbj-documentary",
     index: "02",
     year: "2023",
+    genre: "Documentary",
+    duration: "13 min",
     title: "The PB&J Documentary",
     shortTitle: "The PB&J Documentary",
     summary: "A comedic documentary about obsession, mentorship, and the perfect PB&J sandwich.",
     description:
       "A comedic documentary following Liam and Edison as they chase the perfect PB&J through restaurants, roadside discoveries, and a boutique in San Antonio before the whole mentor-protege dynamic starts to unravel.",
-    linkLabel: "Watch",
     watchUrl: "https://youtu.be/FS8l8G2p7PM",
     embedUrl: "https://www.youtube-nocookie.com/embed/FS8l8G2p7PM",
     type: "youtube",
     roles: ["Director", "Cinematographer", "Editor"],
+    actions: [{ label: "Watch", url: "https://youtu.be/FS8l8G2p7PM", variant: "primary" }],
   },
   {
     id: "rtms-recap",
     index: "03",
     year: "2018",
+    genre: "Recap",
+    duration: "3 min",
     title: "RTMS Semesterly Recap",
     shortTitle: "RTMS Semesterly Recap",
     summary: "A semester photo montage focused on rhythm, pacing, and raw editing craft.",
     description:
       "A semesterly recap film from Ras Tanura Middle School built as a photo montage. It has no traditional narrative, but it highlights editing instincts, visual sequencing, and the ability to build momentum through rhythm alone.",
-    linkLabel: "Watch",
     watchUrl:
       "https://drive.google.com/file/d/1az0x6mwBzTXJEPBC7zhBQk9_DGO_8GwN/view?usp=sharing",
     embedUrl:
       "https://drive.google.com/file/d/1az0x6mwBzTXJEPBC7zhBQk9_DGO_8GwN/preview",
     type: "drive",
     roles: ["Editor", "Photographer", "Story Builder"],
+    actions: [
+      {
+        label: "Watch",
+        url: "https://drive.google.com/file/d/1az0x6mwBzTXJEPBC7zhBQk9_DGO_8GwN/view?usp=sharing",
+        variant: "primary",
+      },
+    ],
   },
 ];
-
-const nominationUrl = "https://www.hsfilmfest.com/2023-official-selections";
 
 const FilmSection: React.FC = () => {
   const [activeFilmId, setActiveFilmId] = useState(films[0]?.id ?? "");
@@ -92,6 +115,10 @@ const FilmSection: React.FC = () => {
             </h2>
             <p className="film-editorial__summary">Stories move people. I love telling them through the lens.</p>
           </div>
+          <a className="film-editorial__view-all" href={activeFilm.watchUrl} target="_blank" rel="noreferrer">
+            view all films
+            <span aria-hidden="true">→</span>
+          </a>
         </aside>
 
         <div className="film-editorial__main">
@@ -110,7 +137,7 @@ const FilmSection: React.FC = () => {
 
           <div className="film-editorial__details">
             <p className="film-editorial__active-kicker">
-              {activeFilm.year} / {activeFilm.type === "youtube" ? "Film" : "Recap"}
+              {activeFilm.year} / {activeFilm.genre.toLowerCase()} / {activeFilm.duration}
             </p>
             <h3 className="film-editorial__active-title">{activeFilm.shortTitle}</h3>
 
@@ -127,25 +154,24 @@ const FilmSection: React.FC = () => {
             <p className="film-editorial__active-description">{activeFilm.description}</p>
 
             <div className="film-editorial__actions">
-              <a
-                className="film-editorial__watch-link"
-                href={activeFilm.watchUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {activeFilm.linkLabel}
-                <span aria-hidden="true">▶</span>
-              </a>
-              {activeFilm.id === "dining-hall-documentary" ? (
-                <a
-                  className="film-editorial__secondary-link"
-                  href={nominationUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Festival Selection
-                </a>
-              ) : null}
+              {activeFilm.actions.map((action) => {
+                const isPrimary = action.variant !== "secondary";
+
+                return (
+                  <a
+                    key={`${activeFilm.id}-${action.label}`}
+                    className={
+                      isPrimary ? "film-editorial__watch-link" : "film-editorial__secondary-link"
+                    }
+                    href={action.url}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {action.label}
+                    {isPrimary ? <span aria-hidden="true">▶</span> : null}
+                  </a>
+                );
+              })}
             </div>
           </div>
         </div>

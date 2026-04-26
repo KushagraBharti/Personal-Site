@@ -15,7 +15,7 @@ const getDisplayValue = (link: PortfolioSocialLink) => {
   }
 };
 
-const preferredLabels = ["Email", "LinkedIn", "GitHub"];
+const preferredLabels = ["Email", "LinkedIn", "GitHub", "X"];
 
 const MiscSection: React.FC = () => {
   const [profile, setProfile] = useState<PortfolioProfile | null>(
@@ -58,6 +58,9 @@ const MiscSection: React.FC = () => {
             <span>something</span>
             <span className="is-accent">meaningful.</span>
           </h2>
+          <p className="misc-editorial__summary">
+            Open to internships, research collaborations, and ambitious builds.
+          </p>
 
           <div className="misc-editorial__dash" aria-hidden="true" />
 
@@ -74,7 +77,9 @@ const MiscSection: React.FC = () => {
         </div>
 
         <div className="misc-editorial__visual" aria-hidden="true">
+          <div className="misc-editorial__orbit misc-editorial__orbit--far" />
           <div className="misc-editorial__orbit misc-editorial__orbit--outer" />
+          <div className="misc-editorial__orbit misc-editorial__orbit--middle" />
           <div className="misc-editorial__orbit misc-editorial__orbit--inner" />
           <div className="misc-editorial__crosshair misc-editorial__crosshair--horizontal" />
           <div className="misc-editorial__crosshair misc-editorial__crosshair--vertical" />
