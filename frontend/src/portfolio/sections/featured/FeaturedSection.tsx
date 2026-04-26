@@ -6,6 +6,7 @@ type FeaturedProject = {
   description: string;
   imageAlt: string;
   image?: string;
+  imageFit?: "cover" | "contain";
   isPlaceholder?: boolean;
 };
 
@@ -23,16 +24,17 @@ const featuredProjects: FeaturedProject[] = [
     title: "IMC Prosperity",
     description:
       "Competing in IMC's global trading challenge, combining manual strategy with Python-based algorithmic trading across simulated markets. Currently top 7% globally by overall score.",
-    image: "/portfolio/projects/quant-test-environment.svg",
-    imageAlt: "Quant trading chart visual",
+    image: "/portfolio/projects/imc-prosperity.png",
+    imageAlt: "IMC Prosperity trading challenge visual",
   },
   {
     index: "03",
     title: "LeetCode Practice",
     description:
       "Solving difficult algorithm problems daily in Python, keeping paper notes alongside code to sharpen pattern recognition, implementation speed, and proof-level reasoning.",
-    image: "/portfolio/projects/data-drive.svg",
-    imageAlt: "Algorithm practice visual",
+    image: "/portfolio/projects/leetcode-logo.png",
+    imageFit: "contain",
+    imageAlt: "LeetCode logo",
   },
   {
     index: "04",
@@ -71,7 +73,9 @@ const FeaturedSection: React.FC = () => {
                   <img
                     src={project.image}
                     alt={project.imageAlt}
-                    className="featured-editorial__image"
+                    className={`featured-editorial__image${
+                      project.imageFit === "contain" ? " featured-editorial__image--contain" : ""
+                    }`}
                     loading="lazy"
                     decoding="async"
                   />

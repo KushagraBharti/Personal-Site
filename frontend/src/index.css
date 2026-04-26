@@ -828,6 +828,12 @@ html {
   display: block;
 }
 
+.featured-editorial__image--contain {
+  object-fit: contain;
+  padding: 2.3rem;
+  background: #11100e;
+}
+
 .featured-editorial__placeholder {
   display: flex;
   align-items: center;
