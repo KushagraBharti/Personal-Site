@@ -4,7 +4,6 @@ type FeaturedProject = {
   index: string;
   title: string;
   description: string;
-  tags: string[];
   imageAlt: string;
   image?: string;
   isPlaceholder?: boolean;
@@ -15,7 +14,6 @@ const featuredProjects: FeaturedProject[] = [
     index: "01",
     title: "MonopolyBench",
     description: "LLM benchmark for strategic reasoning and decision making.",
-    tags: ["PYTHON", "BENCHMARKS"],
     image: "/portfolio/projects/monopoly-llm-benchmark.svg",
     imageAlt: "Monopoly board visual",
   },
@@ -23,7 +21,6 @@ const featuredProjects: FeaturedProject[] = [
     index: "02",
     title: "PseudoLawyer",
     description: "AI mediator for negotiation and contract drafting.",
-    tags: ["AI", "NLP", "FULLSTACK"],
     image: "/portfolio/projects/pseudo-lawyer.png",
     imageAlt: "PseudoLawyer workflow visual",
   },
@@ -31,7 +28,6 @@ const featuredProjects: FeaturedProject[] = [
     index: "03",
     title: "Quant Trading Lab",
     description: "Backtesting, strategies, and market research.",
-    tags: ["PYTHON", "FINANCE"],
     image: "/portfolio/projects/quant-test-environment.svg",
     imageAlt: "Quant trading chart visual",
   },
@@ -39,7 +35,6 @@ const featuredProjects: FeaturedProject[] = [
     index: "04",
     title: "More Projects",
     description: "A collection of experiments and prototypes.",
-    tags: [],
     imageAlt: "More projects placeholder",
     isPlaceholder: true,
   },
@@ -83,9 +78,6 @@ const FeaturedSection: React.FC = () => {
                 <p className="featured-editorial__index">{project.index}</p>
                 <h3 className="featured-editorial__item-title">{project.title}</h3>
                 <p className="featured-editorial__description">{project.description}</p>
-                {project.tags.length > 0 ? (
-                  <p className="featured-editorial__tags">{project.tags.join(" • ")}</p>
-                ) : null}
               </div>
             </article>
           ))}

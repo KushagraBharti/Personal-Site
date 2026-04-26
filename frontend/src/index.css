@@ -843,13 +843,12 @@ html {
 
 .featured-editorial__meta {
   padding-top: 0.3rem;
-  max-width: 34rem;
   width: 100%;
+  min-width: 0;
 }
 
 .featured-editorial__index,
-.featured-editorial__description,
-.featured-editorial__tags {
+.featured-editorial__description {
   margin: 0;
   font-family: "IBM Plex Mono", monospace;
 }
@@ -874,15 +873,7 @@ html {
   font-size: 0.98rem;
   line-height: 1.92;
   color: rgba(28, 24, 20, 0.76);
-  max-width: 31rem;
-}
-
-.featured-editorial__tags {
-  margin-top: 1.25rem;
-  font-size: 0.88rem;
-  letter-spacing: 0.06em;
-  color: rgba(28, 24, 20, 0.66);
-  white-space: nowrap;
+  max-width: none;
 }
 
 .experiences-editorial {
@@ -1375,10 +1366,6 @@ html {
 
   .featured-editorial__description {
     font-size: 0.9rem;
-  }
-
-  .featured-editorial__tags {
-    font-size: 0.8rem;
   }
 
   .experiences-editorial {
