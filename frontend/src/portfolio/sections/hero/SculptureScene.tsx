@@ -1,7 +1,17 @@
 import { Suspense, useEffect } from "react";
-import { ContactShadows, Environment, OrbitControls, useGLTF } from "@react-three/drei";
+import {
+  ContactShadows,
+  Environment,
+  OrbitControls,
+  useGLTF,
+} from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
-import { LinearFilter, LinearMipmapLinearFilter, SRGBColorSpace } from "three";
+import {
+  LinearFilter,
+  LinearMipmapLinearFilter,
+  PCFShadowMap,
+  SRGBColorSpace,
+} from "three";
 import type { Group, Mesh, MeshStandardMaterial, Texture } from "three";
 
 const HERO_MODEL_PATH = "/portfolio/models/best.glb";
@@ -30,7 +40,9 @@ function HeroModel() {
       mesh.castShadow = true;
       mesh.receiveShadow = true;
 
-      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      const materials = Array.isArray(mesh.material)
+        ? mesh.material
+        : [mesh.material];
       materials.forEach((material) => {
         const standardMaterial = material as MeshStandardMaterial;
         enhanceTexture(standardMaterial.map);
@@ -58,7 +70,8 @@ export default function SculptureScene() {
   return (
     <div className="hero-landing__model-canvas">
       <Canvas
-        shadows
+        fallback={null}
+        shadows={{ type: PCFShadowMap }}
         dpr={[2, 4]}
         gl={{
           alpha: true,
@@ -76,8 +89,16 @@ export default function SculptureScene() {
           shadow-mapSize={[2048, 2048]}
           shadow-bias={-0.0001}
         />
-        <directionalLight position={[4, 3, 3]} intensity={0.58} color="#ffe4bf" />
-        <pointLight position={[0.5, 1.5, 2.4]} intensity={0.36} color="#ffcf92" />
+        <directionalLight
+          position={[4, 3, 3]}
+          intensity={0.58}
+          color="#ffe4bf"
+        />
+        <pointLight
+          position={[0.5, 1.5, 2.4]}
+          intensity={0.36}
+          color="#ffcf92"
+        />
 
         <Suspense fallback={null}>
           <HeroModel />

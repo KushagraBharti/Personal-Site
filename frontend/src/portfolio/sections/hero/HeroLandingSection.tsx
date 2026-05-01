@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { introBootstrap } from "../../generated/introBootstrap";
-import type { PortfolioAiProvider, PortfolioIntroResponse } from "../../api/contracts";
+import type {
+  PortfolioAiProvider,
+  PortfolioIntroResponse,
+} from "../../api/contracts";
 
 type SculptureSceneComponent = React.ComponentType;
 
@@ -25,19 +28,42 @@ const buildPrompt = (provider: PortfolioAiProvider, siteUrl: string) => {
 const buildActionHref = (hrefTemplate: string, prompt: string) =>
   hrefTemplate.replace("{{query}}", encodeURIComponent(prompt));
 
+const canCreateWebGLContext = () => {
+  if (typeof document === "undefined") return false;
+
+  try {
+    const canvas = document.createElement("canvas");
+    const attributes: WebGLContextAttributes = {
+      alpha: true,
+      antialias: true,
+    };
+    const context =
+      canvas.getContext("webgl2", attributes) ??
+      canvas.getContext("webgl", attributes);
+
+    context?.getExtension("WEBGL_lose_context")?.loseContext();
+    return Boolean(context);
+  } catch {
+    return false;
+  }
+};
+
 const HeroLandingSection: React.FC = () => {
   const [introData, setIntroData] = useState<PortfolioIntroResponse>(
-    () => introBootstrap
+    () => introBootstrap,
   );
-  const [clipboardProvider, setClipboardProvider] = useState<PortfolioAiProvider | null>(null);
-  const [SculptureScene, setSculptureScene] = useState<SculptureSceneComponent | null>(null);
+  const [clipboardProvider, setClipboardProvider] =
+    useState<PortfolioAiProvider | null>(null);
+  const [SculptureScene, setSculptureScene] =
+    useState<SculptureSceneComponent | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
 
     const loadIntro = async () => {
       try {
-        const { fetchIntroSection, getCachedIntroSection } = await import("../../api/portfolioApi");
+        const { fetchIntroSection, getCachedIntroSection } =
+          await import("../../api/portfolioApi");
         const cachedIntro = getCachedIntroSection();
         if (cachedIntro) {
           setIntroData(cachedIntro);
@@ -59,11 +85,21 @@ const HeroLandingSection: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
 
-    void import("./SculptureScene").then((module) => {
-      if (isMounted) {
-        setSculptureScene(() => module.default);
-      }
-    });
+    if (!canCreateWebGLContext()) {
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    void import("./SculptureScene")
+      .then((module) => {
+        if (isMounted) {
+          setSculptureScene(() => module.default);
+        }
+      })
+      .catch(() => {
+        // Keep the hero usable if the GPU-backed scene cannot be loaded.
+      });
 
     return () => {
       isMounted = false;
@@ -81,17 +117,26 @@ const HeroLandingSection: React.FC = () => {
   }, [clipboardProvider]);
 
   const socialLinks = preferredSocialLabels
-    .map((label) => introData.profile.socialLinks.find((link) => link.label === label))
+    .map((label) =>
+      introData.profile.socialLinks.find((link) => link.label === label),
+    )
     .filter((link): link is NonNullable<typeof link> => Boolean(link));
 
-  const aiProviders = [...introData.ai.providers].sort((a, b) => a.order - b.order);
+  const aiProviders = [...introData.ai.providers].sort(
+    (a, b) => a.order - b.order,
+  );
 
   const handleAiClick = (provider: PortfolioAiProvider) => {
-    const siteUrl = typeof window !== "undefined" ? window.location.origin : DEFAULT_SITE_URL;
+    const siteUrl =
+      typeof window !== "undefined" ? window.location.origin : DEFAULT_SITE_URL;
     const prompt = buildPrompt(provider, siteUrl);
 
     if (provider.action.type === "link") {
-      window.open(buildActionHref(provider.action.hrefTemplate, prompt), "_blank", "noopener,noreferrer");
+      window.open(
+        buildActionHref(provider.action.hrefTemplate, prompt),
+        "_blank",
+        "noopener,noreferrer",
+      );
       return;
     }
 
@@ -105,7 +150,11 @@ const HeroLandingSection: React.FC = () => {
   };
 
   return (
-    <section id="top" className="hero-landing" aria-label={`${introData.profile.name} landing section`}>
+    <section
+      id="top"
+      className="hero-landing"
+      aria-label={`${introData.profile.name} landing section`}
+    >
       <div className="hero-landing__grid">
         <div className="hero-landing__copy">
           <div className="hero-landing__headline" aria-label="Hero roles">
@@ -120,7 +169,8 @@ const HeroLandingSection: React.FC = () => {
           </div>
 
           <p className="hero-landing__summary">
-            I build systems at the intersection of AI, data, and real-world impact.
+            I build systems at the intersection of AI, data, and real-world
+            impact.
           </p>
 
           <div className="hero-landing__links" aria-label="Social and AI links">
@@ -169,12 +219,17 @@ const HeroLandingSection: React.FC = () => {
                 </div>
                 <h2>Gemini needs a manual paste.</h2>
                 <p>
-                  {clipboardProvider.action.type === "clipboard" && clipboardProvider.action.message
+                  {clipboardProvider.action.type === "clipboard" &&
+                  clipboardProvider.action.message
                     ? clipboardProvider.action.message
                     : `${clipboardProvider.label} does not support pre-filled prompt links reliably, so the prompt has been copied to your clipboard.`}
                 </p>
                 <div className="hero-ai-modal__actions">
-                  <a href="https://gemini.google.com/app" target="_blank" rel="noreferrer">
+                  <a
+                    href="https://gemini.google.com/app"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     Open gemini.google.com
                   </a>
                   <span>then paste the copied prompt.</span>
@@ -192,7 +247,10 @@ const HeroLandingSection: React.FC = () => {
           </div>
         ) : null}
 
-        <div className="hero-landing__visual" aria-label="3D Portrait Sculpture">
+        <div
+          className="hero-landing__visual"
+          aria-label="3D Portrait Sculpture"
+        >
           <div className="hero-landing__ring hero-landing__ring--outer" />
           <div className="hero-landing__ring hero-landing__ring--inner" />
           <div className="hero-landing__dust hero-landing__dust--one" />
