@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { buildHomepageFallbackHtml } from "./homepageHtmlService";
 import { buildLlmsText } from "./llmsTextService";
 
 const snapshot = {
@@ -78,17 +77,5 @@ describe("llmsTextService", () => {
     expect(result).toContain("### Undergraduate Researcher");
     expect(result).toContain("### Monopoly Bench");
     expect(result).toContain("### Socials");
-  });
-});
-
-describe("homepageHtmlService", () => {
-  it("renders crawlable homepage content from the portfolio snapshot", () => {
-    const result = buildHomepageFallbackHtml(snapshot as never, "https://custom.example");
-
-    expect(result).toContain("<h1>Kushagra Bharti</h1>");
-    expect(result).toContain("This is the about section.");
-    expect(result).toContain("<h2>Experiences</h2>");
-    expect(result).toContain("<h3>Monopoly Bench</h3>");
-    expect(result).toContain("https://custom.example/llms.txt");
   });
 });

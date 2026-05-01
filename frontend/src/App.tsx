@@ -38,25 +38,50 @@ const GlobalHotkeys: React.FC = () => {
   return null;
 };
 
-const App: React.FC = () => {
+export const AppContent: React.FC = () => {
   const [Analytics, setAnalytics] = React.useState<AnalyticsComponent | null>(null);
 
   useEffect(() => {
     let isMounted = true;
+    let timeoutId: number | null = null;
 
-    void import("@vercel/analytics/react").then((module) => {
-      if (isMounted) {
-        setAnalytics(() => module.Analytics);
-      }
-    });
+    if (!import.meta.env.PROD) {
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    const loadAnalytics = () => {
+      timeoutId = window.setTimeout(() => {
+        void import("@vercel/analytics/react")
+          .then((module) => {
+            if (isMounted) {
+              setAnalytics(() => module.Analytics);
+            }
+          })
+          .catch(() => {
+            // Ad blockers often block analytics. Keep the app silent and fast.
+          });
+      }, 2500);
+    };
+
+    if (document.readyState === "complete") {
+      loadAnalytics();
+    } else {
+      window.addEventListener("load", loadAnalytics, { once: true });
+    }
 
     return () => {
       isMounted = false;
+      window.removeEventListener("load", loadAnalytics);
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
     };
   }, []);
 
   return (
-    <Router>
+    <>
       <ScrollProgress />
       <CustomCursor />
       <GlobalHotkeys />
@@ -80,8 +105,14 @@ const App: React.FC = () => {
           }
         />
       </Routes>
-    </Router>
+    </>
   );
 };
+
+const App: React.FC = () => (
+  <Router>
+    <AppContent />
+  </Router>
+);
 
 export default App;

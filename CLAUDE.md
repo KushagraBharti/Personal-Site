@@ -37,7 +37,8 @@ Routes:
 - Frontend API-facing portfolio contracts live in `frontend/src/portfolio/api/contracts.ts`.
 - Backend portfolio contracts live in `backend/src/portfolio/contracts`.
 - `frontend/scripts/sync-portfolio-exports.mjs` generates `frontend/index.html`, `frontend/ai.html`, `frontend/public/llms.txt`, `frontend/public/robots.txt`, `frontend/public/sitemap.xml`, `frontend/src/portfolio/generated/introBootstrap.ts`, and `frontend/src/portfolio/generated/portfolioSnapshotBootstrap.ts`.
-- `/` is eager only for the hero shell. The 3D model and homepage sections load after the hero mounts with no skeleton placeholders. `/ai` and `/tracker` are lazy.
+- `/` is statically prerendered from the real React homepage shell, then hydrated. Media-heavy homepage enhancements, the 3D model, and live data load after first paint with no skeleton placeholders. `/ai` and `/tracker` are lazy.
+- Public portfolio fonts are self-hosted in `frontend/public/portfolio/fonts`; do not add Google Fonts back to the critical path.
 - Weather is backend-driven and must not trigger browser location prompts.
 - GitHub stats should prefer the GraphQL contribution path.
 - Public live widget APIs are currently GitHub stats and weather; keep any frontend usage explicit and route it through the backend.

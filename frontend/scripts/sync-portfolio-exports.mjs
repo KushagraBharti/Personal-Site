@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const rootDirectory = resolve(scriptDirectory, "..", "..");
@@ -44,7 +44,6 @@ const siteUrl =
   llmsTextModule.DEFAULT_PUBLIC_SITE_URL;
 
 const llmsText = exportModule.getLlmsTextExport(siteUrl);
-const homepageFallbackHtml = exportModule.getHomepageFallbackHtmlExport(siteUrl);
 const portfolioSnapshot = snapshotModule.getPortfolioSnapshot();
 const stablePortfolioSnapshot = {
   ...portfolioSnapshot,
@@ -62,49 +61,17 @@ const sharedHead = ({
 }) => `    <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/portfolio/icons/brain.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" href="/portfolio/fonts/cormorant-garamond-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/portfolio/fonts/cormorant-garamond-latin-ext.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/portfolio/fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/portfolio/fonts/ibm-plex-mono-500-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/portfolio/fonts/ibm-plex-mono-600-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/portfolio/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="canonical" href="${siteUrl}${canonicalPath}" />
     <link rel="alternate" type="text/plain" href="${siteUrl}/llms.txt" title="Kushagra Bharti AI-readable portfolio" />
     <link rel="alternate" type="text/html" href="${siteUrl}/ai" title="Kushagra Bharti structured AI portfolio" />
     <meta name="description" content="${description}" />
-    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
     <title>${title}</title>`;
-
-const prerenderStyle = `    <style>
-      .prerendered-homepage {
-        max-width: 72rem;
-        margin: 0 auto;
-        padding: 4rem 1.25rem;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        line-height: 1.65;
-        color: #101010;
-      }
-      .prerendered-homepage section { margin-block: 3rem; }
-      .prerendered-homepage h1 { font-size: clamp(2.5rem, 8vw, 6rem); line-height: 0.95; margin: 0 0 1rem; }
-      .prerendered-homepage h2 { font-size: clamp(1.75rem, 4vw, 3rem); margin: 0 0 1rem; }
-      .prerendered-homepage h3 { margin: 1.25rem 0 0.35rem; }
-      .prerendered-homepage a { color: inherit; text-decoration-thickness: 0.12em; }
-    </style>`;
-
-const indexHtml = `<!doctype html>
-<html lang="en">
-  <head>
-${sharedHead({
-  canonicalPath: "/",
-  description: "Portfolio for Kushagra Bharti, including engineering projects, research, creative work, and AI-readable profile content.",
-  title: "Kushagra Bharti - Portfolio",
-})}
-${prerenderStyle}
-  </head>
-  <body class="text-gray-800 font-inter">
-    <div id="root">
-      ${homepageFallbackHtml}
-    </div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
-`;
 
 const aiHtml = `<!doctype html>
 <html lang="en">
@@ -170,12 +137,34 @@ for (const directory of [
   }
 }
 
+writeFileSync(introBootstrapPath, introBootstrapModule, "utf8");
+writeFileSync(portfolioSnapshotBootstrapPath, portfolioSnapshotBootstrapModule, "utf8");
+
+const { renderHomepage } = await import(
+  pathToFileURL(resolve(scriptDirectory, "../src/entry-homepage-ssr.tsx")).href
+);
+const homepageHtml = renderHomepage();
+
+const indexHtml = `<!doctype html>
+<html lang="en">
+  <head>
+${sharedHead({
+  canonicalPath: "/",
+  description: "Portfolio for Kushagra Bharti, including engineering projects, research, creative work, and AI-readable profile content.",
+  title: "Kushagra Bharti - Portfolio",
+})}
+  </head>
+  <body class="text-gray-800 font-inter">
+    <div id="root" data-prerendered="homepage">${homepageHtml}</div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+`;
+
 writeFileSync(indexHtmlPath, indexHtml, "utf8");
 writeFileSync(outputPath, llmsText, "utf8");
 writeFileSync(aiHtmlPath, aiHtml, "utf8");
 writeFileSync(robotsPath, robotsText, "utf8");
 writeFileSync(sitemapPath, sitemapXml, "utf8");
-writeFileSync(introBootstrapPath, introBootstrapModule, "utf8");
-writeFileSync(portfolioSnapshotBootstrapPath, portfolioSnapshotBootstrapModule, "utf8");
 
 console.log(`Synced portfolio exports to ${outputPath}`);

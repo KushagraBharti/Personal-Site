@@ -1,0 +1,239 @@
+.ai-profile-shell {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  padding: 4rem 1.25rem 5rem;
+}
+
+.ai-profile-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.15), transparent 28%),
+    radial-gradient(circle at 85% 20%, rgba(191, 219, 254, 0.16), transparent 22%),
+    radial-gradient(circle at 50% 100%, rgba(255, 255, 255, 0.1), transparent 30%);
+  pointer-events: none;
+}
+
+.ai-profile-frame {
+  position: relative;
+  z-index: 1;
+  width: min(72rem, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.ai-profile-hero {
+  padding: 1.5rem 0.25rem 0.75rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.ai-profile-kicker {
+  margin: 0;
+  font-family: var(--portfolio-font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.ai-profile-title {
+  margin: 0;
+  font-family: var(--portfolio-font-serif);
+  font-size: clamp(3rem, 5vw, 5rem);
+  line-height: 0.95;
+  color: #f8fbff;
+}
+
+.ai-profile-subtitle {
+  margin: 0;
+  font-family: var(--portfolio-font-sans);
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.88);
+}
+
+.ai-profile-summary {
+  margin: 0;
+  max-width: 48rem;
+  font-size: 1.15rem;
+  line-height: 1.85;
+  color: rgba(241, 245, 249, 0.95);
+}
+
+.ai-profile-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.9rem;
+}
+
+.ai-profile-meta-pill {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem 1.05rem;
+  border-radius: 1.15rem;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: #f8fbff;
+}
+
+.ai-profile-meta-pill a {
+  color: #f8fbff;
+  text-decoration: underline;
+  text-decoration-color: rgba(248, 250, 252, 0.35);
+  text-underline-offset: 0.2rem;
+}
+
+.ai-profile-meta-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.ai-profile-card {
+  border-radius: 1.75rem !important;
+}
+
+.ai-profile-section-heading {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.ai-profile-section-heading h2,
+.ai-profile-section-heading h3,
+.ai-profile-entry h3,
+.ai-profile-link-groups h3 {
+  margin: 0;
+  font-family: var(--portfolio-font-serif);
+  color: #f8fbff;
+}
+
+.ai-profile-section-heading h2 {
+  font-size: 2rem;
+}
+
+.ai-profile-section-heading p,
+.ai-profile-entry p,
+.ai-profile-entry a,
+.ai-profile-link-list,
+.ai-profile-bullet-list,
+.ai-profile-tags {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.92);
+}
+
+.ai-profile-link-groups,
+.ai-profile-about-grid {
+  display: grid;
+  gap: 1.2rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ai-profile-about-span {
+  grid-column: 1 / -1;
+}
+
+.ai-profile-link-list,
+.ai-profile-bullet-list {
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.65rem;
+  line-height: 1.75;
+}
+
+.ai-profile-link-list li {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.ai-profile-link-list a,
+.ai-profile-entry a {
+  color: #f8fbff;
+  word-break: break-word;
+  text-decoration: underline;
+  text-decoration-color: rgba(248, 250, 252, 0.35);
+  text-underline-offset: 0.2rem;
+}
+
+.ai-profile-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.ai-profile-entry {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.2rem 1.25rem;
+  border-radius: 1.25rem;
+  background: rgba(15, 23, 42, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.ai-profile-entry-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ai-profile-entry-header span {
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.68);
+}
+
+.ai-profile-entry-focus {
+  font-size: 1.02rem;
+  line-height: 1.8;
+  color: #f8fbff !important;
+}
+
+.ai-profile-tags {
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 900px) {
+  .ai-profile-link-groups,
+  .ai-profile-about-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-profile-entry-header {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .ai-profile-shell {
+    padding: 2.5rem 1rem 4rem;
+  }
+
+  .ai-profile-section-heading h2 {
+    font-size: 1.65rem;
+  }
+
+  .ai-profile-summary {
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  .ai-profile-meta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+

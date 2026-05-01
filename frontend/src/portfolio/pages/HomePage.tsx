@@ -1,13 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import PortfolioNavbar from "../components/PortfolioNavbar";
-import HeroLandingSection from "../sections/hero/HeroLandingSection";
-
-type SectionKey = "about" | "featured" | "experiences" | "projects" | "film" | "misc";
-type LoadedSection = React.ComponentType;
+import HomePageShell from "./HomePageShell";
+import type { HomePageSectionComponent, HomePageSectionKey } from "./HomePageShell";
 
 const sectionLoaders: Array<{
-  key: SectionKey;
-  load: () => Promise<{ default: LoadedSection }>;
+  key: HomePageSectionKey;
+  load: () => Promise<{ default: HomePageSectionComponent }>;
 }> = [
   { key: "about", load: () => import("../sections/about/AboutSection") },
   { key: "featured", load: () => import("../sections/featured/FeaturedSection") },
@@ -18,26 +15,34 @@ const sectionLoaders: Array<{
 ];
 
 const HomePage: React.FC = () => {
-  const [loadedSections, setLoadedSections] = useState<Partial<Record<SectionKey, LoadedSection>>>({});
+  const [loadedSections, setLoadedSections] = useState<
+    Partial<Record<HomePageSectionKey, HomePageSectionComponent>>
+  >({});
 
   useEffect(() => {
     let isMounted = true;
 
-    void import("../api/portfolioApi").then(({ prefetchPortfolioSnapshot }) => {
-      if (isMounted) {
-        prefetchPortfolioSnapshot();
-      }
-    });
-
-    for (const section of sectionLoaders) {
-      void section.load().then((module) => {
-        if (!isMounted) return;
-        setLoadedSections((current) => ({
-          ...current,
-          [section.key]: module.default,
-        }));
+    const startEnhancements = () => {
+      void import("../api/portfolioApi").then(({ prefetchPortfolioSnapshot }) => {
+        if (isMounted) {
+          prefetchPortfolioSnapshot();
+        }
       });
-    }
+
+      for (const section of sectionLoaders) {
+        void section.load().then((module) => {
+          if (!isMounted) return;
+          setLoadedSections((current) => ({
+            ...current,
+            [section.key]: module.default,
+          }));
+        });
+      }
+    };
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(startEnhancements);
+    });
 
     return () => {
       isMounted = false;
@@ -45,29 +50,19 @@ const HomePage: React.FC = () => {
   }, []);
 
   const sectionsToRender = useMemo(() => {
-    const readySections: Array<{ key: SectionKey; Component: LoadedSection }> = [];
+    const readySections: Partial<Record<HomePageSectionKey, HomePageSectionComponent>> = {};
 
     for (const section of sectionLoaders) {
       const Component = loadedSections[section.key];
       if (!Component) break;
-      readySections.push({ key: section.key, Component });
+      readySections[section.key] = Component;
     }
 
     return readySections;
   }, [loadedSections]);
 
   return (
-    <div className="portfolio-overhaul-page">
-      <PortfolioNavbar />
-      <section id="intro">
-        <HeroLandingSection />
-      </section>
-      {sectionsToRender.map(({ key, Component }) => (
-        <section key={key} id={key}>
-          <Component />
-        </section>
-      ))}
-    </div>
+    <HomePageShell enhancedSections={sectionsToRender} />
   );
 };
 

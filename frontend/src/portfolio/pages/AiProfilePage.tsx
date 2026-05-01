@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import GlassCard from "../../shared/components/ui/GlassCard";
 import { fetchPortfolioSnapshot, getCachedPortfolioSnapshot } from "../api/portfolioApi";
 import type { PortfolioSnapshot } from "../api/contracts";
+import "./AiProfilePage.css";
 
 const sectionClasses =
   "w-full max-w-none mx-0 p-6 md:p-8 text-slate-100 space-y-5 ai-profile-card";
