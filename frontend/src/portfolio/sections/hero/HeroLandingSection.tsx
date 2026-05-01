@@ -1,9 +1,8 @@
-import React, { useEffect, useState, Suspense } from "react";
-import { fetchIntroSection, getCachedIntroSection } from "../../api/portfolioApi";
+import React, { useEffect, useState } from "react";
 import { introBootstrap } from "../../generated/introBootstrap";
 import type { PortfolioAiProvider, PortfolioIntroResponse } from "../../api/contracts";
 
-const SculptureScene = React.lazy(() => import("./SculptureScene"));
+type SculptureSceneComponent = React.ComponentType;
 
 const DEFAULT_SITE_URL = "https://www.kushagrabharti.com";
 
@@ -28,20 +27,26 @@ const buildActionHref = (hrefTemplate: string, prompt: string) =>
 
 const HeroLandingSection: React.FC = () => {
   const [introData, setIntroData] = useState<PortfolioIntroResponse>(
-    () => getCachedIntroSection() ?? introBootstrap
+    () => introBootstrap
   );
   const [clipboardProvider, setClipboardProvider] = useState<PortfolioAiProvider | null>(null);
+  const [SculptureScene, setSculptureScene] = useState<SculptureSceneComponent | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
 
     const loadIntro = async () => {
       try {
+        const { fetchIntroSection, getCachedIntroSection } = await import("../../api/portfolioApi");
+        const cachedIntro = getCachedIntroSection();
+        if (cachedIntro) {
+          setIntroData(cachedIntro);
+        }
         const response = await fetchIntroSection(controller.signal);
         setIntroData(response);
-      } catch (error) {
+      } catch {
         if (!controller.signal.aborted) {
-          console.error("Failed to load hero intro data:", error);
+          // Keep the generated hero bootstrap if the live API is unavailable.
         }
       }
     };
@@ -49,6 +54,20 @@ const HeroLandingSection: React.FC = () => {
     void loadIntro();
 
     return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    void import("./SculptureScene").then((module) => {
+      if (isMounted) {
+        setSculptureScene(() => module.default);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -179,14 +198,7 @@ const HeroLandingSection: React.FC = () => {
           <div className="hero-landing__dust hero-landing__dust--one" />
           <div className="hero-landing__dust hero-landing__dust--two" />
           <div className="hero-landing__scene">
-            <Suspense fallback={
-              <div className="hero-landing__portrait-placeholder">
-                <div className="hero-landing__portrait-figure" />
-                <span>loading 3d...</span>
-              </div>
-            }>
-              <SculptureScene />
-            </Suspense>
+            {SculptureScene ? <SculptureScene /> : null}
           </div>
           <p className="hero-landing__model-note">
             this 3d model is a work in progress, quality will become better LOL

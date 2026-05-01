@@ -1513,10 +1513,6 @@ html {
   @apply min-h-screen flex items-center justify-center;
 }
 
-.intro-stage {
-  isolation: isolate;
-}
-
 /* 8. Icon Hover Effects */
 .icon-hover {
   @apply transition-transform duration-300;
@@ -1620,47 +1616,6 @@ html {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
-
-
-.floating-card {
-  position: absolute;
-  top: 0;
-  left: 0;
-  will-change: transform;
-  user-select: none;
-  filter: drop-shadow(0 4px 16px rgba(15, 23, 42, 0.1));
-  transition: filter 250ms ease;
-}
-
-.floating-card:hover {
-  filter: drop-shadow(0 8px 28px rgba(15, 23, 42, 0.16));
-}
-
-.floating-card__surface {
-  width: fit-content;
-}
-
-.floating-card.react-draggable-dragging {
-  cursor: grabbing !important;
-}
-
-.floating-card.react-draggable-dragging .card,
-.floating-card.react-draggable-dragging .glass {
-  transform: none !important;
-  transition: none !important;
-}
-
-.intro-desktop-stage {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.intro-desktop-hero {
-  position: absolute;
-  z-index: 1;
-}
-
 
 /* Premium hover overlay for project/education/experience cards */
 .premium-hover-overlay {

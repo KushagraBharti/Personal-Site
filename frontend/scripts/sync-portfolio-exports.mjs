@@ -10,11 +10,13 @@ const backendDirectory = resolve(rootDirectory, "backend");
 const backendTsconfigPath = resolve(backendDirectory, "tsconfig.json");
 const backendTscPath = resolve(backendDirectory, "node_modules/typescript/bin/tsc");
 const publicDirectory = resolve(scriptDirectory, "../public");
+const indexHtmlPath = resolve(scriptDirectory, "../index.html");
 const outputPath = resolve(publicDirectory, "llms.txt");
 const aiHtmlPath = resolve(scriptDirectory, "../ai.html");
 const robotsPath = resolve(publicDirectory, "robots.txt");
 const sitemapPath = resolve(publicDirectory, "sitemap.xml");
 const introBootstrapPath = resolve(scriptDirectory, "../src/portfolio/generated/introBootstrap.ts");
+const portfolioSnapshotBootstrapPath = resolve(scriptDirectory, "../src/portfolio/generated/portfolioSnapshotBootstrap.ts");
 const require = createRequire(import.meta.url);
 
 const backendBuild = spawnSync(process.execPath, [backendTscPath, "-p", backendTsconfigPath], {
@@ -42,21 +44,76 @@ const siteUrl =
   llmsTextModule.DEFAULT_PUBLIC_SITE_URL;
 
 const llmsText = exportModule.getLlmsTextExport(siteUrl);
+const homepageFallbackHtml = exportModule.getHomepageFallbackHtmlExport(siteUrl);
+const portfolioSnapshot = snapshotModule.getPortfolioSnapshot();
+const stablePortfolioSnapshot = {
+  ...portfolioSnapshot,
+  generatedAt: "generated-at-build-time",
+};
 const escapedLlmsText = llmsText
   .replace(/&/g, "&amp;")
   .replace(/</g, "&lt;")
   .replace(/>/g, "&gt;")
   .replace(/"/g, "&quot;");
+const sharedHead = ({
+  canonicalPath,
+  description,
+  title,
+}) => `    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/portfolio/icons/brain.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="canonical" href="${siteUrl}${canonicalPath}" />
+    <link rel="alternate" type="text/plain" href="${siteUrl}/llms.txt" title="Kushagra Bharti AI-readable portfolio" />
+    <link rel="alternate" type="text/html" href="${siteUrl}/ai" title="Kushagra Bharti structured AI portfolio" />
+    <meta name="description" content="${description}" />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <title>${title}</title>`;
+
+const prerenderStyle = `    <style>
+      .prerendered-homepage {
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: 4rem 1.25rem;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.65;
+        color: #101010;
+      }
+      .prerendered-homepage section { margin-block: 3rem; }
+      .prerendered-homepage h1 { font-size: clamp(2.5rem, 8vw, 6rem); line-height: 0.95; margin: 0 0 1rem; }
+      .prerendered-homepage h2 { font-size: clamp(1.75rem, 4vw, 3rem); margin: 0 0 1rem; }
+      .prerendered-homepage h3 { margin: 1.25rem 0 0.35rem; }
+      .prerendered-homepage a { color: inherit; text-decoration-thickness: 0.12em; }
+    </style>`;
+
+const indexHtml = `<!doctype html>
+<html lang="en">
+  <head>
+${sharedHead({
+  canonicalPath: "/",
+  description: "Portfolio for Kushagra Bharti, including engineering projects, research, creative work, and AI-readable profile content.",
+  title: "Kushagra Bharti - Portfolio",
+})}
+${prerenderStyle}
+  </head>
+  <body class="text-gray-800 font-inter">
+    <div id="root">
+      ${homepageFallbackHtml}
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+`;
+
 const aiHtml = `<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/brain.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="canonical" href="${siteUrl}/ai" />
-    <link rel="alternate" type="text/plain" href="${siteUrl}/llms.txt" title="Kushagra Bharti AI-readable portfolio" />
-    <meta name="description" content="AI-readable portfolio profile for Kushagra Bharti, including experience, projects, education, links, and creative work." />
-    <title>Kushagra Bharti - AI Portfolio</title>
+${sharedHead({
+  canonicalPath: "/ai",
+  description: "AI-readable portfolio profile for Kushagra Bharti, including experience, projects, education, links, and creative work.",
+  title: "Kushagra Bharti - AI Portfolio",
+})}
   </head>
   <body class="text-gray-800 font-inter">
     <div id="root">
@@ -94,23 +151,31 @@ const introBootstrapModule = `import type { PortfolioIntroResponse } from "../ap
 
 export const introBootstrap: PortfolioIntroResponse = ${JSON.stringify(snapshotModule.getIntroResponse(), null, 2)};
 `;
+const portfolioSnapshotBootstrapModule = `import type { PortfolioSnapshot } from "../api/contracts";
+
+export const portfolioSnapshotBootstrap: PortfolioSnapshot = ${JSON.stringify(stablePortfolioSnapshot, null, 2)};
+`;
 
 for (const directory of [
+  dirname(indexHtmlPath),
   dirname(outputPath),
   dirname(aiHtmlPath),
   dirname(robotsPath),
   dirname(sitemapPath),
   dirname(introBootstrapPath),
+  dirname(portfolioSnapshotBootstrapPath),
 ]) {
   if (!existsSync(directory)) {
     mkdirSync(directory, { recursive: true });
   }
 }
 
+writeFileSync(indexHtmlPath, indexHtml, "utf8");
 writeFileSync(outputPath, llmsText, "utf8");
 writeFileSync(aiHtmlPath, aiHtml, "utf8");
 writeFileSync(robotsPath, robotsText, "utf8");
 writeFileSync(sitemapPath, sitemapXml, "utf8");
 writeFileSync(introBootstrapPath, introBootstrapModule, "utf8");
+writeFileSync(portfolioSnapshotBootstrapPath, portfolioSnapshotBootstrapModule, "utf8");
 
 console.log(`Synced portfolio exports to ${outputPath}`);

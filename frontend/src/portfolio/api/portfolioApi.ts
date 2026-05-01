@@ -115,7 +115,9 @@ export const fetchIntroSection = async (signal?: AbortSignal) => {
 };
 
 export const prefetchPortfolioSnapshot = () => {
-  void fetchPortfolioSnapshot();
+  void fetchPortfolioSnapshot().catch(() => {
+    // Generated bootstrap data keeps the portfolio renderable when the API is unavailable.
+  });
 };
 
 export const fetchEducation = async (signal?: AbortSignal): Promise<PortfolioEducation[]> =>

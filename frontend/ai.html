@@ -2,11 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/brain.svg" />
+    <link rel="icon" type="image/svg+xml" href="/portfolio/icons/brain.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="canonical" href="https://www.kushagrabharti.com/ai" />
     <link rel="alternate" type="text/plain" href="https://www.kushagrabharti.com/llms.txt" title="Kushagra Bharti AI-readable portfolio" />
+    <link rel="alternate" type="text/html" href="https://www.kushagrabharti.com/ai" title="Kushagra Bharti structured AI portfolio" />
     <meta name="description" content="AI-readable portfolio profile for Kushagra Bharti, including experience, projects, education, links, and creative work." />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
     <title>Kushagra Bharti - AI Portfolio</title>
   </head>
   <body class="text-gray-800 font-inter">
@@ -181,6 +185,22 @@ Highlights:
 - Shipped the project as a working hackathon product that won 1st place in the Solana track at HackSMU, demonstrating a credible consumer fintech concept backed by a real full-stack and on-chain implementation.
 Tags: TypeScript, React Native, Expo, Expo Router, Fastify, Supabase, PostgreSQL, Solana, Web3, SPL Token, Mobile Development, Full-Stack Development, Fintech, Consumer Social, System Design, Hackathon
 GitHub: https://github.com/KushagraBharti/resolve
+
+### Arachne Web Crawler
+Summary: A result-first Go web crawler with a Next.js reading interface, Brave Search seed selection, asynchronous top-10 result prefetching, live crawl streaming, rooted discovery trees, and local JSON artifacts for inspection and debugging.
+Highlights:
+- Built a full-stack web crawler designed around usable results rather than telemetry: users can enter a URL or keyword, choose the exact seed page, read extracted article text, inspect discovered pages, and verify every run through local JSON artifacts.
+- Implemented a concurrent Go crawler engine with bounded global concurrency, per-host concurrency, request/header/TLS/idle timeouts, max body limits, retry handling, redirect handling, robots.txt support, canonical URL deduplication, max-depth limits, max-page limits, and time-budget enforcement.
+- Designed keyword search as a fast seed-selection workflow: the backend calls the Brave Search API, keeps the top 10 results, returns those choices to the frontend immediately, and asynchronously prefetches the candidate pages in the background while the user is deciding.
+- Optimized perceived startup latency by reusing prefetched candidate pages as crawl roots: when a user clicks `Start here` on a result such as PBS, the selected page can be emitted immediately as depth 0 and the crawler can begin expanding from its outgoing links without waiting for a duplicate first fetch.
+- Modeled crawl output as a rooted page-discovery tree rather than a general web graph, where the selected seed is always depth 0 and every edge records that a child page was discovered from a specific parent page's links.
+- Built a live Next.js App Router frontend with an editorial dark UI, page index, article reading surface, graph tab, diagnostics footer, SSE updates, and polling fallback so newly fetched pages stream into the interface while the crawl is running.
+- Persisted every run into inspectable JSON artifacts under `data/runs/&lt;run-id&gt;/`, including `run.json`, `pages.json`, `tree.json`, and `diagnostics.json`, making the crawler debuggable from both the browser and the terminal.
+- Added detailed diagnostics for search attempts, selected seeds, candidate prefetch completion/failure, skipped URLs, retries, fetch completions, HTTP status failures, artifact paths, and crawl stop reasons.
+- Benchmarked the synthetic local crawler path using an `httptest` workload of 501 pages (1 root + 500 linked pages), measuring 1.5089s per iteration on an Intel i7-13700HX, or roughly 332 pages/sec in a controlled no-external-network setup.
+- Verified the project with backend and frontend checks: `go test ./...` passes across crawler, artifact, search, and utility packages, and `bun run build` passes for the Next.js frontend.
+Tags: Go, TypeScript, Next.js, React, Web Crawling, Concurrent Systems, Brave Search API, Server-Sent Events, Robots.txt, URL Canonicalization, Deduplication, JSON Artifacts, Performance Benchmarking, System Design, Full-Stack Development
+GitHub: https://github.com/KushagraBharti/Web-Crawler-Go
 
 ### AutoHDR ML Lens Correction
 Summary: Built a competition-grade automatic lens-correction pipeline that combines a CNN with analytic camera geometry (Brown–Conrady) for stable, reproducible distortion correction at full resolution.

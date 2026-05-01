@@ -2,7 +2,6 @@
 
 import React, { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, useNavigate } from "react-router-dom";
-import { Analytics } from "@vercel/analytics/react";
 import ScrollProgress from "./shared/components/app/ScrollProgress";
 import CustomCursor from "./shared/components/ui/CustomCursor";
 
@@ -10,6 +9,7 @@ import HomePage from "./portfolio/pages/HomePage";
 
 const TrackerPage = lazy(() => import("./tracker/pages/TrackerPage"));
 const AiProfilePage = lazy(() => import("./portfolio/pages/AiProfilePage"));
+type AnalyticsComponent = React.ComponentType;
 
 const LazyRouteFallback: React.FC = () => (
   <div className="min-h-screen flex items-center justify-center text-white/80">
@@ -39,12 +39,28 @@ const GlobalHotkeys: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  const [Analytics, setAnalytics] = React.useState<AnalyticsComponent | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    void import("@vercel/analytics/react").then((module) => {
+      if (isMounted) {
+        setAnalytics(() => module.Analytics);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <Router>
       <ScrollProgress />
       <CustomCursor />
       <GlobalHotkeys />
-      <Analytics />
+      {Analytics ? <Analytics /> : null}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route

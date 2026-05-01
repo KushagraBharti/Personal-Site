@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { fetchProjects, getCachedPortfolioSnapshot } from "../../api/portfolioApi";
 import type { PortfolioProject } from "../../api/contracts";
+import { portfolioSnapshotBootstrap } from "../../generated/portfolioSnapshotBootstrap";
 
 const PROJECT_CARD_LIMIT = 6;
 
 const ProjectsSection: React.FC = () => {
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [projects, setProjects] = useState<PortfolioProject[]>(
-    () => getCachedPortfolioSnapshot()?.projects ?? []
+    () => getCachedPortfolioSnapshot()?.projects ?? portfolioSnapshotBootstrap.projects
   );
 
   useEffect(() => {
@@ -17,9 +18,9 @@ const ProjectsSection: React.FC = () => {
       try {
         const response = await fetchProjects(controller.signal);
         setProjects(response);
-      } catch (error) {
+      } catch {
         if (!controller.signal.aborted) {
-          console.error("Error fetching projects:", error);
+          // Keep the generated portfolio bootstrap if the live API is unavailable.
         }
       }
     };

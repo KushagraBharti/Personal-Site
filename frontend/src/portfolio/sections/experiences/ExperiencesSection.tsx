@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchExperiences, getCachedPortfolioSnapshot } from "../../api/portfolioApi";
 import type { PortfolioExperience } from "../../api/contracts";
+import { portfolioSnapshotBootstrap } from "../../generated/portfolioSnapshotBootstrap";
 
 const categoryFallbackBySlug: Record<string, string> = {
   "ut-dallas-optimization-researcher": "Research",
@@ -18,7 +19,7 @@ const getTimelineTone = (experience: PortfolioExperience) =>
 
 const ExperiencesSection: React.FC = () => {
   const [experiences, setExperiences] = useState<PortfolioExperience[]>(
-    () => getCachedPortfolioSnapshot()?.experiences ?? []
+    () => getCachedPortfolioSnapshot()?.experiences ?? portfolioSnapshotBootstrap.experiences
   );
 
   useEffect(() => {
@@ -28,9 +29,9 @@ const ExperiencesSection: React.FC = () => {
       try {
         const response = await fetchExperiences(controller.signal);
         setExperiences(response);
-      } catch (error) {
+      } catch {
         if (!controller.signal.aborted) {
-          console.error("Error fetching experiences:", error);
+          // Keep the generated portfolio bootstrap if the live API is unavailable.
         }
       }
     };

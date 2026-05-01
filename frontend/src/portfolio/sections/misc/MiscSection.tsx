@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchPortfolioSnapshot, getCachedPortfolioSnapshot } from "../../api/portfolioApi";
 import type { PortfolioProfile, PortfolioSocialLink } from "../../api/contracts";
+import { portfolioSnapshotBootstrap } from "../../generated/portfolioSnapshotBootstrap";
 
 const getDisplayValue = (link: PortfolioSocialLink) => {
   if (link.label.toLowerCase() === "email") {
@@ -19,7 +20,7 @@ const preferredLabels = ["Email", "LinkedIn", "GitHub", "X"];
 
 const MiscSection: React.FC = () => {
   const [profile, setProfile] = useState<PortfolioProfile | null>(
-    () => getCachedPortfolioSnapshot()?.profile ?? null
+    () => getCachedPortfolioSnapshot()?.profile ?? portfolioSnapshotBootstrap.profile
   );
 
   useEffect(() => {
@@ -29,9 +30,9 @@ const MiscSection: React.FC = () => {
       try {
         const snapshot = await fetchPortfolioSnapshot(controller.signal);
         setProfile(snapshot.profile);
-      } catch (error) {
+      } catch {
         if (!controller.signal.aborted) {
-          console.error("Failed to load misc profile data:", error);
+          // Keep the generated portfolio bootstrap if the live API is unavailable.
         }
       }
     };

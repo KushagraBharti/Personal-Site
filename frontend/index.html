@@ -2,18 +2,129 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/brain.svg" />
+    <link rel="icon" type="image/svg+xml" href="/portfolio/icons/brain.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="canonical" href="https://www.kushagrabharti.com/" />
     <link rel="alternate" type="text/plain" href="https://www.kushagrabharti.com/llms.txt" title="Kushagra Bharti AI-readable portfolio" />
-    <meta name="description" content="Portfolio for Kushagra Bharti, with AI-readable profile content available at /llms.txt and /ai." />
+    <link rel="alternate" type="text/html" href="https://www.kushagrabharti.com/ai" title="Kushagra Bharti structured AI portfolio" />
+    <meta name="description" content="Portfolio for Kushagra Bharti, including engineering projects, research, creative work, and AI-readable profile content." />
     <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
     <title>Kushagra Bharti - Portfolio</title>
+    <style>
+      .prerendered-homepage {
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: 4rem 1.25rem;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.65;
+        color: #101010;
+      }
+      .prerendered-homepage section { margin-block: 3rem; }
+      .prerendered-homepage h1 { font-size: clamp(2.5rem, 8vw, 6rem); line-height: 0.95; margin: 0 0 1rem; }
+      .prerendered-homepage h2 { font-size: clamp(1.75rem, 4vw, 3rem); margin: 0 0 1rem; }
+      .prerendered-homepage h3 { margin: 1.25rem 0 0.35rem; }
+      .prerendered-homepage a { color: inherit; text-decoration-thickness: 0.12em; }
+    </style>
   </head>
   <body class="text-gray-800 font-inter">
-    <div id="root"></div>
+    <div id="root">
+      <main class="prerendered-homepage" aria-label="Kushagra Bharti portfolio prerender">
+  <section>
+    <h1>Kushagra Bharti</h1>
+    <p>Student | Software Engineer | ML Enthusiast</p>
+    <p>An aspiring founder, but right now I am focused on building my skills and learning.</p>
+    <nav aria-label="Portfolio links">
+      <ul><li><a href="mailto:kushagrabharti@gmail.com">Email</a></li><li><a href="https://www.linkedin.com/in/kushagra-bharti/">LinkedIn</a></li><li><a href="https://github.com/kushagrabharti">GitHub</a></li><li><a href="https://medium.com/@kushagrabharti">Medium</a></li><li><a href="https://x.com/IamKushagraB">X</a></li></ul>
+    </nav>
+  </section>
+  <section>
+    <h2>Hey there! I'm Kushagra Bharti</h2>
+    <p>An aspiring founder, but right now I am focused on building my skills and learning.</p>
+    <h3>Current Projects</h3>
+    <ul><li>Monopoly Bench - A platform where various LLMs can play Monopoly against each other; I plan to publish a paper connected to this work.</li><li>A light-weight web crawler in Go - A project I am using to learn Go, concurrency, networking performance, and resource management.</li><li>An open-source T3.chat app - A project I am using to sharpen my web development skills, try creative chat UX ideas, and eventually integrate my web crawler as a tool.</li></ul>
+    <h3>Current Learning</h3>
+    <ul><li>Go, especially concurrency.</li><li>WebSockets and real-time applications.</li><li>Machine learning fundamentals.</li><li>LLMs, including tool-calling and context management.</li><li>Networking performance.</li><li>Resource management.</li><li>Data management.</li></ul>
+    <h3>Interests Outside Technology</h3>
+    <ul><li>I love cooking and have been cooking since I was five years old.</li><li>I love filmmaking, have directed 2 short films, and have contributed to other productions as a videographer and editor.</li><li>I love sports, especially soccer, volleyball, tennis, and table tennis, and I also follow soccer, Formula 1, and the UFC.</li><li>I am interested in psychology, reading, and the arts.</li></ul>
+  </section>
+  <section>
+    <h2>Experiences</h2>
+    <article>
+        <p>2024 - Present / Research</p>
+        <h3>Undergraduate Researcher at UT Dallas (supervised by Prof. Ovidiu Daescu)</h3>
+        <p>Building paper-faithful optimization solvers and a solver-labeled dataset pipeline for 1D drone coverage planning, with benchmarks + QC gates to support supervised learning, GNN, and RL experiments on optimal tour planning.</p>
+      </article><article>
+        <p>2024 - Present / Research</p>
+        <h3>Undergraduate Researcher at UT Dallas (mentored by PhD Candidate Parth Padalkar)</h3>
+        <p>Built a deterministic, replayable Monopoly benchmark where LLMs play head-to-head via schema-typed tool calls, enabling research on long-horizon planning, negotiation/deception, and bias under fully logged, inspectable runs.</p>
+      </article><article>
+        <p>2023 - 2024 / Consulting</p>
+        <h3>Consultant at Consult Your Community (Club)</h3>
+        <p>Led data analytics to transform multi-source data into actionable insights.</p>
+      </article><article>
+        <p>2024 / Industry</p>
+        <h3>Software Engineering Intern at Abilitie</h3>
+        <p>Worked on a production role-play chatbot by benchmarking model choices, running prompt/model experiments, adding inference telemetry, and shipping performance + UI reliability improvements.</p>
+      </article><article>
+        <p>2021 - 2022 / Leadership</p>
+        <h3>Dorm Proctor at St. Stephen's Episcopal School</h3>
+        <p>Guided and supported students in their transition to boarding school life.</p>
+      </article>
+  </section>
+  <section>
+    <h2>Projects</h2>
+    <article>
+        <h3>Monopoly LLM Benchmark Platform</h3>
+        <p>A deterministic, inspectable multi-agent AI simulation where large language models play full Monopoly games under strict rules, enabling reproducible benchmarking, debugging, and research into strategic reasoning and negotiation.</p>
+        <p>Python, TypeScript, FastAPI, React, WebSockets, LLMs</p>
+      </article><article>
+        <h3>Pact</h3>
+        <p>A social accountability app where users create goal-based pacts, lock funds in escrow, submit proof, and let a trusted circle of validators decide the outcome.</p>
+        <p>TypeScript, React Native, Expo, Expo Router, Fastify, Supabase</p>
+      </article><article>
+        <h3>Arachne Web Crawler</h3>
+        <p>A result-first Go web crawler with a Next.js reading interface, Brave Search seed selection, asynchronous top-10 result prefetching, live crawl streaming, rooted discovery trees, and local JSON artifacts for inspection and debugging.</p>
+        <p>Go, TypeScript, Next.js, React, Web Crawling, Concurrent Systems</p>
+      </article><article>
+        <h3>AutoHDR ML Lens Correction</h3>
+        <p>Built a competition-grade automatic lens-correction pipeline that combines a CNN with analytic camera geometry (Brown–Conrady) for stable, reproducible distortion correction at full resolution.</p>
+        <p>Computer Vision, Deep Learning, PyTorch, CNNs, ResNet34, Image Geometry</p>
+      </article><article>
+        <h3>NovelBench</h3>
+        <p>A live multi-stage LLM benchmark and public arena where frontier models generate, critique, revise, and vote on the same creative prompts to evaluate innovation under pressure.</p>
+        <p>TypeScript, Next.js, React, Convex, OpenRouter, LLMs</p>
+      </article><article>
+        <h3>PseudoLawyer</h3>
+        <p>An AI-powered real-time contract negotiation platform that uses a virtual mediator to resolve disputes and draft bespoke legal agreements.</p>
+        <p>Next.js 15, TypeScript, Supabase, Realtime, PostgreSQL, OpenRouter</p>
+      </article><article>
+        <h3>Personal Portfolio Website</h3>
+        <p>A dynamic full-stack portfolio website with a public showcase, a private personal tracker, live GitHub and weather widgets, and machine-readable content for both humans and models.</p>
+        <p>TypeScript, Node.js, Express, React, Vite, Tailwind CSS</p>
+      </article><article>
+        <h3>F1 Optimization Project</h3>
+        <p>A simulation-based F1 race optimization project using reinforcement learning. Built for HackTX-2024, it integrates a custom Pygame-based race environment with a SAC agent from Ray RLlib to optimize driving strategies on a realistic race track.</p>
+        <p>Reinforcement Learning, Ray RLlib, Pygame, OpenCV, Simulation, F1</p>
+      </article>
+  </section>
+  <section>
+    <h2>Film and Creative Work</h2>
+    <article>
+        <h3>St. Stephen's Dining Hall Documentary</h3>
+        <p>2022</p>
+      </article><article>
+        <h3>The PB&amp;J Documentary</h3>
+        <p>2023</p>
+      </article>
+  </section>
+  <section>
+    <h2>AI-readable portfolio</h2>
+    <p>Structured portfolio content is also available at <a href="https://www.kushagrabharti.com/ai">/ai</a> and <a href="https://www.kushagrabharti.com/llms.txt">/llms.txt</a>.</p>
+  </section>
+</main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -35,9 +35,9 @@ const ScrollProgress: React.FC = () => {
   return (
     <div className="fixed top-0 left-0 w-full h-1.5 z-50">
       <div
-        className="h-full transition-all duration-200"
+        className="h-full w-full origin-left transition-transform duration-200"
         style={{
-          width: `${progress}%`,
+          transform: `scaleX(${Math.max(0, Math.min(progress, 100)) / 100})`,
           background: 'linear-gradient(45deg, #00d4ff, #00aaff)',
         }}
       />

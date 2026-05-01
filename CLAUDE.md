@@ -1,15 +1,15 @@
 # Developer Guide
 
-`AGENTS.md` and `CLAUDE.md` should stay identical. This is the fast onboarding file for the repo.
+`AGENTS.md` and `CLAUDE.md` must stay identical. Keep this file short, operational, and current; it is the fast onboarding file for coding agents.
 
 ## Repo Shape
 
-There are two product surfaces:
+This repo has two product surfaces:
 
-- `portfolio`: the public site, `/ai`, public APIs, and generated `llms.txt`
-- `tracker`: the private app for tasks, pipeline work, and calendar-connected planning
+- `portfolio`: public site, `/ai`, public APIs, generated `llms.txt`, public assets
+- `tracker`: private task, workflow, pipeline, and calendar-connected planning app
 
-Keep that split intact in both apps.
+Keep the split intact in both apps.
 
 Frontend:
 
@@ -25,8 +25,8 @@ Backend:
 
 Routes:
 
-- `/` -> homepage
-- `/ai` -> machine-readable portfolio page
+- `/` -> public homepage
+- `/ai` -> AI-readable portfolio page
 - `/tracker` -> private tracker
 - `/api` -> public portfolio APIs
 - `/api/private` -> tracker APIs
@@ -34,34 +34,43 @@ Routes:
 ## Non-Negotiable Decisions
 
 - Portfolio content is backend-owned. Edit `backend/src/portfolio/content/*` first.
-- The frontend renders portfolio data; it should not become a second content source.
-- Frontend API contracts live in `frontend/src/portfolio/api/contracts.ts`.
-- `llms.txt` is generated from backend services and synced into `frontend/public/llms.txt` by `frontend/scripts/sync-portfolio-exports.ts`.
-- `/` is eager; `/ai` and `/tracker` are lazy; intro renders first; non-critical data hydrates later.
+- Frontend API-facing portfolio contracts live in `frontend/src/portfolio/api/contracts.ts`.
+- Backend portfolio contracts live in `backend/src/portfolio/contracts`.
+- `frontend/scripts/sync-portfolio-exports.mjs` generates `frontend/index.html`, `frontend/ai.html`, `frontend/public/llms.txt`, `frontend/public/robots.txt`, `frontend/public/sitemap.xml`, `frontend/src/portfolio/generated/introBootstrap.ts`, and `frontend/src/portfolio/generated/portfolioSnapshotBootstrap.ts`.
+- `/` is eager only for the hero shell. The 3D model and homepage sections load after the hero mounts with no skeleton placeholders. `/ai` and `/tracker` are lazy.
 - Weather is backend-driven and must not trigger browser location prompts.
-- GitHub stats should revalidate on mount and prefer the GraphQL contribution path.
-- The active public portfolio uses GitHub and weather as its only live widgets.
-- Finance is removed. Do not reintroduce tracker finance structure or docs.
+- GitHub stats should prefer the GraphQL contribution path.
+- Public live widget APIs are currently GitHub stats and weather; keep any frontend usage explicit and route it through the backend.
+- Finance is removed. Do not reintroduce tracker finance modules, routes, docs, or UI.
 
 ## Where To Work
 
 Portfolio:
 
 - content -> `backend/src/portfolio/content`
-- contracts -> `backend/src/portfolio/contracts`
+- contracts -> `backend/src/portfolio/contracts` and `frontend/src/portfolio/api/contracts.ts`
 - services/routes/controllers -> `backend/src/portfolio/*`
 - frontend pages/sections/widgets -> `frontend/src/portfolio/*`
+- public assets -> `frontend/public/portfolio/...`
 
 Tracker:
 
 - frontend shell/modules/shared -> `frontend/src/tracker/*`
-- backend calendar/cron/shared -> `backend/src/tracker/*`
+- backend calendar/cron/task-list services -> `backend/src/tracker/*`
+- private auth middleware -> `backend/src/middleware/requireUser.ts`
 
 Current tracker modules:
 
-- `tasks`
-- `tasks-hub`
-- `pipeline`
+- `tasks` -> tasks-hub UI
+- `weekly` -> older weekly tasks UI
+- `pipeline` -> active deals/workflow tracking
+
+## Known Codebase Notes
+
+- `AboutSection` and `FeaturedSection` currently hardcode some public portfolio copy/project selections in the frontend. Prefer moving future public content changes to backend content rather than adding more frontend content sources.
+- Tracker CRUD mostly uses Supabase from the browser. Backend private APIs are for service-role work, Google Calendar sync, cron, and task-list deletion.
+- Calendar sync has queue-based and legacy fallback paths; preserve compatibility unless the migration state is explicitly being cleaned up.
+- The old `docs/` tree has been removed. Do not point new onboarding instructions at `docs/active/*`.
 
 ## Environment
 
@@ -74,16 +83,16 @@ Frontend local env:
 Backend env:
 
 - use `backend/.env.example`
-- key portfolio vars are `GITHUB_USERNAME`, `GITHUB_TOKEN`, and `OPENWEATHER_API_KEY`
-- tracker setup uses the Supabase and Google Calendar vars in the example file
+- key portfolio vars: `GITHUB_USERNAME`, `GITHUB_TOKEN`, `OPENWEATHER_API_KEY`
+- tracker/calendar vars: Supabase service-role values and Google Calendar OAuth/webhook values from the example file
 
 ## Workflow
 
 This repo is Bun-first, with one exception:
 
 - use Bun for normal app work, installs, dev servers, builds, and linting
-- use the repo-level `verify` commands for testing
-- the `verify` commands are allowed to use npm internally because Bun is unreliable for the test toolchain in this Windows + OneDrive environment
+- use repo-level `verify` commands for broad testing
+- `verify` uses npm internally because it is more reliable for the test toolchain in this Windows + OneDrive environment
 
 Frontend:
 
@@ -121,26 +130,18 @@ Verification tiers:
 - `bun run verify:full` -> `verify` plus Playwright smoke and mocked E2E
 - `bun run verify:full:live` -> everything
 
-## Tooling
-
-Use the relevant tools instead of guessing:
-
-- `frontend-design` for major UI work
-- `vercel-react-best-practices` for React performance and rendering behavior
-- Vercel tooling for deploy/runtime checks
-- Playwright tooling for browser verification
-- Supabase tooling only when the task actually touches auth or tracker persistence
-
 ## Editing Rules
 
 - Preserve the portfolio/tracker separation.
 - Keep public asset paths under `/portfolio/...`.
 - Use slug-based, ordered portfolio records.
 - Remove placeholder links instead of leaving `#`.
-- Update docs when structure or behavior changes.
+- Update `README.md`, `AGENTS.md`, and `CLAUDE.md` when repo structure, commands, or non-obvious behavior changes.
+- Keep `AGENTS.md` and `CLAUDE.md` identical.
 
 ## First Read For A New Developer
 
-1. `docs/active/REPO_GUIDE.md`
-2. `docs/active/PORTFOLIO_CONTENT_EDITING.md` for portfolio work
-3. `docs/active/TRACKER_ARCHITECTURE.md` for tracker work
+1. `README.md`
+2. `backend/src/portfolio/content/*` for public content changes
+3. `frontend/src/App.tsx` and `backend/src/routes/index.ts` for route mounting
+4. `frontend/src/tracker/shell/registry.ts` for tracker modules
