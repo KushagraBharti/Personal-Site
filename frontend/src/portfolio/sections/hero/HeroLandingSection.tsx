@@ -8,6 +8,9 @@ import type {
 type SculptureSceneComponent = React.ComponentType;
 
 const DEFAULT_SITE_URL = "https://www.kushagrabharti.com";
+const HERO_MODEL_PATH = "/portfolio/models/best.glb";
+const HERO_MEDIA_KICKED_EVENT = "portfolio:hero-media-kicked";
+let cachedCanCreateWebGLContext: boolean | null = null;
 
 const heroLines: Array<{ text: string; isAccent?: boolean }> = [
   { text: "builder." },
@@ -30,6 +33,7 @@ const buildActionHref = (hrefTemplate: string, prompt: string) =>
 
 const canCreateWebGLContext = () => {
   if (typeof document === "undefined") return false;
+  if (cachedCanCreateWebGLContext !== null) return cachedCanCreateWebGLContext;
 
   try {
     const canvas = document.createElement("canvas");
@@ -41,11 +45,32 @@ const canCreateWebGLContext = () => {
       canvas.getContext("webgl2", attributes) ??
       canvas.getContext("webgl", attributes);
 
-    context?.getExtension("WEBGL_lose_context")?.loseContext();
-    return Boolean(context);
+    cachedCanCreateWebGLContext = Boolean(context);
+    return cachedCanCreateWebGLContext;
   } catch {
+    cachedCanCreateWebGLContext = false;
     return false;
   }
+};
+
+const preloadHeroModel = () => {
+  if (typeof document === "undefined") return;
+  if (document.querySelector(`link[data-hero-model-preload="true"]`)) return;
+
+  const link = document.createElement("link");
+  link.rel = "preload";
+  link.as = "fetch";
+  link.href = HERO_MODEL_PATH;
+  link.type = "model/gltf-binary";
+  link.crossOrigin = "anonymous";
+  link.setAttribute("fetchpriority", "high");
+  link.setAttribute("data-hero-model-preload", "true");
+  document.head.appendChild(link);
+};
+
+const dispatchHeroMediaKicked = () => {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(HERO_MEDIA_KICKED_EVENT));
 };
 
 const HeroLandingSection: React.FC = () => {
@@ -84,25 +109,36 @@ const HeroLandingSection: React.FC = () => {
 
   useEffect(() => {
     let isMounted = true;
+    let frameId: number | null = null;
 
-    if (!canCreateWebGLContext()) {
-      return () => {
-        isMounted = false;
-      };
-    }
+    frameId = window.requestAnimationFrame(() => {
+      if (!isMounted) return;
 
-    void import("./SculptureScene")
-      .then((module) => {
-        if (isMounted) {
-          setSculptureScene(() => module.default);
-        }
-      })
-      .catch(() => {
-        // Keep the hero usable if the GPU-backed scene cannot be loaded.
-      });
+      if (!canCreateWebGLContext()) {
+        dispatchHeroMediaKicked();
+        return;
+      }
+
+      preloadHeroModel();
+      const sceneImport = import("./SculptureScene");
+      dispatchHeroMediaKicked();
+
+      void sceneImport
+        .then((module) => {
+          if (isMounted) {
+            setSculptureScene(() => module.default);
+          }
+        })
+        .catch(() => {
+          // Keep the hero usable if the GPU-backed scene cannot be loaded.
+        });
+    });
 
     return () => {
       isMounted = false;
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
     };
   }, []);
 
