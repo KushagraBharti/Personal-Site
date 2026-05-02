@@ -1,0 +1,47 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="800" rx="48" fill="#F6F0E3"/>
+  <rect x="42" y="42" width="1116" height="716" rx="36" fill="#FBF7ED" stroke="#263B30" stroke-opacity="0.14" stroke-width="2"/>
+  <circle cx="600" cy="400" r="118" fill="#263B30"/>
+  <circle cx="600" cy="400" r="82" fill="#F6F0E3"/>
+  <path d="M600 286L631 370L720 371L648 424L675 509L600 459L525 509L552 424L480 371L569 370L600 286Z" fill="#263B30"/>
+  <g stroke="#263B30" stroke-opacity="0.48" stroke-width="4">
+    <path d="M600 282V188"/>
+    <path d="M600 518V612"/>
+    <path d="M482 400H356"/>
+    <path d="M718 400H844"/>
+    <path d="M516 316L424 224"/>
+    <path d="M684 316L776 224"/>
+    <path d="M516 484L424 576"/>
+    <path d="M684 484L776 576"/>
+  </g>
+  <g fill="#FBF7ED" stroke="#263B30" stroke-width="3">
+    <rect x="486" y="126" width="228" height="74" rx="24"/>
+    <rect x="486" y="600" width="228" height="74" rx="24"/>
+    <rect x="166" y="363" width="228" height="74" rx="24"/>
+    <rect x="806" y="363" width="228" height="74" rx="24"/>
+    <rect x="272" y="174" width="228" height="74" rx="24"/>
+    <rect x="700" y="174" width="228" height="74" rx="24"/>
+    <rect x="272" y="552" width="228" height="74" rx="24"/>
+    <rect x="700" y="552" width="228" height="74" rx="24"/>
+  </g>
+  <g fill="#263B30" font-family="Inter, Arial, sans-serif" font-weight="700" font-size="24">
+    <text x="600" y="171" text-anchor="middle">memory.md</text>
+    <text x="600" y="646" text-anchor="middle">context packet</text>
+    <text x="280" y="409" text-anchor="middle">portfolio</text>
+    <text x="920" y="409" text-anchor="middle">tool trace</text>
+    <text x="386" y="219" text-anchor="middle">goals</text>
+    <text x="814" y="219" text-anchor="middle">risk</text>
+    <text x="386" y="597" text-anchor="middle">tax</text>
+    <text x="814" y="597" text-anchor="middle">receipts</text>
+  </g>
+  <g fill="#263B30">
+    <text x="84" y="106" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="34">Northstar</text>
+    <text x="84" y="146" font-family="Inter, Arial, sans-serif" font-weight="600" font-size="20" opacity="0.7">Agentic financial memory platform</text>
+  </g>
+  <g fill="#263B30" opacity="0.1">
+    <circle cx="1035" cy="130" r="54"/>
+    <circle cx="1086" cy="189" r="22"/>
+    <circle cx="144" cy="668" r="42"/>
+    <circle cx="196" cy="708" r="18"/>
+  </g>
+</svg>

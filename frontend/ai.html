@@ -289,6 +289,22 @@ Highlights:
 Tags: Python, Alpaca API, Pandas, NumPy, Matplotlib, scikit-learn, Algorithmic Trading, Backtesting, Paper Trading
 GitHub: https://github.com/KushagraBharti/Quant-Test-Environment
 
+### Northstar Agentic Financial Memory Platform
+Summary: A memory-first AI wealth-management prototype where one local agent, North, loads a user's durable financial context, portfolio snapshot, and tool traces to deliver explainable market checks, scenario analysis, and approval-first financial guidance.
+Highlights:
+- Built an agentic FinTech platform around durable user context rather than a static portfolio dashboard: onboarding answers compile into a readable `memory.md`, a structured `context_packet.json`, and a graph of goals, risk comfort, tax constraints, accounts, values, cash-flow assumptions, and communication preferences.
+- Designed the core runtime around one visible local agent, North, which preloads memory, context packets, and portfolio snapshots before every response, then uses specialist tools for market/news research, financial data, filings, portfolio context, deterministic scenario checks, and trust-receipt generation.
+- Implemented a chat-first React/Vite interface with a dedicated North page, bottom composer, markdown-rendered answers, quick actions for daily market checks and demo scenarios, a `memory.md` transparency modal, and a JSONL-style trace panel that exposes tool calls, tool results, memory loading, run completion, and receipt events.
+- Engineered the onboarding flow as a high-signal natural-language memory compiler: a 44-question questionnaire is auto-filled from `docs/memory-questionnaire-sample.md`, persisted per user, and submitted to the backend to create structured goals, values, risk comfort, communication style, tax context, approval boundaries, and final memory artifacts.
+- Created a graph-first dashboard where the default Home view visualizes durable user context as memory nodes instead of generic financial charts, making the product thesis concrete: the agent knows the person, not just the account balances.
+- Added deterministic demo reliability for live presentations: simulated Plaid-style account import, seeded holdings/transactions/tax lots, market-check fallbacks, capped external search/research calls, and scenario traces that keep the product working even when API keys, live data providers, or LLM responses fail.
+- Integrated an Express + TypeScript backend with Supabase/Postgres-ready persistence, OpenRouter/OpenAI-compatible model execution, shared domain types, memory/status APIs, raw memory endpoints, agent streaming routes, local JSON/JSONL mirrors, and production build/typecheck validation across shared, backend, and frontend workspaces.
+- Focused the architecture on 2026 AI-system patterns—agentic workflows, contextual memory, tool use, observability, audit trails, human-in-the-loop guardrails, and grounded retrieval/context packets—rather than a simple chatbot wrapper, aligning the demo with where production AI applications are moving.
+- Built the main demo scenario around a realistic financial stress test: North can answer questions such as `What if markets drop 20% and I need cash next year?` by combining memory, liquidity needs, portfolio context, risk tolerance, tax awareness, tool traces, and approval-first recommendations.
+- Documented the full project plan and demo story in `docs/complete.md`, including the eight-slide narrative, system architecture, trust model, onboarding/memory pipeline, North runtime, deterministic scenario path, remaining product gaps, and final pitch positioning.
+Tags: TypeScript, React, Vite, Express, Supabase, PostgreSQL, OpenRouter, LLMs, Agentic AI, AI Agents, Tool Calling, Contextual Memory, RAG, JSONL Tracing, Observability, Guardrails, FinTech, Portfolio Analytics, Scenario Analysis, Full-Stack Development, System Design
+GitHub: https://github.com/YuvrajKashyap/northstar
+
 ### Age &amp; Gender Recognition
 Summary: Real-time face detection with age and gender prediction using OpenCV and Caffe models.
 Highlights:

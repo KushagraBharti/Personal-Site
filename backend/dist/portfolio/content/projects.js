@@ -73,8 +73,45 @@ exports.portfolioProjects = [
         thumbnail: "/portfolio/projects/pact.png",
     },
     {
-        slug: "autohdr-ml-lens-correction",
+        slug: "arachne-web-crawler",
         order: 3,
+        title: "Arachne Web Crawler",
+        summary: "A result-first Go web crawler with a Next.js reading interface, Brave Search seed selection, asynchronous top-10 result prefetching, live crawl streaming, rooted discovery trees, and local JSON artifacts for inspection and debugging.",
+        description: [
+            "Built a full-stack web crawler designed around usable results rather than telemetry: users can enter a URL or keyword, choose the exact seed page, read extracted article text, inspect discovered pages, and verify every run through local JSON artifacts.",
+            "Implemented a concurrent Go crawler engine with bounded global concurrency, per-host concurrency, request/header/TLS/idle timeouts, max body limits, retry handling, redirect handling, robots.txt support, canonical URL deduplication, max-depth limits, max-page limits, and time-budget enforcement.",
+            "Designed keyword search as a fast seed-selection workflow: the backend calls the Brave Search API, keeps the top 10 results, returns those choices to the frontend immediately, and asynchronously prefetches the candidate pages in the background while the user is deciding.",
+            "Optimized perceived startup latency by reusing prefetched candidate pages as crawl roots: when a user clicks `Start here` on a result such as PBS, the selected page can be emitted immediately as depth 0 and the crawler can begin expanding from its outgoing links without waiting for a duplicate first fetch.",
+            "Modeled crawl output as a rooted page-discovery tree rather than a general web graph, where the selected seed is always depth 0 and every edge records that a child page was discovered from a specific parent page's links.",
+            "Built a live Next.js App Router frontend with an editorial dark UI, page index, article reading surface, graph tab, diagnostics footer, SSE updates, and polling fallback so newly fetched pages stream into the interface while the crawl is running.",
+            "Persisted every run into inspectable JSON artifacts under `data/runs/<run-id>/`, including `run.json`, `pages.json`, `tree.json`, and `diagnostics.json`, making the crawler debuggable from both the browser and the terminal.",
+            "Added detailed diagnostics for search attempts, selected seeds, candidate prefetch completion/failure, skipped URLs, retries, fetch completions, HTTP status failures, artifact paths, and crawl stop reasons.",
+            "Benchmarked the synthetic local crawler path using an `httptest` workload of 501 pages (1 root + 500 linked pages), measuring 1.5089s per iteration on an Intel i7-13700HX, or roughly 332 pages/sec in a controlled no-external-network setup.",
+            "Verified the project with backend and frontend checks: `go test ./...` passes across crawler, artifact, search, and utility packages, and `bun run build` passes for the Next.js frontend.",
+        ],
+        tags: [
+            "Go",
+            "TypeScript",
+            "Next.js",
+            "React",
+            "Web Crawling",
+            "Concurrent Systems",
+            "Brave Search API",
+            "Server-Sent Events",
+            "Robots.txt",
+            "URL Canonicalization",
+            "Deduplication",
+            "JSON Artifacts",
+            "Performance Benchmarking",
+            "System Design",
+            "Full-Stack Development",
+        ],
+        githubLink: "https://github.com/KushagraBharti/Web-Crawler-Go",
+        thumbnail: "/portfolio/projects/arachne-web-crawler.svg",
+    },
+    {
+        slug: "autohdr-ml-lens-correction",
+        order: 4,
         title: "AutoHDR ML Lens Correction",
         summary: "Built a competition-grade automatic lens-correction pipeline that combines a CNN with analytic camera geometry (Brown–Conrady) for stable, reproducible distortion correction at full resolution.",
         description: [
@@ -113,7 +150,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "novelbench",
-        order: 4,
+        order: 5,
         title: "NovelBench",
         summary: "A live multi-stage LLM benchmark and public arena where frontier models generate, critique, revise, and vote on the same creative prompts to evaluate innovation under pressure.",
         description: [
@@ -149,7 +186,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "pseudo-lawyer",
-        order: 5,
+        order: 6,
         title: "PseudoLawyer",
         summary: "An AI-powered real-time contract negotiation platform that uses a virtual mediator to resolve disputes and draft bespoke legal agreements.",
         description: [
@@ -177,7 +214,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "personal-site",
-        order: 6,
+        order: 7,
         title: "Personal Portfolio Website",
         summary: "A dynamic full-stack portfolio website with a public showcase, a private personal tracker, live GitHub and weather widgets, and machine-readable content for both humans and models.",
         description: [
@@ -210,7 +247,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "f1-optimization",
-        order: 7,
+        order: 8,
         title: "F1 Optimization Project",
         summary: "A simulation-based F1 race optimization project using reinforcement learning. Built for HackTX-2024, it integrates a custom Pygame-based race environment with a SAC agent from Ray RLlib to optimize driving strategies on a realistic race track.",
         description: [
@@ -236,7 +273,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "kaggle-titanic-ml",
-        order: 8,
+        order: 9,
         title: "Kaggle Titanic ML",
         summary: "Predicted Titanic survival using machine learning. This project involved extensive data cleaning, feature engineering, and model evaluation using various algorithms, with a comprehensive PDF outlining all my learnings.",
         description: [
@@ -262,7 +299,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "quant-test-environment",
-        order: 9,
+        order: 10,
         title: "Algorithmic Trading Quantitative Test Environment",
         summary: "A modular platform for automated trading strategy development, backtesting, and paper trading.",
         description: [
@@ -287,8 +324,51 @@ exports.portfolioProjects = [
         thumbnail: "/portfolio/projects/quant-test-environment.svg",
     },
     {
+        slug: "northstar-agentic-financial-memory",
+        order: 11,
+        title: "Northstar Agentic Financial Memory Platform",
+        summary: "A memory-first AI wealth-management prototype where one local agent, North, loads a user's durable financial context, portfolio snapshot, and tool traces to deliver explainable market checks, scenario analysis, and approval-first financial guidance.",
+        description: [
+            "Built an agentic FinTech platform around durable user context rather than a static portfolio dashboard: onboarding answers compile into a readable `memory.md`, a structured `context_packet.json`, and a graph of goals, risk comfort, tax constraints, accounts, values, cash-flow assumptions, and communication preferences.",
+            "Designed the core runtime around one visible local agent, North, which preloads memory, context packets, and portfolio snapshots before every response, then uses specialist tools for market/news research, financial data, filings, portfolio context, deterministic scenario checks, and trust-receipt generation.",
+            "Implemented a chat-first React/Vite interface with a dedicated North page, bottom composer, markdown-rendered answers, quick actions for daily market checks and demo scenarios, a `memory.md` transparency modal, and a JSONL-style trace panel that exposes tool calls, tool results, memory loading, run completion, and receipt events.",
+            "Engineered the onboarding flow as a high-signal natural-language memory compiler: a 44-question questionnaire is auto-filled from `docs/memory-questionnaire-sample.md`, persisted per user, and submitted to the backend to create structured goals, values, risk comfort, communication style, tax context, approval boundaries, and final memory artifacts.",
+            "Created a graph-first dashboard where the default Home view visualizes durable user context as memory nodes instead of generic financial charts, making the product thesis concrete: the agent knows the person, not just the account balances.",
+            "Added deterministic demo reliability for live presentations: simulated Plaid-style account import, seeded holdings/transactions/tax lots, market-check fallbacks, capped external search/research calls, and scenario traces that keep the product working even when API keys, live data providers, or LLM responses fail.",
+            "Integrated an Express + TypeScript backend with Supabase/Postgres-ready persistence, OpenRouter/OpenAI-compatible model execution, shared domain types, memory/status APIs, raw memory endpoints, agent streaming routes, local JSON/JSONL mirrors, and production build/typecheck validation across shared, backend, and frontend workspaces.",
+            "Focused the architecture on 2026 AI-system patterns—agentic workflows, contextual memory, tool use, observability, audit trails, human-in-the-loop guardrails, and grounded retrieval/context packets—rather than a simple chatbot wrapper, aligning the demo with where production AI applications are moving.",
+            "Built the main demo scenario around a realistic financial stress test: North can answer questions such as `What if markets drop 20% and I need cash next year?` by combining memory, liquidity needs, portfolio context, risk tolerance, tax awareness, tool traces, and approval-first recommendations.",
+            "Documented the full project plan and demo story in `docs/complete.md`, including the eight-slide narrative, system architecture, trust model, onboarding/memory pipeline, North runtime, deterministic scenario path, remaining product gaps, and final pitch positioning.",
+        ],
+        tags: [
+            "TypeScript",
+            "React",
+            "Vite",
+            "Express",
+            "Supabase",
+            "PostgreSQL",
+            "OpenRouter",
+            "LLMs",
+            "Agentic AI",
+            "AI Agents",
+            "Tool Calling",
+            "Contextual Memory",
+            "RAG",
+            "JSONL Tracing",
+            "Observability",
+            "Guardrails",
+            "FinTech",
+            "Portfolio Analytics",
+            "Scenario Analysis",
+            "Full-Stack Development",
+            "System Design",
+        ],
+        githubLink: "https://github.com/YuvrajKashyap/northstar",
+        thumbnail: "/portfolio/projects/northstar-agentic-financial-memory.svg",
+    },
+    {
         slug: "age-gender-recognition",
-        order: 10,
+        order: 12,
         title: "Age & Gender Recognition",
         summary: "Real-time face detection with age and gender prediction using OpenCV and Caffe models.",
         description: [
@@ -303,7 +383,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "data-drive",
-        order: 11,
+        order: 13,
         title: "DataDrive: Unified Insights for Data & Fuel Optimization",
         summary: "A full-stack AI-driven analytics platform that integrates advanced ML models, real-time data observability, and interactive visualizations for fuel optimization.",
         description: [
@@ -333,7 +413,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "circuit-seer",
-        order: 12,
+        order: 14,
         title: "CircuitSeer (Circuit Solver)",
         summary: "An AI-powered circuit analysis tool that automates the identification and schematic analysis of electronic circuits for both educational and practical use.",
         description: [
@@ -357,7 +437,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "point-cloud-down-sampler",
-        order: 13,
+        order: 15,
         title: "Point Cloud Down Sampler",
         summary: "A dual-approach tool for reducing dense point clouds via custom voxelization and Open3D’s high-performance voxel grid method.",
         description: [
@@ -380,7 +460,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "pcb-design-project",
-        order: 14,
+        order: 16,
         title: "PCB Design Project",
         summary: "A Senior Independent Project in 2023 that provided hands-on experience in designing, ordering, and assembling custom PCBs.",
         description: [
@@ -404,7 +484,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "self-driving-car-project",
-        order: 15,
+        order: 17,
         title: "Self-Driving Car Project",
         summary: "Repurposed an RC car into a self-driving vehicle using Arduino hardware and a custom obstacle avoidance algorithm.",
         description: [
@@ -425,7 +505,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "maze-traversal",
-        order: 16,
+        order: 18,
         title: "Maze Traversal",
         summary: "A recursive depth-first search maze-solving algorithm in Python.",
         description: [
