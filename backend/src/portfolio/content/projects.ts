@@ -109,7 +109,7 @@ export const portfolioProjects: PortfolioProject[] = [
       "Full-Stack Development",
     ],
     githubLink: "https://github.com/KushagraBharti/Web-Crawler-Go",
-    thumbnail: "/portfolio/projects/arachne-web-crawler.svg",
+    thumbnail: "/portfolio/projects/arachne.png",
   },
   {
     slug: "autohdr-ml-lens-correction",
@@ -189,8 +189,61 @@ export const portfolioProjects: PortfolioProject[] = [
     thumbnail: "/portfolio/projects/novel-bench.png",
   },
   {
-    slug: "pseudo-lawyer",
+    slug: "beyond-chat",
     order: 6,
+    title: "Beyond Chat",
+    summary:
+      "An artifact-first, agentic AI workspace that turns chat into a production workflow: specialized studios, tool-calling runs, durable context, model comparison, storage-backed artifacts, and provider-aware orchestration across research, writing, data, image, and finance work.",
+    description: [
+      "Built a modular AI workspace around studios instead of endless chat threads, with dedicated surfaces for Chat, Writing, Research, Image, Data, Finance, Artifacts, Settings, and a shared Compare panel that can be invoked from the work already in progress.",
+      "Designed the core product architecture around durable artifacts: every meaningful output can be saved, searched, reopened, exported, bundled, and reused as context for future model calls, turning AI responses into lasting project assets instead of disposable messages.",
+      "Implemented an agentic run system with explicit run records, step timelines, tool/provider metadata, failure states, and artifact provenance so long-running work can be inspected at the level of preparation, context loading, provider calls, analysis, output generation, and save actions.",
+      "Built Context Builder as the connective tissue across the platform, letting users attach saved artifacts to Chat, Compare, Research, Writing, Image, Data, and Finance workflows while preserving selected context IDs, source metadata, and downstream handoff intent.",
+      "Engineered OpenRouter-backed chat and compare flows with model selection, parallel model comparison, retry handling, streaming assistant responses, optional tool-call preservation, selected-result handoffs, and one-click save-to-artifact actions for model outputs.",
+      "Developed a live Research Studio that uses Exa search as a real tool rather than a fake fallback, producing source-backed research reports with visible workflow steps, structured sections, source constraints, and explicit provider-missing error behavior when search is not configured.",
+      "Built a Data Studio ingestion and analysis pipeline with Supabase Storage uploads, secure workspace-scoped file paths, CSV/XLS/XLSX parsing, preview/profile generation, OpenRouter-backed analysis, metrics/risks/recommendations extraction, chart/table rendering, and separate artifact saves for the full report, chart, and table.",
+      "Created a Writing Studio with a real editor workflow, launch templates, targeted edit mode for selected text, bounded surrounding context, multi-output document generation, assistant suggestions, Compare integration, and provenance-linked saves for drafts and edits.",
+      "Extended Image Studio beyond a prompt box by wiring artifact context into prompt enhancement/generation, preserving source context in image artifact metadata, and supporting product-style creative workflows with saved outputs and downstream reuse.",
+      "Implemented Supabase-authenticated runtime infrastructure across FastAPI and React: JWT-backed request context, workspace bootstrap, profile-scoped artifact/run ownership, Supabase Postgres persistence, private Storage buckets, signed URL flows, row-level-security hardening, and service-role backend helpers where direct client access would be unsafe.",
+      "Added production-facing operational systems including provider status reporting, disconnected-safe UI states, Google Calendar scaffolding, Stripe billing status/checkout/portal endpoints with safe unavailable fallbacks, storage MIME hardening, export-to-Markdown/PDF, and multi-artifact bundle export.",
+      "Built the frontend as a polished React/Vite/Tailwind application with protected route shells, dedicated studio layouts, shared UI primitives, Context Builder, Step Timeline, Compare Panel provider, artifact library/detail flows, billing/settings surfaces, and careful route-state handoffs so users can move work from one studio to another without copy/paste.",
+      "Used the Starbucks Cinder Orange launch workflow as an acceptance story rather than hardcoded demo logic, proving the platform can move from company context to live research, data analysis, finance reasoning, writing outputs, image direction, model comparison, and final artifact bundles through general product flows.",
+      "Documented and hardened the system like a production product: canonical architecture docs, API specs, manual deployment steps, Supabase SQL source-of-truth files, migration mirrors, blocker/completed-work tracking, frontend smoke tests, backend contract coverage, and validation commands across the React, FastAPI, Dexter, and sandbox-runner surfaces.",
+    ],
+    tags: [
+      "TypeScript",
+      "React",
+      "Vite",
+      "Tailwind CSS",
+      "Python",
+      "FastAPI",
+      "Supabase",
+      "PostgreSQL",
+      "Supabase Auth",
+      "Supabase Storage",
+      "OpenRouter",
+      "Exa",
+      "Stripe",
+      "LLMs",
+      "Agentic AI",
+      "AI Agents",
+      "Tool Calling",
+      "Workflow Orchestration",
+      "Artifact Systems",
+      "Context Engineering",
+      "Model Comparison",
+      "Data Analysis",
+      "RAG",
+      "Full-Stack Development",
+      "System Design",
+      "Product Engineering",
+    ],
+    githubLink: "https://github.com/KushagraBharti/Beyond-Chat",
+    thumbnail: "/portfolio/projects/beyond-chat.png",
+  },
+  {
+    slug: "pseudo-lawyer",
+    order: 7,
     title: "PseudoLawyer",
     summary:
       "An AI-powered real-time contract negotiation platform that uses a virtual mediator to resolve disputes and draft bespoke legal agreements.",
@@ -219,7 +272,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "personal-site",
-    order: 7,
+    order: 8,
     title: "Personal Portfolio Website",
     summary:
       "A dynamic full-stack portfolio website with a public showcase, a private personal tracker, live GitHub and weather widgets, and machine-readable content for both humans and models.",
@@ -253,7 +306,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "f1-optimization",
-    order: 8,
+    order: 9,
     title: "F1 Optimization Project",
     summary:
       "A simulation-based F1 race optimization project using reinforcement learning. Built for HackTX-2024, it integrates a custom Pygame-based race environment with a SAC agent from Ray RLlib to optimize driving strategies on a realistic race track.",
@@ -280,7 +333,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "kaggle-titanic-ml",
-    order: 9,
+    order: 10,
     title: "Kaggle Titanic ML",
     summary:
       "Predicted Titanic survival using machine learning. This project involved extensive data cleaning, feature engineering, and model evaluation using various algorithms, with a comprehensive PDF outlining all my learnings.",
@@ -307,7 +360,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "quant-test-environment",
-    order: 10,
+    order: 11,
     title: "Algorithmic Trading Quantitative Test Environment",
     summary:
       "A modular platform for automated trading strategy development, backtesting, and paper trading.",
@@ -334,7 +387,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "northstar-agentic-financial-memory",
-    order: 11,
+    order: 12,
     title: "Northstar Agentic Financial Memory Platform",
     summary:
       "A memory-first AI wealth-management prototype where one local agent, North, loads a user's durable financial context, portfolio snapshot, and tool traces to deliver explainable market checks, scenario analysis, and approval-first financial guidance.",
@@ -374,11 +427,11 @@ export const portfolioProjects: PortfolioProject[] = [
       "System Design",
     ],
     githubLink: "https://github.com/YuvrajKashyap/northstar",
-    thumbnail: "/portfolio/projects/northstar-agentic-financial-memory.svg",
+    thumbnail: "/portfolio/projects/northstar.png",
   },
   {
     slug: "age-gender-recognition",
-    order: 12,
+    order: 13,
     title: "Age & Gender Recognition",
     summary: "Real-time face detection with age and gender prediction using OpenCV and Caffe models.",
     description: [
@@ -393,7 +446,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "data-drive",
-    order: 13,
+    order: 14,
     title: "DataDrive: Unified Insights for Data & Fuel Optimization",
     summary:
       "A full-stack AI-driven analytics platform that integrates advanced ML models, real-time data observability, and interactive visualizations for fuel optimization.",
@@ -424,7 +477,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "circuit-seer",
-    order: 14,
+    order: 15,
     title: "CircuitSeer (Circuit Solver)",
     summary:
       "An AI-powered circuit analysis tool that automates the identification and schematic analysis of electronic circuits for both educational and practical use.",
@@ -449,7 +502,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "point-cloud-down-sampler",
-    order: 15,
+    order: 16,
     title: "Point Cloud Down Sampler",
     summary:
       "A dual-approach tool for reducing dense point clouds via custom voxelization and Open3D’s high-performance voxel grid method.",
@@ -473,7 +526,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "pcb-design-project",
-    order: 16,
+    order: 17,
     title: "PCB Design Project",
     summary:
       "A Senior Independent Project in 2023 that provided hands-on experience in designing, ordering, and assembling custom PCBs.",
@@ -498,7 +551,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "self-driving-car-project",
-    order: 17,
+    order: 18,
     title: "Self-Driving Car Project",
     summary:
       "Repurposed an RC car into a self-driving vehicle using Arduino hardware and a custom obstacle avoidance algorithm.",
@@ -520,7 +573,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "maze-traversal",
-    order: 18,
+    order: 19,
     title: "Maze Traversal",
     summary: "A recursive depth-first search maze-solving algorithm in Python.",
     description: [
