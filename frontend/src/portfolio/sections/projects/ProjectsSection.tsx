@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import PortfolioImage from "../../components/PortfolioImage";
 import { fetchProjects, getCachedPortfolioSnapshot } from "../../api/portfolioApi";
 import type { PortfolioProject } from "../../api/contracts";
 import { portfolioSnapshotBootstrap } from "../../generated/portfolioSnapshotBootstrap";
@@ -61,12 +62,13 @@ const ProjectsSection: React.FC = () => {
           {visibleProjects.map((project) => {
             const tagLine = project.tags.slice(0, 2).join("  •  ");
             const image = project.thumbnail ? (
-              <img
+              <PortfolioImage
                 src={project.thumbnail}
                 alt={project.title}
                 loading="lazy"
                 decoding="async"
                 className="projects-editorial__image"
+                sizes="(max-width: 640px) 92vw, (max-width: 980px) 44vw, 300px"
               />
             ) : (
               <div className="projects-editorial__image projects-editorial__image--empty" />

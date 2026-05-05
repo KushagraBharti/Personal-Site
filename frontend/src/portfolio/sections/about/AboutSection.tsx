@@ -1,4 +1,5 @@
 import React from "react";
+import PortfolioImage from "../../components/PortfolioImage";
 
 const values = [
   { index: "01", label: "curiosity" },
@@ -45,12 +46,13 @@ const AboutSection: React.FC<{
           <div className="about-editorial__frame about-editorial__frame--back" />
           <div className="about-editorial__frame about-editorial__frame--front">
             <div className="about-editorial__tape" />
-            <img
+            <PortfolioImage
               src="/portfolio/profile/headshot.png"
               alt="Kushagra Bharti portrait"
               className="about-editorial__image"
               loading={eagerMedia ? "eager" : "lazy"}
               decoding="async"
+              sizes="(max-width: 700px) 82vw, 430px"
             />
           </div>
           <p className="about-editorial__coordinates">

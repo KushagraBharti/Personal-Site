@@ -1,4 +1,5 @@
 import React from "react";
+import PortfolioImage from "../../components/PortfolioImage";
 
 type FeaturedProject = {
   index: string;
@@ -41,7 +42,7 @@ const featuredProjects: FeaturedProject[] = [
     title: "F1 Optimization",
     description:
       "Rebuilding the racing optimization project with a 2D physics simulation, then extending it into a multi-agent PPO reinforcement learning system for strategy and control.",
-    image: "/portfolio/projects/f1-optimization.svg",
+    image: "/portfolio/projects/f1-optimization.png",
     imageAlt: "Formula 1 optimization visual",
   },
 ];
@@ -70,14 +71,15 @@ const FeaturedSection: React.FC = () => {
                     <span>...</span>
                   </div>
                 ) : (
-                  <img
-                    src={project.image}
+                  <PortfolioImage
+                    src={project.image ?? ""}
                     alt={project.imageAlt}
                     className={`featured-editorial__image${
                       project.imageFit === "contain" ? " featured-editorial__image--contain" : ""
                     }`}
                     loading="lazy"
                     decoding="async"
+                    sizes="(max-width: 900px) 92vw, 384px"
                   />
                 )}
               </div>

@@ -15,6 +15,7 @@ const outputPath = resolve(publicDirectory, "llms.txt");
 const aiHtmlPath = resolve(scriptDirectory, "../ai.html");
 const robotsPath = resolve(publicDirectory, "robots.txt");
 const sitemapPath = resolve(publicDirectory, "sitemap.xml");
+const portfolioJsonPath = resolve(publicDirectory, "portfolio.json");
 const introBootstrapPath = resolve(scriptDirectory, "../src/portfolio/generated/introBootstrap.ts");
 const portfolioSnapshotBootstrapPath = resolve(scriptDirectory, "../src/portfolio/generated/portfolioSnapshotBootstrap.ts");
 const require = createRequire(import.meta.url);
@@ -54,23 +55,97 @@ const escapedLlmsText = llmsText
   .replace(/</g, "&lt;")
   .replace(/>/g, "&gt;")
   .replace(/"/g, "&quot;");
+const escapeScriptJson = (value) =>
+  JSON.stringify(value).replace(/</g, "\\u003c");
+const absoluteUrl = (pathOrUrl) => {
+  if (!pathOrUrl) return undefined;
+  try {
+    return new URL(pathOrUrl).href;
+  } catch {
+    return `${siteUrl}${pathOrUrl.startsWith("/") ? pathOrUrl : `/${pathOrUrl}`}`;
+  }
+};
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: portfolioSnapshot.profile.name,
+  url: siteUrl,
+  image: absoluteUrl(portfolioSnapshot.intro.personalPhoto),
+  email: `mailto:${portfolioSnapshot.profile.primaryEmail}`,
+  description: portfolioSnapshot.profile.personalSummary,
+  sameAs: [
+    ...portfolioSnapshot.profile.socialLinks,
+    ...portfolioSnapshot.profile.externalLinks,
+  ].map((link) => link.href),
+};
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: `${portfolioSnapshot.profile.name} Portfolio`,
+  url: siteUrl,
+  author: {
+    "@type": "Person",
+    name: portfolioSnapshot.profile.name,
+  },
+  description: portfolioSnapshot.profile.headline,
+};
+const projectItemListSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: `${portfolioSnapshot.profile.name} projects`,
+  itemListElement: portfolioSnapshot.projects.map((project, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    item: {
+      "@type": "CreativeWork",
+      name: project.title,
+      description: project.summary,
+      image: absoluteUrl(project.thumbnail),
+      url: project.githubLink || `${siteUrl}/#projects`,
+      keywords: project.tags.join(", "),
+    },
+  })),
+};
+const profilePageSchema = {
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  name: `${portfolioSnapshot.profile.name} AI-readable portfolio`,
+  url: `${siteUrl}/ai`,
+  mainEntity: personSchema,
+};
+const criticalCss = `html,body,#root{min-height:100%;background:#f4efe7;}body{margin:0;color:#171512;}#root{background:#f4efe7;}`;
 const sharedHead = ({
   canonicalPath,
   description,
+  jsonLd = [],
   title,
 }) => `    <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/portfolio/icons/brain.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preload" href="/portfolio/fonts/cormorant-garamond-latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/portfolio/fonts/cormorant-garamond-latin-ext.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/portfolio/fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/portfolio/fonts/ibm-plex-mono-500-latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/portfolio/fonts/ibm-plex-mono-600-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/portfolio/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="canonical" href="${siteUrl}${canonicalPath}" />
     <link rel="alternate" type="text/plain" href="${siteUrl}/llms.txt" title="Kushagra Bharti AI-readable portfolio" />
     <link rel="alternate" type="text/html" href="${siteUrl}/ai" title="Kushagra Bharti structured AI portfolio" />
+    <link rel="alternate" type="application/json" href="${siteUrl}/portfolio.json" title="Kushagra Bharti structured portfolio JSON" />
     <meta name="description" content="${description}" />
+    <meta property="og:type" content="profile" />
+    <meta property="og:title" content="${title}" />
+    <meta property="og:description" content="${description}" />
+    <meta property="og:url" content="${siteUrl}${canonicalPath}" />
+    <meta property="og:image" content="${absoluteUrl(portfolioSnapshot.intro.personalPhoto)}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${title}" />
+    <meta name="twitter:description" content="${description}" />
+    <meta name="twitter:image" content="${absoluteUrl(portfolioSnapshot.intro.personalPhoto)}" />
+    <style>${criticalCss}</style>
+    ${jsonLd
+      .map(
+        (schema) =>
+          `<script type="application/ld+json">${escapeScriptJson(schema)}</script>`
+      )
+      .join("\n    ")}
     <title>${title}</title>`;
 
 const aiHtml = `<!doctype html>
@@ -79,6 +154,7 @@ const aiHtml = `<!doctype html>
 ${sharedHead({
   canonicalPath: "/ai",
   description: "AI-readable portfolio profile for Kushagra Bharti, including experience, projects, education, links, and creative work.",
+  jsonLd: [profilePageSchema, projectItemListSchema],
   title: "Kushagra Bharti - AI Portfolio",
 })}
   </head>
@@ -98,6 +174,7 @@ const robotsText = `User-agent: *
 Allow: /
 Allow: /ai
 Allow: /llms.txt
+Allow: /portfolio.json
 
 Sitemap: ${siteUrl}/sitemap.xml
 `;
@@ -129,6 +206,7 @@ for (const directory of [
   dirname(aiHtmlPath),
   dirname(robotsPath),
   dirname(sitemapPath),
+  dirname(portfolioJsonPath),
   dirname(introBootstrapPath),
   dirname(portfolioSnapshotBootstrapPath),
 ]) {
@@ -151,6 +229,7 @@ const indexHtml = `<!doctype html>
 ${sharedHead({
   canonicalPath: "/",
   description: "Portfolio for Kushagra Bharti, including engineering projects, research, creative work, and AI-readable profile content.",
+  jsonLd: [personSchema, websiteSchema, projectItemListSchema],
   title: "Kushagra Bharti - Portfolio",
 })}
   </head>
@@ -163,6 +242,7 @@ ${sharedHead({
 
 writeFileSync(indexHtmlPath, indexHtml, "utf8");
 writeFileSync(outputPath, llmsText, "utf8");
+writeFileSync(portfolioJsonPath, `${JSON.stringify(portfolioSnapshot, null, 2)}\n`, "utf8");
 writeFileSync(aiHtmlPath, aiHtml, "utf8");
 writeFileSync(robotsPath, robotsText, "utf8");
 writeFileSync(sitemapPath, sitemapXml, "utf8");

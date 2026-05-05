@@ -512,6 +512,21 @@ html {
   pointer-events: none;
 }
 
+.hero-landing__model-loading {
+  position: relative;
+  z-index: 12;
+  margin: 0;
+  align-self: center;
+  justify-self: center;
+  font-family: var(--portfolio-font-mono);
+  font-size: 0.74rem;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(23, 21, 18, 0.48);
+  pointer-events: none;
+}
+
 .hero-landing__model-canvas {
   width: clamp(40rem, 48vw, 47rem);
   height: clamp(40rem, 48vw, 47rem);
@@ -854,6 +869,12 @@ html {
   object-fit: contain;
   padding: 2.3rem;
   background: #11100e;
+}
+
+.featured-editorial__image-wrap picture,
+.projects-editorial__image-link picture,
+.about-editorial__frame--front picture {
+  display: contents;
 }
 
 .featured-editorial__placeholder {

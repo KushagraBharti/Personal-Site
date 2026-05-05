@@ -1,7 +1,5 @@
-import type { PortfolioSnapshot } from "../api/contracts";
-
-export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
-  "generatedAt": "generated-at-build-time",
+{
+  "generatedAt": "2026-05-05T02:19:18.274Z",
   "profile": {
     "name": "Kushagra Bharti",
     "headline": "Student | Software Engineer | ML Enthusiast",
@@ -926,4 +924,4 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
       }
     ]
   }
-};
+}

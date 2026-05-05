@@ -1,5 +1,6 @@
 import React from "react";
 import PortfolioNavbar from "../components/PortfolioNavbar";
+import PortfolioImage from "../components/PortfolioImage";
 import HeroLandingSection from "../sections/hero/HeroLandingSection";
 import { portfolioSnapshotBootstrap } from "../generated/portfolioSnapshotBootstrap";
 import type { PortfolioSocialLink } from "../api/contracts";
@@ -51,7 +52,7 @@ const featuredProjects = [
     title: "F1 Optimization",
     description:
       "Rebuilding the racing optimization project with a 2D physics simulation, then extending it into a multi-agent PPO reinforcement learning system for strategy and control.",
-    image: "/portfolio/projects/f1-optimization.svg",
+    image: "/portfolio/projects/f1-optimization.png",
     imageAlt: "Formula 1 optimization visual",
   },
 ];
@@ -167,12 +168,13 @@ const HomePageShell: React.FC<{
                 <div className="about-editorial__frame about-editorial__frame--back" />
                 <div className="about-editorial__frame about-editorial__frame--front">
                   <div className="about-editorial__tape" />
-                  <img
+                  <PortfolioImage
                     src="/portfolio/profile/headshot.png"
                     alt="Kushagra Bharti portrait"
                     className="about-editorial__image"
                     loading="lazy"
                     decoding="async"
+                    sizes="(max-width: 700px) 82vw, 430px"
                   />
                 </div>
                 <p className="about-editorial__coordinates">
@@ -214,7 +216,7 @@ const HomePageShell: React.FC<{
                     className="featured-editorial__item"
                   >
                     <div className="featured-editorial__image-wrap">
-                      <img
+                      <PortfolioImage
                         src={project.image}
                         alt={project.imageAlt}
                         className={`featured-editorial__image${
@@ -224,6 +226,7 @@ const HomePageShell: React.FC<{
                         }`}
                         loading="lazy"
                         decoding="async"
+                        sizes="(max-width: 900px) 92vw, 384px"
                       />
                     </div>
                     <div className="featured-editorial__meta">
@@ -341,12 +344,13 @@ const HomePageShell: React.FC<{
                         aria-label={`Open ${project.title}`}
                       >
                         {project.thumbnail ? (
-                          <img
+                          <PortfolioImage
                             src={project.thumbnail}
                             alt={project.title}
                             className="projects-editorial__image"
                             loading="lazy"
                             decoding="async"
+                            sizes="(max-width: 640px) 92vw, (max-width: 980px) 44vw, 300px"
                           />
                         ) : (
                           <div className="projects-editorial__image projects-editorial__image--empty" />
@@ -355,12 +359,13 @@ const HomePageShell: React.FC<{
                     ) : (
                       <div className="projects-editorial__image-link">
                         {project.thumbnail ? (
-                          <img
+                          <PortfolioImage
                             src={project.thumbnail}
                             alt={project.title}
                             className="projects-editorial__image"
                             loading="lazy"
                             decoding="async"
+                            sizes="(max-width: 640px) 92vw, (max-width: 980px) 44vw, 300px"
                           />
                         ) : (
                           <div className="projects-editorial__image projects-editorial__image--empty" />

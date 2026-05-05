@@ -81,6 +81,7 @@ const HeroLandingSection: React.FC = () => {
     useState<PortfolioAiProvider | null>(null);
   const [SculptureScene, setSculptureScene] =
     useState<SculptureSceneComponent | null>(null);
+  const [isSculptureLoading, setIsSculptureLoading] = useState(true);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -115,6 +116,7 @@ const HeroLandingSection: React.FC = () => {
       if (!isMounted) return;
 
       if (!canCreateWebGLContext()) {
+        setIsSculptureLoading(false);
         dispatchHeroMediaKicked();
         return;
       }
@@ -127,9 +129,13 @@ const HeroLandingSection: React.FC = () => {
         .then((module) => {
           if (isMounted) {
             setSculptureScene(() => module.default);
+            setIsSculptureLoading(false);
           }
         })
         .catch(() => {
+          if (isMounted) {
+            setIsSculptureLoading(false);
+          }
           // Keep the hero usable if the GPU-backed scene cannot be loaded.
         });
     });
@@ -293,6 +299,11 @@ const HeroLandingSection: React.FC = () => {
           <div className="hero-landing__dust hero-landing__dust--two" />
           <div className="hero-landing__scene">
             {SculptureScene ? <SculptureScene /> : null}
+            {isSculptureLoading ? (
+              <p className="hero-landing__model-loading" aria-live="polite">
+                3d model loading
+              </p>
+            ) : null}
           </div>
           <p className="hero-landing__model-note">
             this 3d model is a work in progress, quality will become better LOL

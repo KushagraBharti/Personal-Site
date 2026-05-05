@@ -302,7 +302,7 @@ export const portfolioProjects: PortfolioProject[] = [
       "Testing",
     ],
     githubLink: "https://github.com/KushagraBharti/Personal-Site",
-    thumbnail: "/portfolio/projects/personal-site.svg",
+    thumbnail: "/portfolio/projects/personal-site.png",
   },
   {
     slug: "f1-optimization",
@@ -329,7 +329,7 @@ export const portfolioProjects: PortfolioProject[] = [
       "Gymnasium",
     ],
     githubLink: "https://github.com/KushagraBharti/HackTX-2024---F1-Optimization",
-    thumbnail: "/portfolio/projects/f1-optimization.svg",
+    thumbnail: "/portfolio/projects/f1-optimization.png",
   },
   {
     slug: "kaggle-titanic-ml",
@@ -356,7 +356,7 @@ export const portfolioProjects: PortfolioProject[] = [
       "Random Forest",
     ],
     githubLink: "https://github.com/KushagraBharti/Kaggle-Titanic-Solution",
-    thumbnail: "/portfolio/projects/kaggle-titanic-ml.svg",
+    thumbnail: "/portfolio/projects/kaggle-titanic-ml.png",
   },
   {
     slug: "quant-test-environment",
@@ -383,7 +383,7 @@ export const portfolioProjects: PortfolioProject[] = [
       "Paper Trading",
     ],
     githubLink: "https://github.com/KushagraBharti/Quant-Test-Environment",
-    thumbnail: "/portfolio/projects/quant-test-environment.svg",
+    thumbnail: "/portfolio/projects/quant-test-environment.png",
   },
   {
     slug: "northstar-agentic-financial-memory",
@@ -442,7 +442,7 @@ export const portfolioProjects: PortfolioProject[] = [
     ],
     tags: ["Python", "OpenCV", "DNN", "Caffe", "Face Detection", "Real-Time Processing"],
     githubLink: "https://github.com/KushagraBharti/Gender-Age-Detection",
-    thumbnail: "/portfolio/projects/age-gender-recognition.svg",
+    thumbnail: "/portfolio/projects/age-gender-recognition.png",
   },
   {
     slug: "data-drive",
@@ -473,7 +473,7 @@ export const portfolioProjects: PortfolioProject[] = [
       "Data Analytics",
     ],
     githubLink: "https://github.com/KushagraBharti/HACKUTD-Data-Drive",
-    thumbnail: "/portfolio/projects/data-drive.svg",
+    thumbnail: "/portfolio/projects/data-drive.png",
   },
   {
     slug: "circuit-seer",
@@ -498,7 +498,7 @@ export const portfolioProjects: PortfolioProject[] = [
       "Hough Transform",
     ],
     githubLink: "https://github.com/Hteam121/circuit-seer",
-    thumbnail: "/portfolio/projects/circuit-seer.svg",
+    thumbnail: "/portfolio/projects/circuit-seer.png",
   },
   {
     slug: "point-cloud-down-sampler",
@@ -522,7 +522,7 @@ export const portfolioProjects: PortfolioProject[] = [
       "Math Modeling",
     ],
     githubLink: "https://github.com/KushagraBharti/PointCloud-DownSampler",
-    thumbnail: "/portfolio/projects/point-cloud-down-sampler.svg",
+    thumbnail: "/portfolio/projects/point-cloud-down-sampler.png",
   },
   {
     slug: "pcb-design-project",
@@ -547,7 +547,7 @@ export const portfolioProjects: PortfolioProject[] = [
       "Soldering",
     ],
     githubLink: "https://github.com/KushagraBharti/PCB-Design-Project",
-    thumbnail: "/portfolio/projects/pcb-design-project.svg",
+    thumbnail: "/portfolio/projects/pcb-design-project.png",
   },
   {
     slug: "self-driving-car-project",
@@ -569,7 +569,7 @@ export const portfolioProjects: PortfolioProject[] = [
       "Ultrasonic Sensors",
       "Hardware",
     ],
-    thumbnail: "/portfolio/projects/self-driving-car-project.svg",
+    thumbnail: "/portfolio/projects/self-driving-car-project.png",
   },
   {
     slug: "maze-traversal",
@@ -583,6 +583,6 @@ export const portfolioProjects: PortfolioProject[] = [
       "Measures execution time to evaluate performance, offering a concise and efficient educational tool for understanding recursive algorithms.",
     ],
     tags: ["Python", "Depth-First Search", "Recursion", "Maze Solving"],
-    thumbnail: "/portfolio/projects/maze-traversal.svg",
+    thumbnail: "/portfolio/projects/maze-traversal.png",
   },
 ];

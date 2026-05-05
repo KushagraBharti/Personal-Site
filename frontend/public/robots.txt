@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Allow: /ai
 Allow: /llms.txt
+Allow: /portfolio.json
 
 Sitemap: https://www.kushagrabharti.com/sitemap.xml
