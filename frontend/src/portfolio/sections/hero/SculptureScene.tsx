@@ -68,7 +68,7 @@ function WebGLContextGuard({
   return null;
 }
 
-function HeroModel() {
+function HeroModel({ onReady }: { onReady: () => void }) {
   const { scene } = useGLTF(HERO_MODEL_PATH);
   const { gl } = useThree();
 
@@ -109,7 +109,8 @@ function HeroModel() {
         }
       });
     });
-  }, [gl, scene]);
+    onReady();
+  }, [gl, onReady, scene]);
 
   return (
     <primitive object={scene as Group} position={[0, 0.36, 0]} scale={2.7} />
@@ -118,7 +119,11 @@ function HeroModel() {
 
 useGLTF.preload(HERO_MODEL_PATH);
 
-export default function SculptureScene() {
+export default function SculptureScene({
+  onModelReady,
+}: {
+  onModelReady: () => void;
+}) {
   const [canvasKey, setCanvasKey] = useState(0);
   const [isRecovering, setIsRecovering] = useState(false);
   const recoveryTimeoutRef = useRef<number | null>(null);
@@ -186,7 +191,7 @@ export default function SculptureScene() {
             />
 
             <Suspense fallback={null}>
-              <HeroModel />
+              <HeroModel onReady={onModelReady} />
               <Environment preset="studio" environmentIntensity={0.72} />
               <ContactShadows
                 position={[0, -1.18, 0]}

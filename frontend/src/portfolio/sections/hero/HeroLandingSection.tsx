@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { introBootstrap } from "../../generated/introBootstrap";
 import type {
   PortfolioAiProvider,
   PortfolioIntroResponse,
 } from "../../api/contracts";
 
-type SculptureSceneComponent = React.ComponentType;
+type SculptureSceneComponent = React.ComponentType<{
+  onModelReady: () => void;
+}>;
 
 const DEFAULT_SITE_URL = "https://www.kushagrabharti.com";
 const HERO_MODEL_PATH = "/portfolio/models/best.glb";
@@ -129,7 +131,6 @@ const HeroLandingSection: React.FC = () => {
         .then((module) => {
           if (isMounted) {
             setSculptureScene(() => module.default);
-            setIsSculptureLoading(false);
           }
         })
         .catch(() => {
@@ -157,6 +158,10 @@ const HeroLandingSection: React.FC = () => {
 
     return () => window.clearTimeout(timeoutId);
   }, [clipboardProvider]);
+
+  const handleModelReady = useCallback(() => {
+    setIsSculptureLoading(false);
+  }, []);
 
   const socialLinks = preferredSocialLabels
     .map((label) =>
@@ -298,7 +303,9 @@ const HeroLandingSection: React.FC = () => {
           <div className="hero-landing__dust hero-landing__dust--one" />
           <div className="hero-landing__dust hero-landing__dust--two" />
           <div className="hero-landing__scene">
-            {SculptureScene ? <SculptureScene /> : null}
+            {SculptureScene ? (
+              <SculptureScene onModelReady={handleModelReady} />
+            ) : null}
             {isSculptureLoading ? (
               <p className="hero-landing__model-loading" aria-live="polite">
                 3d model loading
