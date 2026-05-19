@@ -7,6 +7,7 @@ import {
   portfolioMedia,
   portfolioProfile,
   portfolioProjects,
+  portfolioWritings,
 } from "../content";
 import type {
   PortfolioEducation,
@@ -15,6 +16,7 @@ import type {
   PortfolioMediaItem,
   PortfolioProject,
   PortfolioSnapshot,
+  PortfolioWriting,
 } from "../contracts";
 import { sanitizeLatestUpdate } from "../utils/sanitizeLatestUpdate";
 
@@ -32,6 +34,7 @@ export const getPortfolioSnapshot = (): PortfolioSnapshot => ({
   education: sortByOrder<PortfolioEducation>(portfolioEducation),
   experiences: sortByOrder<PortfolioExperience>(portfolioExperiences),
   projects: sortByOrder<PortfolioProject>(portfolioProjects),
+  writings: sortByOrder<PortfolioWriting>(portfolioWritings),
   media: sortByOrder<PortfolioMediaItem>(portfolioMedia),
   ai: {
     providers: sortByOrder(portfolioAiProviders),

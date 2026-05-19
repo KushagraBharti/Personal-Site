@@ -12,6 +12,7 @@ const getPortfolioSnapshot = () => ({
     education: sortByOrder(content_1.portfolioEducation),
     experiences: sortByOrder(content_1.portfolioExperiences),
     projects: sortByOrder(content_1.portfolioProjects),
+    writings: sortByOrder(content_1.portfolioWritings),
     media: sortByOrder(content_1.portfolioMedia),
     ai: {
         providers: sortByOrder(content_1.portfolioAiProviders),

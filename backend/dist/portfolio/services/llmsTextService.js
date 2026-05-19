@@ -59,6 +59,14 @@ const formatProjects = (projects) => projects
     `GitHub: ${project.githubLink || "N/A"}`,
 ].join("\n"))
     .join("\n\n");
+const formatWritings = (writings) => writings
+    .map((writing) => [
+    `### ${String(writing.order).padStart(2, "0")} ${writing.title}`,
+    `Category: ${writing.category}`,
+    `Summary: ${writing.summary}`,
+    writing.markdown,
+].join("\n"))
+    .join("\n\n");
 const formatMedia = (media) => media
     .map((item) => [
     `### ${item.title}`,
@@ -135,6 +143,10 @@ ${formatExperiences(snapshot.experiences)}
 ## Projects
 
 ${formatProjects(snapshot.projects)}
+
+## Values, Beliefs, Writings, Thoughts, and Predictions
+
+${formatWritings(snapshot.writings)}
 
 ## Film and Creative Work
 

@@ -6,3 +6,4 @@ export { portfolioIntro } from "./intro";
 export { portfolioMedia } from "./media";
 export { portfolioProfile } from "./profile";
 export { portfolioProjects } from "./projects";
+export { portfolioWritings } from "./writings";

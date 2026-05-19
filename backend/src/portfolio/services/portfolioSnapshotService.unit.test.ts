@@ -93,6 +93,24 @@ vi.mock("../content", () => ({
       thumbnail: "/portfolio/projects/first.png",
     },
   ],
+  portfolioWritings: [
+    {
+      slug: "thought-second",
+      order: 2,
+      category: "thought",
+      title: "Second Thought",
+      summary: "Summary",
+      markdown: "# Second",
+    },
+    {
+      slug: "thought-first",
+      order: 1,
+      category: "belief",
+      title: "First Thought",
+      summary: "Summary",
+      markdown: "# First",
+    },
+  ],
   portfolioMedia: [
     {
       slug: "media-second",
@@ -148,6 +166,7 @@ describe("portfolioSnapshotService", () => {
     expect(snapshot.education.map((item) => item.slug)).toEqual(["first", "second"]);
     expect(snapshot.experiences.map((item) => item.slug)).toEqual(["exp-first", "exp-second"]);
     expect(snapshot.projects.map((item) => item.slug)).toEqual(["project-first", "project-second"]);
+    expect(snapshot.writings.map((item) => item.slug)).toEqual(["thought-first", "thought-second"]);
     expect(snapshot.media.map((item) => item.slug)).toEqual(["media-first", "media-second"]);
     expect(snapshot.ai.providers.map((item) => item.slug)).toEqual(["openai", "claude"]);
     expect(snapshot.intro.latestUpdate).toBe("Latest update");

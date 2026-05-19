@@ -34,6 +34,7 @@ Routes:
 ## Non-Negotiable Decisions
 
 - Portfolio content is backend-owned. Edit `backend/src/portfolio/content/*` first.
+- Portfolio writings/thoughts are configured in `backend/src/portfolio/content/writings.ts`; each entry reads its hover preview body from `backend/src/portfolio/content/writings/*.md`.
 - Frontend API-facing portfolio contracts live in `frontend/src/portfolio/api/contracts.ts`.
 - Backend portfolio contracts live in `backend/src/portfolio/contracts`.
 - `frontend/scripts/sync-portfolio-exports.mjs` generates `frontend/index.html`, `frontend/ai.html`, `frontend/public/llms.txt`, `frontend/public/portfolio.json`, `frontend/public/version.json`, `frontend/public/robots.txt`, `frontend/public/sitemap.xml`, `frontend/src/portfolio/generated/introBootstrap.ts`, and `frontend/src/portfolio/generated/portfolioSnapshotBootstrap.ts`.
@@ -50,6 +51,7 @@ Routes:
 Portfolio:
 
 - content -> `backend/src/portfolio/content`
+- writings markdown -> `backend/src/portfolio/content/writings/*.md`
 - contracts -> `backend/src/portfolio/contracts` and `frontend/src/portfolio/api/contracts.ts`
 - services/routes/controllers -> `backend/src/portfolio/*`
 - frontend pages/sections/widgets -> `frontend/src/portfolio/*`
@@ -69,7 +71,7 @@ Current tracker modules:
 
 ## Known Codebase Notes
 
-- `AboutSection` and `FeaturedSection` currently hardcode some public portfolio copy/project selections in the frontend. Prefer moving future public content changes to backend content rather than adding more frontend content sources.
+- `AboutSection` renders backend-owned about copy and featured writings, while `FeaturedSection` still hardcodes some public project selections in the frontend. Prefer moving future public content changes to backend content rather than adding more frontend content sources.
 - Tracker CRUD mostly uses Supabase from the browser. Backend private APIs are for service-role work, Google Calendar sync, cron, and task-list deletion.
 - Calendar sync has queue-based and legacy fallback paths; preserve compatibility unless the migration state is explicitly being cleaned up.
 - The old `docs/` tree has been removed. Do not point new onboarding instructions at `docs/active/*`.

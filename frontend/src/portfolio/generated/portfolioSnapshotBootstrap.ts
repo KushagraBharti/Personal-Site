@@ -956,6 +956,40 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
       "thumbnail": "/portfolio/projects/maze-traversal.png"
     }
   ],
+  "writings": [
+    {
+      "slug": "curiosity",
+      "order": 1,
+      "category": "value",
+      "title": "curiosity",
+      "summary": "Questions are the cheapest way to find hidden leverage.",
+      "markdown": "# Curiosity\n\nCuriosity is how I keep a project honest. Before I decide what to build, I try to understand what is actually happening, where the friction lives, and which assumptions are quietly carrying the most weight.\n\n- Ask the obvious question twice.\n- Follow the weird edge case.\n- Treat confusion as signal, not failure.\n\nThe goal is not to know everything. The goal is to stay close enough to the problem that better questions keep appearing."
+    },
+    {
+      "slug": "taste",
+      "order": 2,
+      "category": "belief",
+      "title": "taste",
+      "summary": "Craft matters because people can feel when a system was cared for.",
+      "markdown": "# Taste\n\nTaste is the discipline of noticing. It shows up in small choices: the loading state that does not distract, the name that makes a function easier to trust, the page that feels calm because its hierarchy is obvious.\n\nI care about craft because users inherit every shortcut a builder takes. Good software should make the next action feel natural.\n\n> If a thing is worth building, it is worth making legible."
+    },
+    {
+      "slug": "agency",
+      "order": 3,
+      "category": "thought",
+      "title": "agency",
+      "summary": "The best tools make people more capable without making them dependent.",
+      "markdown": "# Agency\n\nI am interested in tools that expand what a person can do. The best systems do not replace judgment; they compress the boring parts so more attention can go into taste, strategy, and care.\n\nThat is why I keep coming back to AI, planning systems, and developer tools. They sit close to human intention.\n\n- Reduce busywork.\n- Preserve control.\n- Make progress visible."
+    },
+    {
+      "slug": "interfaces",
+      "order": 4,
+      "category": "prediction",
+      "title": "interfaces",
+      "summary": "Software will move from static screens toward adaptive work surfaces.",
+      "markdown": "# Interfaces\n\nMy prediction is that the next generation of software will feel less like fixed pages and more like adaptive work surfaces. Interfaces will reshape themselves around context, intent, and the user's current level of certainty.\n\nThat does not mean every app becomes chat. It means the rigid boundary between command, document, dashboard, and assistant gets softer.\n\nThe winning products will still need taste. Especially then."
+    }
+  ],
   "media": [
     {
       "slug": "st-stephens-dining-hall-documentary",

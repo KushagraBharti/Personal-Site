@@ -82,6 +82,15 @@ export interface PortfolioProject {
   thumbnail?: string;
 }
 
+export interface PortfolioWriting {
+  slug: string;
+  order: number;
+  category: "value" | "belief" | "writing" | "thought" | "prediction";
+  title: string;
+  summary: string;
+  markdown: string;
+}
+
 export interface PortfolioAiProviderLinkAction {
   type: "link";
   hrefTemplate: string;
@@ -115,6 +124,7 @@ export interface PortfolioSnapshot {
   education: PortfolioEducation[];
   experiences: PortfolioExperience[];
   projects: PortfolioProject[];
+  writings: PortfolioWriting[];
   media: PortfolioMediaItem[];
   ai: {
     providers: PortfolioAiProvider[];

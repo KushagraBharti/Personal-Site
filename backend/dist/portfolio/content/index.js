@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.portfolioProjects = exports.portfolioProfile = exports.portfolioMedia = exports.portfolioIntro = exports.portfolioExperiences = exports.portfolioEducation = exports.portfolioAiProviders = exports.portfolioAbout = void 0;
+exports.portfolioWritings = exports.portfolioProjects = exports.portfolioProfile = exports.portfolioMedia = exports.portfolioIntro = exports.portfolioExperiences = exports.portfolioEducation = exports.portfolioAiProviders = exports.portfolioAbout = void 0;
 var about_1 = require("./about");
 Object.defineProperty(exports, "portfolioAbout", { enumerable: true, get: function () { return about_1.portfolioAbout; } });
 var ai_1 = require("./ai");
@@ -17,3 +17,5 @@ var profile_1 = require("./profile");
 Object.defineProperty(exports, "portfolioProfile", { enumerable: true, get: function () { return profile_1.portfolioProfile; } });
 var projects_1 = require("./projects");
 Object.defineProperty(exports, "portfolioProjects", { enumerable: true, get: function () { return projects_1.portfolioProjects; } });
+var writings_1 = require("./writings");
+Object.defineProperty(exports, "portfolioWritings", { enumerable: true, get: function () { return writings_1.portfolioWritings; } });

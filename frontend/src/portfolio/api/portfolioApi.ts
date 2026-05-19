@@ -6,9 +6,10 @@ import type {
   PortfolioIntroResponse,
   PortfolioProject,
   PortfolioSnapshot,
+  PortfolioWriting,
 } from "./contracts";
 
-const PORTFOLIO_CACHE_VERSION = "v4";
+const PORTFOLIO_CACHE_VERSION = "v5";
 const PORTFOLIO_SNAPSHOT_CACHE_KEY = `portfolio-snapshot-cache-${PORTFOLIO_CACHE_VERSION}`;
 const INTRO_RESPONSE_CACHE_KEY = `portfolio-intro-cache-${PORTFOLIO_CACHE_VERSION}`;
 
@@ -129,3 +130,6 @@ export const fetchExperiences = async (
 
 export const fetchProjects = async (signal?: AbortSignal): Promise<PortfolioProject[]> =>
   (await fetchPortfolioSnapshot(signal)).projects;
+
+export const fetchWritings = async (signal?: AbortSignal): Promise<PortfolioWriting[]> =>
+  (await fetchPortfolioSnapshot(signal)).writings ?? [];
