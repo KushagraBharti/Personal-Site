@@ -1,7 +1,7 @@
 # Taste
 
-Taste is the discipline of noticing. It shows up in small choices: the loading state that does not distract, the name that makes a function easier to trust, the page that feels calm because its hierarchy is obvious.
+Taste is compressed judgment wearing aesthetic clothes. Filmmaking taught me this before software did: a frame can lie, a cut can confess, silence can carry more voltage than exposition.
 
-I care about craft because users inherit every shortcut a builder takes. Good software should make the next action feel natural.
+The crowd does not always want expertise. Often it wants rhythm, inevitability, texture, the strange gravitational click where a thing feels authored rather than assembled.
 
-> If a thing is worth building, it is worth making legible.
+> craft is what remains after the checklist has exhausted itself.

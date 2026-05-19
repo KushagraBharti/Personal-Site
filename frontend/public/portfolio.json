@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-19T22:46:31.775Z",
+  "generatedAt": "2026-05-19T23:31:38.471Z",
   "profile": {
     "name": "Kushagra Bharti",
     "headline": "Student | Software Engineer | ML Enthusiast",
@@ -956,36 +956,36 @@
   ],
   "writings": [
     {
-      "slug": "curiosity",
+      "slug": "lifelong-learning",
       "order": 1,
       "category": "value",
-      "title": "curiosity",
-      "summary": "Questions are the cheapest way to find hidden leverage.",
-      "markdown": "# Curiosity\n\nCuriosity is how I keep a project honest. Before I decide what to build, I try to understand what is actually happening, where the friction lives, and which assumptions are quietly carrying the most weight.\n\n- Ask the obvious question twice.\n- Follow the weird edge case.\n- Treat confusion as signal, not failure.\n\nThe goal is not to know everything. The goal is to stay close enough to the problem that better questions keep appearing."
+      "title": "lifelong learning",
+      "summary": "Permanent epistemic hunger as armor against entropy, complacency, and slow competitive death.",
+      "markdown": "# Lifelong Learning\n\nKnowledge is not a trophy room; it is a metabolism. The minute the appetite dulls, the organism begins confusing yesterday's map for tomorrow's terrain.\n\n- curiosity as immune system\n- study as competitive oxygen\n- ignorance as a debt instrument with compounding interest\n\nTo stop learning is to become locally impressive and globally obsolete. The world does not pause for your previous competence to finish applauding itself."
+    },
+    {
+      "slug": "kinetic-agency",
+      "order": 2,
+      "category": "belief",
+      "title": "kinetic agency",
+      "summary": "Flexibility, tempo, and first-principles violence against brittle plans in a moving world.",
+      "markdown": "# Kinetic Agency\n\nRigidity is a luxury good purchased by people who have mistaken stillness for safety. The useful agent stays liquid: fast enough to exploit turbulence, skeptical enough to puncture consensus, disciplined enough to transmute ambiguity into motion.\n\nCritical thinking is not decorative skepticism. It is the engine that lets you update under pressure without becoming random.\n\n> agility is strategy before it hardens into doctrine."
+    },
+    {
+      "slug": "common-intelligence",
+      "order": 3,
+      "category": "prediction",
+      "title": "common intelligence",
+      "summary": "When cognition commoditizes, access becomes infrastructure, morality, and liberation technology.",
+      "markdown": "# Common Intelligence\n\nIntelligence is undergoing its electricity moment: first miracle, then commodity, then invisible substrate. The political question becomes brutally simple: who gets voltage, who gets darkness, and who profits from the rationing.\n\nIf cognition becomes abundant but access remains priestly, the future calcifies into a caste system with better interfaces.\n\n- intelligence as public utility\n- capability as emancipation\n- literacy after language itself learns to speak back"
     },
     {
       "slug": "taste",
-      "order": 2,
-      "category": "belief",
-      "title": "taste",
-      "summary": "Craft matters because people can feel when a system was cared for.",
-      "markdown": "# Taste\n\nTaste is the discipline of noticing. It shows up in small choices: the loading state that does not distract, the name that makes a function easier to trust, the page that feels calm because its hierarchy is obvious.\n\nI care about craft because users inherit every shortcut a builder takes. Good software should make the next action feel natural.\n\n> If a thing is worth building, it is worth making legible."
-    },
-    {
-      "slug": "agency",
-      "order": 3,
-      "category": "thought",
-      "title": "agency",
-      "summary": "The best tools make people more capable without making them dependent.",
-      "markdown": "# Agency\n\nI am interested in tools that expand what a person can do. The best systems do not replace judgment; they compress the boring parts so more attention can go into taste, strategy, and care.\n\nThat is why I keep coming back to AI, planning systems, and developer tools. They sit close to human intention.\n\n- Reduce busywork.\n- Preserve control.\n- Make progress visible."
-    },
-    {
-      "slug": "interfaces",
       "order": 4,
-      "category": "prediction",
-      "title": "interfaces",
-      "summary": "Software will move from static screens toward adaptive work surfaces.",
-      "markdown": "# Interfaces\n\nMy prediction is that the next generation of software will feel less like fixed pages and more like adaptive work surfaces. Interfaces will reshape themselves around context, intent, and the user's current level of certainty.\n\nThat does not mean every app becomes chat. It means the rigid boundary between command, document, dashboard, and assistant gets softer.\n\nThe winning products will still need taste. Especially then."
+      "category": "thought",
+      "title": "taste",
+      "summary": "The filmmaker's curse: noticing rhythm, absence, light, and the moral residue of every cut.",
+      "markdown": "# Taste\n\nTaste is compressed judgment wearing aesthetic clothes. Filmmaking taught me this before software did: a frame can lie, a cut can confess, silence can carry more voltage than exposition.\n\nThe crowd does not always want expertise. Often it wants rhythm, inevitability, texture, the strange gravitational click where a thing feels authored rather than assembled.\n\n> craft is what remains after the checklist has exhausted itself."
     }
   ],
   "media": [
