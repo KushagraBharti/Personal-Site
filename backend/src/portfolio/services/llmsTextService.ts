@@ -59,6 +59,9 @@ export const buildLlmsText = (
 
 Canonical site: ${siteUrl}
 Primary AI page: ${siteUrl}/ai
+Canonical llms.txt: ${siteUrl}/llms.txt
+Structured JSON: ${siteUrl}/portfolio.json
+Generated At: ${snapshot.generatedAt}
 
 ## High Level Info
 

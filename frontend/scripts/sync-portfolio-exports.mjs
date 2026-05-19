@@ -16,6 +16,7 @@ const aiHtmlPath = resolve(scriptDirectory, "../ai.html");
 const robotsPath = resolve(publicDirectory, "robots.txt");
 const sitemapPath = resolve(publicDirectory, "sitemap.xml");
 const portfolioJsonPath = resolve(publicDirectory, "portfolio.json");
+const versionJsonPath = resolve(publicDirectory, "version.json");
 const introBootstrapPath = resolve(scriptDirectory, "../src/portfolio/generated/introBootstrap.ts");
 const portfolioSnapshotBootstrapPath = resolve(scriptDirectory, "../src/portfolio/generated/portfolioSnapshotBootstrap.ts");
 const require = createRequire(import.meta.url);
@@ -32,9 +33,6 @@ if (backendBuild.status !== 0) {
 }
 
 const llmsTextModule = require(resolve(backendDirectory, "dist/portfolio/services/llmsTextService.js"));
-const exportModule = require(
-  resolve(backendDirectory, "dist/portfolio/services/portfolioExportService.js")
-);
 const snapshotModule = require(
   resolve(backendDirectory, "dist/portfolio/services/portfolioSnapshotService.js")
 );
@@ -44,8 +42,23 @@ const siteUrl =
   process.env.PUBLIC_SITE_URL ||
   llmsTextModule.DEFAULT_PUBLIC_SITE_URL;
 
-const llmsText = exportModule.getLlmsTextExport(siteUrl);
+const resolveGitCommit = () => {
+  if (process.env.VERCEL_GIT_COMMIT_SHA) {
+    return process.env.VERCEL_GIT_COMMIT_SHA;
+  }
+
+  const gitCommit = spawnSync("git", ["rev-parse", "--short", "HEAD"], {
+    cwd: rootDirectory,
+    stdio: "pipe",
+    encoding: "utf8",
+  });
+
+  return gitCommit.status === 0 ? gitCommit.stdout.trim() : "unknown";
+};
+
 const portfolioSnapshot = snapshotModule.getPortfolioSnapshot();
+const generatedAt = portfolioSnapshot.generatedAt;
+const llmsText = llmsTextModule.buildLlmsText(portfolioSnapshot, siteUrl);
 const stablePortfolioSnapshot = {
   ...portfolioSnapshot,
   generatedAt: "generated-at-build-time",
@@ -175,22 +188,44 @@ Allow: /
 Allow: /ai
 Allow: /llms.txt
 Allow: /portfolio.json
+Allow: /version.json
 
+# AI-readable portfolio: ${siteUrl}/llms.txt
+# Structured portfolio JSON: ${siteUrl}/portfolio.json
+# Build/version metadata: ${siteUrl}/version.json
 Sitemap: ${siteUrl}/sitemap.xml
 `;
 const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>${siteUrl}/</loc>
+    <lastmod>${generatedAt}</lastmod>
   </url>
   <url>
     <loc>${siteUrl}/ai</loc>
+    <lastmod>${generatedAt}</lastmod>
   </url>
   <url>
     <loc>${siteUrl}/llms.txt</loc>
+    <lastmod>${generatedAt}</lastmod>
+  </url>
+  <url>
+    <loc>${siteUrl}/portfolio.json</loc>
+    <lastmod>${generatedAt}</lastmod>
   </url>
 </urlset>
 `;
+const versionJson = {
+  siteUrl,
+  generatedAt,
+  commit: resolveGitCommit(),
+  exports: {
+    ai: `${siteUrl}/ai`,
+    llmsTxt: `${siteUrl}/llms.txt`,
+    portfolioJson: `${siteUrl}/portfolio.json`,
+    sitemap: `${siteUrl}/sitemap.xml`,
+  },
+};
 const introBootstrapModule = `import type { PortfolioIntroResponse } from "../api/contracts";
 
 export const introBootstrap: PortfolioIntroResponse = ${JSON.stringify(snapshotModule.getIntroResponse(), null, 2)};
@@ -207,6 +242,7 @@ for (const directory of [
   dirname(robotsPath),
   dirname(sitemapPath),
   dirname(portfolioJsonPath),
+  dirname(versionJsonPath),
   dirname(introBootstrapPath),
   dirname(portfolioSnapshotBootstrapPath),
 ]) {
@@ -243,6 +279,7 @@ ${sharedHead({
 writeFileSync(indexHtmlPath, indexHtml, "utf8");
 writeFileSync(outputPath, llmsText, "utf8");
 writeFileSync(portfolioJsonPath, `${JSON.stringify(portfolioSnapshot, null, 2)}\n`, "utf8");
+writeFileSync(versionJsonPath, `${JSON.stringify(versionJson, null, 2)}\n`, "utf8");
 writeFileSync(aiHtmlPath, aiHtml, "utf8");
 writeFileSync(robotsPath, robotsText, "utf8");
 writeFileSync(sitemapPath, sitemapXml, "utf8");

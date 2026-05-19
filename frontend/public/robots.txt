@@ -3,5 +3,9 @@ Allow: /
 Allow: /ai
 Allow: /llms.txt
 Allow: /portfolio.json
+Allow: /version.json
 
+# AI-readable portfolio: https://www.kushagrabharti.com/llms.txt
+# Structured portfolio JSON: https://www.kushagrabharti.com/portfolio.json
+# Build/version metadata: https://www.kushagrabharti.com/version.json
 Sitemap: https://www.kushagrabharti.com/sitemap.xml

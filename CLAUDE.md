@@ -6,7 +6,7 @@
 
 This repo has two product surfaces:
 
-- `portfolio`: public site, `/ai`, public APIs, generated `llms.txt`/`portfolio.json`, public assets
+- `portfolio`: public site, `/ai`, public APIs, generated `llms.txt`/`portfolio.json`/`version.json`, public assets
 - `tracker`: private task, workflow, pipeline, and calendar-connected planning app
 
 Keep the split intact in both apps.
@@ -36,7 +36,7 @@ Routes:
 - Portfolio content is backend-owned. Edit `backend/src/portfolio/content/*` first.
 - Frontend API-facing portfolio contracts live in `frontend/src/portfolio/api/contracts.ts`.
 - Backend portfolio contracts live in `backend/src/portfolio/contracts`.
-- `frontend/scripts/sync-portfolio-exports.mjs` generates `frontend/index.html`, `frontend/ai.html`, `frontend/public/llms.txt`, `frontend/public/portfolio.json`, `frontend/public/robots.txt`, `frontend/public/sitemap.xml`, `frontend/src/portfolio/generated/introBootstrap.ts`, and `frontend/src/portfolio/generated/portfolioSnapshotBootstrap.ts`.
+- `frontend/scripts/sync-portfolio-exports.mjs` generates `frontend/index.html`, `frontend/ai.html`, `frontend/public/llms.txt`, `frontend/public/portfolio.json`, `frontend/public/version.json`, `frontend/public/robots.txt`, `frontend/public/sitemap.xml`, `frontend/src/portfolio/generated/introBootstrap.ts`, and `frontend/src/portfolio/generated/portfolioSnapshotBootstrap.ts`.
 - `/` is statically prerendered from the real React homepage shell, then hydrated. Media-heavy homepage enhancements, the 3D model, and live data load after first paint with no skeleton placeholders. `/ai` and `/tracker` are lazy.
 - Public portfolio fonts are self-hosted in `frontend/public/portfolio/fonts`; do not add Google Fonts back to the critical path.
 - Public portfolio images should prefer optimized AVIF/WebP variants via `PortfolioImage`, with original PNG/SVG assets kept as fallback sources.

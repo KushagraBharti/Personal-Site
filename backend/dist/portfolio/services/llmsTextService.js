@@ -41,6 +41,9 @@ const buildLlmsText = (snapshot, siteUrl = exports.DEFAULT_PUBLIC_SITE_URL) => `
 
 Canonical site: ${siteUrl}
 Primary AI page: ${siteUrl}/ai
+Canonical llms.txt: ${siteUrl}/llms.txt
+Structured JSON: ${siteUrl}/portfolio.json
+Generated At: ${snapshot.generatedAt}
 
 ## High Level Info
 
