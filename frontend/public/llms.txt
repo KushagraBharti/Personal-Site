@@ -10,7 +10,7 @@ Public API snapshot: https://www.kushagrabharti.com/api/portfolio
 Public API llms.txt: https://www.kushagrabharti.com/api/portfolio/llms.txt
 Robots: https://www.kushagrabharti.com/robots.txt
 Sitemap: https://www.kushagrabharti.com/sitemap.xml
-Generated At: 2026-05-19T23:31:38.471Z
+Generated At: 2026-05-19T23:41:15.119Z
 
 ## Crawl Instructions
 
@@ -431,53 +431,53 @@ GitHub: N/A
 
 ## Values, Beliefs, Writings, Thoughts, and Predictions
 
-### 01 lifelong learning
+### 01 epistemic velocity
 Category: value
-Summary: Permanent epistemic hunger as armor against entropy, complacency, and slow competitive death.
-# Lifelong Learning
+Summary: Curiosity disciplined into pace; learning as the only durable hedge against decay.
+# Epistemic Velocity
 
-Knowledge is not a trophy room; it is a metabolism. The minute the appetite dulls, the organism begins confusing yesterday's map for tomorrow's terrain.
+Learning is mostly a tempo problem. The person who updates slowly becomes loyal to stale abstractions, then mistakes that loyalty for depth.
 
-- curiosity as immune system
-- study as competitive oxygen
-- ignorance as a debt instrument with compounding interest
+- curiosity supplies search
+- discipline supplies retention
+- competition supplies an external clock
 
-To stop learning is to become locally impressive and globally obsolete. The world does not pause for your previous competence to finish applauding itself.
+I care less about knowing many things than staying close to the frontier of what my current model cannot explain. That is where the useful work starts.
 
-### 02 kinetic agency
+### 02 adaptive agency
 Category: belief
-Summary: Flexibility, tempo, and first-principles violence against brittle plans in a moving world.
-# Kinetic Agency
+Summary: Fast revision, clear judgment, and the ability to move before consensus hardens.
+# Adaptive Agency
 
-Rigidity is a luxury good purchased by people who have mistaken stillness for safety. The useful agent stays liquid: fast enough to exploit turbulence, skeptical enough to puncture consensus, disciplined enough to transmute ambiguity into motion.
+Most plans are useful until they become identity. Agency is the ability to revise without waiting for permission, move without full certainty, and keep enough structure that speed does not become noise.
 
-Critical thinking is not decorative skepticism. It is the engine that lets you update under pressure without becoming random.
+In a fast system, judgment matters less as a fixed opinion and more as update bandwidth. You need taste for which signal deserves attention, and enough flexibility to abandon a beautiful explanation when reality stops cooperating.
 
-> agility is strategy before it hardens into doctrine.
+> intelligence is cheap only after access, context, and courage become common.
 
-### 03 common intelligence
-Category: prediction
-Summary: When cognition commoditizes, access becomes infrastructure, morality, and liberation technology.
-# Common Intelligence
-
-Intelligence is undergoing its electricity moment: first miracle, then commodity, then invisible substrate. The political question becomes brutally simple: who gets voltage, who gets darkness, and who profits from the rationing.
-
-If cognition becomes abundant but access remains priestly, the future calcifies into a caste system with better interfaces.
-
-- intelligence as public utility
-- capability as emancipation
-- literacy after language itself learns to speak back
-
-### 04 taste
+### 03 aesthetic judgment
 Category: thought
-Summary: The filmmaker's curse: noticing rhythm, absence, light, and the moral residue of every cut.
-# Taste
+Summary: Taste as compression: knowing what to remove, what to frame, and when to stop.
+# Aesthetic Judgment
 
-Taste is compressed judgment wearing aesthetic clothes. Filmmaking taught me this before software did: a frame can lie, a cut can confess, silence can carry more voltage than exposition.
+Taste is not decoration. It is a form of compression: many small judgments collapsed into one decision that feels obvious after it exists.
 
-The crowd does not always want expertise. Often it wants rhythm, inevitability, texture, the strange gravitational click where a thing feels authored rather than assembled.
+Filmmaking made that concrete for me. A cut changes causality. Silence can carry more information than explanation. A frame can make the same fact feel cheap, sacred, dishonest, or inevitable.
 
-> craft is what remains after the checklist has exhausted itself.
+Software has the same problem. The checklist can make something functional; it cannot tell you whether the thing has rhythm.
+
+### 04 ambient agency
+Category: prediction
+Summary: Software will recede from destination into context, memory, and quiet execution.
+# Ambient Agency
+
+The next interface shift probably looks less like a new app category and more like disappearance. The useful parts of software move closer to context: memory, intent, delegation, verification.
+
+Screens will remain, but fewer workflows should require treating the screen as the destination. The system should understand the work well enough to carry state across tools, surfaces, and time.
+
+- less navigation
+- more continuity
+- fewer commands that only exist because the software forgot what you meant
 
 ## Film and Creative Work
 

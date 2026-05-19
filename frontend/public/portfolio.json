@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-19T23:31:38.471Z",
+  "generatedAt": "2026-05-19T23:41:15.119Z",
   "profile": {
     "name": "Kushagra Bharti",
     "headline": "Student | Software Engineer | ML Enthusiast",
@@ -956,36 +956,36 @@
   ],
   "writings": [
     {
-      "slug": "lifelong-learning",
+      "slug": "epistemic-velocity",
       "order": 1,
       "category": "value",
-      "title": "lifelong learning",
-      "summary": "Permanent epistemic hunger as armor against entropy, complacency, and slow competitive death.",
-      "markdown": "# Lifelong Learning\n\nKnowledge is not a trophy room; it is a metabolism. The minute the appetite dulls, the organism begins confusing yesterday's map for tomorrow's terrain.\n\n- curiosity as immune system\n- study as competitive oxygen\n- ignorance as a debt instrument with compounding interest\n\nTo stop learning is to become locally impressive and globally obsolete. The world does not pause for your previous competence to finish applauding itself."
+      "title": "epistemic velocity",
+      "summary": "Curiosity disciplined into pace; learning as the only durable hedge against decay.",
+      "markdown": "# Epistemic Velocity\n\nLearning is mostly a tempo problem. The person who updates slowly becomes loyal to stale abstractions, then mistakes that loyalty for depth.\n\n- curiosity supplies search\n- discipline supplies retention\n- competition supplies an external clock\n\nI care less about knowing many things than staying close to the frontier of what my current model cannot explain. That is where the useful work starts."
     },
     {
-      "slug": "kinetic-agency",
+      "slug": "adaptive-agency",
       "order": 2,
       "category": "belief",
-      "title": "kinetic agency",
-      "summary": "Flexibility, tempo, and first-principles violence against brittle plans in a moving world.",
-      "markdown": "# Kinetic Agency\n\nRigidity is a luxury good purchased by people who have mistaken stillness for safety. The useful agent stays liquid: fast enough to exploit turbulence, skeptical enough to puncture consensus, disciplined enough to transmute ambiguity into motion.\n\nCritical thinking is not decorative skepticism. It is the engine that lets you update under pressure without becoming random.\n\n> agility is strategy before it hardens into doctrine."
+      "title": "adaptive agency",
+      "summary": "Fast revision, clear judgment, and the ability to move before consensus hardens.",
+      "markdown": "# Adaptive Agency\n\nMost plans are useful until they become identity. Agency is the ability to revise without waiting for permission, move without full certainty, and keep enough structure that speed does not become noise.\n\nIn a fast system, judgment matters less as a fixed opinion and more as update bandwidth. You need taste for which signal deserves attention, and enough flexibility to abandon a beautiful explanation when reality stops cooperating.\n\n> intelligence is cheap only after access, context, and courage become common."
     },
     {
-      "slug": "common-intelligence",
+      "slug": "aesthetic-judgment",
       "order": 3,
-      "category": "prediction",
-      "title": "common intelligence",
-      "summary": "When cognition commoditizes, access becomes infrastructure, morality, and liberation technology.",
-      "markdown": "# Common Intelligence\n\nIntelligence is undergoing its electricity moment: first miracle, then commodity, then invisible substrate. The political question becomes brutally simple: who gets voltage, who gets darkness, and who profits from the rationing.\n\nIf cognition becomes abundant but access remains priestly, the future calcifies into a caste system with better interfaces.\n\n- intelligence as public utility\n- capability as emancipation\n- literacy after language itself learns to speak back"
+      "category": "thought",
+      "title": "aesthetic judgment",
+      "summary": "Taste as compression: knowing what to remove, what to frame, and when to stop.",
+      "markdown": "# Aesthetic Judgment\n\nTaste is not decoration. It is a form of compression: many small judgments collapsed into one decision that feels obvious after it exists.\n\nFilmmaking made that concrete for me. A cut changes causality. Silence can carry more information than explanation. A frame can make the same fact feel cheap, sacred, dishonest, or inevitable.\n\nSoftware has the same problem. The checklist can make something functional; it cannot tell you whether the thing has rhythm."
     },
     {
-      "slug": "taste",
+      "slug": "ambient-agency",
       "order": 4,
-      "category": "thought",
-      "title": "taste",
-      "summary": "The filmmaker's curse: noticing rhythm, absence, light, and the moral residue of every cut.",
-      "markdown": "# Taste\n\nTaste is compressed judgment wearing aesthetic clothes. Filmmaking taught me this before software did: a frame can lie, a cut can confess, silence can carry more voltage than exposition.\n\nThe crowd does not always want expertise. Often it wants rhythm, inevitability, texture, the strange gravitational click where a thing feels authored rather than assembled.\n\n> craft is what remains after the checklist has exhausted itself."
+      "category": "prediction",
+      "title": "ambient agency",
+      "summary": "Software will recede from destination into context, memory, and quiet execution.",
+      "markdown": "# Ambient Agency\n\nThe next interface shift probably looks less like a new app category and more like disappearance. The useful parts of software move closer to context: memory, intent, delegation, verification.\n\nScreens will remain, but fewer workflows should require treating the screen as the destination. The system should understand the work well enough to carry state across tools, surfaces, and time.\n\n- less navigation\n- more continuity\n- fewer commands that only exist because the software forgot what you meant"
     }
   ],
   "media": [
