@@ -8,7 +8,10 @@ const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const rootDirectory = resolve(scriptDirectory, "..", "..");
 const backendDirectory = resolve(rootDirectory, "backend");
 const backendTsconfigPath = resolve(backendDirectory, "tsconfig.json");
-const backendTscPath = resolve(backendDirectory, "node_modules/typescript/bin/tsc");
+const backendTscPath = resolve(
+  backendDirectory,
+  "node_modules/typescript/bin/tsc",
+);
 const publicDirectory = resolve(scriptDirectory, "../public");
 const indexHtmlPath = resolve(scriptDirectory, "../index.html");
 const outputPath = resolve(publicDirectory, "llms.txt");
@@ -17,24 +20,42 @@ const robotsPath = resolve(publicDirectory, "robots.txt");
 const sitemapPath = resolve(publicDirectory, "sitemap.xml");
 const portfolioJsonPath = resolve(publicDirectory, "portfolio.json");
 const versionJsonPath = resolve(publicDirectory, "version.json");
-const introBootstrapPath = resolve(scriptDirectory, "../src/portfolio/generated/introBootstrap.ts");
-const portfolioSnapshotBootstrapPath = resolve(scriptDirectory, "../src/portfolio/generated/portfolioSnapshotBootstrap.ts");
+const introBootstrapPath = resolve(
+  scriptDirectory,
+  "../src/portfolio/generated/introBootstrap.ts",
+);
+const portfolioSnapshotBootstrapPath = resolve(
+  scriptDirectory,
+  "../src/portfolio/generated/portfolioSnapshotBootstrap.ts",
+);
 const require = createRequire(import.meta.url);
 
-const backendBuild = spawnSync(process.execPath, [backendTscPath, "-p", backendTsconfigPath], {
-  cwd: rootDirectory,
-  stdio: "pipe",
-  encoding: "utf8",
-});
+const backendBuild = spawnSync(
+  process.execPath,
+  [backendTscPath, "-p", backendTsconfigPath],
+  {
+    cwd: rootDirectory,
+    stdio: "pipe",
+    encoding: "utf8",
+  },
+);
 
 if (backendBuild.status !== 0) {
-  const errorOutput = [backendBuild.stdout, backendBuild.stderr].filter(Boolean).join("\n").trim();
+  const errorOutput = [backendBuild.stdout, backendBuild.stderr]
+    .filter(Boolean)
+    .join("\n")
+    .trim();
   throw new Error(errorOutput || "Failed to build backend portfolio exports.");
 }
 
-const llmsTextModule = require(resolve(backendDirectory, "dist/portfolio/services/llmsTextService.js"));
+const llmsTextModule = require(
+  resolve(backendDirectory, "dist/portfolio/services/llmsTextService.js"),
+);
 const snapshotModule = require(
-  resolve(backendDirectory, "dist/portfolio/services/portfolioSnapshotService.js")
+  resolve(
+    backendDirectory,
+    "dist/portfolio/services/portfolioSnapshotService.js",
+  ),
 );
 
 const siteUrl =
@@ -63,11 +84,12 @@ const stablePortfolioSnapshot = {
   ...portfolioSnapshot,
   generatedAt: "generated-at-build-time",
 };
-const escapedLlmsText = llmsText
-  .replace(/&/g, "&amp;")
-  .replace(/</g, "&lt;")
-  .replace(/>/g, "&gt;")
-  .replace(/"/g, "&quot;");
+const escapeHtml = (value) =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 const escapeScriptJson = (value) =>
   JSON.stringify(value).replace(/</g, "\\u003c");
 const absoluteUrl = (pathOrUrl) => {
@@ -86,6 +108,15 @@ const personSchema = {
   image: absoluteUrl(portfolioSnapshot.intro.personalPhoto),
   email: `mailto:${portfolioSnapshot.profile.primaryEmail}`,
   description: portfolioSnapshot.profile.personalSummary,
+  jobTitle: portfolioSnapshot.profile.headline,
+  knowsAbout: Array.from(
+    new Set(portfolioSnapshot.projects.flatMap((project) => project.tags)),
+  ),
+  alumniOf: portfolioSnapshot.education.map((entry) => ({
+    "@type": "EducationalOrganization",
+    name: entry.position,
+    url: entry.schoolLink,
+  })),
   sameAs: [
     ...portfolioSnapshot.profile.socialLinks,
     ...portfolioSnapshot.profile.externalLinks,
@@ -124,9 +155,69 @@ const profilePageSchema = {
   "@type": "ProfilePage",
   name: `${portfolioSnapshot.profile.name} AI-readable portfolio`,
   url: `${siteUrl}/ai`,
+  dateModified: generatedAt,
+  isPartOf: websiteSchema,
   mainEntity: personSchema,
+  hasPart: [
+    {
+      "@type": "WebPageElement",
+      name: "Plain text portfolio",
+      url: `${siteUrl}/llms.txt`,
+    },
+    {
+      "@type": "Dataset",
+      name: `${portfolioSnapshot.profile.name} structured portfolio JSON`,
+      url: `${siteUrl}/portfolio.json`,
+    },
+  ],
 };
-const criticalCss = `html,body,#root{min-height:100%;background:#f4efe7;}body{margin:0;color:#171512;}#root{background:#f4efe7;}`;
+const renderPlainTextHtml = (text) => {
+  const lines = text.split("\n");
+  let html = "";
+  let isListOpen = false;
+
+  const closeList = () => {
+    if (isListOpen) {
+      html += "</ul>\n";
+      isListOpen = false;
+    }
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      closeList();
+      continue;
+    }
+
+    if (trimmed.startsWith("- ")) {
+      if (!isListOpen) {
+        html += "<ul>\n";
+        isListOpen = true;
+      }
+      html += `<li>${escapeHtml(trimmed.slice(2))}</li>\n`;
+      continue;
+    }
+
+    closeList();
+
+    if (trimmed.startsWith("### ")) {
+      html += `<h3>${escapeHtml(trimmed.slice(4))}</h3>\n`;
+    } else if (trimmed.startsWith("## ")) {
+      html += `<h2>${escapeHtml(trimmed.slice(3))}</h2>\n`;
+    } else if (trimmed.startsWith("# ")) {
+      html += `<h1>${escapeHtml(trimmed.slice(2))}</h1>\n`;
+    } else if (trimmed.startsWith("> ")) {
+      html += `<p>${escapeHtml(trimmed.slice(2))}</p>\n`;
+    } else {
+      html += `<p>${escapeHtml(trimmed)}</p>\n`;
+    }
+  }
+
+  closeList();
+  return html;
+};
+const criticalCss = `html,body,#root{min-height:100%;background:#f4efe7;}body{margin:0;color:#171512;}#root{background:#f4efe7;}.ai-profile-text{min-height:100vh;max-width:78ch;margin:0;padding:1rem;background:#fff;color:#111;font-family:ui-monospace,SFMono-Regular,Consolas,Liberation Mono,monospace;font-size:16px;line-height:1.55}.ai-profile-text h1,.ai-profile-text h2,.ai-profile-text h3,.ai-profile-text p{margin:0 0 .75rem;font:inherit}.ai-profile-text h2{margin-top:1.5rem}.ai-profile-text h3{margin-top:1rem}.ai-profile-text ul,.ai-profile-text ol{margin:0 0 1rem;padding-left:1.5rem}.ai-profile-text li{margin:0 0 .35rem}.ai-profile-text a{color:#111;text-decoration:underline}`;
 const sharedHead = ({
   canonicalPath,
   description,
@@ -140,8 +231,10 @@ const sharedHead = ({
     <link rel="preload" href="/portfolio/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="canonical" href="${siteUrl}${canonicalPath}" />
     <link rel="alternate" type="text/plain" href="${siteUrl}/llms.txt" title="Kushagra Bharti AI-readable portfolio" />
+    <link rel="alternate" type="text/plain" href="${siteUrl}/api/portfolio/llms.txt" title="Kushagra Bharti live AI-readable portfolio API" />
     <link rel="alternate" type="text/html" href="${siteUrl}/ai" title="Kushagra Bharti structured AI portfolio" />
     <link rel="alternate" type="application/json" href="${siteUrl}/portfolio.json" title="Kushagra Bharti structured portfolio JSON" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
     <meta name="description" content="${description}" />
     <meta property="og:type" content="profile" />
     <meta property="og:title" content="${title}" />
@@ -156,7 +249,7 @@ const sharedHead = ({
     ${jsonLd
       .map(
         (schema) =>
-          `<script type="application/ld+json">${escapeScriptJson(schema)}</script>`
+          `<script type="application/ld+json">${escapeScriptJson(schema)}</script>`,
       )
       .join("\n    ")}
     <title>${title}</title>`;
@@ -166,17 +259,18 @@ const aiHtml = `<!doctype html>
   <head>
 ${sharedHead({
   canonicalPath: "/ai",
-  description: "AI-readable portfolio profile for Kushagra Bharti, including experience, projects, education, links, and creative work.",
+  description:
+    "AI-readable portfolio profile for Kushagra Bharti, including experience, projects, education, links, and creative work.",
   jsonLd: [profilePageSchema, projectItemListSchema],
   title: "Kushagra Bharti - AI Portfolio",
 })}
   </head>
   <body class="text-gray-800 font-inter">
     <div id="root">
-      <main>
-        <h1>Kushagra Bharti AI Portfolio</h1>
-        <p>This page has crawlable fallback content for AI/search clients. The interactive portfolio app loads on top for browsers.</p>
-        <pre>${escapedLlmsText}</pre>
+      <main class="ai-profile-text">
+        <article>
+${renderPlainTextHtml(llmsText)}
+        </article>
       </main>
     </div>
     <script type="module" src="/src/main.tsx"></script>
@@ -189,9 +283,13 @@ Allow: /ai
 Allow: /llms.txt
 Allow: /portfolio.json
 Allow: /version.json
+Allow: /api/portfolio
+Allow: /api/portfolio/llms.txt
 
 # AI-readable portfolio: ${siteUrl}/llms.txt
+# AI-readable semantic HTML: ${siteUrl}/ai
 # Structured portfolio JSON: ${siteUrl}/portfolio.json
+# Live public portfolio API: ${siteUrl}/api/portfolio
 # Build/version metadata: ${siteUrl}/version.json
 Sitemap: ${siteUrl}/sitemap.xml
 `;
@@ -211,6 +309,10 @@ const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
   </url>
   <url>
     <loc>${siteUrl}/portfolio.json</loc>
+    <lastmod>${generatedAt}</lastmod>
+  </url>
+  <url>
+    <loc>${siteUrl}/api/portfolio</loc>
     <lastmod>${generatedAt}</lastmod>
   </url>
 </urlset>
@@ -252,7 +354,11 @@ for (const directory of [
 }
 
 writeFileSync(introBootstrapPath, introBootstrapModule, "utf8");
-writeFileSync(portfolioSnapshotBootstrapPath, portfolioSnapshotBootstrapModule, "utf8");
+writeFileSync(
+  portfolioSnapshotBootstrapPath,
+  portfolioSnapshotBootstrapModule,
+  "utf8",
+);
 
 const { renderHomepage } = await import(
   pathToFileURL(resolve(scriptDirectory, "../src/entry-homepage-ssr.tsx")).href
@@ -264,7 +370,8 @@ const indexHtml = `<!doctype html>
   <head>
 ${sharedHead({
   canonicalPath: "/",
-  description: "Portfolio for Kushagra Bharti, including engineering projects, research, creative work, and AI-readable profile content.",
+  description:
+    "Portfolio for Kushagra Bharti, including engineering projects, research, creative work, and AI-readable profile content.",
   jsonLd: [personSchema, websiteSchema, projectItemListSchema],
   title: "Kushagra Bharti - Portfolio",
 })}
@@ -278,8 +385,16 @@ ${sharedHead({
 
 writeFileSync(indexHtmlPath, indexHtml, "utf8");
 writeFileSync(outputPath, llmsText, "utf8");
-writeFileSync(portfolioJsonPath, `${JSON.stringify(portfolioSnapshot, null, 2)}\n`, "utf8");
-writeFileSync(versionJsonPath, `${JSON.stringify(versionJson, null, 2)}\n`, "utf8");
+writeFileSync(
+  portfolioJsonPath,
+  `${JSON.stringify(portfolioSnapshot, null, 2)}\n`,
+  "utf8",
+);
+writeFileSync(
+  versionJsonPath,
+  `${JSON.stringify(versionJson, null, 2)}\n`,
+  "utf8",
+);
 writeFileSync(aiHtmlPath, aiHtml, "utf8");
 writeFileSync(robotsPath, robotsText, "utf8");
 writeFileSync(sitemapPath, sitemapXml, "utf8");

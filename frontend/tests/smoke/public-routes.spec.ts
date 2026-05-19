@@ -11,8 +11,9 @@ test("homepage and AI route load without runtime errors", async ({ page }) => {
   await expect(page.getByText(/Total Commits:\s*\d+/).first()).toBeVisible();
 
   await page.goto("/ai");
-  await expect(page.getByText("Canonical AI Summary Source")).toBeVisible();
+  await expect(page.getByText("Canonical AI-readable portfolio page.")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Kushagra Bharti" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Crawler Notes" })).toBeVisible();
 
   expect(consoleErrors).toEqual([]);
 });

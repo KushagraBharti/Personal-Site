@@ -8,13 +8,16 @@ describe("AiProfilePage", () => {
     render(<AiProfilePage />);
 
     await waitFor(() => {
-      expect(screen.getByText("Canonical AI Summary Source")).toBeInTheDocument();
-      expect(screen.getByText("High Level Info")).toBeInTheDocument();
+      expect(screen.getByText("Canonical AI-readable portfolio page.")).toBeInTheDocument();
+      expect(screen.getByText("Intro")).toBeInTheDocument();
+      expect(screen.getByText("Socials and Links")).toBeInTheDocument();
       expect(screen.getByText("About Me")).toBeInTheDocument();
-      expect(screen.getByText("Creative Work")).toBeInTheDocument();
-      expect(screen.getByText("Education")).toBeInTheDocument();
+      expect(screen.getByText("Recent Works")).toBeInTheDocument();
       expect(screen.getByText("Experiences")).toBeInTheDocument();
       expect(screen.getByText("Projects")).toBeInTheDocument();
+      expect(screen.getByText("Education")).toBeInTheDocument();
+      expect(screen.getByText("Film and Creative Work")).toBeInTheDocument();
+      expect(screen.getByText("Crawler Notes")).toBeInTheDocument();
     });
   });
 });

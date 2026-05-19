@@ -74,8 +74,12 @@ describe("llmsTextService", () => {
     expect(result).toContain("# Kushagra Bharti");
     expect(result).toContain("Canonical site: https://custom.example");
     expect(result).toContain("Primary AI page: https://custom.example/ai");
+    expect(result).toContain("Public API snapshot: https://custom.example/api/portfolio");
+    expect(result).toContain("## Crawl Instructions");
+    expect(result).toContain("## Recent Works From Public Homepage");
     expect(result).toContain("### Undergraduate Researcher");
     expect(result).toContain("### Monopoly Bench");
+    expect(result).toContain("## Film and Creative Work");
     expect(result).toContain("### Socials");
   });
 });

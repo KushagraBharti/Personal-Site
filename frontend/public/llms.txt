@@ -6,7 +6,17 @@ Canonical site: https://www.kushagrabharti.com
 Primary AI page: https://www.kushagrabharti.com/ai
 Canonical llms.txt: https://www.kushagrabharti.com/llms.txt
 Structured JSON: https://www.kushagrabharti.com/portfolio.json
-Generated At: 2026-05-17T08:33:03.697Z
+Public API snapshot: https://www.kushagrabharti.com/api/portfolio
+Public API llms.txt: https://www.kushagrabharti.com/api/portfolio/llms.txt
+Robots: https://www.kushagrabharti.com/robots.txt
+Sitemap: https://www.kushagrabharti.com/sitemap.xml
+Generated At: 2026-05-19T09:49:56.456Z
+
+## Crawl Instructions
+
+This is the canonical plain-text portfolio for AI agents, search crawlers, and other automated readers.
+Use /ai for plain semantic HTML, /llms.txt for plain text, /portfolio.json for structured JSON, and /api/portfolio for the live public API snapshot.
+Do not infer private tracker data from this public portfolio surface.
 
 ## High Level Info
 
@@ -18,6 +28,8 @@ Latest Update: Currently applying for Summer 2026 internships
 Fun Fact: A film I made was screened at AMC Theatres in Times Square!
 Featured Read: The Trillion Dollar AI Software Development Stack (https://a16z.com/the-trillion-dollar-ai-software-development-stack/)
 Travel Plans: Visiting Home for summer break!
+Homepage Roles: builder.; researcher.; filmmaker.; tinkerer.
+Homepage Summary: I build systems at the intersection of AI, data, and real-world impact.
 
 ### Socials
 - Email: mailto:kushagrabharti@gmail.com
@@ -53,6 +65,20 @@ Intro: An aspiring founder, but right now I am focused on building my skills and
 - I love filmmaking, have directed 2 short films, and have contributed to other productions as a videographer and editor.
 - I love sports, especially soccer, volleyball, tennis, and table tennis, and I also follow soccer, Formula 1, and the UFC.
 - I am interested in psychology, reading, and the arts.
+
+## Recent Works From Public Homepage
+
+### 01 MonopolyBench
+Benchmarking long-horizon strategic reasoning in LLM agents through repeatable Monopoly simulations, schema-typed tool calls, and inspectable decision traces. Open to collaborators interested in turning this into a publishable research paper.
+
+### 02 IMC Prosperity
+Competing in IMC's global trading challenge, combining manual strategy with Python-based algorithmic trading across simulated markets. Currently top 7% globally by overall score.
+
+### 03 LeetCode Practice
+Solving difficult algorithm problems daily in Python, keeping paper notes alongside code to sharpen pattern recognition, implementation speed, and proof-level reasoning.
+
+### 04 F1 Optimization
+Rebuilding the racing optimization project with a 2D physics simulation, then extending it into a multi-agent PPO reinforcement learning system for strategy and control.
 
 ## Education
 
@@ -402,3 +428,24 @@ Highlights:
 - Used the project to practice recursion, backtracking, grid traversal, and simple algorithm visualization.
 Tags: Python, Depth-First Search, Recursion, Maze Solving, Backtracking, Algorithms
 GitHub: N/A
+
+## Film and Creative Work
+
+### St. Stephen's Dining Hall Documentary
+Subtitle: 2022
+Type: video
+Link: https://www.youtube.com/embed/WM6RvRfDCX4
+
+### The PB&J Documentary
+Subtitle: 2023
+Type: video
+Link: https://www.youtube.com/embed/FS8l8G2p7PM
+
+## Contact
+
+Open to internships, research collaborations, and ambitious builds.
+- Email: mailto:kushagrabharti@gmail.com
+- LinkedIn: https://www.linkedin.com/in/kushagra-bharti/
+- GitHub: https://github.com/kushagrabharti
+- Medium: https://medium.com/@kushagrabharti
+- X: https://x.com/IamKushagraB
