@@ -119,7 +119,8 @@ html {
   input,
   textarea,
   select,
-  [role="button"] {
+  [role="button"],
+  [data-custom-cursor="interactive"] {
     cursor: none !important;
   }
 
@@ -540,11 +541,11 @@ html {
   display: block;
   width: 100% !important;
   height: 100% !important;
-  cursor: grab;
+  cursor: none !important;
 }
 
 .hero-landing__model-canvas canvas:active {
-  cursor: grabbing;
+  cursor: none !important;
 }
 
 .hero-landing__ring {
@@ -753,7 +754,7 @@ html {
   max-width: 100%;
   font-size: 1.08rem;
   color: rgba(28, 24, 20, 0.82);
-  cursor: default;
+  cursor: none;
   outline: none;
   transition:
     color 180ms ease;
@@ -780,12 +781,12 @@ html {
 .about-editorial__writing-preview {
   position: absolute;
   z-index: 4;
-  top: -0.8rem;
+  top: -1.55rem;
   left: min(32rem, calc(100% + 1rem));
-  width: min(25rem, 42vw);
-  min-height: 15rem;
-  padding: 1.2rem 1.25rem 1.3rem;
-  overflow: hidden;
+  width: min(27rem, 44vw);
+  min-height: 0;
+  padding: 1rem 1.15rem 1.15rem;
+  overflow: visible;
   border: 1px solid rgba(246, 239, 226, 0.18);
   background:
     linear-gradient(180deg, rgba(255, 253, 244, 0.05), rgba(255, 253, 244, 0)),
@@ -811,13 +812,13 @@ html {
 .about-editorial__writing-preview-rule {
   width: 100%;
   height: 0.18rem;
-  margin-bottom: 0.9rem;
+  margin-bottom: 0.72rem;
   background: linear-gradient(90deg, #f5eddf 0 18%, #aa4d2e 18% 42%, #d9b44a 42% 64%, rgba(245, 237, 223, 0.28) 64%);
 }
 
 .about-editorial__writing-preview-kicker {
-  margin-bottom: 0.75rem;
-  font-size: 0.69rem;
+  margin-bottom: 0.62rem;
+  font-size: 0.64rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #d9b44a;
@@ -825,10 +826,10 @@ html {
 
 .about-editorial__markdown {
   display: grid;
-  gap: 0.72rem;
+  gap: 0.54rem;
   font-family: var(--portfolio-font-sans);
-  font-size: 0.83rem;
-  line-height: 1.56;
+  font-size: 0.76rem;
+  line-height: 1.45;
   color: rgba(245, 237, 223, 0.78);
 }
 
@@ -841,25 +842,25 @@ html {
 }
 
 .about-editorial__markdown h4 {
-  font-size: 2rem;
+  font-size: 1.62rem;
   line-height: 1;
 }
 
 .about-editorial__markdown h5 {
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 .about-editorial__markdown blockquote {
-  padding: 0.75rem 0 0.75rem 0.9rem;
+  padding: 0.56rem 0 0.56rem 0.78rem;
   border-left: 2px solid #aa4d2e;
   font-family: var(--portfolio-font-mono);
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   color: rgba(245, 237, 223, 0.7);
 }
 
 .about-editorial__markdown ul {
   display: grid;
-  gap: 0.36rem;
+  gap: 0.26rem;
   padding-left: 1rem;
   list-style: square;
 }

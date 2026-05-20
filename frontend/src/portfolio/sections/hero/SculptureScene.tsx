@@ -148,7 +148,7 @@ export default function SculptureScene({
   }, []);
 
   return (
-    <div className="hero-landing__model-canvas">
+    <div className="hero-landing__model-canvas" data-custom-cursor="interactive">
       {isRecovering ? null : (
         <SculptureSceneErrorBoundary
           key={canvasKey}

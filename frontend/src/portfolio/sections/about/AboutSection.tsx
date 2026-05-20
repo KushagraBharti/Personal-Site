@@ -110,6 +110,7 @@ export const FeaturedWritingList: React.FC<{ writings: PortfolioWriting[] }> = (
                 <div className="about-editorial__writing-copy">
                   <p
                     className="about-editorial__writing-title"
+                    data-custom-cursor="interactive"
                     tabIndex={0}
                     aria-describedby={`${writing.slug}-summary`}
                   >

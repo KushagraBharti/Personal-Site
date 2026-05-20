@@ -10,7 +10,7 @@ Public API snapshot: https://www.kushagrabharti.com/api/portfolio
 Public API llms.txt: https://www.kushagrabharti.com/api/portfolio/llms.txt
 Robots: https://www.kushagrabharti.com/robots.txt
 Sitemap: https://www.kushagrabharti.com/sitemap.xml
-Generated At: 2026-05-19T23:41:15.119Z
+Generated At: 2026-05-20T09:13:07.022Z
 
 ## Crawl Instructions
 
@@ -433,51 +433,88 @@ GitHub: N/A
 
 ### 01 epistemic velocity
 Category: value
-Summary: Curiosity disciplined into pace; learning as the only durable hedge against decay.
+Summary: Lifelong learning as epistemic hygiene: curiosity, discipline, and pressure against stale competence.
 # Epistemic Velocity
 
-Learning is mostly a tempo problem. The person who updates slowly becomes loyal to stale abstractions, then mistakes that loyalty for depth.
+I treat learning as upkeep, not ambition.
 
-- curiosity supplies search
-- discipline supplies retention
-- competition supplies an external clock
+The half-life of useful knowledge keeps shrinking. Competence calcifies. You stop noticing the terrain moved because the patch you're standing on still feels solid.
 
-I care less about knowing many things than staying close to the frontier of what my current model cannot explain. That is where the useful work starts.
+What I'm watching in myself:
+
+- how fast I can re-derive something I forgot
+- whether I update without making it identity-shaped
+- whether the breadth compounds or just collects
+- whether I'm getting enough adversarial input to expose bad priors
+
+> Curiosity is cheap. Discipline is what stops it becoming drift.
+
+You don't usually get out-thought. You get out-iterated.
 
 ### 02 adaptive agency
 Category: belief
-Summary: Fast revision, clear judgment, and the ability to move before consensus hardens.
+Summary: High-agency adaptation under ambiguity: fast revision, clear authorship, tools kept subordinate.
 # Adaptive Agency
 
-Most plans are useful until they become identity. Agency is the ability to revise without waiting for permission, move without full certainty, and keep enough structure that speed does not become noise.
+I care more about reaction time than position.
 
-In a fast system, judgment matters less as a fixed opinion and more as update bandwidth. You need taste for which signal deserves attention, and enough flexibility to abandon a beautiful explanation when reality stops cooperating.
+Most plans rot on contact. The skill is re-deriving fast, without making a thing of it. You drop the version of yourself that was right yesterday because that version is now a liability.
 
-> intelligence is cheap only after access, context, and courage become common.
+How I try to operate:
+
+- think from primitives, not analogies to last quarter
+- move before certainty turns into procrastination
+- change direction without performing the change
+- treat AI as exoskeleton, not identity
+
+When intelligence becomes common infrastructure, the floor on answers drops. The premium relocates: context, taste, conviction, execution.
+
+> A tool that absorbs your agency is just a tool that's using you.
 
 ### 03 aesthetic judgment
 Category: thought
-Summary: Taste as compression: knowing what to remove, what to frame, and when to stop.
+Summary: Taste as compressed perception: rhythm, restraint, framing, and selection when generation is cheap.
 # Aesthetic Judgment
 
-Taste is not decoration. It is a form of compression: many small judgments collapsed into one decision that feels obvious after it exists.
+Film taught me taste before software did.
 
-Filmmaking made that concrete for me. A cut changes causality. Silence can carry more information than explanation. A frame can make the same fact feel cheap, sacred, dishonest, or inevitable.
+A cut changes causality. A frame changes what matters. Silence outranks explanation more often than not. Two shots adjacent to each other can carry a thought neither shot owns alone.
 
-Software has the same problem. The checklist can make something functional; it cannot tell you whether the thing has rhythm.
+Product is the same instrument:
+
+- what gets foregrounded
+- what disappears
+- where the rhythm slips
+- what's technically correct and still wrong
+
+Taste is compressed perception. The work is choosing what to leave out.
+
+> When generation gets cheap, judgment gets expensive.
+
+I want work that feels authored, not assembled.
 
 ### 04 ambient agency
 Category: prediction
-Summary: Software will recede from destination into context, memory, and quiet execution.
+Summary: Software as ambient infrastructure: fewer destinations, stronger memory, cleaner preservation of intent.
 # Ambient Agency
 
-The next interface shift probably looks less like a new app category and more like disappearance. The useful parts of software move closer to context: memory, intent, delegation, verification.
+The software I want stops asking me to be its integration layer.
 
-Screens will remain, but fewer workflows should require treating the screen as the destination. The system should understand the work well enough to carry state across tools, surfaces, and time.
+Most tools force you to rebuild the same scaffolding every time. Reopen the thread. Locate the file. Reconstruct yesterday's mental state. Translate your goal into the tool's grammar before the tool can help. The friction is the product.
 
-- less navigation
-- more continuity
-- fewer commands that only exist because the software forgot what you meant
+A better substrate would:
+
+- carry memory across sessions
+- carry context across surfaces
+- delegate with verification, not abdication
+- automate without erasing legibility
+- surface itself only when judgment is required
+
+That's why AI tools, agents, planning systems, and artifact workflows interest me. The demo is bait. The substrate is the point.
+
+> You shouldn't have to be the connective tissue between your own apps.
+
+Fewer destinations. More continuity.
 
 ## Film and Creative Work
 

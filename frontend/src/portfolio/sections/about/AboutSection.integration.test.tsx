@@ -13,12 +13,12 @@ describe("AboutSection", () => {
       expect(screen.getByText("epistemic velocity")).toBeInTheDocument();
     });
 
-    expect(screen.queryByText(/Learning is mostly a tempo problem/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/upkeep, not ambition/i)).not.toBeInTheDocument();
 
     fireEvent.mouseEnter(screen.getByText("epistemic velocity").closest("li") as HTMLElement);
-    expect(screen.getByText(/Learning is mostly a tempo problem/i)).toBeInTheDocument();
+    expect(screen.getByText(/upkeep, not ambition/i)).toBeInTheDocument();
 
     fireEvent.mouseLeave(screen.getByText("epistemic velocity").closest("li") as HTMLElement);
-    expect(screen.queryByText(/Learning is mostly a tempo problem/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/upkeep, not ambition/i)).not.toBeInTheDocument();
   });
 });

@@ -21,7 +21,11 @@ const CustomCursor: React.FC = () => {
       const target = e.target as HTMLElement | null;
       cursor.classList.toggle(
         "is-interactive",
-        Boolean(target?.closest("a, button, [role='button'], input, textarea, select"))
+        Boolean(
+          target?.closest(
+            "a, button, [role='button'], input, textarea, select, [data-custom-cursor='interactive']",
+          ),
+        )
       );
       if (frameRef.current === null) {
         frameRef.current = window.requestAnimationFrame(updateCursorPosition);

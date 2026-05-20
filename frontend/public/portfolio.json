@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-19T23:41:15.119Z",
+  "generatedAt": "2026-05-20T09:13:07.022Z",
   "profile": {
     "name": "Kushagra Bharti",
     "headline": "Student | Software Engineer | ML Enthusiast",
@@ -960,32 +960,32 @@
       "order": 1,
       "category": "value",
       "title": "epistemic velocity",
-      "summary": "Curiosity disciplined into pace; learning as the only durable hedge against decay.",
-      "markdown": "# Epistemic Velocity\n\nLearning is mostly a tempo problem. The person who updates slowly becomes loyal to stale abstractions, then mistakes that loyalty for depth.\n\n- curiosity supplies search\n- discipline supplies retention\n- competition supplies an external clock\n\nI care less about knowing many things than staying close to the frontier of what my current model cannot explain. That is where the useful work starts."
+      "summary": "Lifelong learning as epistemic hygiene: curiosity, discipline, and pressure against stale competence.",
+      "markdown": "# Epistemic Velocity\n\nI treat learning as upkeep, not ambition.\n\nThe half-life of useful knowledge keeps shrinking. Competence calcifies. You stop noticing the terrain moved because the patch you're standing on still feels solid.\n\nWhat I'm watching in myself:\n\n- how fast I can re-derive something I forgot\n- whether I update without making it identity-shaped\n- whether the breadth compounds or just collects\n- whether I'm getting enough adversarial input to expose bad priors\n\n> Curiosity is cheap. Discipline is what stops it becoming drift.\n\nYou don't usually get out-thought. You get out-iterated."
     },
     {
       "slug": "adaptive-agency",
       "order": 2,
       "category": "belief",
       "title": "adaptive agency",
-      "summary": "Fast revision, clear judgment, and the ability to move before consensus hardens.",
-      "markdown": "# Adaptive Agency\n\nMost plans are useful until they become identity. Agency is the ability to revise without waiting for permission, move without full certainty, and keep enough structure that speed does not become noise.\n\nIn a fast system, judgment matters less as a fixed opinion and more as update bandwidth. You need taste for which signal deserves attention, and enough flexibility to abandon a beautiful explanation when reality stops cooperating.\n\n> intelligence is cheap only after access, context, and courage become common."
+      "summary": "High-agency adaptation under ambiguity: fast revision, clear authorship, tools kept subordinate.",
+      "markdown": "# Adaptive Agency\n\nI care more about reaction time than position.\n\nMost plans rot on contact. The skill is re-deriving fast, without making a thing of it. You drop the version of yourself that was right yesterday because that version is now a liability.\n\nHow I try to operate:\n\n- think from primitives, not analogies to last quarter\n- move before certainty turns into procrastination\n- change direction without performing the change\n- treat AI as exoskeleton, not identity\n\nWhen intelligence becomes common infrastructure, the floor on answers drops. The premium relocates: context, taste, conviction, execution.\n\n> A tool that absorbs your agency is just a tool that's using you."
     },
     {
       "slug": "aesthetic-judgment",
       "order": 3,
       "category": "thought",
       "title": "aesthetic judgment",
-      "summary": "Taste as compression: knowing what to remove, what to frame, and when to stop.",
-      "markdown": "# Aesthetic Judgment\n\nTaste is not decoration. It is a form of compression: many small judgments collapsed into one decision that feels obvious after it exists.\n\nFilmmaking made that concrete for me. A cut changes causality. Silence can carry more information than explanation. A frame can make the same fact feel cheap, sacred, dishonest, or inevitable.\n\nSoftware has the same problem. The checklist can make something functional; it cannot tell you whether the thing has rhythm."
+      "summary": "Taste as compressed perception: rhythm, restraint, framing, and selection when generation is cheap.",
+      "markdown": "# Aesthetic Judgment\n\nFilm taught me taste before software did.\n\nA cut changes causality. A frame changes what matters. Silence outranks explanation more often than not. Two shots adjacent to each other can carry a thought neither shot owns alone.\n\nProduct is the same instrument:\n\n- what gets foregrounded\n- what disappears\n- where the rhythm slips\n- what's technically correct and still wrong\n\nTaste is compressed perception. The work is choosing what to leave out.\n\n> When generation gets cheap, judgment gets expensive.\n\nI want work that feels authored, not assembled."
     },
     {
       "slug": "ambient-agency",
       "order": 4,
       "category": "prediction",
       "title": "ambient agency",
-      "summary": "Software will recede from destination into context, memory, and quiet execution.",
-      "markdown": "# Ambient Agency\n\nThe next interface shift probably looks less like a new app category and more like disappearance. The useful parts of software move closer to context: memory, intent, delegation, verification.\n\nScreens will remain, but fewer workflows should require treating the screen as the destination. The system should understand the work well enough to carry state across tools, surfaces, and time.\n\n- less navigation\n- more continuity\n- fewer commands that only exist because the software forgot what you meant"
+      "summary": "Software as ambient infrastructure: fewer destinations, stronger memory, cleaner preservation of intent.",
+      "markdown": "# Ambient Agency\n\nThe software I want stops asking me to be its integration layer.\n\nMost tools force you to rebuild the same scaffolding every time. Reopen the thread. Locate the file. Reconstruct yesterday's mental state. Translate your goal into the tool's grammar before the tool can help. The friction is the product.\n\nA better substrate would:\n\n- carry memory across sessions\n- carry context across surfaces\n- delegate with verification, not abdication\n- automate without erasing legibility\n- surface itself only when judgment is required\n\nThat's why AI tools, agents, planning systems, and artifact workflows interest me. The demo is bait. The substrate is the point.\n\n> You shouldn't have to be the connective tissue between your own apps.\n\nFewer destinations. More continuity."
     }
   ],
   "media": [

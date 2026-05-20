@@ -33,7 +33,7 @@ const portfolioWritingConfigs = [
         order: 1,
         category: "value",
         title: "epistemic velocity",
-        summary: "Curiosity disciplined into pace; learning as the only durable hedge against decay.",
+        summary: "Lifelong learning as epistemic hygiene: curiosity, discipline, and pressure against stale competence.",
         markdownFile: "epistemic-velocity.md",
     },
     {
@@ -41,7 +41,7 @@ const portfolioWritingConfigs = [
         order: 2,
         category: "belief",
         title: "adaptive agency",
-        summary: "Fast revision, clear judgment, and the ability to move before consensus hardens.",
+        summary: "High-agency adaptation under ambiguity: fast revision, clear authorship, tools kept subordinate.",
         markdownFile: "adaptive-agency.md",
     },
     {
@@ -49,7 +49,7 @@ const portfolioWritingConfigs = [
         order: 3,
         category: "thought",
         title: "aesthetic judgment",
-        summary: "Taste as compression: knowing what to remove, what to frame, and when to stop.",
+        summary: "Taste as compressed perception: rhythm, restraint, framing, and selection when generation is cheap.",
         markdownFile: "aesthetic-judgment.md",
     },
     {
@@ -57,7 +57,7 @@ const portfolioWritingConfigs = [
         order: 4,
         category: "prediction",
         title: "ambient agency",
-        summary: "Software will recede from destination into context, memory, and quiet execution.",
+        summary: "Software as ambient infrastructure: fewer destinations, stronger memory, cleaner preservation of intent.",
         markdownFile: "ambient-agency.md",
     },
 ];
