@@ -526,38 +526,6 @@ html {
   pointer-events: none;
 }
 
-.hero-landing__scene-trigger {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  z-index: 12;
-  display: grid;
-  place-items: center;
-  width: 4.2rem;
-  height: 4.2rem;
-  border: 1px solid rgba(23, 21, 18, 0.18);
-  border-radius: 999px;
-  background: rgba(244, 239, 231, 0.72);
-  color: rgba(23, 21, 18, 0.72);
-  font-family: var(--portfolio-font-mono);
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  pointer-events: auto;
-  transform: translate(-50%, -50%);
-  transition:
-    background 160ms ease,
-    color 160ms ease,
-    transform 160ms ease;
-}
-
-.hero-landing__scene-trigger:hover,
-.hero-landing__scene-trigger:focus-visible {
-  background: #171512;
-  color: var(--portfolio-paper);
-  transform: translate(-50%, calc(-50% - 1px));
-  outline: none;
-}
-
 .hero-landing__model-canvas {
   width: clamp(40rem, 48vw, 47rem);
   height: clamp(40rem, 48vw, 47rem);

@@ -128,9 +128,7 @@ const HeroLandingSection: React.FC = () => {
 
   useEffect(() => {
     if (!isSculptureActive) return;
-
-    const cancelIdle = scheduleIdle(requestSculpture, 700);
-    return cancelIdle;
+    requestSculpture();
   }, [isSculptureActive, requestSculpture]);
 
   useEffect(() => {
@@ -313,18 +311,8 @@ const HeroLandingSection: React.FC = () => {
           <div className="hero-landing__scene">
             {SculptureScene && isSculptureActive ? (
               <SculptureScene onModelReady={handleModelReady} />
-            ) : !SculptureScene && isSculptureActive ? (
-              <button
-                type="button"
-                className="hero-landing__scene-trigger"
-                onClick={requestSculpture}
-                onFocus={requestSculpture}
-                aria-label="Load 3D portrait model"
-              >
-                3D
-              </button>
             ) : null}
-            {isSculptureActive && isSculptureLoading ? (
+            {isSculptureActive && !SculptureScene && isSculptureLoading ? (
               <p className="hero-landing__model-loading" aria-live="polite">
                 3d model loading
               </p>
