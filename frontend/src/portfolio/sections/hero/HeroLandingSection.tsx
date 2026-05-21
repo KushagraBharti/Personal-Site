@@ -62,9 +62,7 @@ const HeroLandingSection: React.FC = () => {
     useState<PortfolioAiProvider | null>(null);
   const [SculptureScene, setSculptureScene] =
     useState<SculptureSceneComponent | null>(null);
-  const [isSculptureLoading, setIsSculptureLoading] = useState(false);
-  const [isSculptureActive, setIsSculptureActive] = useState(false);
-  const sculptureVisualRef = useRef<HTMLDivElement | null>(null);
+  const [isSculptureLoading, setIsSculptureLoading] = useState(true);
   const sculptureRequestRef = useRef(false);
 
   useEffect(() => {
@@ -106,13 +104,12 @@ const HeroLandingSection: React.FC = () => {
       return;
     }
 
-    sculptureRequestRef.current = true;
-
     if (!canCreateWebGLContext()) {
       setIsSculptureLoading(false);
       return;
     }
 
+    sculptureRequestRef.current = true;
     setIsSculptureLoading(true);
 
     void import("./SculptureScene")
@@ -127,32 +124,9 @@ const HeroLandingSection: React.FC = () => {
   }, [SculptureScene]);
 
   useEffect(() => {
-    if (!isSculptureActive) return;
-    requestSculpture();
-  }, [isSculptureActive, requestSculpture]);
-
-  useEffect(() => {
-    const element = sculptureVisualRef.current;
-    if (!element) return;
-
-    if (!("IntersectionObserver" in window)) {
-      setIsSculptureActive(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsSculptureActive(entry.isIntersecting);
-      },
-      {
-        rootMargin: "260px 0px",
-        threshold: 0.01,
-      },
-    );
-
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
+    const frameId = window.requestAnimationFrame(requestSculpture);
+    return () => window.cancelAnimationFrame(frameId);
+  }, [requestSculpture]);
 
   useEffect(() => {
     if (!clipboardProvider) return;
@@ -300,7 +274,6 @@ const HeroLandingSection: React.FC = () => {
         ) : null}
 
         <div
-          ref={sculptureVisualRef}
           className="hero-landing__visual"
           aria-label="3D Portrait Sculpture"
         >
@@ -309,10 +282,10 @@ const HeroLandingSection: React.FC = () => {
           <div className="hero-landing__dust hero-landing__dust--one" />
           <div className="hero-landing__dust hero-landing__dust--two" />
           <div className="hero-landing__scene">
-            {SculptureScene && isSculptureActive ? (
+            {SculptureScene ? (
               <SculptureScene onModelReady={handleModelReady} />
             ) : null}
-            {isSculptureActive && !SculptureScene && isSculptureLoading ? (
+            {!SculptureScene && isSculptureLoading ? (
               <p className="hero-landing__model-loading" aria-live="polite">
                 3d model loading
               </p>
