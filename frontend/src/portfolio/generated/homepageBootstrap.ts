@@ -35,7 +35,7 @@ export type HomePageBootstrap = {
 export const homepageBootstrap: HomePageBootstrap = {
   "about": {
     "introHeading": "Hey there! I'm Kushagra Bharti",
-    "introBody": "An aspiring founder, but right now I am focused on building my skills and learning."
+    "introBody": "I am a student and software builder who enjoys learning and expanding my skillset."
   },
   "writings": [
     {
@@ -86,11 +86,11 @@ export const homepageBootstrap: HomePageBootstrap = {
     },
     {
       "slug": "ut-dallas-undergraduate-researcher-optimization",
-      "dateRange": "Apr 2025 - Present",
+      "dateRange": "Apr 2025 - Nov 2025",
       "category": "Research",
       "position": "Independent Researcher (Optimization + ML) at UT Dallas",
       "summary": "Built paper-faithful optimization solvers and a solver-labeled dataset pipeline for 1D drone coverage planning, with benchmarks and QC gates to support supervised, GNN, and RL experiments on optimal tour planning.",
-      "timelineTone": "active"
+      "timelineTone": "past"
     },
     {
       "slug": "abilitie-software-engineering-intern",

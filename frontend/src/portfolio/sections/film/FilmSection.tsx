@@ -113,7 +113,7 @@ const FilmSection: React.FC = () => {
             <h2 id="film-title" className="film-editorial__title">
               Film
             </h2>
-            <p className="film-editorial__summary">Stories move people. I love telling them through the lens.</p>
+            <p className="film-editorial__summary">Stories and taste make us human, and I enjoy telling them through the lens.</p>
           </div>
           <a className="film-editorial__view-all" href={activeFilm.watchUrl} target="_blank" rel="noreferrer">
             view all films

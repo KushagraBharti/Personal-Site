@@ -106,7 +106,7 @@ Fun Fact: ${snapshot.intro.funFact}
 Featured Read: ${snapshot.intro.featuredRead.title} (${snapshot.intro.featuredRead.link})
 Travel Plans: ${snapshot.intro.travelPlans}
 Homepage Roles: builder.; researcher.; filmmaker.; tinkerer.
-Homepage Summary: I build systems at the intersection of AI, data, and real-world impact.
+Homepage Summary: I enjoy building software at the intersection of AI, data, and real-world impact.
 
 ### Socials
 ${formatLinkList(snapshot.profile.socialLinks)}

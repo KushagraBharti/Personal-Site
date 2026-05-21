@@ -160,7 +160,7 @@ const AiProfilePage: React.FC = () => {
           <h2 id="ai-intro">Intro</h2>
           <p>{heroRoles.join(" ")}</p>
           <p>
-            I build systems at the intersection of AI, data, and real-world
+            I enjoy building software at the intersection of AI, data, and real-world
             impact.
           </p>
           <p>Latest update: {snapshot.intro.latestUpdate}</p>
@@ -215,7 +215,7 @@ const AiProfilePage: React.FC = () => {
 
         <section aria-labelledby="ai-recent">
           <h2 id="ai-recent">Recent Works</h2>
-          <p>Explorations in systems, intelligence, and impact.</p>
+          <p>Exploring the frontier of tech: agents, algorithms, and machine learning.</p>
           {recentWorks.map((work, index) => (
             <section key={work.title} aria-labelledby={`recent-${index + 1}`}>
               <h3 id={`recent-${index + 1}`}>
@@ -256,7 +256,7 @@ const AiProfilePage: React.FC = () => {
 
         <section aria-labelledby="ai-projects">
           <h2 id="ai-projects">Projects</h2>
-          <p>Systems I have designed, built, and shipped.</p>
+          <p>Software (and some Hardware) I have designed, built, and shipped.</p>
           {snapshot.projects.map((project) => (
             <section
               key={project.slug}
@@ -304,7 +304,7 @@ const AiProfilePage: React.FC = () => {
 
         <section aria-labelledby="ai-film">
           <h2 id="ai-film">Film and Creative Work</h2>
-          <p>Stories move people. I love telling them through the lens.</p>
+          <p>Stories and taste make us human, and I enjoy telling them through the lens.</p>
           {snapshot.media.map((item) => (
             <section key={item.slug} aria-labelledby={`media-${item.slug}`}>
               <h3 id={`media-${item.slug}`}>{item.title}</h3>

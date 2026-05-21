@@ -134,9 +134,9 @@ export const portfolioExperiences: PortfolioExperience[] = [
   {
     slug: "ut-dallas-undergraduate-researcher-optimization",
     order: 4,
-    dateRange: "Apr 2025 - Present",
+    dateRange: "Apr 2025 - Nov 2025",
     category: "Research",
-    timelineTone: "active",
+    timelineTone: "past",
     position: "Independent Researcher (Optimization + ML) at UT Dallas",
     summary:
       "Built paper-faithful optimization solvers and a solver-labeled dataset pipeline for 1D drone coverage planning, with benchmarks and QC gates to support supervised, GNN, and RL experiments on optimal tour planning.",

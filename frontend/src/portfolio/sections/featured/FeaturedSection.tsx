@@ -58,7 +58,7 @@ const FeaturedSection: React.FC = () => {
           </h2>
 
           <p className="featured-editorial__summary">
-            Explorations in systems, intelligence, and impact.
+            Exploring the frontier of tech: agents, algorithms, and machine learning.
           </p>
         </div>
 

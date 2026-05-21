@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.portfolioAbout = void 0;
 exports.portfolioAbout = {
     introHeading: "Hey there! I'm Kushagra Bharti",
-    introBody: "An aspiring founder, but right now I am focused on building my skills and learning.",
+    introBody: "I am a student and software builder who enjoys learning and expanding my skillset.",
     currentProjects: [
         "Monopoly Bench - A platform where various LLMs can play Monopoly against each other; I plan to publish a paper connected to this work.",
         "A light-weight web crawler in Go - A project I am using to learn Go, concurrency, networking performance, and resource management.",

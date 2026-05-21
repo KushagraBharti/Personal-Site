@@ -44,7 +44,7 @@ const ProjectsSection: React.FC = () => {
               Projects
             </h2>
             <p className="projects-editorial__summary">
-              Systems I&apos;ve designed, built, and shipped.
+              Software (and some Hardware) I have designed, built, and shipped.
             </p>
           </div>
 

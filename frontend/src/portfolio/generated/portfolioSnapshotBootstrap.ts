@@ -5,7 +5,7 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
   "profile": {
     "name": "Kushagra Bharti",
     "headline": "Student | Software Engineer | ML Enthusiast",
-    "personalSummary": "An aspiring founder, but right now I am focused on building my skills and learning.",
+    "personalSummary": "I am a student and software builder who enjoys learning and expanding my skillset.",
     "primaryEmail": "kushagrabharti@gmail.com",
     "socialLinks": [
       {
@@ -38,7 +38,7 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
   },
   "about": {
     "introHeading": "Hey there! I'm Kushagra Bharti",
-    "introBody": "An aspiring founder, but right now I am focused on building my skills and learning.",
+    "introBody": "I am a student and software builder who enjoys learning and expanding my skillset.",
     "currentProjects": [
       "Monopoly Bench - A platform where various LLMs can play Monopoly against each other; I plan to publish a paper connected to this work.",
       "A light-weight web crawler in Go - A project I am using to learn Go, concurrency, networking performance, and resource management.",
@@ -226,9 +226,9 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
     {
       "slug": "ut-dallas-undergraduate-researcher-optimization",
       "order": 4,
-      "dateRange": "Apr 2025 - Present",
+      "dateRange": "Apr 2025 - Nov 2025",
       "category": "Research",
-      "timelineTone": "active",
+      "timelineTone": "past",
       "position": "Independent Researcher (Optimization + ML) at UT Dallas",
       "summary": "Built paper-faithful optimization solvers and a solver-labeled dataset pipeline for 1D drone coverage planning, with benchmarks and QC gates to support supervised, GNN, and RL experiments on optimal tour planning.",
       "description": [

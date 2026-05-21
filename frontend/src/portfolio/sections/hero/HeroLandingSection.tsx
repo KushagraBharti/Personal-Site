@@ -224,7 +224,7 @@ const HeroLandingSection: React.FC = () => {
           </div>
 
           <p className="hero-landing__summary">
-            I build systems at the intersection of AI, data, and real-world
+            I enjoy building software at the intersection of AI, data, and real-world
             impact.
           </p>
 

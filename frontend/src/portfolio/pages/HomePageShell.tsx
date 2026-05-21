@@ -219,7 +219,7 @@ const HomePageShell: React.FC<{
                   <span>Works</span>
                 </h2>
                 <p className="featured-editorial__summary">
-                  Explorations in systems, intelligence, and impact.
+                  Exploring the frontier of tech: agents, algorithms, and machine learning.
                 </p>
               </div>
               <div
@@ -336,7 +336,7 @@ const HomePageShell: React.FC<{
                     Projects
                   </h2>
                   <p className="projects-editorial__summary">
-                    Systems I&apos;ve designed, built, and shipped.
+                    Software (and some Hardware) I have designed, built, and shipped.
                   </p>
                 </div>
               </aside>
@@ -423,7 +423,7 @@ const HomePageShell: React.FC<{
                     Film
                   </h2>
                   <p className="film-editorial__summary">
-                    Stories move people. I love telling them through the lens.
+                    Stories and taste make us human, and I enjoy telling them through the lens.
                   </p>
                 </div>
               </aside>

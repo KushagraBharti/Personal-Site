@@ -4,7 +4,7 @@ export const portfolioProfile: PortfolioProfile = {
   name: "Kushagra Bharti",
   headline: "Student | Software Engineer | ML Enthusiast",
   personalSummary:
-    "An aspiring founder, but right now I am focused on building my skills and learning.",
+    "I am a student and software builder who enjoys learning and expanding my skillset.",
   primaryEmail: "kushagrabharti@gmail.com",
   socialLinks: [
     { label: "Email", href: "mailto:kushagrabharti@gmail.com" },
