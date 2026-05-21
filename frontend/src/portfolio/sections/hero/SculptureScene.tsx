@@ -24,6 +24,7 @@ import type { Group, Mesh, MeshStandardMaterial, Texture } from "three";
 
 const HERO_MODEL_PATH = "/portfolio/models/best.glb";
 const WEBGL_RETRY_DELAY_MS = 1800;
+const WEBGL_MAX_RECOVERY_ATTEMPTS = 2;
 
 class SculptureSceneErrorBoundary extends Component<
   { children: ReactNode; onError: () => void },
@@ -121,15 +122,30 @@ useGLTF.preload(HERO_MODEL_PATH);
 
 export default function SculptureScene({
   onModelReady,
+  onSceneUnavailable,
 }: {
   onModelReady: () => void;
+  onSceneUnavailable: () => void;
 }) {
   const [canvasKey, setCanvasKey] = useState(0);
   const [isRecovering, setIsRecovering] = useState(false);
+  const recoveryAttemptsRef = useRef(0);
   const recoveryTimeoutRef = useRef<number | null>(null);
+
+  const handleModelReady = useCallback(() => {
+    recoveryAttemptsRef.current = 0;
+    onModelReady();
+  }, [onModelReady]);
 
   const scheduleRecovery = useCallback(() => {
     if (recoveryTimeoutRef.current !== null) return;
+
+    recoveryAttemptsRef.current += 1;
+    if (recoveryAttemptsRef.current > WEBGL_MAX_RECOVERY_ATTEMPTS) {
+      setIsRecovering(true);
+      onSceneUnavailable();
+      return;
+    }
 
     setIsRecovering(true);
     recoveryTimeoutRef.current = window.setTimeout(() => {
@@ -137,7 +153,7 @@ export default function SculptureScene({
       setCanvasKey((currentKey) => currentKey + 1);
       setIsRecovering(false);
     }, WEBGL_RETRY_DELAY_MS);
-  }, []);
+  }, [onSceneUnavailable]);
 
   useEffect(() => {
     return () => {
@@ -191,7 +207,7 @@ export default function SculptureScene({
             />
 
             <Suspense fallback={null}>
-              <HeroModel onReady={onModelReady} />
+              <HeroModel onReady={handleModelReady} />
               <Environment preset="studio" environmentIntensity={0.72} />
               <ContactShadows
                 position={[0, -1.18, 0]}

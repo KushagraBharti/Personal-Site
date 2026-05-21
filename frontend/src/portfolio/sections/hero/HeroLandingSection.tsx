@@ -7,7 +7,10 @@ import type {
 
 type SculptureSceneComponent = React.ComponentType<{
   onModelReady: () => void;
+  onSceneUnavailable: () => void;
 }>;
+
+type SculptureStatus = "loading" | "ready" | "unavailable";
 
 const DEFAULT_SITE_URL = "https://www.kushagrabharti.com";
 const HERO_MODEL_PATH = "/portfolio/models/best.glb";
@@ -83,7 +86,8 @@ const HeroLandingSection: React.FC = () => {
     useState<PortfolioAiProvider | null>(null);
   const [SculptureScene, setSculptureScene] =
     useState<SculptureSceneComponent | null>(null);
-  const [isSculptureLoading, setIsSculptureLoading] = useState(true);
+  const [sculptureStatus, setSculptureStatus] =
+    useState<SculptureStatus>("loading");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -118,7 +122,7 @@ const HeroLandingSection: React.FC = () => {
       if (!isMounted) return;
 
       if (!canCreateWebGLContext()) {
-        setIsSculptureLoading(false);
+        setSculptureStatus("unavailable");
         dispatchHeroMediaKicked();
         return;
       }
@@ -135,7 +139,7 @@ const HeroLandingSection: React.FC = () => {
         })
         .catch(() => {
           if (isMounted) {
-            setIsSculptureLoading(false);
+            setSculptureStatus("unavailable");
           }
           // Keep the hero usable if the GPU-backed scene cannot be loaded.
         });
@@ -160,7 +164,11 @@ const HeroLandingSection: React.FC = () => {
   }, [clipboardProvider]);
 
   const handleModelReady = useCallback(() => {
-    setIsSculptureLoading(false);
+    setSculptureStatus("ready");
+  }, []);
+
+  const handleSceneUnavailable = useCallback(() => {
+    setSculptureStatus("unavailable");
   }, []);
 
   const socialLinks = preferredSocialLabels
@@ -303,12 +311,23 @@ const HeroLandingSection: React.FC = () => {
           <div className="hero-landing__dust hero-landing__dust--one" />
           <div className="hero-landing__dust hero-landing__dust--two" />
           <div className="hero-landing__scene">
-            {SculptureScene ? (
-              <SculptureScene onModelReady={handleModelReady} />
+            {SculptureScene && sculptureStatus !== "unavailable" ? (
+              <SculptureScene
+                onModelReady={handleModelReady}
+                onSceneUnavailable={handleSceneUnavailable}
+              />
             ) : null}
-            {isSculptureLoading ? (
+            {sculptureStatus === "loading" ? (
               <p className="hero-landing__model-loading" aria-live="polite">
                 3d model loading
+              </p>
+            ) : null}
+            {sculptureStatus === "unavailable" ? (
+              <p
+                className="hero-landing__model-loading hero-landing__model-loading--unavailable"
+                aria-live="polite"
+              >
+                3d model unavailable. enable webgl or restart browser.
               </p>
             ) : null}
           </div>
