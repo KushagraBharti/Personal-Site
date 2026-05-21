@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { introBootstrap } from "../../generated/introBootstrap";
-import { scheduleIdle } from "../../../shared/lib/scheduleIdle";
 import type {
   PortfolioAiProvider,
   PortfolioIntroResponse,
@@ -11,6 +10,8 @@ type SculptureSceneComponent = React.ComponentType<{
 }>;
 
 const DEFAULT_SITE_URL = "https://www.kushagrabharti.com";
+const HERO_MODEL_PATH = "/portfolio/models/best.glb";
+const HERO_MEDIA_KICKED_EVENT = "portfolio:hero-media-kicked";
 let cachedCanCreateWebGLContext: boolean | null = null;
 
 const heroLines: Array<{ text: string; isAccent?: boolean }> = [
@@ -54,6 +55,26 @@ const canCreateWebGLContext = () => {
   }
 };
 
+const preloadHeroModel = () => {
+  if (typeof document === "undefined") return;
+  if (document.querySelector(`link[data-hero-model-preload="true"]`)) return;
+
+  const link = document.createElement("link");
+  link.rel = "preload";
+  link.as = "fetch";
+  link.href = HERO_MODEL_PATH;
+  link.type = "model/gltf-binary";
+  link.crossOrigin = "anonymous";
+  link.setAttribute("fetchpriority", "high");
+  link.setAttribute("data-hero-model-preload", "true");
+  document.head.appendChild(link);
+};
+
+const dispatchHeroMediaKicked = () => {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(HERO_MEDIA_KICKED_EVENT));
+};
+
 const HeroLandingSection: React.FC = () => {
   const [introData, setIntroData] = useState<PortfolioIntroResponse>(
     () => introBootstrap,
@@ -63,70 +84,70 @@ const HeroLandingSection: React.FC = () => {
   const [SculptureScene, setSculptureScene] =
     useState<SculptureSceneComponent | null>(null);
   const [isSculptureLoading, setIsSculptureLoading] = useState(true);
-  const sculptureRequestRef = useRef(false);
 
   useEffect(() => {
     const controller = new AbortController();
-    let isMounted = true;
 
-    const cancelIdle = scheduleIdle(() => {
-      const loadIntro = async () => {
-        try {
-          const { fetchIntroSection, getCachedIntroSection } =
-            await import("../../api/portfolioApi");
-          const cachedIntro = getCachedIntroSection();
-          if (cachedIntro && isMounted) {
-            setIntroData(cachedIntro);
-          }
-          const response = await fetchIntroSection(controller.signal);
-          if (isMounted) {
-            setIntroData(response);
-          }
-        } catch {
-          if (!controller.signal.aborted) {
-            // Keep the generated hero bootstrap if the live API is unavailable.
-          }
+    const loadIntro = async () => {
+      try {
+        const { fetchIntroSection, getCachedIntroSection } =
+          await import("../../api/portfolioApi");
+        const cachedIntro = getCachedIntroSection();
+        if (cachedIntro) {
+          setIntroData(cachedIntro);
         }
-      };
+        const response = await fetchIntroSection(controller.signal);
+        setIntroData(response);
+      } catch {
+        if (!controller.signal.aborted) {
+          // Keep the generated hero bootstrap if the live API is unavailable.
+        }
+      }
+    };
 
-      void loadIntro();
-    }, 1800);
+    void loadIntro();
+
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    let frameId: number | null = null;
+
+    frameId = window.requestAnimationFrame(() => {
+      if (!isMounted) return;
+
+      if (!canCreateWebGLContext()) {
+        setIsSculptureLoading(false);
+        dispatchHeroMediaKicked();
+        return;
+      }
+
+      preloadHeroModel();
+      const sceneImport = import("./SculptureScene");
+      dispatchHeroMediaKicked();
+
+      void sceneImport
+        .then((module) => {
+          if (isMounted) {
+            setSculptureScene(() => module.default);
+          }
+        })
+        .catch(() => {
+          if (isMounted) {
+            setIsSculptureLoading(false);
+          }
+          // Keep the hero usable if the GPU-backed scene cannot be loaded.
+        });
+    });
 
     return () => {
       isMounted = false;
-      cancelIdle();
-      controller.abort();
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
     };
   }, []);
-
-  const requestSculpture = useCallback(() => {
-    if (sculptureRequestRef.current || SculptureScene) {
-      return;
-    }
-
-    if (!canCreateWebGLContext()) {
-      setIsSculptureLoading(false);
-      return;
-    }
-
-    sculptureRequestRef.current = true;
-    setIsSculptureLoading(true);
-
-    void import("./SculptureScene")
-      .then((module) => {
-        setSculptureScene(() => module.default);
-      })
-      .catch(() => {
-        sculptureRequestRef.current = false;
-        setIsSculptureLoading(false);
-        // Keep the hero usable if the GPU-backed scene cannot be loaded.
-      });
-  }, [SculptureScene]);
-
-  useEffect(() => {
-    const frameId = window.requestAnimationFrame(requestSculpture);
-    return () => window.cancelAnimationFrame(frameId);
-  }, [requestSculpture]);
 
   useEffect(() => {
     if (!clipboardProvider) return;
@@ -285,7 +306,7 @@ const HeroLandingSection: React.FC = () => {
             {SculptureScene ? (
               <SculptureScene onModelReady={handleModelReady} />
             ) : null}
-            {!SculptureScene && isSculptureLoading ? (
+            {isSculptureLoading ? (
               <p className="hero-landing__model-loading" aria-live="polite">
                 3d model loading
               </p>
