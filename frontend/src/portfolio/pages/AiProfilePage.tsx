@@ -256,7 +256,7 @@ const AiProfilePage: React.FC = () => {
 
         <section aria-labelledby="ai-projects">
           <h2 id="ai-projects">Projects</h2>
-          <p>Software (and some Hardware) I have designed, built, and shipped.</p>
+          <p>Software (and some hardware) I have designed, built, and shipped.</p>
           {snapshot.projects.map((project) => (
             <section
               key={project.slug}
