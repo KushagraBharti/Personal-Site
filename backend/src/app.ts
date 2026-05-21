@@ -41,30 +41,12 @@ app.use(
   })
 );
 
-/*
-app.use(
-  cors({
-    origin: '*',
-  })
-);
-*/
-
 app.use(express.json());
 
-/*
-app.use((req, res, next) => {
-  console.log(`Request Origin: ${req.headers.origin}`);
-  console.log(`Request Path: ${req.path}`);
-  console.log(`Request Method: ${req.method}`);
-  next();
-});
-*/
-
-// Routes
 app.use(routes);
 
-app.get('/', (req, res) => {
-  res.send('Backend server is running!');
+app.get("/", (req, res) => {
+  res.send("Backend server is running!");
 });
 
 app.use(errorHandler);

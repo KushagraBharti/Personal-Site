@@ -41,6 +41,7 @@ const snapshot = {
     {
       slug: "experience",
       order: 1,
+      dateRange: "2025 - Present",
       category: "Research",
       timelineTone: "active",
       position: "Undergraduate Researcher",
@@ -59,6 +60,16 @@ const snapshot = {
       description: ["Runs LLM competitions."],
       tags: ["LLMs", "Benchmarking"],
       githubLink: "https://github.com/kushagrabharti/monopoly-bench",
+    },
+  ],
+  writings: [
+    {
+      slug: "taste",
+      order: 1,
+      category: "thought",
+      title: "Taste matters",
+      summary: "A short note about building with taste.",
+      markdown: "Taste is a practical engineering constraint.",
     },
   ],
   media: [],

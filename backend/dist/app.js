@@ -38,26 +38,10 @@ app.use((0, cors_1.default)({
         }
     },
 }));
-/*
-app.use(
-  cors({
-    origin: '*',
-  })
-);
-*/
 app.use(express_1.default.json());
-/*
-app.use((req, res, next) => {
-  console.log(`Request Origin: ${req.headers.origin}`);
-  console.log(`Request Path: ${req.path}`);
-  console.log(`Request Method: ${req.method}`);
-  next();
-});
-*/
-// Routes
 app.use(routes_1.default);
-app.get('/', (req, res) => {
-    res.send('Backend server is running!');
+app.get("/", (req, res) => {
+    res.send("Backend server is running!");
 });
 app.use(errorHandler_1.errorHandler);
 exports.default = app;

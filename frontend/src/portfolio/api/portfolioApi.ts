@@ -1,4 +1,3 @@
-import axios from "axios";
 import { getApiBaseUrl } from "../../shared/lib/apiBaseUrl";
 import type {
   PortfolioEducation,
@@ -39,6 +38,21 @@ const writeSessionStorage = (key: string, value: unknown) => {
   }
 };
 
+const requestJson = async <T>(path: string, signal?: AbortSignal) => {
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    headers: {
+      Accept: "application/json",
+    },
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Portfolio request failed with status ${response.status}`);
+  }
+
+  return (await response.json()) as T;
+};
+
 export const getCachedPortfolioSnapshot = () => {
   if (snapshotCache) return snapshotCache;
   snapshotCache = readSessionStorage<PortfolioSnapshot>(PORTFOLIO_SNAPSHOT_CACHE_KEY);
@@ -57,12 +71,11 @@ export const fetchPortfolioSnapshot = async (signal?: AbortSignal) => {
     return snapshotPromise;
   }
 
-  const request = axios
-    .get<PortfolioSnapshot>(`${getApiBaseUrl()}/api/portfolio`, { signal })
-    .then((response) => {
-      snapshotCache = response.data;
-      writeSessionStorage(PORTFOLIO_SNAPSHOT_CACHE_KEY, response.data);
-      return response.data;
+  const request = requestJson<PortfolioSnapshot>("/api/portfolio", signal)
+    .then((data) => {
+      snapshotCache = data;
+      writeSessionStorage(PORTFOLIO_SNAPSHOT_CACHE_KEY, data);
+      return data;
     })
     .catch((error) => {
       if (cached) {
@@ -89,12 +102,11 @@ export const fetchIntroSection = async (signal?: AbortSignal) => {
     return introPromise;
   }
 
-  const request = axios
-    .get<PortfolioIntroResponse>(`${getApiBaseUrl()}/api/intro`, { signal })
-    .then((response) => {
-      introCache = response.data;
-      writeSessionStorage(INTRO_RESPONSE_CACHE_KEY, response.data);
-      return response.data;
+  const request = requestJson<PortfolioIntroResponse>("/api/intro", signal)
+    .then((data) => {
+      introCache = data;
+      writeSessionStorage(INTRO_RESPONSE_CACHE_KEY, data);
+      return data;
     })
     .catch((error) => {
       if (cached) {

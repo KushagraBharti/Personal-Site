@@ -51,6 +51,9 @@ export const portfolioSnapshotFixture: PortfolioSnapshot = {
     {
       slug: "undergrad-researcher",
       order: 1,
+      dateRange: "2025 - Present",
+      category: "Research",
+      timelineTone: "active",
       position: "Undergraduate Researcher at UT Dallas",
       summary: "Building optimization solvers and dataset pipelines.",
       description: ["Implemented multiple exact and heuristic solvers."],

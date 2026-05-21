@@ -9,6 +9,8 @@ const CustomCursor: React.FC = () => {
     const cursor = cursorRef.current;
     if (!cursor) return;
 
+    document.body.classList.add("has-custom-cursor");
+
     const updateCursorPosition = () => {
       const { x, y } = latestPointRef.current;
       cursor.style.transform = `translate3d(${x}px, ${y}px, 0)`;
@@ -25,7 +27,7 @@ const CustomCursor: React.FC = () => {
           target?.closest(
             "a, button, [role='button'], input, textarea, select, [data-custom-cursor='interactive']",
           ),
-        )
+        ),
       );
       if (frameRef.current === null) {
         frameRef.current = window.requestAnimationFrame(updateCursorPosition);
@@ -38,6 +40,7 @@ const CustomCursor: React.FC = () => {
     window.addEventListener("mouseleave", hideCursor);
 
     return () => {
+      document.body.classList.remove("has-custom-cursor");
       window.removeEventListener("mousemove", moveCursor);
       window.removeEventListener("mouseleave", hideCursor);
       if (frameRef.current !== null) {

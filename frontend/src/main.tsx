@@ -1,19 +1,17 @@
-// frontend/src/main.tsx
-
-import React from "react";
-import { createRoot, hydrateRoot } from "react-dom/client";
 import "./index.css";
-import App from "./App";
 
-const root = document.getElementById("root")!;
-const app = (
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+const path = window.location.pathname;
 
-if (root.dataset.prerendered === "homepage" && window.location.pathname === "/") {
-  hydrateRoot(root, app);
+if (path === "/ai") {
+  void import("./portfolio/pages/mountAiProfile").then(({ mountAiProfile }) =>
+    mountAiProfile(),
+  );
+} else if (path.startsWith("/tracker")) {
+  void import("./tracker/mountTracker").then(({ mountTracker }) =>
+    mountTracker(),
+  );
 } else {
-  createRoot(root).render(app);
+  void import("./portfolio/pages/mountHomePage").then(({ mountHomePage }) =>
+    mountHomePage(),
+  );
 }

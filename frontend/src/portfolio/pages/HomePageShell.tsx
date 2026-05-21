@@ -2,8 +2,7 @@ import React from "react";
 import PortfolioNavbar from "../components/PortfolioNavbar";
 import PortfolioImage from "../components/PortfolioImage";
 import HeroLandingSection from "../sections/hero/HeroLandingSection";
-import { FeaturedWritingList } from "../sections/about/AboutSection";
-import { portfolioSnapshotBootstrap } from "../generated/portfolioSnapshotBootstrap";
+import { homepageBootstrap } from "../generated/homepageBootstrap";
 import type { PortfolioSocialLink } from "../api/contracts";
 
 export type HomePageSectionKey =
@@ -99,12 +98,48 @@ const getDisplayValue = (link: PortfolioSocialLink) => {
 
 const contactLabels = ["Email", "LinkedIn", "GitHub", "X"];
 
+const FeaturedWritingShell: React.FC<{
+  writings: typeof homepageBootstrap.writings;
+}> = ({ writings }) => {
+  if (!writings.length) return null;
+
+  return (
+    <div className="about-editorial__values">
+      <p className="about-editorial__values-heading">
+        {`{ values / beliefs / writings / thoughts }`}
+      </p>
+      <div className="about-editorial__writing-grid">
+        <ul
+          className="about-editorial__writing-list"
+          aria-label="Featured writings"
+        >
+          {writings.map((writing, index) => (
+            <li key={writing.slug}>
+              <span className="about-editorial__writing-index">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <div className="about-editorial__writing-copy">
+                <p className="about-editorial__writing-title">
+                  {writing.title}
+                </p>
+                <p className="about-editorial__writing-summary">
+                  {writing.summary}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+};
+
 const HomePageShell: React.FC<{
   enhancedSections?: Partial<
     Record<HomePageSectionKey, HomePageSectionComponent>
   >;
 }> = ({ enhancedSections = {} }) => {
-  const snapshot = portfolioSnapshotBootstrap;
+  const snapshot = homepageBootstrap;
   const AboutEnhanced = enhancedSections.about;
   const FeaturedEnhanced = enhancedSections.featured;
   const ExperiencesEnhanced = enhancedSections.experiences;
@@ -143,7 +178,7 @@ const HomePageShell: React.FC<{
                   <p>{snapshot.about.introHeading}</p>
                   <p>{snapshot.about.introBody}</p>
                 </div>
-                <FeaturedWritingList writings={snapshot.writings} />
+                <FeaturedWritingShell writings={snapshot.writings} />
               </div>
               <div className="about-editorial__visual">
                 <div className="about-editorial__frame about-editorial__frame--back" />

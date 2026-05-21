@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 const navItems: Array<{ label: string; href: string }> = [
   { label: "home", href: "#top" },
@@ -12,6 +12,13 @@ const navItems: Array<{ label: string; href: string }> = [
 
 const PortfolioNavbar: React.FC = () => {
   const [activeHref, setActiveHref] = useState("#top");
+  const activeHrefRef = useRef("#top");
+
+  const setNextActiveHref = useCallback((nextActive: string) => {
+    if (nextActive === activeHrefRef.current) return;
+    activeHrefRef.current = nextActive;
+    setActiveHref(nextActive);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -40,7 +47,7 @@ const PortfolioNavbar: React.FC = () => {
 
       ticking = true;
       window.requestAnimationFrame(() => {
-        setActiveHref(getActiveHref());
+        setNextActiveHref(getActiveHref());
         ticking = false;
       });
     };
@@ -55,7 +62,7 @@ const PortfolioNavbar: React.FC = () => {
       window.removeEventListener("hashchange", updateActive);
       window.removeEventListener("resize", updateActive);
     };
-  }, []);
+  }, [setNextActiveHref]);
 
   return (
     <header className="portfolio-topbar">
@@ -71,7 +78,7 @@ const PortfolioNavbar: React.FC = () => {
               key={item.label}
               href={item.href}
               className={`portfolio-nav-link${activeHref === item.href ? " is-active" : ""}`}
-              onClick={() => setActiveHref(item.href)}
+              onClick={() => setNextActiveHref(item.href)}
             >
               {item.label}
             </a>

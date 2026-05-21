@@ -4,6 +4,7 @@ import type {
   HomePageSectionComponent,
   HomePageSectionKey,
 } from "./HomePageShell";
+import { scheduleIdle } from "../../shared/lib/scheduleIdle";
 
 const sectionLoaders: Array<{
   key: HomePageSectionKey;
@@ -26,10 +27,12 @@ const sectionLoaders: Array<{
   { key: "misc", load: () => import("../sections/misc/MiscSection") },
 ];
 
-const HERO_MEDIA_KICKED_EVENT = "portfolio:hero-media-kicked";
-const SECTION_START_DELAY_MS = 160;
-const SECTION_IMPORT_STAGGER_MS = 90;
-const SECTION_FALLBACK_DELAY_MS = 900;
+const SECTION_LOAD_ROOT_MARGIN = "160px 0px";
+
+const loadPortfolioSnapshotWhenIdle = () =>
+  import("../api/portfolioApi").then(({ prefetchPortfolioSnapshot }) => {
+    prefetchPortfolioSnapshot();
+  });
 
 const HomePage: React.FC = () => {
   const [loadedSections, setLoadedSections] = useState<
@@ -38,68 +41,97 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     let isMounted = true;
-    let hasStarted = false;
-    const timeoutIds: number[] = [];
+    const loadedKeys = new Set<HomePageSectionKey>();
 
-    const startEnhancements = () => {
-      if (hasStarted) return;
-      hasStarted = true;
+    const loadSection = (key: HomePageSectionKey) => {
+      if (loadedKeys.has(key)) return;
 
-      timeoutIds.push(
-        window.setTimeout(() => {
-          if (!isMounted) return;
+      const section = sectionLoaders.find((candidate) => candidate.key === key);
+      if (!section) return;
 
-          void import("../api/portfolioApi").then(
-            ({ prefetchPortfolioSnapshot }) => {
-              if (isMounted) {
-                prefetchPortfolioSnapshot();
-              }
-            },
-          );
-
-          sectionLoaders.forEach((section, index) => {
-            timeoutIds.push(
-              window.setTimeout(() => {
-                void section.load().then((module) => {
-                  if (!isMounted) return;
-                  setLoadedSections((current) => ({
-                    ...current,
-                    [section.key]: module.default,
-                  }));
-                });
-              }, index * SECTION_IMPORT_STAGGER_MS),
-            );
-          });
-        }, SECTION_START_DELAY_MS),
-      );
+      loadedKeys.add(key);
+      void section.load().then((module) => {
+        if (!isMounted) return;
+        setLoadedSections((current) => ({
+          ...current,
+          [section.key]: module.default,
+        }));
+      });
     };
 
-    window.addEventListener(HERO_MEDIA_KICKED_EVENT, startEnhancements, {
-      once: true,
-    });
-    timeoutIds.push(
-      window.setTimeout(startEnhancements, SECTION_FALLBACK_DELAY_MS),
-    );
+    const cancelSnapshotPrefetch = scheduleIdle(() => {
+      void loadPortfolioSnapshotWhenIdle().catch(() => {
+        // Generated bootstrap data keeps the portfolio renderable when the API is unavailable.
+      });
+    }, 2200);
+
+    if (typeof IntersectionObserver === "undefined") {
+      const cancelFallback = scheduleIdle(() => {
+        sectionLoaders.forEach((section) => loadSection(section.key));
+      }, 1800);
+
+      return () => {
+        isMounted = false;
+        cancelSnapshotPrefetch();
+        cancelFallback();
+      };
+    }
+
+    let observer: IntersectionObserver | null = null;
+    let hasStartedSectionObservers = false;
+
+    const startSectionObservers = () => {
+      if (hasStartedSectionObservers) return;
+      hasStartedSectionObservers = true;
+
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            const key = (entry.target as HTMLElement).dataset
+              .shellSection as HomePageSectionKey | undefined;
+            if (!key) return;
+
+            loadSection(key);
+            observer?.unobserve(entry.target);
+          });
+        },
+        { rootMargin: SECTION_LOAD_ROOT_MARGIN },
+      );
+
+      sectionLoaders.forEach((section) => {
+        const element = document.querySelector(
+          `[data-shell-section="${section.key}"]`,
+        );
+        if (element) {
+          observer?.observe(element);
+        }
+      });
+    };
+
+    if (window.location.hash && window.location.hash !== "#top") {
+      startSectionObservers();
+    } else {
+      window.addEventListener("scroll", startSectionObservers, {
+        once: true,
+        passive: true,
+      });
+      window.addEventListener("hashchange", startSectionObservers, {
+        once: true,
+      });
+    }
 
     return () => {
       isMounted = false;
-      window.removeEventListener(HERO_MEDIA_KICKED_EVENT, startEnhancements);
-      timeoutIds.forEach((timeoutId) => window.clearTimeout(timeoutId));
+      cancelSnapshotPrefetch();
+      window.removeEventListener("scroll", startSectionObservers);
+      window.removeEventListener("hashchange", startSectionObservers);
+      observer?.disconnect();
     };
   }, []);
 
   const sectionsToRender = useMemo(() => {
-    const readySections: Partial<
-      Record<HomePageSectionKey, HomePageSectionComponent>
-    > = {};
-
-    for (const section of sectionLoaders) {
-      const Component = loadedSections[section.key];
-      if (!Component) break;
-      readySections[section.key] = Component;
-    }
-
-    return readySections;
+    return loadedSections;
   }, [loadedSections]);
 
   return <HomePageShell enhancedSections={sectionsToRender} />;
