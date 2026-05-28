@@ -20,7 +20,7 @@ export const portfolioSnapshotFixture: PortfolioSnapshot = {
   },
   about: {
     introHeading: "Hey there! I'm Kushagra Bharti",
-    introBody: "A builder focused on shipping ambitious software with strong taste.",
+    introBody: "I am a student and software builder who enjoys learning and expanding my skillset.",
     currentProjects: ["Monopoly Bench", "Go web crawler"],
     currentLearning: ["Go", "WebSockets"],
     interestsOutsideTechnology: ["Cooking", "Filmmaking"],
@@ -71,6 +71,16 @@ export const portfolioSnapshotFixture: PortfolioSnapshot = {
       tags: ["LLMs", "Benchmarking"],
       githubLink: "https://github.com/kushagrabharti/monopoly-bench",
       thumbnail: "/portfolio/projects/monopoly-bench.png",
+    },
+  ],
+  writings: [
+    {
+      slug: "epistemic-velocity",
+      order: 1,
+      category: "value",
+      title: "epistemic velocity",
+      summary: "A short note about learning quickly and staying accurate.",
+      markdown: "Learning is upkeep, not ambition.",
     },
   ],
   media: [

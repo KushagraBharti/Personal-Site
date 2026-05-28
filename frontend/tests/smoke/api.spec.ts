@@ -7,7 +7,7 @@ test("core public portfolio APIs return success", async ({ request }) => {
     request.get(`${apiBaseUrl}/api/portfolio`),
     request.get(`${apiBaseUrl}/api/intro`),
     request.get(`${apiBaseUrl}/api/projects`),
-    request.get(`${apiBaseUrl}/api/projects/monopoly-llm-benchmark`),
+    request.get(`${apiBaseUrl}/api/projects/monopolybench`),
     request.get(`${apiBaseUrl}/api/experiences`),
     request.get(`${apiBaseUrl}/api/experiences/abilitie-software-engineering-intern`),
     request.get(`${apiBaseUrl}/api/education`),
@@ -24,5 +24,5 @@ test("core public portfolio APIs return success", async ({ request }) => {
 
   const llmsText = await responses[8].text();
   expect(llmsText).toContain("Kushagra Bharti");
-  expect(llmsText).toContain("Monopoly LLM Benchmark Platform");
+  expect(llmsText).toContain("MonopolyBench");
 });

@@ -43,9 +43,24 @@ export interface PortfolioMediaItem {
   slug: string;
   order: number;
   title: string;
+  shortTitle?: string;
   subtitle: string;
+  year?: string;
+  genre?: string;
+  duration?: string;
+  summary?: string;
+  description?: string;
+  watchUrl?: string;
   embedUrl: string;
+  platform?: "youtube" | "drive";
   type: "video";
+  roles?: string[];
+  notes?: string[];
+  actions?: {
+    label: string;
+    url: string;
+    variant?: "primary" | "secondary";
+  }[];
 }
 
 export interface PortfolioEducation {

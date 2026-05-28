@@ -195,8 +195,66 @@ exports.portfolioProjects = [
         thumbnail: "/portfolio/projects/novel-bench.png",
     },
     {
-        slug: "beyond-chat",
+        slug: "imc-prosperity-4",
         order: 6,
+        title: "IMC Prosperity 4 Quant Trading Competition",
+        summary: "A top 6% worldwide quantitative trading competition project for IMC Prosperity 4, spanning five rounds of market making, drift capture, options pricing, multi-product alpha mining, backtester reconciliation, official-window diagnostics, and manual puzzle optimization.",
+        description: [
+            "Finished in the top 6% worldwide in IMC Prosperity 4 with a five-round algorithmic trading stack covering market making, deterministic drift capture, options pricing, residual baskets, execution research, state compression, and manual optimization.",
+            "Engineered the repo as a reproducible quant research system with round-scoped strategies, final submission packages, official feedback archives, replay logs, candidate scorecards, diagnostic scripts, process docs, and strategy-lineage notes.",
+            "Tracked archived algorithmic results across final/best official artifacts: 89,306.8125 Round 1 algo PnL, 81,359.0 raw / 80,708 displayed Round 2 algo PnL, 76,114.025390625 Round 3 algo PnL, 50,966.40673828125 Round 4 algo PnL, and 118,855.008789062 best stored Round 5 official algo PnL.",
+            "Accumulated 415,950.25341796825 displayed algorithmic PnL across the archived final/best official scorecard while keeping manual puzzle PnL separate from strategy PnL.",
+            "Integrated Kevin replay, Xeeshan replay, Rust backtesting, gsgill visualizers, Kevin visualizers, official-window extraction, fill-sequence comparison, product/time attribution, inventory-path inspection, and drawdown diagnostics.",
+            "Modeled execution constraints directly in strategy design: `Trader.run()` orders/conversions/traderData, Round 2 `bid()` market-access fees, AWS Lambda statelessness, aggregate position limits, immediate crossing fills, passive residual fills, auto-cancel behavior, and the 50,000-character official traderData ceiling.",
+            "Built two-product alpha engines for `ASH_COATED_OSMIUM` and `INTARIAN_PEPPER_ROOT`: Osmium used stationary fair-value/imbalance/deviation signals around 10,000, while Pepper used deterministic drift near 0.001 per timestamp with day anchors near 10,000, 11,000, and 12,000.",
+            "Implemented Pepper-heavy accumulation and Osmium specialist logic that ended Round 1 at Pepper +80 / Osmium +78, ended Round 2 at Pepper +80 / Osmium +80, and treated fill certainty as more valuable than fragile passive quote micro-optimization.",
+            "Optimized manual decisions outside the algorithmic engine, including a Round 1 manual portfolio worth 87,995.10 PnL and 1st-place manual rank, plus a Round 2 18% Research / 57% Scale / 25% Speed allocation worth 164,664 manual PnL.",
+            "Built a multi-asset Round 3 engine for `HYDROGEL_PACK`, `VELVETFRUIT_EXTRACT`, and VEV vouchers using dynamic fair-value estimation, underlying-implied voucher anchors, Black-Scholes-style pricing, strike-specific vol assumptions, expiry decay, inventory skew, and selective take/quote thresholds.",
+            "Validated Round 3 candidates with portal-window replay, full replay, and product attribution, then promoted dynamic Hydrogel fair estimation, VFE selectivity, and focused 5000-5300 voucher exposure while rejecting option-surface brute force and over-aggressive sizing.",
+            "Implemented Round 4 Mark-driven signal mechanics, VFE/voucher role audits, Hydrogel failure analysis, post-40k plateau diagnostics, candidate promotion gates, and anti-overfit labels for portal-window-only improvements versus robust improvements.",
+            "Diagnosed a major Round 4 regime-transfer failure where the exact same 830-line strategy scored 87,114.392 in earlier official feedback but only 50,966.40673828125 in the final package, highlighting simulator/final-window mismatch risk.",
+            "Scaled Round 5 to a 50-product universe with position limit 10 across Galaxy Sounds, Sleep Pods, Microchips, Pebbles, Robots, UV Visors, Translators, Panels, Oxygen Shakes, and Snack Packs.",
+            "Validated Round 5 market data integrity across all 50 expected products, 17-column price files, 7-column trade files, and mostly blank buyer/seller fields, shifting the research toward price-action, residual, anchor, category-relative, and fillability signals.",
+            "Built Round 5 alpha families for PEBBLES synthetic fair value, TRANSLATOR/PEBBLES anchors, MICROCHIP/PANEL/UV/SLEEP/OXYGEN relative value, ROBOT/GALAXY momentum, product-specific reversal, and selective passive/taker execution.",
+            "Diagnosed official/local replay mismatch from oversized state: strategies with 90k-130k character traderData looked strong locally but reset under official constraints, so later candidates used aliases, delta-encoded integer histories, half-tick scaling, residual scaling, and cache trimming.",
+            "Benchmarked Round 5 candidate tradeoffs explicitly: candidate 35 reached roughly 91.9k portal / 287k full, candidate 36 reached roughly 105.5k portal with weaker full robustness, candidate 42 reached roughly 421k full, candidate 49 reached roughly 126k portal, and candidate 50 showed how pure portal-window gambling could collapse.",
+            "Submitted a best stored Round 5 official strategy worth 118,855.008789062 PnL, with top realized contributors including PEBBLES_S, PEBBLES_XL, MICROCHIP_OVAL, TRANSLATOR_SPACE_GRAY, SLEEP_COTTON, PANEL_4X4, MICROCHIP_SQUARE, UV_AMBER, ROBOT_LAUNDRY, and GALAXY_PLANETARY.",
+            "Codified a promotion process that required local full replay, portal-window replay, official-feedback comparison, product attribution, inventory-path review, drawdown analysis, state-size checks, and a concrete transfer-risk explanation before trusting a candidate.",
+        ],
+        tags: [
+            "Quantitative Trading",
+            "Algorithmic Trading",
+            "IMC Prosperity",
+            "Top 6% Worldwide",
+            "Global Competition",
+            "Market Making",
+            "Options Pricing",
+            "Black-Scholes",
+            "Backtesting",
+            "Alpha Research",
+            "Market Microstructure",
+            "Statistical Arbitrage",
+            "Fair Value Modeling",
+            "Inventory Management",
+            "Execution Strategy",
+            "Signal Research",
+            "Time-Series Analysis",
+            "Candidate Evaluation",
+            "Official Window Diagnostics",
+            "Simulator Reconciliation",
+            "State Serialization",
+            "Python",
+            "Data Analysis",
+            "Competition Engineering",
+            "Research Infrastructure",
+            "Manual Optimization",
+        ],
+        githubLink: "https://github.com/KushagraBharti/IMC-Prosperity-4",
+        thumbnail: "/portfolio/projects/imc-prosperity.png",
+    },
+    {
+        slug: "beyond-chat",
+        order: 7,
         title: "Beyond Chat",
         summary: "An artifact-first AI workspace that turns chat into production workflows: studios, tool-calling runs, durable context, model comparison, storage-backed artifacts, and provider-aware orchestration.",
         description: [
@@ -246,7 +304,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "pseudo-lawyer",
-        order: 7,
+        order: 8,
         title: "PseudoLawyer",
         summary: "An AI-powered contract negotiation platform with real-time multi-party chat, an AI mediator, and contract drafting from negotiation history.",
         description: [
@@ -281,7 +339,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "personal-site",
-        order: 8,
+        order: 9,
         title: "Personal Portfolio Website",
         summary: "A full-stack portfolio and personal tracker with a public showcase, private authenticated surfaces, live widgets, and machine-readable content for humans and AI systems.",
         description: [
@@ -315,7 +373,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "f1-optimization",
-        order: 9,
+        order: 10,
         title: "F1 Optimization Project",
         summary: "A custom F1-style racing simulation environment with OpenCV track extraction, Pygame rendering, ray-cast sensors, reward shaping, and RL training hooks.",
         description: [
@@ -345,7 +403,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "kaggle-titanic-ml",
-        order: 10,
+        order: 11,
         title: "Kaggle Titanic ML",
         summary: "A complete beginner-to-intermediate ML pipeline for the Titanic dataset, focused on cleaning, feature engineering, model comparison, and documenting the full learning process.",
         description: [
@@ -375,7 +433,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "quant-test-environment",
-        order: 11,
+        order: 12,
         title: "Algorithmic Trading Quantitative Test Environment",
         summary: "A modular quant testbench for strategy development, backtesting, risk metrics, visualization, and Alpaca paper-trading execution.",
         description: [
@@ -406,7 +464,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "northstar-agentic-financial-memory",
-        order: 12,
+        order: 13,
         title: "Northstar Agentic Financial Memory Platform",
         summary: "A memory-first AI wealth-management prototype where a local agent loads durable financial context, portfolio snapshots, and tool traces to produce explainable scenario analysis.",
         description: [
@@ -448,7 +506,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "age-gender-recognition",
-        order: 13,
+        order: 14,
         title: "Age & Gender Recognition",
         summary: "A real-time OpenCV demo that detects faces from video and predicts age/gender using pre-trained Caffe DNN models.",
         description: [
@@ -471,7 +529,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "data-drive",
-        order: 14,
+        order: 15,
         title: "DataDrive: Unified Insights for Data & Fuel Optimization",
         summary: "A full-stack ML analytics dashboard for exploring Toyota vehicle data, fuel-efficiency predictions, clustering, and interactive visualizations.",
         description: [
@@ -502,7 +560,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "circuit-seer",
-        order: 15,
+        order: 16,
         title: "CircuitSeer (Circuit Solver)",
         summary: "A computer vision circuit-analysis tool that detects components, traces wiring, and helps solve simple circuit diagrams.",
         description: [
@@ -528,7 +586,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "point-cloud-down-sampler",
-        order: 16,
+        order: 17,
         title: "Point Cloud Down Sampler",
         summary: "A point-cloud processing project comparing a from-scratch voxel downsampler with Open3D’s built-in voxel grid method.",
         description: [
@@ -553,7 +611,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "pcb-design-project",
-        order: 17,
+        order: 18,
         title: "PCB Design Project",
         summary: "A hardware project where I designed, ordered, assembled, and tested custom PCBs as part of a senior independent project.",
         description: [
@@ -578,7 +636,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "self-driving-car-project",
-        order: 18,
+        order: 19,
         title: "Self-Driving Car Project",
         summary: "An Arduino-based RC car rebuild with ultrasonic sensors and a custom obstacle-avoidance control loop.",
         description: [
@@ -600,7 +658,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "maze-traversal",
-        order: 19,
+        order: 20,
         title: "Maze Traversal",
         summary: "A small recursive DFS maze solver in Python that traces a path from start to exit through a grid-based maze.",
         description: [

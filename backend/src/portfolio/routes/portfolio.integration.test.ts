@@ -44,7 +44,11 @@ describe("portfolio routes", () => {
 
     expect(llmsResponse.status).toBe(200);
     expect(llmsResponse.type).toContain("text/plain");
-    expect(llmsResponse.text).toContain("Canonical site: https://portfolio.example");
-    expect(llmsResponse.text).toContain("Primary AI page: https://portfolio.example/ai");
+    expect(llmsResponse.text).toContain(
+      "- [Canonical portfolio homepage](https://portfolio.example)",
+    );
+    expect(llmsResponse.text).toContain(
+      "- [AI-readable HTML profile](https://portfolio.example/ai)",
+    );
   });
 });

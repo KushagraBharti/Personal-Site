@@ -1,435 +1,38 @@
 # Kushagra Bharti
 
-> Student | Software Engineer | ML Enthusiast
+> Student | Software Engineer | ML Enthusiast.
 
-Canonical site: https://www.kushagrabharti.com
-Primary AI page: https://www.kushagrabharti.com/ai
-Canonical llms.txt: https://www.kushagrabharti.com/llms.txt
-Structured JSON: https://www.kushagrabharti.com/portfolio.json
-Public API snapshot: https://www.kushagrabharti.com/api/portfolio
-Public API llms.txt: https://www.kushagrabharti.com/api/portfolio/llms.txt
-Robots: https://www.kushagrabharti.com/robots.txt
-Sitemap: https://www.kushagrabharti.com/sitemap.xml
-Generated At: 2026-05-27T10:55:07.489Z
+I am a student and software builder who enjoys learning and expanding my skillset.
 
-## Crawl Instructions
+## Primary Sources
 
-This is the canonical plain-text portfolio for AI agents, search crawlers, and other automated readers.
-Use /ai for plain semantic HTML, /llms.txt for plain text, /portfolio.json for structured JSON, and /api/portfolio for the live public API snapshot.
-Do not infer private tracker data from this public portfolio surface.
+- [Canonical portfolio homepage](https://www.kushagrabharti.com): Public visual portfolio homepage.
+- [AI-readable HTML profile](https://www.kushagrabharti.com/ai): Full semantic profile with experience, projects, education, writings, creative work, and crawler notes.
+- [Plain-text llms.txt](https://www.kushagrabharti.com/llms.txt): This generated Markdown guide for automated readers.
 
-## High Level Info
+Key facts:
+- I am a student and software engineer, but I do not fit cleanly into one lane. I move between machine learning, AI agents, full-stack products, research tooling, data systems, computer vision, optimization, trading experiments, and the occasional hardware or film project.
+- A lot of my work starts with a question I cannot leave alone. Can LLM agents actually plan over a full game? Can pose tracking be cleaned up enough for real lab workflows? Can a product keep artifacts and context instead of turning everything into another chat thread?
+- I like building the whole loop: the core engine, the UI, the data model, the tests, the telemetry, the failure cases, and the writeup. I do not enjoy stopping at a demo if the interesting part is still hidden.
+- MonopolyBench is my main AI research bet right now: a deterministic multi-agent environment for studying long-horizon planning, negotiation, deception, and bias through full Monopoly games.
+- At UT Southwestern, I have been working on computer vision for behavioral neuroscience: DeepLabCut/SuperAnimal pipelines, pose cleanup, behavior scoring, QC outputs, and CSV/XLSX scorecards researchers can actually inspect.
+- I have worked in real company environments too. At Abilitie, I contributed to an LLM role-play training product with React, TypeScript, provider plumbing, telemetry, prompt work, open-source model fine-tuning, latency improvements, and cost reduction. At Glydr.gg, I have been leading technical and product direction for a customer-facing configuration hub with React/Vite, Fastify, Postgres, Steam auth, admin tooling, and Railway deployment.
+- I have also built products and systems outside research: Pact, Beyond Chat, NovelBench, PseudoLawyer, Arachne, a personal portfolio/tracker, quant trading tooling, and smaller ML, hardware, and algorithm projects.
+- I care about legibility. If a model makes a decision, I want traces. If a benchmark gives a score, I want the run artifacts. If a pipeline produces a number, I want to know where it came from and where it can fail.
+- I care about taste too. The interface matters. The data model matters. The story matters. A thing can pass tests and still feel wrong.
+- Film is part of the same instinct for me. Framing, pacing, selection, and restraint show up in software more than people admit.
+- I am looking for work where I can learn quickly, own hard problems, build real systems, and stay honest about what is broken.
 
-Name: Kushagra Bharti
-Headline: Student | Software Engineer | ML Enthusiast
-Personal Summary: I am a student and software builder who enjoys learning and expanding my skillset.
-Primary Email: kushagrabharti@gmail.com
-Latest Update: Currently applying for Summer 2026 internships
-Fun Fact: A film I made was screened at AMC Theatres in Times Square!
-Featured Read: The Trillion Dollar AI Software Development Stack (https://a16z.com/the-trillion-dollar-ai-software-development-stack/)
-Travel Plans: Visiting Home for summer break!
-Homepage Roles: builder.; researcher.; filmmaker.; tinkerer.
-Homepage Summary: I enjoy building software at the intersection of AI, data, and real-world impact.
+## Contact and External Profiles
 
-### Socials
 - Email: mailto:kushagrabharti@gmail.com
 - LinkedIn: https://www.linkedin.com/in/kushagra-bharti/
 - GitHub: https://github.com/kushagrabharti
 - Medium: https://medium.com/@kushagrabharti
 - X: https://x.com/IamKushagraB
-
-### Other Links
 - Film Portfolio: https://drive.google.com/file/d/1m3aFLAK4TE29ybbdOzObLS8zrrX3oJwM/view?usp=sharing
 
-## About Me
-
-Heading: Hey there! I'm Kushagra Bharti
-Intro: I am a student and software builder who enjoys learning and expanding my skillset.
-
-### Current Projects
-- Monopoly Bench - A platform where various LLMs can play Monopoly against each other; I plan to publish a paper connected to this work.
-- A light-weight web crawler in Go - A project I am using to learn Go, concurrency, networking performance, and resource management.
-- An open-source T3.chat app - A project I am using to sharpen my web development skills, try creative chat UX ideas, and eventually integrate my web crawler as a tool.
-
-### Current Learning
-- Go, especially concurrency.
-- WebSockets and real-time applications.
-- Machine learning fundamentals.
-- LLMs, including tool-calling and context management.
-- Networking performance.
-- Resource management.
-- Data management.
-
-### Interests Outside Technology
-- I love cooking and have been cooking since I was five years old.
-- I love filmmaking, have directed 2 short films, and have contributed to other productions as a videographer and editor.
-- I love sports, especially soccer, volleyball, tennis, and table tennis, and I also follow soccer, Formula 1, and the UFC.
-- I am interested in psychology, reading, and the arts.
-
-## Recent Works From Public Homepage
-
-### 01 MonopolyBench
-Benchmarking long-horizon strategic reasoning in LLM agents through repeatable Monopoly simulations, schema-typed tool calls, and inspectable decision traces. Open to collaborators interested in turning this into a publishable research paper.
-
-### 02 IMC Prosperity
-Competing in IMC's global trading challenge, combining manual strategy with Python-based algorithmic trading across simulated markets. Currently top 7% globally by overall score.
-
-### 03 LeetCode Practice
-Solving difficult algorithm problems daily in Python, keeping paper notes alongside code to sharpen pattern recognition, implementation speed, and proof-level reasoning.
-
-### 04 F1 Optimization
-Rebuilding the racing optimization project with a 2D physics simulation, then extending it into a multi-agent PPO reinforcement learning system for strategy and control.
-
-## Education
-
-### Student at University of Texas at Dallas
-Date Range: 2023 - Present
-Focus: BS in Computer Science with focus on Data and Machine Learning.
-Description: Learning about data structures, algorithms, and machine learning models to develop software applications and systems. Participating in hackathons and coding competitions to enhance problem-solving skills and gain practical experience in software development.
-Link: https://cs.utdallas.edu/education/undergraduate-studies/
-
-### Student at St. Stephen's Episcopal School
-Date Range: 2019 - 2023
-Focus: High School Diploma with focus on Computer Science and Mathematics.
-Description: Learnt computer science and math
-Link: https://www.sstx.org/boarding/boarding-student-support
-
-## Experiences
-
-### Machine Learning Engineer Intern at UT Southwestern Medical Center, Tsai Lab
-Category: Research
-Timeline Tone: active
-Summary: Building computer vision tooling for behavioral neuroscience: a DeepLabCut/SuperAnimal pipeline that turns 3-chamber mouse videos into pose tracks, behavioral metrics, QC outputs, and CSV/XLSX scorecards for lab review.
-Highlights:
-- Built a DeepLabCut/SuperAnimal video-analysis pipeline for 3-chamber social-interaction videos, converting raw mouse videos into pose tracks, behavioral metrics, QC artifacts, and scorecards used for lab review.
-- Automated the core workflow from crop → enhancement → pose inference → behavior scoring → QC → CSV/XLSX export, making the analysis more reproducible and less dependent on manual script-by-script execution.
-- Improved pose tracking stability by 56.9% across 15 clip pairs using likelihood-aware filtering and interpolation, reducing frame-to-frame coordinate jitter in usable benchmark clips.
-- Corrected behavior-scoring logic around discrimination index (DI), ambiguous cup contact, interpolation boundaries, and chamber occupancy so downstream behavioral metrics better match the intended experimental definitions.
-- Built QC tooling to surface unreliable trials instead of hiding them, including occlusion/body-length flags and pose summaries that make failed or low-confidence tracking easier to diagnose.
-- Exported final analysis into lab-friendly CSV/XLSX scorecards, turning long-form behavior summaries into a format that is easier for researchers to inspect, compare, and hand off.
-- Prepared targeted DeepLabCut fine-tuning infrastructure (sampled frames, pseudo-labels, contact sheets, and project scaffolding) while keeping measured filtering gains separate from unverified model fine-tuning gains.
-Tags: Machine Learning, Computer Vision, DeepLabCut, SuperAnimal, Markerless Pose Estimation, Behavioral Analysis, Behavioral Phenotyping, Neuroscience, Autism Research, Pose Tracking, Video Analysis, Python, OpenCV, pandas, NumPy, HDF5, CSV/XLSX, QC Tooling, Research Software
-Link: https://labs.utsouthwestern.edu/tsai-lab
-
-### Software Engineer at Glydr.gg
-Category: Product / Consulting
-Timeline Tone: active
-Summary: Leading technical/product direction for Glydr.gg’s customer-facing configuration hub: a Railway-deployed React/Vite + Fastify platform for discovering, importing, and managing foot-controller configs.
-Highlights:
-- Led technical/product direction for a 5-person team building Glydr.gg’s configuration hub, translating client needs into public config discovery, Steam login, admin tools, and Control Panel import flows.
-- Architected a React/Vite + Fastify platform backed by Postgres/Drizzle, with Railway deployment across frontend, backend API, worker, and database services.
-- Built a config system around checksum-versioned Control Panel JSON payloads, enabling stable deduplication, repeat-upload handling, and exact-version imports.
-- Engineered secure import handoffs using hashed 10-minute tokens, fetch caps, and rate limits so users can move selected configs into Glydr’s Control Panel without exposing large/private config payloads in URLs.
-- Implemented Steam OpenID-based identity and backend-owned sessions with HTTP-only cookies, CSRF checks, admin allowlists, and protected product actions.
-- Modeled the product domain with a relational schema covering users, Steam identities, sessions, games, categories, configs, immutable versions, imports, handoff tokens, jobs, and audit logs.
-- Built product flows for public game/category browsing, config detail pages, private config uploads, admin-published official configs, Steam library context, and import success states.
-- Verified launch readiness with passing typecheck/build and backend tests covering Control Panel JSON parsing, stable checksums, and invalid-payload rejection.
-Tags: Technical Leadership, Product Engineering, Client-Facing Development, Full-Stack Development, TypeScript, React, Vite, Fastify, PostgreSQL, Drizzle ORM, Steam OpenID, Railway, API Design, Authentication, CSRF, Rate Limiting, Config Versioning, Checksum Validation, Admin Tooling, Consulting
-Link: https://glydr.gg/
-
-### Undergraduate Researcher at UT Dallas (LLM Evaluation)
-Category: Research
-Timeline Tone: active
-Summary: Built MonopolyBench, a deterministic multi-agent LLM harness where tool-calling agents play full Monopoly games, enabling research on long-horizon planning, negotiation, deception, and bias.
-Highlights:
-- Built MonopolyBench as a deterministic multi-agent LLM evaluation harness where tool-calling agents play full Monopoly games under an authoritative rules engine.
-- Designed each turn around state/history memory, schema-bound actions, and tool-call traces so model behavior is constrained, inspectable, and reproducible.
-- Implemented a deterministic engine + arena + telemetry stack: seeded randomness, legal action menus, strict validation, corrective retry, deterministic fallback, and full run artifact logging.
-- Logged complete traces for decisions, prompts, raw model responses, parsed actions, applied actions, events, snapshots, and summaries, making runs debuggable instead of black-box.
-- Built the system to support live spectator viewing and headless batch evaluation, with FastAPI/WebSocket streaming and a render-only React UI.
-- Designed the benchmark for an upcoming LLM agent paper studying planning, negotiation, deception, and bias in long-running, multi-agent game environments.
-- Research directions include win-rate ranking across models, TrueSkill ratings, micro-decision suites, negotiation/bluffing analysis, and bias experiments through controlled player descriptors.
-Tags: LLM Evaluation, AI Agents, Multi-Agent Systems, Tool Calling, Function Calling, Agent Benchmarking, Deterministic Simulation, Game AI, Long-Horizon Planning, Negotiation, Deception, Bias Evaluation, Telemetry, Event Sourcing, Replayable Artifacts, Python, FastAPI, WebSockets, React, TypeScript, Vite, Zod, JSON Schema, Pytest
-Link: https://github.com/KushagraBharti/MonopolyBench
-
-### Independent Researcher (Optimization + ML) at UT Dallas
-Category: Research
-Timeline Tone: past
-Summary: Built paper-faithful optimization solvers and a solver-labeled dataset pipeline for 1D drone coverage planning, with benchmarks and QC gates to support supervised, GNN, and RL experiments on optimal tour planning.
-Highlights:
-- Implemented 4 paper-faithful solvers for 1D drone coverage planning (greedy + DP), including exact plan reconstruction so solver outputs can become usable training labels.
-- Built an end-to-end data pipeline from instance generation → gold labels → featurization hooks → QC, enabling ML training on optimal solutions instead of heuristic approximations.
-- Measured labeling throughput on a verified run: 370 labeled instances in 2.71s (~136 samples/s), writing ~280KB of JSONL data with automated validation of feasibility and coverage constraints.
-- Configured defaults for a 67,000-sample labeled dataset across train/test/shifted/extrap/stress splits, supporting generalization and distribution-shift evaluation.
-- Benchmarked exact solver scaling: dp_full stays under 1s up to n=1024 segments and reaches n=4096 in 8.41s, giving practical ceilings for exact-label generation.
-- Maintained correctness gates with 162 collected tests, including plan round-trip tests and oracle cross-checks for solver behavior and reconstruction validity.
-- Exposed ML-ready surfaces including gold labelers, legality masks, featurization hooks, and candidate metadata for future supervised learning, GNN, and RL experiments.
-Tags: Optimization, Algorithms, Dynamic Programming, Greedy Algorithms, Computational Geometry, Coverage Planning, Drone Routing, Exact Algorithms, Plan Reconstruction, Dataset Generation, Programmatic Labeling, Featurization, Data QC, Benchmarking, Reproducible Research, Python, NumPy, PyTorch, Pytest, JSONL, GNN, Reinforcement Learning
-Link: https://personal.utdallas.edu/~daescu/
-
-### Software Engineering Intern at Abilitie
-Category: Industry
-Timeline Tone: past
-Summary: Worked on Abilitie AI Cases, an LLM role-play training product, contributing to product flows, provider plumbing, structured outputs, telemetry, cost optimization, and perceived-latency improvements.
-Highlights:
-- Contributed to Abilitie AI Cases, an LLM role-play training product used for scenario-based leadership and communication training.
-- Built React/TypeScript chat flows, scenario configuration pages, end-state UI fixes, streaming/loading states, and provider request plumbing around Azure/AWS-backed model calls.
-- Built structured JSON schemas to render LLM responses as product state instead of free-text blobs, making model output easier to validate and display inside the UI.
-- Optimized role-play prompts, model choice, and output structure across 27 configurations, using scenario testing and human review to improve instruction-following and role-play consistency.
-- Reduced LLM cost per conversation by ~70% through GPT-4o migration, ~20% fewer prompt tokens, ~8% fewer retries, and structured-output/prompt optimization.
-- Built a DynamoDB telemetry pipeline for TTFT/TTLT, tokens/sec, token counts, retries, errors, provider/model metadata, and per-request traces.
-- Used telemetry traces to identify bottlenecks, improve latency by ~10%, and reach ~95% success rate across the monitored role-play flows.
-- Improved perceived latency with a 3s idle prefetch path and stale-response invalidation, reducing TTFT after send to p95 = 1.5s.
-- Ran prompt-injection testing and hardening iterations to reduce out-of-format or unsafe model behavior in customer-facing role-play scenarios.
-- Shipped UI/UX fixes in React + TypeScript + Material UI, including theme-aware rich-text paste handling to prevent dark-mode invisibility in internal/admin workflows.
-Tags: LLMs, LLM Product Engineering, Software Engineering, React, TypeScript, Azure, AWS, DynamoDB, Telemetry, Observability, Structured Outputs, Prompt Engineering, Model Evaluation, Prompt Injection Testing, Latency Optimization, Cost Optimization, Material UI, Product Engineering
-Link: https://www.abilitie.com/case-challenges
-
-### Dorm Proctor at St. Stephen's Episcopal School
-Category: Leadership
-Timeline Tone: past
-Summary: Supported younger boarding students through peer mentorship, safety training, and community-building in a residential school environment.
-Highlights:
-- Supported new students as they transitioned into boarding school life, helping them adjust to routines, expectations, and the social environment.
-- Served as a peer mentor for academic, personal, and social challenges, using training from counselors and dorm staff to respond with discretion and care.
-- Worked with dorm parents, administrators, and counselors to help maintain a safe, welcoming, and inclusive dorm environment.
-- Completed safety and emergency training, including fire protocols and campus response procedures.
-- Balanced proctor responsibilities with academics and extracurriculars, learning how to be dependable in a community-facing leadership role.
-- Tried to be the person younger students could come to when something felt confusing, stressful, or just awkward about living away from home.
-Tags: Leadership, Mentorship, Peer Support, Student Life, Counseling, Community Building, Safety Training, Communication
-Link: https://www.sstx.org/boarding/boarding-student-support
-
-## Projects
-
-### MonopolyBench
-Summary: A deterministic multi-agent LLM evaluation harness where tool-calling agents play full Monopoly games, enabling research on planning, negotiation, deception, and bias in long-running agent environments.
-Highlights:
-- Built MonopolyBench as a deterministic LLM-agent benchmark where multiple models play complete Monopoly games through schema-bound tool calls instead of free-form text.
-- Implemented the core Monopoly rules engine from scratch with deterministic dice/cards, strict turn enforcement, property ownership, rent, auctions, jail, trades, liquidation, and bankruptcy.
-- Designed every decision point around full game state, recent history, private/public messages, persona configuration, and a legal action menu so models can only choose valid moves.
-- Built the arena layer that converts legal actions into tool schemas, validates model responses, applies one corrective retry, and falls back deterministically when the model still fails.
-- Logged full run artifacts for analysis: prompts, tool schemas, raw responses, parsed actions, retries, fallbacks, events, snapshots, summaries, and replayable decision traces.
-- Built a FastAPI/WebSocket backend and render-only React UI so runs can be watched live while the engine remains the source of truth.
-- Designed the benchmark for an upcoming LLM-agent paper studying long-horizon planning, negotiation, deception, and bias in multi-agent game settings.
-- Roadmap includes TrueSkill rankings, micro-decision suites, human-vs-LLM multiplayer, and controlled player-descriptor experiments for bias probing.
-Tags: LLM Evaluation, AI Agents, Multi-Agent Systems, Tool Calling, Function Calling, Agent Benchmarking, Deterministic Simulation, Game AI, Long-Horizon Planning, Negotiation, Deception, Bias Evaluation, Telemetry, Event Sourcing, Replayable Artifacts, Python, FastAPI, WebSockets, React, TypeScript, Vite, Zod, JSON Schema, Pytest
-GitHub: https://github.com/KushagraBharti/MonopolyBench
-
-### Pact
-Summary: A mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.
-Highlights:
-- Built Pact as a consumer accountability product: users create commitments, stake money, submit proof, and rely on a small trusted validator group to approve or reject the outcome.
-- Designed the core product loop from pact creation → stake lock → proof upload → validator voting → stake release/forfeit, making accountability feel concrete instead of vague.
-- Implemented a full-stack mobile product with React Native, Expo Router, Fastify, Supabase Auth/Postgres/Storage, and Solana escrow hooks.
-- Built server-side lifecycle enforcement so protected actions never trust client-supplied user identity, creator IDs, validator IDs, or pact state.
-- Implemented proof-image uploads, validator membership checks, creator self-vote prevention, majority-based resolution, and resolved/cancelled pact lockout rules.
-- Designed the UI around commitment status, proof review, validator transparency, and financial stakes so users can clearly see what needs to happen next.
-- Shipped Pact as a working hackathon product and won 1st place in the HackSMU Solana Track.
-Tags: TypeScript, React Native, Expo, Expo Router, Fastify, Supabase, PostgreSQL, Supabase Auth, Supabase Storage, Solana, Web3, SPL Token, Mobile Development, Full-Stack Development, Fintech, Consumer Social, Product Engineering, System Design, Hackathon Winner
-GitHub: https://github.com/KushagraBharti/Pact
-
-### Arachne Web Crawler
-Summary: A high-throughput Go web crawler with bounded concurrency, robots.txt handling, rooted discovery trees, live SSE updates, and local JSON artifacts for debugging runs.
-Highlights:
-- Built Arachne as a result-first web crawler: users choose a seed URL, read extracted page content, and inspect crawl expansion through a rooted discovery tree.
-- Engineered the crawler core in Go using frontier queues, worker pools, robots.txt gating, canonical URL deduplication, retry budgets, and bounded concurrency.
-- Configured the crawler with 64 global / 64 per-host concurrency for controlled local benchmarking while still respecting crawl limits and site policies.
-- Benchmarked a synthetic local workload of 501 pages in 1.51s, roughly 332 pages/sec, using an httptest server to remove public-internet noise.
-- Modeled output as a rooted discovery tree instead of a generic web graph, making it clear exactly how each page was discovered from the selected seed.
-- Built readable outputs around extracted page content, live SSE crawl updates, diagnostics, and JSON artifacts instead of treating the project as only a telemetry dashboard.
-- Persisted each run as local artifacts: run config, extracted pages, tree edges/nodes, diagnostics, skips, retries, errors, and stop reasons.
-- Verified the project with backend checks (`go test ./...`) and frontend build checks (`bun run build`).
-Tags: Go, TypeScript, Next.js, React, Web Crawling, Concurrent Systems, Worker Pools, Frontier Queues, Robots.txt, URL Canonicalization, Deduplication, Server-Sent Events, JSON Artifacts, Performance Benchmarking, System Design, Full-Stack Development
-GitHub: https://github.com/KushagraBharti/Web-Crawler-Go
-
-### AutoHDR ML Lens Correction
-Summary: A geometry-first computer vision system for automatic lens correction, using a staged ResNet34 hybrid CNN, Brown–Conrady camera geometry, and learned residual flow.
-Highlights:
-- Trained a staged ResNet34 hybrid CNN for lens correction on 23,118 paired images using cloud H200, moving from param-only → hybrid → finetune.
-- Scored 0.8942 on the leaderboard and earned a CTO review for the model architecture and training approach.
-- Built the model around two prediction heads: a Brown–Conrady parametric head for global lens coefficients and a 2-channel residual-flow decoder for local corrections.
-- Fused analytic camera geometry and learned displacement into a differentiable `grid_sample` warp, keeping the correction path grounded in geometry instead of pure image-to-image generation.
-- Ran full-batch inference over 1,000 test images and built the submission pipeline around deterministic outputs and safety/fallback checks.
-- Measured stage progression during cloud training: validation loss dropped 15.66%, and training warnings dropped from 64 in stage1 to 0 in later stages.
-- Validated the codebase with 108/108 passing tests covering geometry contracts, inference fallback behavior, training hooks, QA tooling, and submission flows.
-- Built this as a competition-grade system rather than a visual demo: training, inference, scoring, QA, and packaging were all treated as part of the product.
-Tags: Computer Vision, Deep Learning, PyTorch, CNNs, ResNet34, Image Geometry, Lens Distortion Correction, Brown–Conrady Model, Optical Flow, Residual Flow, Warping / grid_sample, Model Training, Staged Training, Benchmarking, Reproducible Systems, Testing, QA Tooling, Competition Engineering
-GitHub: https://github.com/KushagraBharti/AutoHDR-LensCorrection
-
-### NovelBench
-Summary: A live multi-stage LLM benchmark where frontier models generate, critique, revise, and vote on creative prompts to evaluate innovation under pressure.
-Highlights:
-- Built NovelBench to evaluate whether LLMs can actually innovate through a structured creative process instead of a single one-shot response.
-- Designed a multi-stage workflow where 2–8 models generate ideas, anonymously critique each other, revise with aggregated feedback, and vote on final outputs.
-- Built durable run orchestration around append-only events, persisted artifacts, leaderboard snapshots, archive pages, and replayable run traces.
-- Implemented a Convex-backed backend for active benchmark execution, durable state, usage tracking, read models, leaderboards, and concurrency control.
-- Integrated OpenRouter model execution with structured output normalization, scoring logic, failure tolerance, and stage-level workflow resilience.
-- Designed anonymous critique and voting systems to reduce model identity bias during evaluation and produce more meaningful comparative rankings.
-- Built a public Next.js product surface with a landing page, live arena, searchable archive, leaderboard views, and detailed run pages.
-- Launched the platform with real usage, producing 47 benchmark runs and 194 generated ideas so far.
-Tags: TypeScript, Next.js, React, Convex, OpenRouter, LLMs, AI Benchmarking, Workflow Orchestration, Realtime Systems, System Design, Evaluation Infrastructure, Prompt Engineering, Product Engineering, Research Infrastructure, Startup Tools, Solo Project
-GitHub: https://github.com/KushagraBharti/NovelBench
-
-### Beyond Chat
-Summary: An artifact-first AI workspace that turns chat into production workflows: studios, tool-calling runs, durable context, model comparison, storage-backed artifacts, and provider-aware orchestration.
-Highlights:
-- Built Beyond Chat around specialized studios instead of endless chat threads, with dedicated surfaces for Chat, Writing, Research, Image, Data, Finance, Artifacts, Settings, and Compare.
-- Designed the product around durable artifacts: meaningful outputs can be saved, searched, reopened, exported, bundled, and reused as context for future model calls.
-- Implemented an agentic run system with explicit run records, step timelines, tool/provider metadata, failure states, artifact provenance, and saved outputs.
-- Built Context Builder as the connective layer across studios, letting users attach saved artifacts to Chat, Compare, Research, Writing, Image, Data, and Finance workflows.
-- Engineered OpenRouter-backed chat and compare flows with model selection, parallel model comparison, retry handling, streaming responses, selected-result handoffs, and one-click saves.
-- Built Research Studio around real Exa search, producing source-backed research reports with visible workflow steps and explicit provider-missing behavior when search is not configured.
-- Built Data Studio with Supabase Storage uploads, workspace-scoped file paths, CSV/XLS/XLSX parsing, preview/profile generation, analysis, chart/table rendering, and separate artifact saves.
-- Built Writing Studio with launch templates, targeted edit mode, bounded context, document generation, assistant suggestions, Compare integration, and provenance-linked saves.
-- Implemented Supabase-authenticated runtime infrastructure across FastAPI and React: JWT-backed request context, workspace bootstrap, ownership checks, private storage, signed URLs, and RLS hardening.
-- Added operational features including provider status reporting, disconnected-safe UI states, Stripe billing endpoints, export-to-Markdown/PDF, and multi-artifact bundle export.
-- Built the frontend as a polished React/Vite/Tailwind app with protected routes, dedicated studio layouts, shared primitives, artifact library/detail flows, and route-state handoffs.
-- Used a Starbucks Cinder Orange launch workflow as an acceptance story to test research, data analysis, finance reasoning, writing outputs, image direction, model comparison, and artifact bundling through general product flows.
-Tags: TypeScript, React, Vite, Tailwind CSS, Python, FastAPI, Supabase, PostgreSQL, Supabase Auth, Supabase Storage, OpenRouter, Exa, Stripe, LLMs, Agentic AI, AI Agents, Tool Calling, Workflow Orchestration, Artifact Systems, Context Engineering, Model Comparison, Data Analysis, RAG, Full-Stack Development, System Design, Product Engineering
-GitHub: https://github.com/KushagraBharti/Beyond-Chat
-
-### PseudoLawyer
-Summary: An AI-powered contract negotiation platform with real-time multi-party chat, an AI mediator, and contract drafting from negotiation history.
-Highlights:
-- Built a Next.js 15 + Supabase platform where two parties can negotiate in a shared real-time chat and produce a final contract draft from the conversation.
-- Implemented Supabase Auth, Postgres persistence, and Realtime subscriptions for multi-party negotiation sessions.
-- Built Sudo, an AI mediator powered through OpenRouter / Claude 3.5 Sonnet, to respond to negotiation context and help parties move toward agreement.
-- Implemented a trigger-based Ask Sudo flow so the mediator can be invoked when the conversation needs help instead of constantly interrupting the chat.
-- Built a contract generation route that loads the template, participants, and recent negotiation messages before drafting the final agreement.
-- Modeled the domain with profiles, templates, negotiations, participants, messages, and contracts in a 6-table Postgres schema.
-- Measured OpenRouter chat-completion latency at p50/p95 = 897ms/981ms over 5 runs for the AI layer.
-- Built a polished dark UI with role-based flows, dashboard pages, negotiation detail views, contract detail views, typing/loading states, and simple download support.
-Tags: Next.js 15, TypeScript, Supabase, Supabase Auth, Supabase Realtime, PostgreSQL, OpenRouter, Claude 3.5 Sonnet, LLMs, AI Mediator, Contract Generation, Legal Tech, Tailwind CSS, Framer Motion, Full-Stack Development
-GitHub: https://github.com/KushagraBharti/PseudoLawyer
-
-### Personal Portfolio Website
-Summary: A full-stack portfolio and personal tracker with a public showcase, private authenticated surfaces, live widgets, and machine-readable content for humans and AI systems.
-Highlights:
-- Built a public portfolio with a hero section, about content, education, experiences, featured projects, other projects, and dedicated project/experience data models.
-- Added a private tracker surface alongside the public site so personal workflows can live behind authentication without leaking into the portfolio experience.
-- Centralized content in TypeScript modules so public cards, detailed pages, and AI-facing snapshots stay aligned from the same source of truth.
-- Generated an `llms.txt` / structured AI-facing view so the site can be read cleanly by humans and models.
-- Integrated live GitHub and weather widgets with backend caching and graceful fallbacks so the homepage remains dynamic without depending on fragile client-side calls.
-- Built the app as a responsive React/Vite/Tailwind interface with Express APIs, motion, reusable components, and a verification suite for unit, integration, smoke, E2E, and live flows.
-Tags: TypeScript, Node.js, Express, React, Vite, Tailwind CSS, Framer Motion, Bun, Vitest, Playwright, REST API, Full-Stack Development, API Integration, Live Widgets, System Design, Testing
-GitHub: https://github.com/KushagraBharti/Personal-Site
-
-### F1 Optimization Project
-Summary: A custom F1-style racing simulation environment with OpenCV track extraction, Pygame rendering, ray-cast sensors, reward shaping, and RL training hooks.
-Highlights:
-- Built a custom Gym-style racing simulator with continuous controls, checkpoint-based rewards, collision termination, and headless stepping support.
-- Extracted a Monza-style track from image contours using OpenCV, generating 120 checkpoint lines and 2,749 collision segments.
-- Implemented a sensor-based observation model with 7 ray-cast distances plus normalized speed, giving the agent an 8D observation vector.
-- Built Pygame rendering, manual driving mode, `.npy` rollout export, and replay tooling for qualitative debugging.
-- Measured headless simulator performance at 12.63 steps/sec with the full sensor/collision workload enabled.
-- Added Ray/RLlib SAC training and rollout entrypoints, but full training results remain incomplete because the modern environment needs a Ray-supported Python setup and updated RLlib API compatibility.
-Tags: Reinforcement Learning, Gymnasium, Ray RLlib, SAC, Pygame, OpenCV, Simulation, F1, Path Planning, Reward Design, Computer Vision, Python
-GitHub: https://github.com/KushagraBharti/HackTX-2024---F1-Optimization
-
-### Kaggle Titanic ML
-Summary: A complete beginner-to-intermediate ML pipeline for the Titanic dataset, focused on cleaning, feature engineering, model comparison, and documenting the full learning process.
-Highlights:
-- Built an end-to-end Titanic survival prediction workflow using Pandas and scikit-learn.
-- Cleaned missing values, extracted passenger titles, encoded categorical variables, and engineered features such as FamilySize and IsAlone.
-- Explored passenger demographics and survival correlations through EDA with Matplotlib and Seaborn.
-- Trained and compared Logistic Regression, SVM, KNN, Decision Tree, Random Forest, Naive Bayes, Perceptron, and SGD models.
-- Reached ~86.76% training accuracy with Decision Tree / Random Forest baselines while using the project mainly to learn the full ML workflow.
-- Wrote a PDF report documenting the process, mistakes, experiments, and lessons learned instead of only publishing final code.
-Tags: Machine Learning, Kaggle, Titanic, Data Analysis, Python, Pandas, scikit-learn, EDA, Feature Engineering, Random Forest, Matplotlib, Seaborn
-GitHub: https://github.com/KushagraBharti/Kaggle-Titanic-Solution
-
-### Algorithmic Trading Quantitative Test Environment
-Summary: A modular quant testbench for strategy development, backtesting, risk metrics, visualization, and Alpaca paper-trading execution.
-Highlights:
-- Built a modular quant pipeline covering market data ingestion, feature engineering, strategy signals, transaction-cost-aware backtesting, risk metrics, trade logs, and visualization.
-- Integrated Alpaca market data and paper-trading APIs to connect research code with simulated execution workflows.
-- Implemented a moving-average crossover strategy and feature layer with returns, moving averages, signals, trades, strategy returns, and cumulative returns.
-- Modeled transaction costs in the backtester and computed Sharpe ratio, max drawdown, and final return for consistent strategy evaluation.
-- Generated CSV trade logs and Matplotlib equity/signal plots for auditability and faster strategy debugging.
-- Benchmarked the full evaluation loop at ~1.54M bars/sec on a 199,951-bar seeded synthetic dataset, showing the research loop is fast enough for iteration.
-- Current limitations: slippage modeling, parameter sweeps, position sizing, and walk-forward validation are not fully implemented yet.
-Tags: Python, Alpaca API, Pandas, NumPy, Matplotlib, Algorithmic Trading, Backtesting, Paper Trading, Risk Metrics, Sharpe Ratio, Max Drawdown, Quant Research
-GitHub: https://github.com/KushagraBharti/Quant-Test-Environment
-
-### Northstar Agentic Financial Memory Platform
-Summary: A memory-first AI wealth-management prototype where a local agent loads durable financial context, portfolio snapshots, and tool traces to produce explainable scenario analysis.
-Highlights:
-- Built Northstar around durable user context rather than a static portfolio dashboard: onboarding answers compile into readable memory, structured context packets, and a graph of financial preferences.
-- Designed the runtime around one visible local agent, North, that preloads memory, context packets, and portfolio snapshots before responding.
-- Implemented specialist tools for market/news research, financial data, filings, portfolio context, deterministic scenario checks, and trust receipts.
-- Built a chat-first React/Vite interface with quick actions, markdown-rendered answers, a memory transparency modal, and a JSONL-style trace panel.
-- Engineered onboarding as a high-signal financial memory compiler using a 44-question questionnaire to structure goals, values, risk comfort, communication style, tax context, and approval boundaries.
-- Created a graph-first dashboard that visualizes durable user context as memory nodes instead of generic financial charts.
-- Added deterministic demo reliability with seeded holdings/transactions/tax lots, simulated Plaid-style import, market-check fallbacks, and capped external calls.
-- Built the Express + TypeScript backend with Supabase/Postgres-ready persistence, OpenRouter/OpenAI-compatible model execution, memory/status APIs, agent streaming routes, and local JSON/JSONL mirrors.
-- Focused the architecture on agentic workflows, contextual memory, tool use, observability, audit trails, human-in-the-loop guardrails, and grounded retrieval/context packets.
-Tags: TypeScript, React, Vite, Express, Supabase, PostgreSQL, OpenRouter, LLMs, Agentic AI, AI Agents, Tool Calling, Contextual Memory, RAG, JSONL Tracing, Observability, Guardrails, FinTech, Portfolio Analytics, Scenario Analysis, Full-Stack Development, System Design
-GitHub: https://github.com/YuvrajKashyap/northstar
-
-### Age & Gender Recognition
-Summary: A real-time OpenCV demo that detects faces from video and predicts age/gender using pre-trained Caffe DNN models.
-Highlights:
-- Built a real-time face detection pipeline using OpenCV’s DNN module.
-- Used pre-trained Caffe models for age and gender prediction, with approximate reported accuracy of 71% for gender and 62% for age in the project context.
-- Tuned confidence thresholds and padding around detected face regions to improve prediction stability.
-- Rendered bounding boxes and prediction labels directly on the video stream for immediate visual feedback.
-Tags: Python, OpenCV, DNN, Caffe, Face Detection, Real-Time Processing, Computer Vision
-GitHub: https://github.com/KushagraBharti/Gender-Age-Detection
-
-### DataDrive: Unified Insights for Data & Fuel Optimization
-Summary: A full-stack ML analytics dashboard for exploring Toyota vehicle data, fuel-efficiency predictions, clustering, and interactive visualizations.
-Highlights:
-- Built a Flask + React analytics dashboard over Toyota vehicle data, combining model-backed predictions with interactive exploration.
-- Implemented regression and K-Means clustering pipelines for fuel-efficiency and vehicle-segmentation analysis.
-- Built backend API endpoints for prediction, car detail retrieval, and clustering results.
-- Added data cleaning, feature engineering, and model evaluation workflows to keep the ML layer reproducible.
-- Built interactive React/D3 visualizations and a 3D car viewer to make the model outputs easier to explore.
-- Integrated GPT-powered explanation generation and Pinata storage as experimental transparency/auditability features.
-Tags: Flask, Python, Machine Learning, Linear Regression, KMeans, React, D3.js, Three.js, Data Analytics, APScheduler, SHAP, OpenAI, Pinata
-GitHub: https://github.com/KushagraBharti/HACKUTD-Data-Drive
-
-### CircuitSeer (Circuit Solver)
-Summary: A computer vision circuit-analysis tool that detects components, traces wiring, and helps solve simple circuit diagrams.
-Highlights:
-- Built CircuitSeer through the AI Mentorship Program at UT Dallas as a team project combining object detection and classical computer vision.
-- Focused on component recognition using a fine-tuned YOLOv5 model to detect resistors, capacitors, diodes, inductors, and power sources.
-- Integrated line-detection work using Canny Edge Detection and Hough Transform to help trace wiring between detected components.
-- Connected the detection outputs to downstream logic for simple series/parallel resistance and capacitance analysis.
-- Built the project with Python and Flask so users could upload circuit diagrams and receive structured analysis through a web interface.
-Tags: Python, YOLOv5, Flask, OpenCV, Computer Vision, Object Detection, Canny Edge Detection, Hough Transform, Circuit Analysis
-GitHub: https://github.com/Hteam121/circuit-seer
-
-### Point Cloud Down Sampler
-Summary: A point-cloud processing project comparing a from-scratch voxel downsampler with Open3D’s built-in voxel grid method.
-Highlights:
-- Implemented a custom voxelization algorithm that groups 3D points into discrete grid cells using mathematical flooring.
-- Reduced dense point clouds while preserving overall shape structure for downstream visualization and analysis.
-- Compared the custom implementation against Open3D’s high-performance `voxel_down_sample` method.
-- Built a small pipeline to load CSV point clouds, convert them into PCD format, downsample, and export processed outputs.
-- Used the project to understand the tradeoff between writing geometry code from scratch and relying on optimized library primitives.
-Tags: Python, Pandas, Open3D, Voxelization, Point Cloud, Downsampling, 3D Data, Geometry
-GitHub: https://github.com/KushagraBharti/PointCloud-DownSampler
-
-### PCB Design Project
-Summary: A hardware project where I designed, ordered, assembled, and tested custom PCBs as part of a senior independent project.
-Highlights:
-- Designed multiple PCBs in EasyEDA, moving from schematic capture to board layout and manufacturing files.
-- Ordered boards and components through JLCPCB/LCSC, learning the practical constraints around cost, availability, package type, and manufacturability.
-- Worked through design challenges involving ATmega328 variants, SMD/THT parts, capacitive-touch buttons, power routing, and component placement.
-- Assembled and tested the boards after delivery, gaining hands-on soldering, debugging, and hardware bring-up experience.
-Tags: PCB Design, Circuit Design, EasyEDA, JLCPCB, LCSC, Electronics, Hardware, Soldering, Embedded Systems
-GitHub: https://github.com/KushagraBharti/PCB-Design-Project
-
-### Self-Driving Car Project
-Summary: An Arduino-based RC car rebuild with ultrasonic sensors and a custom obstacle-avoidance control loop.
-Highlights:
-- Repurposed an RC car by rebuilding its internals with an Arduino Uno, motor shield, ultrasonic sensors, and custom wiring.
-- Wrote C++ control logic to read ultrasonic distance data and perform obstacle detection/avoidance.
-- Learned the hardware/software debugging loop: wiring, sensor noise, motor control, soldering, and physical-world failure cases.
-Tags: Arduino, C++, Self-Driving, Autonomous Vehicle, RC Car, Electronics, Ultrasonic Sensors, Hardware
-GitHub: N/A
-
-### Maze Traversal
-Summary: A small recursive DFS maze solver in Python that traces a path from start to exit through a grid-based maze.
-Highlights:
-- Implemented a recursive depth-first search solver for mazes represented as nested lists.
-- Marked the solution path with directional arrows to visually trace movement from start to exit.
-- Added file loading, start-position detection, intermediate maze printing, and execution-time measurement.
-- Used the project to practice recursion, backtracking, grid traversal, and simple algorithm visualization.
-Tags: Python, Depth-First Search, Recursion, Maze Solving, Backtracking, Algorithms
-GitHub: N/A
-
-## Values, Beliefs, Writings, Thoughts, and Predictions
+## Values and Writings and Predictions
 
 ### 01 epistemic velocity
 Category: value
@@ -516,23 +119,469 @@ That's why AI tools, agents, planning systems, and artifact workflows interest m
 
 Fewer destinations. More continuity.
 
+## Experience Links
+
+### Machine Learning Engineer Intern at UT Southwestern Medical Center, Tsai Lab
+Date Range: Feb 2026 - Present
+Category: Research
+Timeline Tone: active
+Summary: Building computer vision tooling for behavioral neuroscience: a DeepLabCut/SuperAnimal pipeline that turns 3-chamber mouse videos into pose tracks, behavioral metrics, QC outputs, and CSV/XLSX scorecards for lab review.
+Highlights:
+- Built a DeepLabCut/SuperAnimal video-analysis pipeline for 3-chamber social-interaction videos, converting raw mouse videos into pose tracks, behavioral metrics, QC artifacts, and scorecards used for lab review.
+- Automated the core workflow from crop → enhancement → pose inference → behavior scoring → QC → CSV/XLSX export, making the analysis more reproducible and less dependent on manual script-by-script execution.
+- Improved pose tracking stability by 56.9% across 15 clip pairs using likelihood-aware filtering and interpolation, reducing frame-to-frame coordinate jitter in usable benchmark clips.
+- Corrected behavior-scoring logic around discrimination index (DI), ambiguous cup contact, interpolation boundaries, and chamber occupancy so downstream behavioral metrics better match the intended experimental definitions.
+- Built QC tooling to surface unreliable trials instead of hiding them, including occlusion/body-length flags and pose summaries that make failed or low-confidence tracking easier to diagnose.
+- Exported final analysis into lab-friendly CSV/XLSX scorecards, turning long-form behavior summaries into a format that is easier for researchers to inspect, compare, and hand off.
+- Prepared targeted DeepLabCut fine-tuning infrastructure (sampled frames, pseudo-labels, contact sheets, and project scaffolding) while keeping measured filtering gains separate from unverified model fine-tuning gains.
+Tags: Machine Learning, Computer Vision, DeepLabCut, SuperAnimal, Markerless Pose Estimation, Behavioral Analysis, Behavioral Phenotyping, Neuroscience, Autism Research, Pose Tracking, Video Analysis, Python, OpenCV, pandas, NumPy, HDF5, CSV/XLSX, QC Tooling, Research Software
+Link: https://labs.utsouthwestern.edu/tsai-lab
+
+### Software Engineer at Glydr.gg
+Date Range: Jan 2026 - Present
+Category: Product / Consulting
+Timeline Tone: active
+Summary: Leading technical/product direction for Glydr.gg’s customer-facing configuration hub: a Railway-deployed React/Vite + Fastify platform for discovering, importing, and managing foot-controller configs.
+Highlights:
+- Led technical/product direction for a 5-person team building Glydr.gg’s configuration hub, translating client needs into public config discovery, Steam login, admin tools, and Control Panel import flows.
+- Architected a React/Vite + Fastify platform backed by Postgres/Drizzle, with Railway deployment across frontend, backend API, worker, and database services.
+- Built a config system around checksum-versioned Control Panel JSON payloads, enabling stable deduplication, repeat-upload handling, and exact-version imports.
+- Engineered secure import handoffs using hashed 10-minute tokens, fetch caps, and rate limits so users can move selected configs into Glydr’s Control Panel without exposing large/private config payloads in URLs.
+- Implemented Steam OpenID-based identity and backend-owned sessions with HTTP-only cookies, CSRF checks, admin allowlists, and protected product actions.
+- Modeled the product domain with a relational schema covering users, Steam identities, sessions, games, categories, configs, immutable versions, imports, handoff tokens, jobs, and audit logs.
+- Built product flows for public game/category browsing, config detail pages, private config uploads, admin-published official configs, Steam library context, and import success states.
+- Verified launch readiness with passing typecheck/build and backend tests covering Control Panel JSON parsing, stable checksums, and invalid-payload rejection.
+Tags: Technical Leadership, Product Engineering, Client-Facing Development, Full-Stack Development, TypeScript, React, Vite, Fastify, PostgreSQL, Drizzle ORM, Steam OpenID, Railway, API Design, Authentication, CSRF, Rate Limiting, Config Versioning, Checksum Validation, Admin Tooling, Consulting
+Link: https://glydr.gg/
+
+### Undergraduate Researcher at UT Dallas (LLM Evaluation)
+Date Range: Apr 2025 - Present
+Category: Research
+Timeline Tone: active
+Summary: Built MonopolyBench, a deterministic multi-agent LLM harness where tool-calling agents play full Monopoly games, enabling research on long-horizon planning, negotiation, deception, and bias.
+Highlights:
+- Built MonopolyBench as a deterministic multi-agent LLM evaluation harness where tool-calling agents play full Monopoly games under an authoritative rules engine.
+- Designed each turn around state/history memory, schema-bound actions, and tool-call traces so model behavior is constrained, inspectable, and reproducible.
+- Implemented a deterministic engine + arena + telemetry stack: seeded randomness, legal action menus, strict validation, corrective retry, deterministic fallback, and full run artifact logging.
+- Logged complete traces for decisions, prompts, raw model responses, parsed actions, applied actions, events, snapshots, and summaries, making runs debuggable instead of black-box.
+- Built the system to support live spectator viewing and headless batch evaluation, with FastAPI/WebSocket streaming and a render-only React UI.
+- Designed the benchmark for an upcoming LLM agent paper studying planning, negotiation, deception, and bias in long-running, multi-agent game environments.
+- Research directions include win-rate ranking across models, TrueSkill ratings, micro-decision suites, negotiation/bluffing analysis, and bias experiments through controlled player descriptors.
+Tags: LLM Evaluation, AI Agents, Multi-Agent Systems, Tool Calling, Function Calling, Agent Benchmarking, Deterministic Simulation, Game AI, Long-Horizon Planning, Negotiation, Deception, Bias Evaluation, Telemetry, Event Sourcing, Replayable Artifacts, Python, FastAPI, WebSockets, React, TypeScript, Vite, Zod, JSON Schema, Pytest
+Link: https://github.com/KushagraBharti/MonopolyBench
+
+### Independent Researcher (Optimization + ML) at UT Dallas
+Date Range: Apr 2025 - Nov 2025
+Category: Research
+Timeline Tone: past
+Summary: Built paper-faithful optimization solvers and a solver-labeled dataset pipeline for 1D drone coverage planning, with benchmarks and QC gates to support supervised, GNN, and RL experiments on optimal tour planning.
+Highlights:
+- Implemented 4 paper-faithful solvers for 1D drone coverage planning (greedy + DP), including exact plan reconstruction so solver outputs can become usable training labels.
+- Built an end-to-end data pipeline from instance generation → gold labels → featurization hooks → QC, enabling ML training on optimal solutions instead of heuristic approximations.
+- Measured labeling throughput on a verified run: 370 labeled instances in 2.71s (~136 samples/s), writing ~280KB of JSONL data with automated validation of feasibility and coverage constraints.
+- Configured defaults for a 67,000-sample labeled dataset across train/test/shifted/extrap/stress splits, supporting generalization and distribution-shift evaluation.
+- Benchmarked exact solver scaling: dp_full stays under 1s up to n=1024 segments and reaches n=4096 in 8.41s, giving practical ceilings for exact-label generation.
+- Maintained correctness gates with 162 collected tests, including plan round-trip tests and oracle cross-checks for solver behavior and reconstruction validity.
+- Exposed ML-ready surfaces including gold labelers, legality masks, featurization hooks, and candidate metadata for future supervised learning, GNN, and RL experiments.
+Tags: Optimization, Algorithms, Dynamic Programming, Greedy Algorithms, Computational Geometry, Coverage Planning, Drone Routing, Exact Algorithms, Plan Reconstruction, Dataset Generation, Programmatic Labeling, Featurization, Data QC, Benchmarking, Reproducible Research, Python, NumPy, PyTorch, Pytest, JSONL, GNN, Reinforcement Learning
+Link: https://personal.utdallas.edu/~daescu/
+
+### Software Engineering Intern at Abilitie
+Date Range: May 2024 - Aug 2024
+Category: Industry
+Timeline Tone: past
+Summary: Worked on Abilitie AI Cases, an LLM role-play training product, contributing to product flows, provider plumbing, structured outputs, telemetry, cost optimization, and perceived-latency improvements.
+Highlights:
+- Contributed to Abilitie AI Cases, an LLM role-play training product used for scenario-based leadership and communication training.
+- Built React/TypeScript chat flows, scenario configuration pages, end-state UI fixes, streaming/loading states, and provider request plumbing around Azure/AWS-backed model calls.
+- Built structured JSON schemas to render LLM responses as product state instead of free-text blobs, making model output easier to validate and display inside the UI.
+- Optimized role-play prompts, model choice, and output structure across 27 configurations, using scenario testing and human review to improve instruction-following and role-play consistency.
+- Fine-tuned open-source models for Abilitie AI Cases, connecting model behavior work back to the product's role-play training goals instead of treating it as a standalone experiment.
+- Reduced LLM cost per conversation by ~70% through GPT-4o migration, ~20% fewer prompt tokens, ~8% fewer retries, and structured-output/prompt optimization.
+- Built a DynamoDB telemetry pipeline for TTFT/TTLT, tokens/sec, token counts, retries, errors, provider/model metadata, and per-request traces.
+- Used telemetry traces to identify bottlenecks, improve latency by ~10%, and reach ~95% success rate across the monitored role-play flows.
+- Improved perceived latency with a 3s idle prefetch path and stale-response invalidation, reducing TTFT after send to p95 = 1.5s.
+- Ran prompt-injection testing and hardening iterations to reduce out-of-format or unsafe model behavior in customer-facing role-play scenarios.
+- Shipped UI/UX fixes in React + TypeScript + Material UI, including theme-aware rich-text paste handling to prevent dark-mode invisibility in internal/admin workflows.
+Tags: LLMs, LLM Product Engineering, Software Engineering, React, TypeScript, Azure, AWS, DynamoDB, Telemetry, Observability, Structured Outputs, Prompt Engineering, Open-Source Model Fine-Tuning, Fine-Tuning, Model Evaluation, Prompt Injection Testing, Latency Optimization, Cost Optimization, Material UI, Product Engineering
+Link: https://www.abilitie.com/case-challenges
+
+### Dorm Proctor at St. Stephen's Episcopal School
+Date Range: 2021 - 2022
+Category: Leadership
+Timeline Tone: past
+Summary: Supported younger boarding students through peer mentorship, safety training, and community-building in a residential school environment.
+Highlights:
+- Supported new students as they transitioned into boarding school life, helping them adjust to routines, expectations, and the social environment.
+- Served as a peer mentor for academic, personal, and social challenges, using training from counselors and dorm staff to respond with discretion and care.
+- Worked with dorm parents, administrators, and counselors to help maintain a safe, welcoming, and inclusive dorm environment.
+- Completed safety and emergency training, including fire protocols and campus response procedures.
+- Balanced proctor responsibilities with academics and extracurriculars, learning how to be dependable in a community-facing leadership role.
+- Tried to be the person younger students could come to when something felt confusing, stressful, or just awkward about living away from home.
+Tags: Leadership, Mentorship, Peer Support, Student Life, Counseling, Community Building, Safety Training, Communication
+Link: https://www.sstx.org/boarding/boarding-student-support
+
+## Project Source Links
+
+### MonopolyBench
+Summary: A deterministic multi-agent LLM evaluation harness where tool-calling agents play full Monopoly games, enabling research on planning, negotiation, deception, and bias in long-running agent environments.
+Highlights:
+- Built MonopolyBench as a deterministic LLM-agent benchmark where multiple models play complete Monopoly games through schema-bound tool calls instead of free-form text.
+- Implemented the core Monopoly rules engine from scratch with deterministic dice/cards, strict turn enforcement, property ownership, rent, auctions, jail, trades, liquidation, and bankruptcy.
+- Designed every decision point around full game state, recent history, private/public messages, persona configuration, and a legal action menu so models can only choose valid moves.
+- Built the arena layer that converts legal actions into tool schemas, validates model responses, applies one corrective retry, and falls back deterministically when the model still fails.
+- Logged full run artifacts for analysis: prompts, tool schemas, raw responses, parsed actions, retries, fallbacks, events, snapshots, summaries, and replayable decision traces.
+- Built a FastAPI/WebSocket backend and render-only React UI so runs can be watched live while the engine remains the source of truth.
+- Designed the benchmark for an upcoming LLM-agent paper studying long-horizon planning, negotiation, deception, and bias in multi-agent game settings.
+- Roadmap includes TrueSkill rankings, micro-decision suites, human-vs-LLM multiplayer, and controlled player-descriptor experiments for bias probing.
+Tags: LLM Evaluation, AI Agents, Multi-Agent Systems, Tool Calling, Function Calling, Agent Benchmarking, Deterministic Simulation, Game AI, Long-Horizon Planning, Negotiation, Deception, Bias Evaluation, Telemetry, Event Sourcing, Replayable Artifacts, Python, FastAPI, WebSockets, React, TypeScript, Vite, Zod, JSON Schema, Pytest
+GitHub: https://github.com/KushagraBharti/MonopolyBench
+Thumbnail: /portfolio/projects/monopoly-llm-benchmark.svg
+
+### Pact
+Summary: A mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.
+Highlights:
+- Built Pact as a consumer accountability product: users create commitments, stake money, submit proof, and rely on a small trusted validator group to approve or reject the outcome.
+- Designed the core product loop from pact creation → stake lock → proof upload → validator voting → stake release/forfeit, making accountability feel concrete instead of vague.
+- Implemented a full-stack mobile product with React Native, Expo Router, Fastify, Supabase Auth/Postgres/Storage, and Solana escrow hooks.
+- Built server-side lifecycle enforcement so protected actions never trust client-supplied user identity, creator IDs, validator IDs, or pact state.
+- Implemented proof-image uploads, validator membership checks, creator self-vote prevention, majority-based resolution, and resolved/cancelled pact lockout rules.
+- Designed the UI around commitment status, proof review, validator transparency, and financial stakes so users can clearly see what needs to happen next.
+- Shipped Pact as a working hackathon product and won 1st place in the HackSMU Solana Track.
+Tags: TypeScript, React Native, Expo, Expo Router, Fastify, Supabase, PostgreSQL, Supabase Auth, Supabase Storage, Solana, Web3, SPL Token, Mobile Development, Full-Stack Development, Fintech, Consumer Social, Product Engineering, System Design, Hackathon Winner
+GitHub: https://github.com/KushagraBharti/Pact
+Thumbnail: /portfolio/projects/pact.png
+
+### Arachne Web Crawler
+Summary: A high-throughput Go web crawler with bounded concurrency, robots.txt handling, rooted discovery trees, live SSE updates, and local JSON artifacts for debugging runs.
+Highlights:
+- Built Arachne as a result-first web crawler: users choose a seed URL, read extracted page content, and inspect crawl expansion through a rooted discovery tree.
+- Engineered the crawler core in Go using frontier queues, worker pools, robots.txt gating, canonical URL deduplication, retry budgets, and bounded concurrency.
+- Configured the crawler with 64 global / 64 per-host concurrency for controlled local benchmarking while still respecting crawl limits and site policies.
+- Benchmarked a synthetic local workload of 501 pages in 1.51s, roughly 332 pages/sec, using an httptest server to remove public-internet noise.
+- Modeled output as a rooted discovery tree instead of a generic web graph, making it clear exactly how each page was discovered from the selected seed.
+- Built readable outputs around extracted page content, live SSE crawl updates, diagnostics, and JSON artifacts instead of treating the project as only a telemetry dashboard.
+- Persisted each run as local artifacts: run config, extracted pages, tree edges/nodes, diagnostics, skips, retries, errors, and stop reasons.
+- Verified the project with backend checks (`go test ./...`) and frontend build checks (`bun run build`).
+Tags: Go, TypeScript, Next.js, React, Web Crawling, Concurrent Systems, Worker Pools, Frontier Queues, Robots.txt, URL Canonicalization, Deduplication, Server-Sent Events, JSON Artifacts, Performance Benchmarking, System Design, Full-Stack Development
+GitHub: https://github.com/KushagraBharti/Web-Crawler-Go
+Thumbnail: /portfolio/projects/arachne.png
+
+### AutoHDR ML Lens Correction
+Summary: A geometry-first computer vision system for automatic lens correction, using a staged ResNet34 hybrid CNN, Brown–Conrady camera geometry, and learned residual flow.
+Highlights:
+- Trained a staged ResNet34 hybrid CNN for lens correction on 23,118 paired images using cloud H200, moving from param-only → hybrid → finetune.
+- Scored 0.8942 on the leaderboard and earned a CTO review for the model architecture and training approach.
+- Built the model around two prediction heads: a Brown–Conrady parametric head for global lens coefficients and a 2-channel residual-flow decoder for local corrections.
+- Fused analytic camera geometry and learned displacement into a differentiable `grid_sample` warp, keeping the correction path grounded in geometry instead of pure image-to-image generation.
+- Ran full-batch inference over 1,000 test images and built the submission pipeline around deterministic outputs and safety/fallback checks.
+- Measured stage progression during cloud training: validation loss dropped 15.66%, and training warnings dropped from 64 in stage1 to 0 in later stages.
+- Validated the codebase with 108/108 passing tests covering geometry contracts, inference fallback behavior, training hooks, QA tooling, and submission flows.
+- Built this as a competition-grade system rather than a visual demo: training, inference, scoring, QA, and packaging were all treated as part of the product.
+Tags: Computer Vision, Deep Learning, PyTorch, CNNs, ResNet34, Image Geometry, Lens Distortion Correction, Brown–Conrady Model, Optical Flow, Residual Flow, Warping / grid_sample, Model Training, Staged Training, Benchmarking, Reproducible Systems, Testing, QA Tooling, Competition Engineering
+GitHub: https://github.com/KushagraBharti/AutoHDR-LensCorrection
+Thumbnail: /portfolio/projects/autohdr-ml-lens-correction.png
+
+### NovelBench
+Summary: A live multi-stage LLM benchmark where frontier models generate, critique, revise, and vote on creative prompts to evaluate innovation under pressure.
+Highlights:
+- Built NovelBench to evaluate whether LLMs can actually innovate through a structured creative process instead of a single one-shot response.
+- Designed a multi-stage workflow where 2–8 models generate ideas, anonymously critique each other, revise with aggregated feedback, and vote on final outputs.
+- Built durable run orchestration around append-only events, persisted artifacts, leaderboard snapshots, archive pages, and replayable run traces.
+- Implemented a Convex-backed backend for active benchmark execution, durable state, usage tracking, read models, leaderboards, and concurrency control.
+- Integrated OpenRouter model execution with structured output normalization, scoring logic, failure tolerance, and stage-level workflow resilience.
+- Designed anonymous critique and voting systems to reduce model identity bias during evaluation and produce more meaningful comparative rankings.
+- Built a public Next.js product surface with a landing page, live arena, searchable archive, leaderboard views, and detailed run pages.
+- Launched the platform with real usage, producing 47 benchmark runs and 194 generated ideas so far.
+Tags: TypeScript, Next.js, React, Convex, OpenRouter, LLMs, AI Benchmarking, Workflow Orchestration, Realtime Systems, System Design, Evaluation Infrastructure, Prompt Engineering, Product Engineering, Research Infrastructure, Startup Tools, Solo Project
+GitHub: https://github.com/KushagraBharti/NovelBench
+Thumbnail: /portfolio/projects/novel-bench.png
+
+### IMC Prosperity 4 Quant Trading Competition
+Summary: A top 6% worldwide quantitative trading competition project for IMC Prosperity 4, spanning five rounds of market making, drift capture, options pricing, multi-product alpha mining, backtester reconciliation, official-window diagnostics, and manual puzzle optimization.
+Highlights:
+- Finished in the top 6% worldwide in IMC Prosperity 4 with a five-round algorithmic trading stack covering market making, deterministic drift capture, options pricing, residual baskets, execution research, state compression, and manual optimization.
+- Engineered the repo as a reproducible quant research system with round-scoped strategies, final submission packages, official feedback archives, replay logs, candidate scorecards, diagnostic scripts, process docs, and strategy-lineage notes.
+- Tracked archived algorithmic results across final/best official artifacts: 89,306.8125 Round 1 algo PnL, 81,359.0 raw / 80,708 displayed Round 2 algo PnL, 76,114.025390625 Round 3 algo PnL, 50,966.40673828125 Round 4 algo PnL, and 118,855.008789062 best stored Round 5 official algo PnL.
+- Accumulated 415,950.25341796825 displayed algorithmic PnL across the archived final/best official scorecard while keeping manual puzzle PnL separate from strategy PnL.
+- Integrated Kevin replay, Xeeshan replay, Rust backtesting, gsgill visualizers, Kevin visualizers, official-window extraction, fill-sequence comparison, product/time attribution, inventory-path inspection, and drawdown diagnostics.
+- Modeled execution constraints directly in strategy design: `Trader.run()` orders/conversions/traderData, Round 2 `bid()` market-access fees, AWS Lambda statelessness, aggregate position limits, immediate crossing fills, passive residual fills, auto-cancel behavior, and the 50,000-character official traderData ceiling.
+- Built two-product alpha engines for `ASH_COATED_OSMIUM` and `INTARIAN_PEPPER_ROOT`: Osmium used stationary fair-value/imbalance/deviation signals around 10,000, while Pepper used deterministic drift near 0.001 per timestamp with day anchors near 10,000, 11,000, and 12,000.
+- Implemented Pepper-heavy accumulation and Osmium specialist logic that ended Round 1 at Pepper +80 / Osmium +78, ended Round 2 at Pepper +80 / Osmium +80, and treated fill certainty as more valuable than fragile passive quote micro-optimization.
+- Optimized manual decisions outside the algorithmic engine, including a Round 1 manual portfolio worth 87,995.10 PnL and 1st-place manual rank, plus a Round 2 18% Research / 57% Scale / 25% Speed allocation worth 164,664 manual PnL.
+- Built a multi-asset Round 3 engine for `HYDROGEL_PACK`, `VELVETFRUIT_EXTRACT`, and VEV vouchers using dynamic fair-value estimation, underlying-implied voucher anchors, Black-Scholes-style pricing, strike-specific vol assumptions, expiry decay, inventory skew, and selective take/quote thresholds.
+- Validated Round 3 candidates with portal-window replay, full replay, and product attribution, then promoted dynamic Hydrogel fair estimation, VFE selectivity, and focused 5000-5300 voucher exposure while rejecting option-surface brute force and over-aggressive sizing.
+- Implemented Round 4 Mark-driven signal mechanics, VFE/voucher role audits, Hydrogel failure analysis, post-40k plateau diagnostics, candidate promotion gates, and anti-overfit labels for portal-window-only improvements versus robust improvements.
+- Diagnosed a major Round 4 regime-transfer failure where the exact same 830-line strategy scored 87,114.392 in earlier official feedback but only 50,966.40673828125 in the final package, highlighting simulator/final-window mismatch risk.
+- Scaled Round 5 to a 50-product universe with position limit 10 across Galaxy Sounds, Sleep Pods, Microchips, Pebbles, Robots, UV Visors, Translators, Panels, Oxygen Shakes, and Snack Packs.
+- Validated Round 5 market data integrity across all 50 expected products, 17-column price files, 7-column trade files, and mostly blank buyer/seller fields, shifting the research toward price-action, residual, anchor, category-relative, and fillability signals.
+- Built Round 5 alpha families for PEBBLES synthetic fair value, TRANSLATOR/PEBBLES anchors, MICROCHIP/PANEL/UV/SLEEP/OXYGEN relative value, ROBOT/GALAXY momentum, product-specific reversal, and selective passive/taker execution.
+- Diagnosed official/local replay mismatch from oversized state: strategies with 90k-130k character traderData looked strong locally but reset under official constraints, so later candidates used aliases, delta-encoded integer histories, half-tick scaling, residual scaling, and cache trimming.
+- Benchmarked Round 5 candidate tradeoffs explicitly: candidate 35 reached roughly 91.9k portal / 287k full, candidate 36 reached roughly 105.5k portal with weaker full robustness, candidate 42 reached roughly 421k full, candidate 49 reached roughly 126k portal, and candidate 50 showed how pure portal-window gambling could collapse.
+- Submitted a best stored Round 5 official strategy worth 118,855.008789062 PnL, with top realized contributors including PEBBLES_S, PEBBLES_XL, MICROCHIP_OVAL, TRANSLATOR_SPACE_GRAY, SLEEP_COTTON, PANEL_4X4, MICROCHIP_SQUARE, UV_AMBER, ROBOT_LAUNDRY, and GALAXY_PLANETARY.
+- Codified a promotion process that required local full replay, portal-window replay, official-feedback comparison, product attribution, inventory-path review, drawdown analysis, state-size checks, and a concrete transfer-risk explanation before trusting a candidate.
+Tags: Quantitative Trading, Algorithmic Trading, IMC Prosperity, Top 6% Worldwide, Global Competition, Market Making, Options Pricing, Black-Scholes, Backtesting, Alpha Research, Market Microstructure, Statistical Arbitrage, Fair Value Modeling, Inventory Management, Execution Strategy, Signal Research, Time-Series Analysis, Candidate Evaluation, Official Window Diagnostics, Simulator Reconciliation, State Serialization, Python, Data Analysis, Competition Engineering, Research Infrastructure, Manual Optimization
+GitHub: https://github.com/KushagraBharti/IMC-Prosperity-4
+Thumbnail: /portfolio/projects/imc-prosperity.png
+
+### Beyond Chat
+Summary: An artifact-first AI workspace that turns chat into production workflows: studios, tool-calling runs, durable context, model comparison, storage-backed artifacts, and provider-aware orchestration.
+Highlights:
+- Built Beyond Chat around specialized studios instead of endless chat threads, with dedicated surfaces for Chat, Writing, Research, Image, Data, Finance, Artifacts, Settings, and Compare.
+- Designed the product around durable artifacts: meaningful outputs can be saved, searched, reopened, exported, bundled, and reused as context for future model calls.
+- Implemented an agentic run system with explicit run records, step timelines, tool/provider metadata, failure states, artifact provenance, and saved outputs.
+- Built Context Builder as the connective layer across studios, letting users attach saved artifacts to Chat, Compare, Research, Writing, Image, Data, and Finance workflows.
+- Engineered OpenRouter-backed chat and compare flows with model selection, parallel model comparison, retry handling, streaming responses, selected-result handoffs, and one-click saves.
+- Built Research Studio around real Exa search, producing source-backed research reports with visible workflow steps and explicit provider-missing behavior when search is not configured.
+- Built Data Studio with Supabase Storage uploads, workspace-scoped file paths, CSV/XLS/XLSX parsing, preview/profile generation, analysis, chart/table rendering, and separate artifact saves.
+- Built Writing Studio with launch templates, targeted edit mode, bounded context, document generation, assistant suggestions, Compare integration, and provenance-linked saves.
+- Implemented Supabase-authenticated runtime infrastructure across FastAPI and React: JWT-backed request context, workspace bootstrap, ownership checks, private storage, signed URLs, and RLS hardening.
+- Added operational features including provider status reporting, disconnected-safe UI states, Stripe billing endpoints, export-to-Markdown/PDF, and multi-artifact bundle export.
+- Built the frontend as a polished React/Vite/Tailwind app with protected routes, dedicated studio layouts, shared primitives, artifact library/detail flows, and route-state handoffs.
+- Used a Starbucks Cinder Orange launch workflow as an acceptance story to test research, data analysis, finance reasoning, writing outputs, image direction, model comparison, and artifact bundling through general product flows.
+Tags: TypeScript, React, Vite, Tailwind CSS, Python, FastAPI, Supabase, PostgreSQL, Supabase Auth, Supabase Storage, OpenRouter, Exa, Stripe, LLMs, Agentic AI, AI Agents, Tool Calling, Workflow Orchestration, Artifact Systems, Context Engineering, Model Comparison, Data Analysis, RAG, Full-Stack Development, System Design, Product Engineering
+GitHub: https://github.com/KushagraBharti/Beyond-Chat
+Thumbnail: /portfolio/projects/beyond-chat.png
+
+### PseudoLawyer
+Summary: An AI-powered contract negotiation platform with real-time multi-party chat, an AI mediator, and contract drafting from negotiation history.
+Highlights:
+- Built a Next.js 15 + Supabase platform where two parties can negotiate in a shared real-time chat and produce a final contract draft from the conversation.
+- Implemented Supabase Auth, Postgres persistence, and Realtime subscriptions for multi-party negotiation sessions.
+- Built Sudo, an AI mediator powered through OpenRouter / Claude 3.5 Sonnet, to respond to negotiation context and help parties move toward agreement.
+- Implemented a trigger-based Ask Sudo flow so the mediator can be invoked when the conversation needs help instead of constantly interrupting the chat.
+- Built a contract generation route that loads the template, participants, and recent negotiation messages before drafting the final agreement.
+- Modeled the domain with profiles, templates, negotiations, participants, messages, and contracts in a 6-table Postgres schema.
+- Measured OpenRouter chat-completion latency at p50/p95 = 897ms/981ms over 5 runs for the AI layer.
+- Built a polished dark UI with role-based flows, dashboard pages, negotiation detail views, contract detail views, typing/loading states, and simple download support.
+Tags: Next.js 15, TypeScript, Supabase, Supabase Auth, Supabase Realtime, PostgreSQL, OpenRouter, Claude 3.5 Sonnet, LLMs, AI Mediator, Contract Generation, Legal Tech, Tailwind CSS, Framer Motion, Full-Stack Development
+GitHub: https://github.com/KushagraBharti/PseudoLawyer
+Thumbnail: /portfolio/projects/pseudo-lawyer.png
+
+### Personal Portfolio Website
+Summary: A full-stack portfolio and personal tracker with a public showcase, private authenticated surfaces, live widgets, and machine-readable content for humans and AI systems.
+Highlights:
+- Built a public portfolio with a hero section, about content, education, experiences, featured projects, other projects, and dedicated project/experience data models.
+- Added a private tracker surface alongside the public site so personal workflows can live behind authentication without leaking into the portfolio experience.
+- Centralized content in TypeScript modules so public cards, detailed pages, and AI-facing snapshots stay aligned from the same source of truth.
+- Generated an `llms.txt` / structured AI-facing view so the site can be read cleanly by humans and models.
+- Integrated live GitHub and weather widgets with backend caching and graceful fallbacks so the homepage remains dynamic without depending on fragile client-side calls.
+- Built the app as a responsive React/Vite/Tailwind interface with Express APIs, motion, reusable components, and a verification suite for unit, integration, smoke, E2E, and live flows.
+Tags: TypeScript, Node.js, Express, React, Vite, Tailwind CSS, Framer Motion, Bun, Vitest, Playwright, REST API, Full-Stack Development, API Integration, Live Widgets, System Design, Testing
+GitHub: https://github.com/KushagraBharti/Personal-Site
+Thumbnail: /portfolio/projects/personal-site.png
+
+### F1 Optimization Project
+Summary: A custom F1-style racing simulation environment with OpenCV track extraction, Pygame rendering, ray-cast sensors, reward shaping, and RL training hooks.
+Highlights:
+- Built a custom Gym-style racing simulator with continuous controls, checkpoint-based rewards, collision termination, and headless stepping support.
+- Extracted a Monza-style track from image contours using OpenCV, generating 120 checkpoint lines and 2,749 collision segments.
+- Implemented a sensor-based observation model with 7 ray-cast distances plus normalized speed, giving the agent an 8D observation vector.
+- Built Pygame rendering, manual driving mode, `.npy` rollout export, and replay tooling for qualitative debugging.
+- Measured headless simulator performance at 12.63 steps/sec with the full sensor/collision workload enabled.
+- Added Ray/RLlib SAC training and rollout entrypoints, but full training results remain incomplete because the modern environment needs a Ray-supported Python setup and updated RLlib API compatibility.
+Tags: Reinforcement Learning, Gymnasium, Ray RLlib, SAC, Pygame, OpenCV, Simulation, F1, Path Planning, Reward Design, Computer Vision, Python
+GitHub: https://github.com/KushagraBharti/HackTX-2024---F1-Optimization
+Thumbnail: /portfolio/projects/f1-optimization.png
+
+### Kaggle Titanic ML
+Summary: A complete beginner-to-intermediate ML pipeline for the Titanic dataset, focused on cleaning, feature engineering, model comparison, and documenting the full learning process.
+Highlights:
+- Built an end-to-end Titanic survival prediction workflow using Pandas and scikit-learn.
+- Cleaned missing values, extracted passenger titles, encoded categorical variables, and engineered features such as FamilySize and IsAlone.
+- Explored passenger demographics and survival correlations through EDA with Matplotlib and Seaborn.
+- Trained and compared Logistic Regression, SVM, KNN, Decision Tree, Random Forest, Naive Bayes, Perceptron, and SGD models.
+- Reached ~86.76% training accuracy with Decision Tree / Random Forest baselines while using the project mainly to learn the full ML workflow.
+- Wrote a PDF report documenting the process, mistakes, experiments, and lessons learned instead of only publishing final code.
+Tags: Machine Learning, Kaggle, Titanic, Data Analysis, Python, Pandas, scikit-learn, EDA, Feature Engineering, Random Forest, Matplotlib, Seaborn
+GitHub: https://github.com/KushagraBharti/Kaggle-Titanic-Solution
+Thumbnail: /portfolio/projects/kaggle-titanic-ml.png
+
+### Algorithmic Trading Quantitative Test Environment
+Summary: A modular quant testbench for strategy development, backtesting, risk metrics, visualization, and Alpaca paper-trading execution.
+Highlights:
+- Built a modular quant pipeline covering market data ingestion, feature engineering, strategy signals, transaction-cost-aware backtesting, risk metrics, trade logs, and visualization.
+- Integrated Alpaca market data and paper-trading APIs to connect research code with simulated execution workflows.
+- Implemented a moving-average crossover strategy and feature layer with returns, moving averages, signals, trades, strategy returns, and cumulative returns.
+- Modeled transaction costs in the backtester and computed Sharpe ratio, max drawdown, and final return for consistent strategy evaluation.
+- Generated CSV trade logs and Matplotlib equity/signal plots for auditability and faster strategy debugging.
+- Benchmarked the full evaluation loop at ~1.54M bars/sec on a 199,951-bar seeded synthetic dataset, showing the research loop is fast enough for iteration.
+- Current limitations: slippage modeling, parameter sweeps, position sizing, and walk-forward validation are not fully implemented yet.
+Tags: Python, Alpaca API, Pandas, NumPy, Matplotlib, Algorithmic Trading, Backtesting, Paper Trading, Risk Metrics, Sharpe Ratio, Max Drawdown, Quant Research
+GitHub: https://github.com/KushagraBharti/Quant-Test-Environment
+Thumbnail: /portfolio/projects/quant-test-environment.png
+
+### Northstar Agentic Financial Memory Platform
+Summary: A memory-first AI wealth-management prototype where a local agent loads durable financial context, portfolio snapshots, and tool traces to produce explainable scenario analysis.
+Highlights:
+- Built Northstar around durable user context rather than a static portfolio dashboard: onboarding answers compile into readable memory, structured context packets, and a graph of financial preferences.
+- Designed the runtime around one visible local agent, North, that preloads memory, context packets, and portfolio snapshots before responding.
+- Implemented specialist tools for market/news research, financial data, filings, portfolio context, deterministic scenario checks, and trust receipts.
+- Built a chat-first React/Vite interface with quick actions, markdown-rendered answers, a memory transparency modal, and a JSONL-style trace panel.
+- Engineered onboarding as a high-signal financial memory compiler using a 44-question questionnaire to structure goals, values, risk comfort, communication style, tax context, and approval boundaries.
+- Created a graph-first dashboard that visualizes durable user context as memory nodes instead of generic financial charts.
+- Added deterministic demo reliability with seeded holdings/transactions/tax lots, simulated Plaid-style import, market-check fallbacks, and capped external calls.
+- Built the Express + TypeScript backend with Supabase/Postgres-ready persistence, OpenRouter/OpenAI-compatible model execution, memory/status APIs, agent streaming routes, and local JSON/JSONL mirrors.
+- Focused the architecture on agentic workflows, contextual memory, tool use, observability, audit trails, human-in-the-loop guardrails, and grounded retrieval/context packets.
+Tags: TypeScript, React, Vite, Express, Supabase, PostgreSQL, OpenRouter, LLMs, Agentic AI, AI Agents, Tool Calling, Contextual Memory, RAG, JSONL Tracing, Observability, Guardrails, FinTech, Portfolio Analytics, Scenario Analysis, Full-Stack Development, System Design
+GitHub: https://github.com/YuvrajKashyap/northstar
+Thumbnail: /portfolio/projects/northstar.png
+
+### Age & Gender Recognition
+Summary: A real-time OpenCV demo that detects faces from video and predicts age/gender using pre-trained Caffe DNN models.
+Highlights:
+- Built a real-time face detection pipeline using OpenCV’s DNN module.
+- Used pre-trained Caffe models for age and gender prediction, with approximate reported accuracy of 71% for gender and 62% for age in the project context.
+- Tuned confidence thresholds and padding around detected face regions to improve prediction stability.
+- Rendered bounding boxes and prediction labels directly on the video stream for immediate visual feedback.
+Tags: Python, OpenCV, DNN, Caffe, Face Detection, Real-Time Processing, Computer Vision
+GitHub: https://github.com/KushagraBharti/Gender-Age-Detection
+Thumbnail: /portfolio/projects/age-gender-recognition.png
+
+### DataDrive: Unified Insights for Data & Fuel Optimization
+Summary: A full-stack ML analytics dashboard for exploring Toyota vehicle data, fuel-efficiency predictions, clustering, and interactive visualizations.
+Highlights:
+- Built a Flask + React analytics dashboard over Toyota vehicle data, combining model-backed predictions with interactive exploration.
+- Implemented regression and K-Means clustering pipelines for fuel-efficiency and vehicle-segmentation analysis.
+- Built backend API endpoints for prediction, car detail retrieval, and clustering results.
+- Added data cleaning, feature engineering, and model evaluation workflows to keep the ML layer reproducible.
+- Built interactive React/D3 visualizations and a 3D car viewer to make the model outputs easier to explore.
+- Integrated GPT-powered explanation generation and Pinata storage as experimental transparency/auditability features.
+Tags: Flask, Python, Machine Learning, Linear Regression, KMeans, React, D3.js, Three.js, Data Analytics, APScheduler, SHAP, OpenAI, Pinata
+GitHub: https://github.com/KushagraBharti/HACKUTD-Data-Drive
+Thumbnail: /portfolio/projects/data-drive.png
+
+### CircuitSeer (Circuit Solver)
+Summary: A computer vision circuit-analysis tool that detects components, traces wiring, and helps solve simple circuit diagrams.
+Highlights:
+- Built CircuitSeer through the AI Mentorship Program at UT Dallas as a team project combining object detection and classical computer vision.
+- Focused on component recognition using a fine-tuned YOLOv5 model to detect resistors, capacitors, diodes, inductors, and power sources.
+- Integrated line-detection work using Canny Edge Detection and Hough Transform to help trace wiring between detected components.
+- Connected the detection outputs to downstream logic for simple series/parallel resistance and capacitance analysis.
+- Built the project with Python and Flask so users could upload circuit diagrams and receive structured analysis through a web interface.
+Tags: Python, YOLOv5, Flask, OpenCV, Computer Vision, Object Detection, Canny Edge Detection, Hough Transform, Circuit Analysis
+GitHub: https://github.com/Hteam121/circuit-seer
+Thumbnail: /portfolio/projects/circuit-seer.png
+
+### Point Cloud Down Sampler
+Summary: A point-cloud processing project comparing a from-scratch voxel downsampler with Open3D’s built-in voxel grid method.
+Highlights:
+- Implemented a custom voxelization algorithm that groups 3D points into discrete grid cells using mathematical flooring.
+- Reduced dense point clouds while preserving overall shape structure for downstream visualization and analysis.
+- Compared the custom implementation against Open3D’s high-performance `voxel_down_sample` method.
+- Built a small pipeline to load CSV point clouds, convert them into PCD format, downsample, and export processed outputs.
+- Used the project to understand the tradeoff between writing geometry code from scratch and relying on optimized library primitives.
+Tags: Python, Pandas, Open3D, Voxelization, Point Cloud, Downsampling, 3D Data, Geometry
+GitHub: https://github.com/KushagraBharti/PointCloud-DownSampler
+Thumbnail: /portfolio/projects/point-cloud-down-sampler.png
+
+### PCB Design Project
+Summary: A hardware project where I designed, ordered, assembled, and tested custom PCBs as part of a senior independent project.
+Highlights:
+- Designed multiple PCBs in EasyEDA, moving from schematic capture to board layout and manufacturing files.
+- Ordered boards and components through JLCPCB/LCSC, learning the practical constraints around cost, availability, package type, and manufacturability.
+- Worked through design challenges involving ATmega328 variants, SMD/THT parts, capacitive-touch buttons, power routing, and component placement.
+- Assembled and tested the boards after delivery, gaining hands-on soldering, debugging, and hardware bring-up experience.
+Tags: PCB Design, Circuit Design, EasyEDA, JLCPCB, LCSC, Electronics, Hardware, Soldering, Embedded Systems
+GitHub: https://github.com/KushagraBharti/PCB-Design-Project
+Thumbnail: /portfolio/projects/pcb-design-project.png
+
+### Self-Driving Car Project
+Summary: An Arduino-based RC car rebuild with ultrasonic sensors and a custom obstacle-avoidance control loop.
+Highlights:
+- Repurposed an RC car by rebuilding its internals with an Arduino Uno, motor shield, ultrasonic sensors, and custom wiring.
+- Wrote C++ control logic to read ultrasonic distance data and perform obstacle detection/avoidance.
+- Learned the hardware/software debugging loop: wiring, sensor noise, motor control, soldering, and physical-world failure cases.
+Tags: Arduino, C++, Self-Driving, Autonomous Vehicle, RC Car, Electronics, Ultrasonic Sensors, Hardware
+GitHub: N/A
+Thumbnail: /portfolio/projects/self-driving-car-project.png
+
+### Maze Traversal
+Summary: A small recursive DFS maze solver in Python that traces a path from start to exit through a grid-based maze.
+Highlights:
+- Implemented a recursive depth-first search solver for mazes represented as nested lists.
+- Marked the solution path with directional arrows to visually trace movement from start to exit.
+- Added file loading, start-position detection, intermediate maze printing, and execution-time measurement.
+- Used the project to practice recursion, backtracking, grid traversal, and simple algorithm visualization.
+Tags: Python, Depth-First Search, Recursion, Maze Solving, Backtracking, Algorithms
+GitHub: N/A
+Thumbnail: /portfolio/projects/maze-traversal.png
+
 ## Film and Creative Work
 
-### St. Stephen's Dining Hall Documentary
+Section Summary: Stories and taste make us human, and I enjoy telling them through the lens.
+
+Filmmaking Profile:
+
+- A film I made was screened at AMC Theatres in Times Square!
+- I love filmmaking, have directed 2 short films, and have contributed to other productions as a videographer and editor.
+- Film Portfolio: https://drive.google.com/file/d/1m3aFLAK4TE29ybbdOzObLS8zrrX3oJwM/view?usp=sharing
+
+### 01 St. Stephen's Dining Hall Documentary
+Slug: st-stephens-dining-hall-documentary
+Title: St. Stephen's Dining Hall Documentary
+Short Title: Dining Hall Documentary
 Subtitle: 2022
+Year: 2022
+Genre: Documentary
+Duration: 10 min
+Summary: A documentary on the dining hall staff and the people behind the daily experience.
+Description: A documentary following the St. Stephen's dining hall staff from the start of their day to the end, combining observational footage, intimate interviews, and a close look at the full dining hall experience.
+Roles: Director, Cinematographer, Editor
+Recognition / Notes:
+- Nominated for The All-American High School Film Festival 2023.
+- Screened at AMC Theatres in New York City.
 Type: video
-Link: https://www.youtube.com/embed/WM6RvRfDCX4
+Platform: youtube
+Watch URL: https://youtu.be/WM6RvRfDCX4
+Embed URL: https://www.youtube-nocookie.com/embed/WM6RvRfDCX4
+Actions:
+- Watch: https://youtu.be/WM6RvRfDCX4
+- Festival Selection: https://www.hsfilmfest.com/2023-official-selections
 
-### The PB&J Documentary
+### 02 The PB&J Documentary
+Slug: the-pbj-documentary
+Title: The PB&J Documentary
+Short Title: The PB&J Documentary
 Subtitle: 2023
+Year: 2023
+Genre: Documentary
+Duration: 19 min
+Summary: A comedic documentary about obsession, mentorship, and the perfect PB&J sandwich.
+Description: A comedic documentary following Liam and Edison as they chase the perfect PB&J through restaurants, roadside discoveries, and a boutique in San Antonio before the whole mentor-protege dynamic starts to unravel.
+Roles: Director, Cinematographer, Editor
+Recognition / Notes: N/A
 Type: video
-Link: https://www.youtube.com/embed/FS8l8G2p7PM
+Platform: youtube
+Watch URL: https://youtu.be/FS8l8G2p7PM
+Embed URL: https://www.youtube-nocookie.com/embed/FS8l8G2p7PM
+Actions:
+- Watch: https://youtu.be/FS8l8G2p7PM
 
-## Contact
+### 03 RTMS Semesterly Recap
+Slug: rtms-recap
+Title: RTMS Semesterly Recap
+Short Title: RTMS Semesterly Recap
+Subtitle: 2018
+Year: 2018
+Genre: Recap
+Duration: 3 min
+Summary: A semester photo montage focused on rhythm, pacing, and raw editing craft.
+Description: A semesterly recap film from Ras Tanura Middle School built as a photo montage. It has no traditional narrative, but it highlights editing instincts, visual sequencing, and the ability to build momentum through rhythm alone.
+Roles: Editor, Photographer, Story Builder
+Recognition / Notes: N/A
+Type: video
+Platform: drive
+Watch URL: https://drive.google.com/file/d/1az0x6mwBzTXJEPBC7zhBQk9_DGO_8GwN/view?usp=sharing
+Embed URL: https://drive.google.com/file/d/1az0x6mwBzTXJEPBC7zhBQk9_DGO_8GwN/preview
+Actions:
+- Watch: https://drive.google.com/file/d/1az0x6mwBzTXJEPBC7zhBQk9_DGO_8GwN/view?usp=sharing
 
-Open to internships, research collaborations, and ambitious builds.
-- Email: mailto:kushagrabharti@gmail.com
-- LinkedIn: https://www.linkedin.com/in/kushagra-bharti/
-- GitHub: https://github.com/kushagrabharti
-- Medium: https://medium.com/@kushagrabharti
-- X: https://x.com/IamKushagraB
+## Optional
+
+- [Structured portfolio JSON](https://www.kushagrabharti.com/portfolio.json): Static structured portfolio snapshot.
+- [Live public portfolio API](https://www.kushagrabharti.com/api/portfolio): Backend-owned public portfolio snapshot.
+- [Live public API llms.txt](https://www.kushagrabharti.com/api/portfolio/llms.txt): Runtime-generated plain-text profile.
+- [Robots policy](https://www.kushagrabharti.com/robots.txt): Crawler permissions for the public portfolio surface.
+- [Sitemap](https://www.kushagrabharti.com/sitemap.xml): Indexable public portfolio URLs.
+- [Build metadata](https://www.kushagrabharti.com/version.json): Static export generation metadata and canonical export URLs.

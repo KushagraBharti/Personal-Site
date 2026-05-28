@@ -72,6 +72,14 @@ const ListBlock: React.FC<{ items: string[] }> = ({ items }) => (
   </ul>
 );
 
+const TextBlock: React.FC<{ text: string }> = ({ text }) => (
+  <>
+    {text.split(/\n{2,}/).map((paragraph, index) => (
+      <p key={`${index}-${paragraph.slice(0, 24)}`}>{paragraph}</p>
+    ))}
+  </>
+);
+
 const AiProfilePage: React.FC = () => {
   const [snapshot, setSnapshot] = useState<PortfolioSnapshot>(
     () => getCachedPortfolioSnapshot() ?? portfolioSnapshotBootstrap,
@@ -118,6 +126,7 @@ const AiProfilePage: React.FC = () => {
       }),
     [snapshot],
   );
+  const writings = snapshot.writings ?? portfolioSnapshotBootstrap.writings ?? [];
 
   const generatedText =
     snapshot.generatedAt === "generated-at-build-time"
@@ -211,6 +220,18 @@ const AiProfilePage: React.FC = () => {
           <ListBlock items={snapshot.about.currentLearning} />
           <h3>Interests outside technology</h3>
           <ListBlock items={snapshot.about.interestsOutsideTechnology} />
+        </section>
+
+        <section aria-labelledby="ai-writings">
+          <h2 id="ai-writings">Values, Beliefs, Writings, Thoughts, and Predictions</h2>
+          {writings.map((writing) => (
+            <section key={writing.slug} aria-labelledby={`writing-${writing.slug}`}>
+              <h3 id={`writing-${writing.slug}`}>{writing.title}</h3>
+              <p>Category: {writing.category}</p>
+              <p>{writing.summary}</p>
+              <TextBlock text={writing.markdown} />
+            </section>
+          ))}
         </section>
 
         <section aria-labelledby="ai-recent">
@@ -308,10 +329,27 @@ const AiProfilePage: React.FC = () => {
           {snapshot.media.map((item) => (
             <section key={item.slug} aria-labelledby={`media-${item.slug}`}>
               <h3 id={`media-${item.slug}`}>{item.title}</h3>
-              <p>{item.subtitle}</p>
+              <p>Short title: {item.shortTitle ?? item.title}</p>
+              <p>Year: {item.year ?? item.subtitle}</p>
+              <p>Genre: {item.genre ?? item.type}</p>
+              <p>Duration: {item.duration ?? "not listed"}</p>
+              {item.summary ? <p>Summary: {item.summary}</p> : null}
+              {item.description ? <p>Description: {item.description}</p> : null}
+              {item.roles?.length ? <p>Roles: {item.roles.join(", ")}</p> : null}
+              {item.notes?.length ? <ListBlock items={item.notes} /> : null}
               <p>
-                Link: <a href={item.embedUrl}>{item.embedUrl}</a>
+                Watch: <a href={item.watchUrl ?? item.embedUrl}>{item.watchUrl ?? item.embedUrl}</a>
               </p>
+              <p>Embed: <a href={item.embedUrl}>{item.embedUrl}</a></p>
+              {item.actions?.length ? (
+                <ul>
+                  {item.actions.map((action) => (
+                    <li key={`${item.slug}-${action.label}`}>
+                      {action.label}: <a href={action.url}>{action.url}</a>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </section>
           ))}
         </section>

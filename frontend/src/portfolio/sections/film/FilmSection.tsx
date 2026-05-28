@@ -1,109 +1,56 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  fetchPortfolioSnapshot,
+  getCachedPortfolioSnapshot,
+} from "../../api/portfolioApi";
+import type { PortfolioMediaItem } from "../../api/contracts";
+import { portfolioSnapshotBootstrap } from "../../generated/portfolioSnapshotBootstrap";
 
-type FilmEntry = {
-  id: string;
-  index: string;
-  year: string;
-  genre: string;
-  duration: string;
-  title: string;
-  shortTitle: string;
-  summary: string;
-  description: string;
-  watchUrl: string;
-  embedUrl: string;
-  type: "youtube" | "drive";
-  roles: string[];
-  notes?: string[];
-  actions: {
-    label: string;
-    url: string;
-    variant?: "primary" | "secondary";
-  }[];
-};
+const getInitialFilms = () =>
+  getCachedPortfolioSnapshot()?.media ?? portfolioSnapshotBootstrap.media;
 
-const films: FilmEntry[] = [
-  {
-    id: "dining-hall-documentary",
-    index: "01",
-    year: "2022",
-    genre: "Documentary",
-    duration: "11 min",
-    title: "St. Stephen's Dining Hall Documentary",
-    shortTitle: "Dining Hall Documentary",
-    summary: "A documentary on the dining hall staff and the people behind the daily experience.",
-    description:
-      "A documentary following the St. Stephen's dining hall staff from the start of their day to the end, combining observational footage, intimate interviews, and a close look at the full dining hall experience.",
-    watchUrl: "https://youtu.be/WM6RvRfDCX4",
-    embedUrl: "https://www.youtube-nocookie.com/embed/WM6RvRfDCX4",
-    type: "youtube",
-    roles: ["Director", "Cinematographer", "Editor"],
-    notes: [
-      "Nominated for The All-American High School Film Festival 2023.",
-      "Screened at AMC Theatres in New York City.",
-    ],
-    actions: [
-      { label: "Watch", url: "https://youtu.be/WM6RvRfDCX4", variant: "primary" },
-      {
-        label: "Festival Selection",
-        url: "https://www.hsfilmfest.com/2023-official-selections",
-        variant: "secondary",
-      },
-    ],
-  },
-  {
-    id: "pbj-documentary",
-    index: "02",
-    year: "2023",
-    genre: "Documentary",
-    duration: "13 min",
-    title: "The PB&J Documentary",
-    shortTitle: "The PB&J Documentary",
-    summary: "A comedic documentary about obsession, mentorship, and the perfect PB&J sandwich.",
-    description:
-      "A comedic documentary following Liam and Edison as they chase the perfect PB&J through restaurants, roadside discoveries, and a boutique in San Antonio before the whole mentor-protege dynamic starts to unravel.",
-    watchUrl: "https://youtu.be/FS8l8G2p7PM",
-    embedUrl: "https://www.youtube-nocookie.com/embed/FS8l8G2p7PM",
-    type: "youtube",
-    roles: ["Director", "Cinematographer", "Editor"],
-    actions: [{ label: "Watch", url: "https://youtu.be/FS8l8G2p7PM", variant: "primary" }],
-  },
-  {
-    id: "rtms-recap",
-    index: "03",
-    year: "2018",
-    genre: "Recap",
-    duration: "3 min",
-    title: "RTMS Semesterly Recap",
-    shortTitle: "RTMS Semesterly Recap",
-    summary: "A semester photo montage focused on rhythm, pacing, and raw editing craft.",
-    description:
-      "A semesterly recap film from Ras Tanura Middle School built as a photo montage. It has no traditional narrative, but it highlights editing instincts, visual sequencing, and the ability to build momentum through rhythm alone.",
-    watchUrl:
-      "https://drive.google.com/file/d/1az0x6mwBzTXJEPBC7zhBQk9_DGO_8GwN/view?usp=sharing",
-    embedUrl:
-      "https://drive.google.com/file/d/1az0x6mwBzTXJEPBC7zhBQk9_DGO_8GwN/preview",
-    type: "drive",
-    roles: ["Editor", "Photographer", "Story Builder"],
-    actions: [
-      {
-        label: "Watch",
-        url: "https://drive.google.com/file/d/1az0x6mwBzTXJEPBC7zhBQk9_DGO_8GwN/view?usp=sharing",
-        variant: "primary",
-      },
-    ],
-  },
-];
+const getFilmIndex = (film: PortfolioMediaItem) =>
+  String(film.order).padStart(2, "0");
+
+const getFilmActions = (film: PortfolioMediaItem) =>
+  film.actions?.length
+    ? film.actions
+    : film.watchUrl
+      ? [{ label: "Watch", url: film.watchUrl, variant: "primary" as const }]
+      : [];
 
 const FilmSection: React.FC = () => {
-  const [activeFilmId, setActiveFilmId] = useState(films[0]?.id ?? "");
+  const [films, setFilms] = useState<PortfolioMediaItem[]>(getInitialFilms);
+  const [activeFilmSlug, setActiveFilmSlug] = useState(films[0]?.slug ?? "");
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const loadSnapshot = async () => {
+      try {
+        const liveSnapshot = await fetchPortfolioSnapshot(controller.signal);
+        if (!controller.signal.aborted) {
+          setFilms(liveSnapshot.media);
+          setActiveFilmSlug((current) => current || liveSnapshot.media[0]?.slug || "");
+        }
+      } catch {
+        // Generated bootstrap media keeps this section renderable offline.
+      }
+    };
+
+    void loadSnapshot();
+
+    return () => controller.abort();
+  }, []);
 
   const activeFilm = useMemo(
-    () => films.find((film) => film.id === activeFilmId) ?? films[0],
-    [activeFilmId]
+    () => films.find((film) => film.slug === activeFilmSlug) ?? films[0],
+    [activeFilmSlug, films]
   );
 
   if (!activeFilm) return null;
+
+  const activeFilmActions = getFilmActions(activeFilm);
 
   return (
     <section className="film-editorial" aria-labelledby="film-title">
@@ -115,7 +62,7 @@ const FilmSection: React.FC = () => {
             </h2>
             <p className="film-editorial__summary">Stories and taste make us human, and I enjoy telling them through the lens.</p>
           </div>
-          <a className="film-editorial__view-all" href={activeFilm.watchUrl} target="_blank" rel="noreferrer">
+          <a className="film-editorial__view-all" href={activeFilm.watchUrl ?? activeFilm.embedUrl} target="_blank" rel="noreferrer">
             view all films
             <span aria-hidden="true">→</span>
           </a>
@@ -124,7 +71,7 @@ const FilmSection: React.FC = () => {
         <div className="film-editorial__main">
           <div className="film-editorial__player-shell">
             <iframe
-              key={activeFilm.id}
+              key={activeFilm.slug}
               className="film-editorial__player"
               src={activeFilm.embedUrl}
               title={activeFilm.title}
@@ -137,9 +84,9 @@ const FilmSection: React.FC = () => {
 
           <div className="film-editorial__details">
             <p className="film-editorial__active-kicker">
-              {activeFilm.year} / {activeFilm.genre.toLowerCase()} / {activeFilm.duration}
+              {activeFilm.year ?? activeFilm.subtitle} / {(activeFilm.genre ?? activeFilm.type).toLowerCase()} / {activeFilm.duration ?? "runtime n/a"}
             </p>
-            <h3 className="film-editorial__active-title">{activeFilm.shortTitle}</h3>
+            <h3 className="film-editorial__active-title">{activeFilm.shortTitle ?? activeFilm.title}</h3>
 
             {activeFilm.notes?.length ? (
               <div className="film-editorial__recognition" aria-label="Film recognition">
@@ -151,15 +98,15 @@ const FilmSection: React.FC = () => {
               </div>
             ) : null}
 
-            <p className="film-editorial__active-description">{activeFilm.description}</p>
+            <p className="film-editorial__active-description">{activeFilm.description ?? activeFilm.summary ?? activeFilm.subtitle}</p>
 
             <div className="film-editorial__actions">
-              {activeFilm.actions.map((action) => {
+              {activeFilmActions.map((action) => {
                 const isPrimary = action.variant !== "secondary";
 
                 return (
                   <a
-                    key={`${activeFilm.id}-${action.label}`}
+                    key={`${activeFilm.slug}-${action.label}`}
                     className={
                       isPrimary ? "film-editorial__watch-link" : "film-editorial__secondary-link"
                     }
@@ -179,26 +126,26 @@ const FilmSection: React.FC = () => {
         <div className="film-editorial__sidebar">
           <div className="film-editorial__list" role="tablist" aria-label="Film portfolio list">
             {films.map((film) => {
-              const isActive = film.id === activeFilm.id;
+              const isActive = film.slug === activeFilm.slug;
 
               return (
                 <button
-                  key={film.id}
+                  key={film.slug}
                   type="button"
                   role="tab"
                   aria-selected={isActive}
                   className={`film-editorial__list-item${isActive ? " is-active" : ""}`}
-                  onClick={() => setActiveFilmId(film.id)}
+                  onClick={() => setActiveFilmSlug(film.slug)}
                 >
-                  <span className="film-editorial__list-index">{film.index}</span>
-                  <span className="film-editorial__list-title">{film.shortTitle}</span>
+                  <span className="film-editorial__list-index">{getFilmIndex(film)}</span>
+                  <span className="film-editorial__list-title">{film.shortTitle ?? film.title}</span>
                 </button>
               );
             })}
           </div>
 
           <ul className="film-editorial__roles" aria-label="Film roles">
-            {activeFilm.roles.map((role) => (
+            {(activeFilm.roles ?? []).map((role) => (
               <li key={role}>{role}</li>
             ))}
           </ul>

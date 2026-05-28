@@ -12,6 +12,7 @@ describe("AiProfilePage", () => {
       expect(screen.getByText("Intro")).toBeInTheDocument();
       expect(screen.getByText("Socials and Links")).toBeInTheDocument();
       expect(screen.getByText("About Me")).toBeInTheDocument();
+      expect(screen.getByText("Values, Beliefs, Writings, Thoughts, and Predictions")).toBeInTheDocument();
       expect(screen.getByText("Recent Works")).toBeInTheDocument();
       expect(screen.getByText("Experiences")).toBeInTheDocument();
       expect(screen.getByText("Projects")).toBeInTheDocument();

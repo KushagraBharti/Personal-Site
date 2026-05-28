@@ -9,7 +9,7 @@ describe("AboutSection", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Hey there! I'm Kushagra Bharti")).toBeInTheDocument();
-      expect(screen.getByText(/focused on building my skills and learning/i)).toBeInTheDocument();
+      expect(screen.getByText(/software builder who enjoys learning/i)).toBeInTheDocument();
       expect(screen.getByText("epistemic velocity")).toBeInTheDocument();
     });
 

@@ -166,15 +166,15 @@ export const homepageBootstrap: HomePageBootstrap = {
       "githubLink": "https://github.com/KushagraBharti/NovelBench"
     },
     {
-      "slug": "beyond-chat",
-      "title": "Beyond Chat",
-      "summary": "An artifact-first AI workspace that turns chat into production workflows: studios, tool-calling runs, durable context, model comparison, storage-backed artifacts, and provider-aware orchestration.",
+      "slug": "imc-prosperity-4",
+      "title": "IMC Prosperity 4 Quant Trading Competition",
+      "summary": "A top 6% worldwide quantitative trading competition project for IMC Prosperity 4, spanning five rounds of market making, drift capture, options pricing, multi-product alpha mining, backtester reconciliation, official-window diagnostics, and manual puzzle optimization.",
       "tags": [
-        "TypeScript",
-        "React"
+        "Quantitative Trading",
+        "Algorithmic Trading"
       ],
-      "thumbnail": "/portfolio/projects/beyond-chat.png",
-      "githubLink": "https://github.com/KushagraBharti/Beyond-Chat"
+      "thumbnail": "/portfolio/projects/imc-prosperity.png",
+      "githubLink": "https://github.com/KushagraBharti/IMC-Prosperity-4"
     }
   ],
   "profile": {

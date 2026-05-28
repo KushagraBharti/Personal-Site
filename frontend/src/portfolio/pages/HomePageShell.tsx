@@ -55,7 +55,7 @@ const filmShell = [
     index: "01",
     year: "2022",
     genre: "documentary",
-    duration: "11 min",
+    duration: "10 min",
     title: "Dining Hall Documentary",
     description:
       "A documentary following the St. Stephen's dining hall staff from the start of their day to the end.",
@@ -65,7 +65,7 @@ const filmShell = [
     index: "02",
     year: "2023",
     genre: "documentary",
-    duration: "13 min",
+    duration: "19 min",
     title: "The PB&J Documentary",
     description:
       "A comedic documentary about obsession, mentorship, and the perfect PB&J sandwich.",
