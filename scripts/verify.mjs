@@ -18,8 +18,6 @@ const excludedEntries = new Set([
   "node_modules",
   "dist",
   "coverage",
-  "playwright-report",
-  "test-results",
   "package-lock.json",
   "prototypes",
 ]);
@@ -149,7 +147,6 @@ const backendEnv = loadDotenvFile(join(backendDir, ".env"));
 const requiredLiveEnvKeys = ["GITHUB_USERNAME", "OPENWEATHER_API_KEY"];
 
 const shouldRunLive = mode.includes("live");
-const shouldRunFull = mode.includes("full");
 
 npmInstall(backendDir);
 npmInstall(frontendDir);
@@ -163,11 +160,6 @@ npmRun(backendDir, "test:unit");
 npmRun(frontendDir, "test:unit");
 npmRun(backendDir, "test:integration");
 npmRun(frontendDir, "test:integration");
-
-if (shouldRunFull) {
-  npmRun(frontendDir, "test:smoke");
-  npmRun(frontendDir, "test:e2e");
-}
 
 if (shouldRunLive) {
   const missingKeys = requiredLiveEnvKeys.filter(

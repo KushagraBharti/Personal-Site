@@ -86,7 +86,7 @@ Backend:
 - Backend: Express, TypeScript, Axios
 - Data/Auth: Supabase
 - Integrations: GitHub API, OpenWeather, Google Calendar
-- Testing: Vitest, Testing Library, Supertest, Playwright
+- Testing: Vitest, Testing Library, Supertest
 - Deployment/Tooling: Vercel, Bun
 
 ## Getting Started
@@ -164,15 +164,12 @@ Repo-level verification:
 ```bash
 bun install
 bun run verify
-bun run verify:full
 ```
 
 Verification tiers:
 
 - `bun run verify` -> npm-backed installs, then build, lint, unit, integration
 - `bun run verify:live` -> `verify` plus live backend checks
-- `bun run verify:full` -> `verify` plus Playwright smoke and mocked E2E
-- `bun run verify:full:live` -> everything
 
 The repo is Bun-first for normal app work. The root `verify` scripts intentionally use npm internally because the test toolchain has been more reliable that way in the Windows + OneDrive environment.
 

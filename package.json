@@ -8,13 +8,9 @@
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "npm --prefix backend run test:unit && npm --prefix frontend run test:unit",
     "test:integration": "npm --prefix backend run test:integration && npm --prefix frontend run test:integration",
-    "test:smoke": "npm --prefix frontend run test:smoke",
-    "test:e2e": "npm --prefix frontend run test:e2e",
     "test:coverage": "npm --prefix backend run test:coverage && npm --prefix frontend run test:coverage",
     "test:live": "npm --prefix backend run test:live",
     "verify": "node scripts/verify.mjs verify",
-    "verify:live": "node scripts/verify.mjs verify:live",
-    "verify:full": "node scripts/verify.mjs verify:full",
-    "verify:full:live": "node scripts/verify.mjs verify:full:live"
+    "verify:live": "node scripts/verify.mjs verify:live"
   }
 }

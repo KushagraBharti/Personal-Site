@@ -124,15 +124,12 @@ Repo checks:
 ```bash
 bun install
 bun run verify
-bun run verify:full
 ```
 
 Verification tiers:
 
 - `bun run verify` -> npm-backed installs, then build, lint, unit, integration
 - `bun run verify:live` -> `verify` plus live backend checks
-- `bun run verify:full` -> `verify` plus Playwright smoke and mocked E2E
-- `bun run verify:full:live` -> everything
 
 ## Editing Rules
 

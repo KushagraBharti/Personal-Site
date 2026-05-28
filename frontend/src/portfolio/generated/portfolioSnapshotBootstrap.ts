@@ -389,7 +389,7 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
       "slug": "pact",
       "order": 2,
       "title": "Pact",
-      "summary": "A mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.",
+      "summary": "A hackathon winner mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.",
       "description": [
         "Built Pact as a consumer accountability product: users create commitments, stake money, submit proof, and rely on a small trusted validator group to approve or reject the outcome.",
         "Designed the core product loop from pact creation → stake lock → proof upload → validator voting → stake release/forfeit, making accountability feel concrete instead of vague.",
@@ -426,7 +426,7 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
     {
       "slug": "arachne-web-crawler",
       "order": 3,
-      "title": "Arachne Web Crawler",
+      "title": "Arachne - Web Crawler",
       "summary": "A high-throughput Go web crawler with bounded concurrency, robots.txt handling, rooted discovery trees, live SSE updates, and local JSON artifacts for debugging runs.",
       "description": [
         "Built Arachne as a result-first web crawler: users choose a seed URL, read extracted page content, and inspect crawl expansion through a rooted discovery tree.",
@@ -537,7 +537,7 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
       "slug": "imc-prosperity-4",
       "order": 6,
       "title": "IMC Prosperity 4 Quant Trading Competition",
-      "summary": "A top 6% worldwide quantitative trading competition project for IMC Prosperity 4, spanning five rounds of market making, drift capture, options pricing, multi-product alpha mining, backtester reconciliation, official-window diagnostics, and manual puzzle optimization.",
+      "summary": "A top 6% worldwide IMC Prosperity 4 trading system built across five rounds of market making, options pricing, alpha research, and replay-driven strategy diagnostics.",
       "description": [
         "Finished in the top 6% worldwide in IMC Prosperity 4 with a five-round algorithmic trading stack covering market making, deterministic drift capture, options pricing, residual baskets, execution research, state compression, and manual optimization.",
         "Engineered the repo as a reproducible quant research system with round-scoped strategies, final submission packages, official feedback archives, replay logs, candidate scorecards, diagnostic scripts, process docs, and strategy-lineage notes.",
@@ -592,8 +592,38 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
       "thumbnail": "/portfolio/projects/imc-prosperity.png"
     },
     {
-      "slug": "beyond-chat",
+      "slug": "f1-optimization",
       "order": 7,
+      "title": "F1 Optimization Project",
+      "summary": "A custom F1-style racing simulation environment with OpenCV track extraction, Pygame rendering, ray-cast sensors, reward shaping, and RL training hooks.",
+      "description": [
+        "Built a custom Gym-style racing simulator with continuous controls, checkpoint-based rewards, collision termination, and headless stepping support.",
+        "Extracted a Monza-style track from image contours using OpenCV, generating 120 checkpoint lines and 2,749 collision segments.",
+        "Implemented a sensor-based observation model with 7 ray-cast distances plus normalized speed, giving the agent an 8D observation vector.",
+        "Built Pygame rendering, manual driving mode, `.npy` rollout export, and replay tooling for qualitative debugging.",
+        "Measured headless simulator performance at 12.63 steps/sec with the full sensor/collision workload enabled.",
+        "Added Ray/RLlib SAC training and rollout entrypoints, but full training results remain incomplete because the modern environment needs a Ray-supported Python setup and updated RLlib API compatibility."
+      ],
+      "tags": [
+        "Reinforcement Learning",
+        "Gymnasium",
+        "Ray RLlib",
+        "SAC",
+        "Pygame",
+        "OpenCV",
+        "Simulation",
+        "F1",
+        "Path Planning",
+        "Reward Design",
+        "Computer Vision",
+        "Python"
+      ],
+      "githubLink": "https://github.com/KushagraBharti/HackTX-2024---F1-Optimization",
+      "thumbnail": "/portfolio/projects/f1-optimization.png"
+    },
+    {
+      "slug": "beyond-chat",
+      "order": 8,
       "title": "Beyond Chat",
       "summary": "An artifact-first AI workspace that turns chat into production workflows: studios, tool-calling runs, durable context, model comparison, storage-backed artifacts, and provider-aware orchestration.",
       "description": [
@@ -642,8 +672,38 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
       "thumbnail": "/portfolio/projects/beyond-chat.png"
     },
     {
+      "slug": "kaggle-titanic-ml",
+      "order": 9,
+      "title": "Kaggle Titanic ML",
+      "summary": "A complete beginner-to-intermediate ML pipeline for the Titanic dataset, focused on cleaning, feature engineering, model comparison, and documenting the full learning process.",
+      "description": [
+        "Built an end-to-end Titanic survival prediction workflow using Pandas and scikit-learn.",
+        "Cleaned missing values, extracted passenger titles, encoded categorical variables, and engineered features such as FamilySize and IsAlone.",
+        "Explored passenger demographics and survival correlations through EDA with Matplotlib and Seaborn.",
+        "Trained and compared Logistic Regression, SVM, KNN, Decision Tree, Random Forest, Naive Bayes, Perceptron, and SGD models.",
+        "Reached ~86.76% training accuracy with Decision Tree / Random Forest baselines while using the project mainly to learn the full ML workflow.",
+        "Wrote a PDF report documenting the process, mistakes, experiments, and lessons learned instead of only publishing final code."
+      ],
+      "tags": [
+        "Machine Learning",
+        "Kaggle",
+        "Titanic",
+        "Data Analysis",
+        "Python",
+        "Pandas",
+        "scikit-learn",
+        "EDA",
+        "Feature Engineering",
+        "Random Forest",
+        "Matplotlib",
+        "Seaborn"
+      ],
+      "githubLink": "https://github.com/KushagraBharti/Kaggle-Titanic-Solution",
+      "thumbnail": "/portfolio/projects/kaggle-titanic-ml.png"
+    },
+    {
       "slug": "pseudo-lawyer",
-      "order": 8,
+      "order": 10,
       "title": "PseudoLawyer",
       "summary": "An AI-powered contract negotiation platform with real-time multi-party chat, an AI mediator, and contract drafting from negotiation history.",
       "description": [
@@ -678,7 +738,7 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
     },
     {
       "slug": "personal-site",
-      "order": 9,
+      "order": 11,
       "title": "Personal Portfolio Website",
       "summary": "A full-stack portfolio and personal tracker with a public showcase, private authenticated surfaces, live widgets, and machine-readable content for humans and AI systems.",
       "description": [
@@ -687,7 +747,7 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
         "Centralized content in TypeScript modules so public cards, detailed pages, and AI-facing snapshots stay aligned from the same source of truth.",
         "Generated an `llms.txt` / structured AI-facing view so the site can be read cleanly by humans and models.",
         "Integrated live GitHub and weather widgets with backend caching and graceful fallbacks so the homepage remains dynamic without depending on fragile client-side calls.",
-        "Built the app as a responsive React/Vite/Tailwind interface with Express APIs, motion, reusable components, and a verification suite for unit, integration, smoke, E2E, and live flows."
+        "Built the app as a responsive React/Vite/Tailwind interface with Express APIs, motion, reusable components, and verification for build, lint, unit, integration, and live flows."
       ],
       "tags": [
         "TypeScript",
@@ -699,7 +759,6 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
         "Framer Motion",
         "Bun",
         "Vitest",
-        "Playwright",
         "REST API",
         "Full-Stack Development",
         "API Integration",
@@ -709,66 +768,6 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
       ],
       "githubLink": "https://github.com/KushagraBharti/Personal-Site",
       "thumbnail": "/portfolio/projects/personal-site.png"
-    },
-    {
-      "slug": "f1-optimization",
-      "order": 10,
-      "title": "F1 Optimization Project",
-      "summary": "A custom F1-style racing simulation environment with OpenCV track extraction, Pygame rendering, ray-cast sensors, reward shaping, and RL training hooks.",
-      "description": [
-        "Built a custom Gym-style racing simulator with continuous controls, checkpoint-based rewards, collision termination, and headless stepping support.",
-        "Extracted a Monza-style track from image contours using OpenCV, generating 120 checkpoint lines and 2,749 collision segments.",
-        "Implemented a sensor-based observation model with 7 ray-cast distances plus normalized speed, giving the agent an 8D observation vector.",
-        "Built Pygame rendering, manual driving mode, `.npy` rollout export, and replay tooling for qualitative debugging.",
-        "Measured headless simulator performance at 12.63 steps/sec with the full sensor/collision workload enabled.",
-        "Added Ray/RLlib SAC training and rollout entrypoints, but full training results remain incomplete because the modern environment needs a Ray-supported Python setup and updated RLlib API compatibility."
-      ],
-      "tags": [
-        "Reinforcement Learning",
-        "Gymnasium",
-        "Ray RLlib",
-        "SAC",
-        "Pygame",
-        "OpenCV",
-        "Simulation",
-        "F1",
-        "Path Planning",
-        "Reward Design",
-        "Computer Vision",
-        "Python"
-      ],
-      "githubLink": "https://github.com/KushagraBharti/HackTX-2024---F1-Optimization",
-      "thumbnail": "/portfolio/projects/f1-optimization.png"
-    },
-    {
-      "slug": "kaggle-titanic-ml",
-      "order": 11,
-      "title": "Kaggle Titanic ML",
-      "summary": "A complete beginner-to-intermediate ML pipeline for the Titanic dataset, focused on cleaning, feature engineering, model comparison, and documenting the full learning process.",
-      "description": [
-        "Built an end-to-end Titanic survival prediction workflow using Pandas and scikit-learn.",
-        "Cleaned missing values, extracted passenger titles, encoded categorical variables, and engineered features such as FamilySize and IsAlone.",
-        "Explored passenger demographics and survival correlations through EDA with Matplotlib and Seaborn.",
-        "Trained and compared Logistic Regression, SVM, KNN, Decision Tree, Random Forest, Naive Bayes, Perceptron, and SGD models.",
-        "Reached ~86.76% training accuracy with Decision Tree / Random Forest baselines while using the project mainly to learn the full ML workflow.",
-        "Wrote a PDF report documenting the process, mistakes, experiments, and lessons learned instead of only publishing final code."
-      ],
-      "tags": [
-        "Machine Learning",
-        "Kaggle",
-        "Titanic",
-        "Data Analysis",
-        "Python",
-        "Pandas",
-        "scikit-learn",
-        "EDA",
-        "Feature Engineering",
-        "Random Forest",
-        "Matplotlib",
-        "Seaborn"
-      ],
-      "githubLink": "https://github.com/KushagraBharti/Kaggle-Titanic-Solution",
-      "thumbnail": "/portfolio/projects/kaggle-titanic-ml.png"
     },
     {
       "slug": "quant-test-environment",
@@ -867,8 +866,81 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
       "thumbnail": "/portfolio/projects/age-gender-recognition.png"
     },
     {
-      "slug": "data-drive",
+      "slug": "pcb-design-project",
       "order": 15,
+      "title": "PCB Design Project",
+      "summary": "A hardware project where I designed, ordered, assembled, and tested custom PCBs as part of a senior independent project.",
+      "description": [
+        "Designed multiple PCBs in EasyEDA, moving from schematic capture to board layout and manufacturing files.",
+        "Ordered boards and components through JLCPCB/LCSC, learning the practical constraints around cost, availability, package type, and manufacturability.",
+        "Worked through design challenges involving ATmega328 variants, SMD/THT parts, capacitive-touch buttons, power routing, and component placement.",
+        "Assembled and tested the boards after delivery, gaining hands-on soldering, debugging, and hardware bring-up experience."
+      ],
+      "tags": [
+        "PCB Design",
+        "Circuit Design",
+        "EasyEDA",
+        "JLCPCB",
+        "LCSC",
+        "Electronics",
+        "Hardware",
+        "Soldering",
+        "Embedded Systems"
+      ],
+      "githubLink": "https://github.com/KushagraBharti/PCB-Design-Project",
+      "thumbnail": "/portfolio/projects/pcb-design-project.png"
+    },
+    {
+      "slug": "self-driving-car-project",
+      "order": 16,
+      "title": "Self-Driving Car Project",
+      "summary": "An Arduino-based RC car rebuild with ultrasonic sensors and a custom obstacle-avoidance control loop.",
+      "description": [
+        "Repurposed an RC car by rebuilding its internals with an Arduino Uno, motor shield, ultrasonic sensors, and custom wiring.",
+        "Wrote C++ control logic to read ultrasonic distance data and perform obstacle detection/avoidance.",
+        "Learned the hardware/software debugging loop: wiring, sensor noise, motor control, soldering, and physical-world failure cases."
+      ],
+      "tags": [
+        "Arduino",
+        "C++",
+        "Self-Driving",
+        "Autonomous Vehicle",
+        "RC Car",
+        "Electronics",
+        "Ultrasonic Sensors",
+        "Hardware"
+      ],
+      "thumbnail": "/portfolio/projects/self-driving-car-project.png"
+    },
+    {
+      "slug": "circuit-seer",
+      "order": 17,
+      "title": "CircuitSeer (Circuit Solver)",
+      "summary": "A computer vision circuit-analysis tool that detects components, traces wiring, and helps solve simple circuit diagrams.",
+      "description": [
+        "Built CircuitSeer through the AI Mentorship Program at UT Dallas as a team project combining object detection and classical computer vision.",
+        "Focused on component recognition using a fine-tuned YOLOv5 model to detect resistors, capacitors, diodes, inductors, and power sources.",
+        "Integrated line-detection work using Canny Edge Detection and Hough Transform to help trace wiring between detected components.",
+        "Connected the detection outputs to downstream logic for simple series/parallel resistance and capacitance analysis.",
+        "Built the project with Python and Flask so users could upload circuit diagrams and receive structured analysis through a web interface."
+      ],
+      "tags": [
+        "Python",
+        "YOLOv5",
+        "Flask",
+        "OpenCV",
+        "Computer Vision",
+        "Object Detection",
+        "Canny Edge Detection",
+        "Hough Transform",
+        "Circuit Analysis"
+      ],
+      "githubLink": "https://github.com/Hteam121/circuit-seer",
+      "thumbnail": "/portfolio/projects/circuit-seer.png"
+    },
+    {
+      "slug": "data-drive",
+      "order": 18,
       "title": "DataDrive: Unified Insights for Data & Fuel Optimization",
       "summary": "A full-stack ML analytics dashboard for exploring Toyota vehicle data, fuel-efficiency predictions, clustering, and interactive visualizations.",
       "description": [
@@ -898,34 +970,29 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
       "thumbnail": "/portfolio/projects/data-drive.png"
     },
     {
-      "slug": "circuit-seer",
-      "order": 16,
-      "title": "CircuitSeer (Circuit Solver)",
-      "summary": "A computer vision circuit-analysis tool that detects components, traces wiring, and helps solve simple circuit diagrams.",
+      "slug": "maze-traversal",
+      "order": 19,
+      "title": "Maze Traversal",
+      "summary": "A small recursive DFS maze solver in Python that traces a path from start to exit through a grid-based maze.",
       "description": [
-        "Built CircuitSeer through the AI Mentorship Program at UT Dallas as a team project combining object detection and classical computer vision.",
-        "Focused on component recognition using a fine-tuned YOLOv5 model to detect resistors, capacitors, diodes, inductors, and power sources.",
-        "Integrated line-detection work using Canny Edge Detection and Hough Transform to help trace wiring between detected components.",
-        "Connected the detection outputs to downstream logic for simple series/parallel resistance and capacitance analysis.",
-        "Built the project with Python and Flask so users could upload circuit diagrams and receive structured analysis through a web interface."
+        "Implemented a recursive depth-first search solver for mazes represented as nested lists.",
+        "Marked the solution path with directional arrows to visually trace movement from start to exit.",
+        "Added file loading, start-position detection, intermediate maze printing, and execution-time measurement.",
+        "Used the project to practice recursion, backtracking, grid traversal, and simple algorithm visualization."
       ],
       "tags": [
         "Python",
-        "YOLOv5",
-        "Flask",
-        "OpenCV",
-        "Computer Vision",
-        "Object Detection",
-        "Canny Edge Detection",
-        "Hough Transform",
-        "Circuit Analysis"
+        "Depth-First Search",
+        "Recursion",
+        "Maze Solving",
+        "Backtracking",
+        "Algorithms"
       ],
-      "githubLink": "https://github.com/Hteam121/circuit-seer",
-      "thumbnail": "/portfolio/projects/circuit-seer.png"
+      "thumbnail": "/portfolio/projects/maze-traversal.png"
     },
     {
       "slug": "point-cloud-down-sampler",
-      "order": 17,
+      "order": 20,
       "title": "Point Cloud Down Sampler",
       "summary": "A point-cloud processing project comparing a from-scratch voxel downsampler with Open3D’s built-in voxel grid method.",
       "description": [
@@ -947,74 +1014,6 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
       ],
       "githubLink": "https://github.com/KushagraBharti/PointCloud-DownSampler",
       "thumbnail": "/portfolio/projects/point-cloud-down-sampler.png"
-    },
-    {
-      "slug": "pcb-design-project",
-      "order": 18,
-      "title": "PCB Design Project",
-      "summary": "A hardware project where I designed, ordered, assembled, and tested custom PCBs as part of a senior independent project.",
-      "description": [
-        "Designed multiple PCBs in EasyEDA, moving from schematic capture to board layout and manufacturing files.",
-        "Ordered boards and components through JLCPCB/LCSC, learning the practical constraints around cost, availability, package type, and manufacturability.",
-        "Worked through design challenges involving ATmega328 variants, SMD/THT parts, capacitive-touch buttons, power routing, and component placement.",
-        "Assembled and tested the boards after delivery, gaining hands-on soldering, debugging, and hardware bring-up experience."
-      ],
-      "tags": [
-        "PCB Design",
-        "Circuit Design",
-        "EasyEDA",
-        "JLCPCB",
-        "LCSC",
-        "Electronics",
-        "Hardware",
-        "Soldering",
-        "Embedded Systems"
-      ],
-      "githubLink": "https://github.com/KushagraBharti/PCB-Design-Project",
-      "thumbnail": "/portfolio/projects/pcb-design-project.png"
-    },
-    {
-      "slug": "self-driving-car-project",
-      "order": 19,
-      "title": "Self-Driving Car Project",
-      "summary": "An Arduino-based RC car rebuild with ultrasonic sensors and a custom obstacle-avoidance control loop.",
-      "description": [
-        "Repurposed an RC car by rebuilding its internals with an Arduino Uno, motor shield, ultrasonic sensors, and custom wiring.",
-        "Wrote C++ control logic to read ultrasonic distance data and perform obstacle detection/avoidance.",
-        "Learned the hardware/software debugging loop: wiring, sensor noise, motor control, soldering, and physical-world failure cases."
-      ],
-      "tags": [
-        "Arduino",
-        "C++",
-        "Self-Driving",
-        "Autonomous Vehicle",
-        "RC Car",
-        "Electronics",
-        "Ultrasonic Sensors",
-        "Hardware"
-      ],
-      "thumbnail": "/portfolio/projects/self-driving-car-project.png"
-    },
-    {
-      "slug": "maze-traversal",
-      "order": 20,
-      "title": "Maze Traversal",
-      "summary": "A small recursive DFS maze solver in Python that traces a path from start to exit through a grid-based maze.",
-      "description": [
-        "Implemented a recursive depth-first search solver for mazes represented as nested lists.",
-        "Marked the solution path with directional arrows to visually trace movement from start to exit.",
-        "Added file loading, start-position detection, intermediate maze printing, and execution-time measurement.",
-        "Used the project to practice recursion, backtracking, grid traversal, and simple algorithm visualization."
-      ],
-      "tags": [
-        "Python",
-        "Depth-First Search",
-        "Recursion",
-        "Maze Solving",
-        "Backtracking",
-        "Algorithms"
-      ],
-      "thumbnail": "/portfolio/projects/maze-traversal.png"
     }
   ],
   "writings": [

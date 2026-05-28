@@ -146,7 +146,7 @@ const HomePageShell: React.FC<{
   const ProjectsEnhanced = enhancedSections.projects;
   const FilmEnhanced = enhancedSections.film;
   const MiscEnhanced = enhancedSections.misc;
-  const projects = snapshot.projects.slice(0, 6);
+  const projects = snapshot.projects.slice(0, 9);
   const contactLinks = contactLabels
     .map((label) =>
       snapshot.profile.socialLinks.find((link) => link.label === label),
@@ -340,67 +340,69 @@ const HomePageShell: React.FC<{
                   </p>
                 </div>
               </aside>
-              <div
-                className="projects-editorial__grid"
-                role="list"
-                aria-label="Projects"
-              >
-                {projects.map((project) => (
-                  <article
-                    key={project.slug}
-                    className="projects-editorial__card"
-                    role="listitem"
-                  >
-                    {project.githubLink ? (
-                      <a
-                        className="projects-editorial__image-link"
-                        href={project.githubLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`Open ${project.title}`}
-                      >
-                        {project.thumbnail ? (
-                          <PortfolioImage
-                            src={project.thumbnail}
-                            alt={project.title}
-                            className="projects-editorial__image"
-                            loading="lazy"
-                            decoding="async"
-                            sizes="(max-width: 640px) 92vw, (max-width: 980px) 44vw, 300px"
-                          />
-                        ) : (
-                          <div className="projects-editorial__image projects-editorial__image--empty" />
-                        )}
-                      </a>
-                    ) : (
-                      <div className="projects-editorial__image-link">
-                        {project.thumbnail ? (
-                          <PortfolioImage
-                            src={project.thumbnail}
-                            alt={project.title}
-                            className="projects-editorial__image"
-                            loading="lazy"
-                            decoding="async"
-                            sizes="(max-width: 640px) 92vw, (max-width: 980px) 44vw, 300px"
-                          />
-                        ) : (
-                          <div className="projects-editorial__image projects-editorial__image--empty" />
-                        )}
+              <div className="projects-editorial__content">
+                <div
+                  className="projects-editorial__grid"
+                  role="list"
+                  aria-label="Projects"
+                >
+                  {projects.map((project) => (
+                    <article
+                      key={project.slug}
+                      className="projects-editorial__card"
+                      role="listitem"
+                    >
+                      {project.githubLink ? (
+                        <a
+                          className="projects-editorial__image-link"
+                          href={project.githubLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open ${project.title}`}
+                        >
+                          {project.thumbnail ? (
+                            <PortfolioImage
+                              src={project.thumbnail}
+                              alt={project.title}
+                              className="projects-editorial__image"
+                              loading="lazy"
+                              decoding="async"
+                              sizes="(max-width: 640px) 92vw, (max-width: 980px) 44vw, 300px"
+                            />
+                          ) : (
+                            <div className="projects-editorial__image projects-editorial__image--empty" />
+                          )}
+                        </a>
+                      ) : (
+                        <div className="projects-editorial__image-link">
+                          {project.thumbnail ? (
+                            <PortfolioImage
+                              src={project.thumbnail}
+                              alt={project.title}
+                              className="projects-editorial__image"
+                              loading="lazy"
+                              decoding="async"
+                              sizes="(max-width: 640px) 92vw, (max-width: 980px) 44vw, 300px"
+                            />
+                          ) : (
+                            <div className="projects-editorial__image projects-editorial__image--empty" />
+                          )}
+                        </div>
+                      )}
+                      <div className="projects-editorial__body">
+                        <h3 className="projects-editorial__card-title">
+                          {project.title}
+                        </h3>
+                        <p className="projects-editorial__card-summary">
+                          {project.summary}
+                        </p>
+                        <p className="projects-editorial__tags">
+                          {project.tags.slice(0, 2).join("  •  ")}
+                        </p>
                       </div>
-                    )}
-                    <div className="projects-editorial__body">
-                      <h3 className="projects-editorial__card-title">
-                        {project.title}
-                      </h3>
-                      <p className="projects-editorial__card-summary">
-                        {project.summary}
-                      </p>
-                      <p className="projects-editorial__tags">
-                        {project.tags.slice(0, 2).join("  •  ")}
-                      </p>
-                    </div>
-                  </article>
-                ))}
+                    </article>
+                  ))}
+                </div>
               </div>
             </div>
           </section>

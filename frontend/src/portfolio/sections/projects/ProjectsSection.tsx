@@ -4,7 +4,7 @@ import { fetchProjects, getCachedPortfolioSnapshot } from "../../api/portfolioAp
 import type { PortfolioProject } from "../../api/contracts";
 import { portfolioSnapshotBootstrap } from "../../generated/portfolioSnapshotBootstrap";
 
-const PROJECT_CARD_LIMIT = 6;
+const PROJECT_CARD_LIMIT = 9;
 
 const ProjectsSection: React.FC = () => {
   const [showAllProjects, setShowAllProjects] = useState(false);
@@ -34,6 +34,7 @@ const ProjectsSection: React.FC = () => {
   }, []);
 
   const visibleProjects = showAllProjects ? projects : projects.slice(0, PROJECT_CARD_LIMIT);
+  const hiddenProjectCount = Math.max(projects.length - PROJECT_CARD_LIMIT, 0);
 
   return (
     <section className="projects-editorial" aria-labelledby="projects-title">
@@ -48,56 +49,65 @@ const ProjectsSection: React.FC = () => {
             </p>
           </div>
 
-          <button
-            type="button"
-            className="projects-editorial__all-button"
-            onClick={() => setShowAllProjects(true)}
-            disabled={showAllProjects || projects.length <= PROJECT_CARD_LIMIT}
-          >
-            {showAllProjects ? "All Projects Shown" : "All Projects +"}
-          </button>
         </aside>
 
-        <div className="projects-editorial__grid" role="list" aria-label="Projects">
-          {visibleProjects.map((project) => {
-            const tagLine = project.tags.slice(0, 2).join("  •  ");
-            const image = project.thumbnail ? (
-              <PortfolioImage
-                src={project.thumbnail}
-                alt={project.title}
-                loading="lazy"
-                decoding="async"
-                className="projects-editorial__image"
-                sizes="(max-width: 640px) 92vw, (max-width: 980px) 44vw, 300px"
-              />
-            ) : (
-              <div className="projects-editorial__image projects-editorial__image--empty" />
-            );
+        <div className="projects-editorial__content">
+          <div className="projects-editorial__grid" role="list" aria-label="Projects">
+            {visibleProjects.map((project) => {
+              const tagLine = project.tags.slice(0, 2).join("  •  ");
+              const image = project.thumbnail ? (
+                <PortfolioImage
+                  src={project.thumbnail}
+                  alt={project.title}
+                  loading="lazy"
+                  decoding="async"
+                  className="projects-editorial__image"
+                  sizes="(max-width: 640px) 92vw, (max-width: 980px) 44vw, 300px"
+                />
+              ) : (
+                <div className="projects-editorial__image projects-editorial__image--empty" />
+              );
 
-            return (
-              <article key={project.slug} className="projects-editorial__card" role="listitem">
-                {project.githubLink ? (
-                  <a
-                    className="projects-editorial__image-link"
-                    href={project.githubLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={`Open ${project.title}`}
-                  >
-                    {image}
-                  </a>
-                ) : (
-                  <div className="projects-editorial__image-link">{image}</div>
-                )}
+              return (
+                <article key={project.slug} className="projects-editorial__card" role="listitem">
+                  {project.githubLink ? (
+                    <a
+                      className="projects-editorial__image-link"
+                      href={project.githubLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`Open ${project.title}`}
+                    >
+                      {image}
+                    </a>
+                  ) : (
+                    <div className="projects-editorial__image-link">{image}</div>
+                  )}
 
-                <div className="projects-editorial__body">
-                  <h3 className="projects-editorial__card-title">{project.title}</h3>
-                  <p className="projects-editorial__card-summary">{project.summary}</p>
-                  {tagLine ? <p className="projects-editorial__tags">{tagLine}</p> : null}
-                </div>
-              </article>
-            );
-          })}
+                  <div className="projects-editorial__body">
+                    <h3 className="projects-editorial__card-title">{project.title}</h3>
+                    <p className="projects-editorial__card-summary">{project.summary}</p>
+                    {tagLine ? <p className="projects-editorial__tags">{tagLine}</p> : null}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          {hiddenProjectCount > 0 ? (
+            <div className="projects-editorial__more-row">
+              <button
+                type="button"
+                className="projects-editorial__all-button"
+                onClick={() => setShowAllProjects(true)}
+                disabled={showAllProjects}
+              >
+                {showAllProjects
+                  ? "Showing all projects"
+                  : `See ${hiddenProjectCount} more projects`}
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
     </section>

@@ -51,7 +51,7 @@ export const portfolioProjects: PortfolioProject[] = [
     order: 2,
     title: "Pact",
     summary:
-      "A mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.",
+      "A hackathon winner mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.",
     description: [
       "Built Pact as a consumer accountability product: users create commitments, stake money, submit proof, and rely on a small trusted validator group to approve or reject the outcome.",
       "Designed the core product loop from pact creation → stake lock → proof upload → validator voting → stake release/forfeit, making accountability feel concrete instead of vague.",
@@ -88,7 +88,7 @@ export const portfolioProjects: PortfolioProject[] = [
   {
     slug: "arachne-web-crawler",
     order: 3,
-    title: "Arachne Web Crawler",
+    title: "Arachne - Web Crawler",
     summary:
       "A high-throughput Go web crawler with bounded concurrency, robots.txt handling, rooted discovery trees, live SSE updates, and local JSON artifacts for debugging runs.",
     description: [
@@ -203,7 +203,7 @@ export const portfolioProjects: PortfolioProject[] = [
     order: 6,
     title: "IMC Prosperity 4 Quant Trading Competition",
     summary:
-      "A top 6% worldwide quantitative trading competition project for IMC Prosperity 4, spanning five rounds of market making, drift capture, options pricing, multi-product alpha mining, backtester reconciliation, official-window diagnostics, and manual puzzle optimization.",
+      "A top 6% worldwide IMC Prosperity 4 trading system built across five rounds of market making, options pricing, alpha research, and replay-driven strategy diagnostics.",
     description: [
       "Finished in the top 6% worldwide in IMC Prosperity 4 with a five-round algorithmic trading stack covering market making, deterministic drift capture, options pricing, residual baskets, execution research, state compression, and manual optimization.",
       "Engineered the repo as a reproducible quant research system with round-scoped strategies, final submission packages, official feedback archives, replay logs, candidate scorecards, diagnostic scripts, process docs, and strategy-lineage notes.",
@@ -259,7 +259,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "beyond-chat",
-    order: 7,
+    order: 8,
     title: "Beyond Chat",
     summary:
       "An artifact-first AI workspace that turns chat into production workflows: studios, tool-calling runs, durable context, model comparison, storage-backed artifacts, and provider-aware orchestration.",
@@ -310,7 +310,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "pseudo-lawyer",
-    order: 8,
+    order: 10,
     title: "PseudoLawyer",
     summary:
       "An AI-powered contract negotiation platform with real-time multi-party chat, an AI mediator, and contract drafting from negotiation history.",
@@ -346,7 +346,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "personal-site",
-    order: 9,
+    order: 11,
     title: "Personal Portfolio Website",
     summary:
       "A full-stack portfolio and personal tracker with a public showcase, private authenticated surfaces, live widgets, and machine-readable content for humans and AI systems.",
@@ -356,7 +356,7 @@ export const portfolioProjects: PortfolioProject[] = [
       "Centralized content in TypeScript modules so public cards, detailed pages, and AI-facing snapshots stay aligned from the same source of truth.",
       "Generated an `llms.txt` / structured AI-facing view so the site can be read cleanly by humans and models.",
       "Integrated live GitHub and weather widgets with backend caching and graceful fallbacks so the homepage remains dynamic without depending on fragile client-side calls.",
-      "Built the app as a responsive React/Vite/Tailwind interface with Express APIs, motion, reusable components, and a verification suite for unit, integration, smoke, E2E, and live flows.",
+      "Built the app as a responsive React/Vite/Tailwind interface with Express APIs, motion, reusable components, and verification for build, lint, unit, integration, and live flows.",
     ],
     tags: [
       "TypeScript",
@@ -368,7 +368,6 @@ export const portfolioProjects: PortfolioProject[] = [
       "Framer Motion",
       "Bun",
       "Vitest",
-      "Playwright",
       "REST API",
       "Full-Stack Development",
       "API Integration",
@@ -381,7 +380,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "f1-optimization",
-    order: 10,
+    order: 7,
     title: "F1 Optimization Project",
     summary:
       "A custom F1-style racing simulation environment with OpenCV track extraction, Pygame rendering, ray-cast sensors, reward shaping, and RL training hooks.",
@@ -412,7 +411,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "kaggle-titanic-ml",
-    order: 11,
+    order: 9,
     title: "Kaggle Titanic ML",
     summary:
       "A complete beginner-to-intermediate ML pipeline for the Titanic dataset, focused on cleaning, feature engineering, model comparison, and documenting the full learning process.",
@@ -542,7 +541,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "data-drive",
-    order: 15,
+    order: 18,
     title: "DataDrive: Unified Insights for Data & Fuel Optimization",
     summary:
       "A full-stack ML analytics dashboard for exploring Toyota vehicle data, fuel-efficiency predictions, clustering, and interactive visualizations.",
@@ -574,7 +573,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "circuit-seer",
-    order: 16,
+    order: 17,
     title: "CircuitSeer (Circuit Solver)",
     summary:
       "A computer vision circuit-analysis tool that detects components, traces wiring, and helps solve simple circuit diagrams.",
@@ -601,7 +600,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "point-cloud-down-sampler",
-    order: 17,
+    order: 20,
     title: "Point Cloud Down Sampler",
     summary:
       "A point-cloud processing project comparing a from-scratch voxel downsampler with Open3D’s built-in voxel grid method.",
@@ -627,7 +626,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "pcb-design-project",
-    order: 18,
+    order: 15,
     title: "PCB Design Project",
     summary:
       "A hardware project where I designed, ordered, assembled, and tested custom PCBs as part of a senior independent project.",
@@ -653,7 +652,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "self-driving-car-project",
-    order: 19,
+    order: 16,
     title: "Self-Driving Car Project",
     summary:
       "An Arduino-based RC car rebuild with ultrasonic sensors and a custom obstacle-avoidance control loop.",
@@ -676,7 +675,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "maze-traversal",
-    order: 20,
+    order: 19,
     title: "Maze Traversal",
     summary:
       "A small recursive DFS maze solver in Python that traces a path from start to exit through a grid-based maze.",

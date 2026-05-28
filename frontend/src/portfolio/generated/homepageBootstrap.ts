@@ -124,7 +124,7 @@ export const homepageBootstrap: HomePageBootstrap = {
     {
       "slug": "pact",
       "title": "Pact",
-      "summary": "A mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.",
+      "summary": "A hackathon winner mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.",
       "tags": [
         "TypeScript",
         "React Native"
@@ -134,7 +134,7 @@ export const homepageBootstrap: HomePageBootstrap = {
     },
     {
       "slug": "arachne-web-crawler",
-      "title": "Arachne Web Crawler",
+      "title": "Arachne - Web Crawler",
       "summary": "A high-throughput Go web crawler with bounded concurrency, robots.txt handling, rooted discovery trees, live SSE updates, and local JSON artifacts for debugging runs.",
       "tags": [
         "Go",
@@ -168,13 +168,46 @@ export const homepageBootstrap: HomePageBootstrap = {
     {
       "slug": "imc-prosperity-4",
       "title": "IMC Prosperity 4 Quant Trading Competition",
-      "summary": "A top 6% worldwide quantitative trading competition project for IMC Prosperity 4, spanning five rounds of market making, drift capture, options pricing, multi-product alpha mining, backtester reconciliation, official-window diagnostics, and manual puzzle optimization.",
+      "summary": "A top 6% worldwide IMC Prosperity 4 trading system built across five rounds of market making, options pricing, alpha research, and replay-driven strategy diagnostics.",
       "tags": [
         "Quantitative Trading",
         "Algorithmic Trading"
       ],
       "thumbnail": "/portfolio/projects/imc-prosperity.png",
       "githubLink": "https://github.com/KushagraBharti/IMC-Prosperity-4"
+    },
+    {
+      "slug": "f1-optimization",
+      "title": "F1 Optimization Project",
+      "summary": "A custom F1-style racing simulation environment with OpenCV track extraction, Pygame rendering, ray-cast sensors, reward shaping, and RL training hooks.",
+      "tags": [
+        "Reinforcement Learning",
+        "Gymnasium"
+      ],
+      "thumbnail": "/portfolio/projects/f1-optimization.png",
+      "githubLink": "https://github.com/KushagraBharti/HackTX-2024---F1-Optimization"
+    },
+    {
+      "slug": "beyond-chat",
+      "title": "Beyond Chat",
+      "summary": "An artifact-first AI workspace that turns chat into production workflows: studios, tool-calling runs, durable context, model comparison, storage-backed artifacts, and provider-aware orchestration.",
+      "tags": [
+        "TypeScript",
+        "React"
+      ],
+      "thumbnail": "/portfolio/projects/beyond-chat.png",
+      "githubLink": "https://github.com/KushagraBharti/Beyond-Chat"
+    },
+    {
+      "slug": "kaggle-titanic-ml",
+      "title": "Kaggle Titanic ML",
+      "summary": "A complete beginner-to-intermediate ML pipeline for the Titanic dataset, focused on cleaning, feature engineering, model comparison, and documenting the full learning process.",
+      "tags": [
+        "Machine Learning",
+        "Kaggle"
+      ],
+      "thumbnail": "/portfolio/projects/kaggle-titanic-ml.png",
+      "githubLink": "https://github.com/KushagraBharti/Kaggle-Titanic-Solution"
     }
   ],
   "profile": {

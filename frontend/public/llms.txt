@@ -239,7 +239,7 @@ GitHub: https://github.com/KushagraBharti/MonopolyBench
 Thumbnail: /portfolio/projects/monopoly-llm-benchmark.svg
 
 ### Pact
-Summary: A mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.
+Summary: A hackathon winner mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.
 Highlights:
 - Built Pact as a consumer accountability product: users create commitments, stake money, submit proof, and rely on a small trusted validator group to approve or reject the outcome.
 - Designed the core product loop from pact creation → stake lock → proof upload → validator voting → stake release/forfeit, making accountability feel concrete instead of vague.
@@ -252,7 +252,7 @@ Tags: TypeScript, React Native, Expo, Expo Router, Fastify, Supabase, PostgreSQL
 GitHub: https://github.com/KushagraBharti/Pact
 Thumbnail: /portfolio/projects/pact.png
 
-### Arachne Web Crawler
+### Arachne - Web Crawler
 Summary: A high-throughput Go web crawler with bounded concurrency, robots.txt handling, rooted discovery trees, live SSE updates, and local JSON artifacts for debugging runs.
 Highlights:
 - Built Arachne as a result-first web crawler: users choose a seed URL, read extracted page content, and inspect crawl expansion through a rooted discovery tree.
@@ -298,7 +298,7 @@ GitHub: https://github.com/KushagraBharti/NovelBench
 Thumbnail: /portfolio/projects/novel-bench.png
 
 ### IMC Prosperity 4 Quant Trading Competition
-Summary: A top 6% worldwide quantitative trading competition project for IMC Prosperity 4, spanning five rounds of market making, drift capture, options pricing, multi-product alpha mining, backtester reconciliation, official-window diagnostics, and manual puzzle optimization.
+Summary: A top 6% worldwide IMC Prosperity 4 trading system built across five rounds of market making, options pricing, alpha research, and replay-driven strategy diagnostics.
 Highlights:
 - Finished in the top 6% worldwide in IMC Prosperity 4 with a five-round algorithmic trading stack covering market making, deterministic drift capture, options pricing, residual baskets, execution research, state compression, and manual optimization.
 - Engineered the repo as a reproducible quant research system with round-scoped strategies, final submission packages, official feedback archives, replay logs, candidate scorecards, diagnostic scripts, process docs, and strategy-lineage notes.
@@ -324,6 +324,19 @@ Tags: Quantitative Trading, Algorithmic Trading, IMC Prosperity, Top 6% Worldwid
 GitHub: https://github.com/KushagraBharti/IMC-Prosperity-4
 Thumbnail: /portfolio/projects/imc-prosperity.png
 
+### F1 Optimization Project
+Summary: A custom F1-style racing simulation environment with OpenCV track extraction, Pygame rendering, ray-cast sensors, reward shaping, and RL training hooks.
+Highlights:
+- Built a custom Gym-style racing simulator with continuous controls, checkpoint-based rewards, collision termination, and headless stepping support.
+- Extracted a Monza-style track from image contours using OpenCV, generating 120 checkpoint lines and 2,749 collision segments.
+- Implemented a sensor-based observation model with 7 ray-cast distances plus normalized speed, giving the agent an 8D observation vector.
+- Built Pygame rendering, manual driving mode, `.npy` rollout export, and replay tooling for qualitative debugging.
+- Measured headless simulator performance at 12.63 steps/sec with the full sensor/collision workload enabled.
+- Added Ray/RLlib SAC training and rollout entrypoints, but full training results remain incomplete because the modern environment needs a Ray-supported Python setup and updated RLlib API compatibility.
+Tags: Reinforcement Learning, Gymnasium, Ray RLlib, SAC, Pygame, OpenCV, Simulation, F1, Path Planning, Reward Design, Computer Vision, Python
+GitHub: https://github.com/KushagraBharti/HackTX-2024---F1-Optimization
+Thumbnail: /portfolio/projects/f1-optimization.png
+
 ### Beyond Chat
 Summary: An artifact-first AI workspace that turns chat into production workflows: studios, tool-calling runs, durable context, model comparison, storage-backed artifacts, and provider-aware orchestration.
 Highlights:
@@ -342,6 +355,19 @@ Highlights:
 Tags: TypeScript, React, Vite, Tailwind CSS, Python, FastAPI, Supabase, PostgreSQL, Supabase Auth, Supabase Storage, OpenRouter, Exa, Stripe, LLMs, Agentic AI, AI Agents, Tool Calling, Workflow Orchestration, Artifact Systems, Context Engineering, Model Comparison, Data Analysis, RAG, Full-Stack Development, System Design, Product Engineering
 GitHub: https://github.com/KushagraBharti/Beyond-Chat
 Thumbnail: /portfolio/projects/beyond-chat.png
+
+### Kaggle Titanic ML
+Summary: A complete beginner-to-intermediate ML pipeline for the Titanic dataset, focused on cleaning, feature engineering, model comparison, and documenting the full learning process.
+Highlights:
+- Built an end-to-end Titanic survival prediction workflow using Pandas and scikit-learn.
+- Cleaned missing values, extracted passenger titles, encoded categorical variables, and engineered features such as FamilySize and IsAlone.
+- Explored passenger demographics and survival correlations through EDA with Matplotlib and Seaborn.
+- Trained and compared Logistic Regression, SVM, KNN, Decision Tree, Random Forest, Naive Bayes, Perceptron, and SGD models.
+- Reached ~86.76% training accuracy with Decision Tree / Random Forest baselines while using the project mainly to learn the full ML workflow.
+- Wrote a PDF report documenting the process, mistakes, experiments, and lessons learned instead of only publishing final code.
+Tags: Machine Learning, Kaggle, Titanic, Data Analysis, Python, Pandas, scikit-learn, EDA, Feature Engineering, Random Forest, Matplotlib, Seaborn
+GitHub: https://github.com/KushagraBharti/Kaggle-Titanic-Solution
+Thumbnail: /portfolio/projects/kaggle-titanic-ml.png
 
 ### PseudoLawyer
 Summary: An AI-powered contract negotiation platform with real-time multi-party chat, an AI mediator, and contract drafting from negotiation history.
@@ -366,36 +392,10 @@ Highlights:
 - Centralized content in TypeScript modules so public cards, detailed pages, and AI-facing snapshots stay aligned from the same source of truth.
 - Generated an `llms.txt` / structured AI-facing view so the site can be read cleanly by humans and models.
 - Integrated live GitHub and weather widgets with backend caching and graceful fallbacks so the homepage remains dynamic without depending on fragile client-side calls.
-- Built the app as a responsive React/Vite/Tailwind interface with Express APIs, motion, reusable components, and a verification suite for unit, integration, smoke, E2E, and live flows.
-Tags: TypeScript, Node.js, Express, React, Vite, Tailwind CSS, Framer Motion, Bun, Vitest, Playwright, REST API, Full-Stack Development, API Integration, Live Widgets, System Design, Testing
+- Built the app as a responsive React/Vite/Tailwind interface with Express APIs, motion, reusable components, and verification for build, lint, unit, integration, and live flows.
+Tags: TypeScript, Node.js, Express, React, Vite, Tailwind CSS, Framer Motion, Bun, Vitest, REST API, Full-Stack Development, API Integration, Live Widgets, System Design, Testing
 GitHub: https://github.com/KushagraBharti/Personal-Site
 Thumbnail: /portfolio/projects/personal-site.png
-
-### F1 Optimization Project
-Summary: A custom F1-style racing simulation environment with OpenCV track extraction, Pygame rendering, ray-cast sensors, reward shaping, and RL training hooks.
-Highlights:
-- Built a custom Gym-style racing simulator with continuous controls, checkpoint-based rewards, collision termination, and headless stepping support.
-- Extracted a Monza-style track from image contours using OpenCV, generating 120 checkpoint lines and 2,749 collision segments.
-- Implemented a sensor-based observation model with 7 ray-cast distances plus normalized speed, giving the agent an 8D observation vector.
-- Built Pygame rendering, manual driving mode, `.npy` rollout export, and replay tooling for qualitative debugging.
-- Measured headless simulator performance at 12.63 steps/sec with the full sensor/collision workload enabled.
-- Added Ray/RLlib SAC training and rollout entrypoints, but full training results remain incomplete because the modern environment needs a Ray-supported Python setup and updated RLlib API compatibility.
-Tags: Reinforcement Learning, Gymnasium, Ray RLlib, SAC, Pygame, OpenCV, Simulation, F1, Path Planning, Reward Design, Computer Vision, Python
-GitHub: https://github.com/KushagraBharti/HackTX-2024---F1-Optimization
-Thumbnail: /portfolio/projects/f1-optimization.png
-
-### Kaggle Titanic ML
-Summary: A complete beginner-to-intermediate ML pipeline for the Titanic dataset, focused on cleaning, feature engineering, model comparison, and documenting the full learning process.
-Highlights:
-- Built an end-to-end Titanic survival prediction workflow using Pandas and scikit-learn.
-- Cleaned missing values, extracted passenger titles, encoded categorical variables, and engineered features such as FamilySize and IsAlone.
-- Explored passenger demographics and survival correlations through EDA with Matplotlib and Seaborn.
-- Trained and compared Logistic Regression, SVM, KNN, Decision Tree, Random Forest, Naive Bayes, Perceptron, and SGD models.
-- Reached ~86.76% training accuracy with Decision Tree / Random Forest baselines while using the project mainly to learn the full ML workflow.
-- Wrote a PDF report documenting the process, mistakes, experiments, and lessons learned instead of only publishing final code.
-Tags: Machine Learning, Kaggle, Titanic, Data Analysis, Python, Pandas, scikit-learn, EDA, Feature Engineering, Random Forest, Matplotlib, Seaborn
-GitHub: https://github.com/KushagraBharti/Kaggle-Titanic-Solution
-Thumbnail: /portfolio/projects/kaggle-titanic-ml.png
 
 ### Algorithmic Trading Quantitative Test Environment
 Summary: A modular quant testbench for strategy development, backtesting, risk metrics, visualization, and Alpaca paper-trading execution.
@@ -438,43 +438,6 @@ Tags: Python, OpenCV, DNN, Caffe, Face Detection, Real-Time Processing, Computer
 GitHub: https://github.com/KushagraBharti/Gender-Age-Detection
 Thumbnail: /portfolio/projects/age-gender-recognition.png
 
-### DataDrive: Unified Insights for Data & Fuel Optimization
-Summary: A full-stack ML analytics dashboard for exploring Toyota vehicle data, fuel-efficiency predictions, clustering, and interactive visualizations.
-Highlights:
-- Built a Flask + React analytics dashboard over Toyota vehicle data, combining model-backed predictions with interactive exploration.
-- Implemented regression and K-Means clustering pipelines for fuel-efficiency and vehicle-segmentation analysis.
-- Built backend API endpoints for prediction, car detail retrieval, and clustering results.
-- Added data cleaning, feature engineering, and model evaluation workflows to keep the ML layer reproducible.
-- Built interactive React/D3 visualizations and a 3D car viewer to make the model outputs easier to explore.
-- Integrated GPT-powered explanation generation and Pinata storage as experimental transparency/auditability features.
-Tags: Flask, Python, Machine Learning, Linear Regression, KMeans, React, D3.js, Three.js, Data Analytics, APScheduler, SHAP, OpenAI, Pinata
-GitHub: https://github.com/KushagraBharti/HACKUTD-Data-Drive
-Thumbnail: /portfolio/projects/data-drive.png
-
-### CircuitSeer (Circuit Solver)
-Summary: A computer vision circuit-analysis tool that detects components, traces wiring, and helps solve simple circuit diagrams.
-Highlights:
-- Built CircuitSeer through the AI Mentorship Program at UT Dallas as a team project combining object detection and classical computer vision.
-- Focused on component recognition using a fine-tuned YOLOv5 model to detect resistors, capacitors, diodes, inductors, and power sources.
-- Integrated line-detection work using Canny Edge Detection and Hough Transform to help trace wiring between detected components.
-- Connected the detection outputs to downstream logic for simple series/parallel resistance and capacitance analysis.
-- Built the project with Python and Flask so users could upload circuit diagrams and receive structured analysis through a web interface.
-Tags: Python, YOLOv5, Flask, OpenCV, Computer Vision, Object Detection, Canny Edge Detection, Hough Transform, Circuit Analysis
-GitHub: https://github.com/Hteam121/circuit-seer
-Thumbnail: /portfolio/projects/circuit-seer.png
-
-### Point Cloud Down Sampler
-Summary: A point-cloud processing project comparing a from-scratch voxel downsampler with Open3D’s built-in voxel grid method.
-Highlights:
-- Implemented a custom voxelization algorithm that groups 3D points into discrete grid cells using mathematical flooring.
-- Reduced dense point clouds while preserving overall shape structure for downstream visualization and analysis.
-- Compared the custom implementation against Open3D’s high-performance `voxel_down_sample` method.
-- Built a small pipeline to load CSV point clouds, convert them into PCD format, downsample, and export processed outputs.
-- Used the project to understand the tradeoff between writing geometry code from scratch and relying on optimized library primitives.
-Tags: Python, Pandas, Open3D, Voxelization, Point Cloud, Downsampling, 3D Data, Geometry
-GitHub: https://github.com/KushagraBharti/PointCloud-DownSampler
-Thumbnail: /portfolio/projects/point-cloud-down-sampler.png
-
 ### PCB Design Project
 Summary: A hardware project where I designed, ordered, assembled, and tested custom PCBs as part of a senior independent project.
 Highlights:
@@ -496,6 +459,31 @@ Tags: Arduino, C++, Self-Driving, Autonomous Vehicle, RC Car, Electronics, Ultra
 GitHub: N/A
 Thumbnail: /portfolio/projects/self-driving-car-project.png
 
+### CircuitSeer (Circuit Solver)
+Summary: A computer vision circuit-analysis tool that detects components, traces wiring, and helps solve simple circuit diagrams.
+Highlights:
+- Built CircuitSeer through the AI Mentorship Program at UT Dallas as a team project combining object detection and classical computer vision.
+- Focused on component recognition using a fine-tuned YOLOv5 model to detect resistors, capacitors, diodes, inductors, and power sources.
+- Integrated line-detection work using Canny Edge Detection and Hough Transform to help trace wiring between detected components.
+- Connected the detection outputs to downstream logic for simple series/parallel resistance and capacitance analysis.
+- Built the project with Python and Flask so users could upload circuit diagrams and receive structured analysis through a web interface.
+Tags: Python, YOLOv5, Flask, OpenCV, Computer Vision, Object Detection, Canny Edge Detection, Hough Transform, Circuit Analysis
+GitHub: https://github.com/Hteam121/circuit-seer
+Thumbnail: /portfolio/projects/circuit-seer.png
+
+### DataDrive: Unified Insights for Data & Fuel Optimization
+Summary: A full-stack ML analytics dashboard for exploring Toyota vehicle data, fuel-efficiency predictions, clustering, and interactive visualizations.
+Highlights:
+- Built a Flask + React analytics dashboard over Toyota vehicle data, combining model-backed predictions with interactive exploration.
+- Implemented regression and K-Means clustering pipelines for fuel-efficiency and vehicle-segmentation analysis.
+- Built backend API endpoints for prediction, car detail retrieval, and clustering results.
+- Added data cleaning, feature engineering, and model evaluation workflows to keep the ML layer reproducible.
+- Built interactive React/D3 visualizations and a 3D car viewer to make the model outputs easier to explore.
+- Integrated GPT-powered explanation generation and Pinata storage as experimental transparency/auditability features.
+Tags: Flask, Python, Machine Learning, Linear Regression, KMeans, React, D3.js, Three.js, Data Analytics, APScheduler, SHAP, OpenAI, Pinata
+GitHub: https://github.com/KushagraBharti/HACKUTD-Data-Drive
+Thumbnail: /portfolio/projects/data-drive.png
+
 ### Maze Traversal
 Summary: A small recursive DFS maze solver in Python that traces a path from start to exit through a grid-based maze.
 Highlights:
@@ -506,6 +494,18 @@ Highlights:
 Tags: Python, Depth-First Search, Recursion, Maze Solving, Backtracking, Algorithms
 GitHub: N/A
 Thumbnail: /portfolio/projects/maze-traversal.png
+
+### Point Cloud Down Sampler
+Summary: A point-cloud processing project comparing a from-scratch voxel downsampler with Open3D’s built-in voxel grid method.
+Highlights:
+- Implemented a custom voxelization algorithm that groups 3D points into discrete grid cells using mathematical flooring.
+- Reduced dense point clouds while preserving overall shape structure for downstream visualization and analysis.
+- Compared the custom implementation against Open3D’s high-performance `voxel_down_sample` method.
+- Built a small pipeline to load CSV point clouds, convert them into PCD format, downsample, and export processed outputs.
+- Used the project to understand the tradeoff between writing geometry code from scratch and relying on optimized library primitives.
+Tags: Python, Pandas, Open3D, Voxelization, Point Cloud, Downsampling, 3D Data, Geometry
+GitHub: https://github.com/KushagraBharti/PointCloud-DownSampler
+Thumbnail: /portfolio/projects/point-cloud-down-sampler.png
 
 ## Film and Creative Work
 

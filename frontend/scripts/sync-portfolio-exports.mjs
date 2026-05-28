@@ -106,7 +106,7 @@ const homepageBootstrap = {
     summary: experience.summary,
     timelineTone: experience.timelineTone,
   })),
-  projects: portfolioSnapshot.projects.slice(0, 6).map((project) => ({
+  projects: portfolioSnapshot.projects.slice(0, 9).map((project) => ({
     slug: project.slug,
     title: project.title,
     summary: project.summary,
@@ -149,7 +149,7 @@ const personSchema = {
   knowsAbout: Array.from(
     new Set(
       portfolioSnapshot.projects
-        .slice(0, 8)
+        .slice(0, 9)
         .flatMap((project) => project.tags.slice(0, 5)),
     ),
   ),
@@ -179,7 +179,7 @@ const projectItemListSchema = {
   "@type": "ItemList",
   name: `${portfolioSnapshot.profile.name} featured projects`,
   itemListElement: portfolioSnapshot.projects
-    .slice(0, 8)
+    .slice(0, 9)
     .map((project, index) => ({
       "@type": "ListItem",
       position: index + 1,
