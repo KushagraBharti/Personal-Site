@@ -621,7 +621,6 @@ export const portfolioProjects: PortfolioProject[] = [
       "3D Data",
       "Geometry",
     ],
-    githubLink: "https://github.com/KushagraBharti/PointCloud-DownSampler",
     thumbnail: "/portfolio/projects/point-cloud-down-sampler.png",
   },
   {
@@ -647,7 +646,8 @@ export const portfolioProjects: PortfolioProject[] = [
       "Soldering",
       "Embedded Systems",
     ],
-    githubLink: "https://github.com/KushagraBharti/PCB-Design-Project",
+    githubLink:
+      "https://drive.google.com/drive/folders/1Zpps2I5CSq7O7xIUTwsn9uJrs2zYMwTK?usp=sharing",
     thumbnail: "/portfolio/projects/pcb-design-project.png",
   },
   {
@@ -671,6 +671,8 @@ export const portfolioProjects: PortfolioProject[] = [
       "Ultrasonic Sensors",
       "Hardware",
     ],
+    githubLink:
+      "https://drive.google.com/drive/folders/1Ma02iYvhobL4ckcy6yOPA300WvIpOeDD?usp=sharing",
     thumbnail: "/portfolio/projects/self-driving-car-project.png",
   },
   {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-28T08:34:51.518Z",
+  "generatedAt": "2026-05-28T11:20:56.329Z",
   "profile": {
     "name": "Kushagra Bharti",
     "headline": "Student | Software Engineer | ML Enthusiast",
@@ -885,7 +885,7 @@
         "Soldering",
         "Embedded Systems"
       ],
-      "githubLink": "https://github.com/KushagraBharti/PCB-Design-Project",
+      "githubLink": "https://drive.google.com/drive/folders/1Zpps2I5CSq7O7xIUTwsn9uJrs2zYMwTK?usp=sharing",
       "thumbnail": "/portfolio/projects/pcb-design-project.png"
     },
     {
@@ -908,6 +908,7 @@
         "Ultrasonic Sensors",
         "Hardware"
       ],
+      "githubLink": "https://drive.google.com/drive/folders/1Ma02iYvhobL4ckcy6yOPA300WvIpOeDD?usp=sharing",
       "thumbnail": "/portfolio/projects/self-driving-car-project.png"
     },
     {
@@ -1010,7 +1011,6 @@
         "3D Data",
         "Geometry"
       ],
-      "githubLink": "https://github.com/KushagraBharti/PointCloud-DownSampler",
       "thumbnail": "/portfolio/projects/point-cloud-down-sampler.png"
     }
   ],

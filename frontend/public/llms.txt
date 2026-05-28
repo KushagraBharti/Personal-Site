@@ -235,7 +235,7 @@ Highlights:
 - Designed the benchmark for an upcoming LLM-agent paper studying long-horizon planning, negotiation, deception, and bias in multi-agent game settings.
 - Roadmap includes TrueSkill rankings, micro-decision suites, human-vs-LLM multiplayer, and controlled player-descriptor experiments for bias probing.
 Tags: LLM Evaluation, AI Agents, Multi-Agent Systems, Tool Calling, Function Calling, Agent Benchmarking, Deterministic Simulation, Game AI, Long-Horizon Planning, Negotiation, Deception, Bias Evaluation, Telemetry, Event Sourcing, Replayable Artifacts, Python, FastAPI, WebSockets, React, TypeScript, Vite, Zod, JSON Schema, Pytest
-GitHub: https://github.com/KushagraBharti/MonopolyBench
+Link: https://github.com/KushagraBharti/MonopolyBench
 Thumbnail: /portfolio/projects/monopoly-llm-benchmark.svg
 
 ### Pact
@@ -249,7 +249,7 @@ Highlights:
 - Designed the UI around commitment status, proof review, validator transparency, and financial stakes so users can clearly see what needs to happen next.
 - Shipped Pact as a working hackathon product and won 1st place in the HackSMU Solana Track.
 Tags: TypeScript, React Native, Expo, Expo Router, Fastify, Supabase, PostgreSQL, Supabase Auth, Supabase Storage, Solana, Web3, SPL Token, Mobile Development, Full-Stack Development, Fintech, Consumer Social, Product Engineering, System Design, Hackathon Winner
-GitHub: https://github.com/KushagraBharti/Pact
+Link: https://github.com/KushagraBharti/Pact
 Thumbnail: /portfolio/projects/pact.png
 
 ### Arachne - Web Crawler
@@ -264,7 +264,7 @@ Highlights:
 - Persisted each run as local artifacts: run config, extracted pages, tree edges/nodes, diagnostics, skips, retries, errors, and stop reasons.
 - Verified the project with backend checks (`go test ./...`) and frontend build checks (`bun run build`).
 Tags: Go, TypeScript, Next.js, React, Web Crawling, Concurrent Systems, Worker Pools, Frontier Queues, Robots.txt, URL Canonicalization, Deduplication, Server-Sent Events, JSON Artifacts, Performance Benchmarking, System Design, Full-Stack Development
-GitHub: https://github.com/KushagraBharti/Web-Crawler-Go
+Link: https://github.com/KushagraBharti/Web-Crawler-Go
 Thumbnail: /portfolio/projects/arachne.png
 
 ### AutoHDR ML Lens Correction
@@ -279,7 +279,7 @@ Highlights:
 - Validated the codebase with 108/108 passing tests covering geometry contracts, inference fallback behavior, training hooks, QA tooling, and submission flows.
 - Built this as a competition-grade system rather than a visual demo: training, inference, scoring, QA, and packaging were all treated as part of the product.
 Tags: Computer Vision, Deep Learning, PyTorch, CNNs, ResNet34, Image Geometry, Lens Distortion Correction, Brown–Conrady Model, Optical Flow, Residual Flow, Warping / grid_sample, Model Training, Staged Training, Benchmarking, Reproducible Systems, Testing, QA Tooling, Competition Engineering
-GitHub: https://github.com/KushagraBharti/AutoHDR-LensCorrection
+Link: https://github.com/KushagraBharti/AutoHDR-LensCorrection
 Thumbnail: /portfolio/projects/autohdr-ml-lens-correction.png
 
 ### NovelBench
@@ -294,7 +294,7 @@ Highlights:
 - Built a public Next.js product surface with a landing page, live arena, searchable archive, leaderboard views, and detailed run pages.
 - Launched the platform with real usage, producing 47 benchmark runs and 194 generated ideas so far.
 Tags: TypeScript, Next.js, React, Convex, OpenRouter, LLMs, AI Benchmarking, Workflow Orchestration, Realtime Systems, System Design, Evaluation Infrastructure, Prompt Engineering, Product Engineering, Research Infrastructure, Startup Tools, Solo Project
-GitHub: https://github.com/KushagraBharti/NovelBench
+Link: https://github.com/KushagraBharti/NovelBench
 Thumbnail: /portfolio/projects/novel-bench.png
 
 ### IMC Prosperity 4 Quant Trading Competition
@@ -321,7 +321,7 @@ Highlights:
 - Submitted a best stored Round 5 official strategy worth 118,855.008789062 PnL, with top realized contributors including PEBBLES_S, PEBBLES_XL, MICROCHIP_OVAL, TRANSLATOR_SPACE_GRAY, SLEEP_COTTON, PANEL_4X4, MICROCHIP_SQUARE, UV_AMBER, ROBOT_LAUNDRY, and GALAXY_PLANETARY.
 - Codified a promotion process that required local full replay, portal-window replay, official-feedback comparison, product attribution, inventory-path review, drawdown analysis, state-size checks, and a concrete transfer-risk explanation before trusting a candidate.
 Tags: Quantitative Trading, Algorithmic Trading, IMC Prosperity, Top 6% Worldwide, Global Competition, Market Making, Options Pricing, Black-Scholes, Backtesting, Alpha Research, Market Microstructure, Statistical Arbitrage, Fair Value Modeling, Inventory Management, Execution Strategy, Signal Research, Time-Series Analysis, Candidate Evaluation, Official Window Diagnostics, Simulator Reconciliation, State Serialization, Python, Data Analysis, Competition Engineering, Research Infrastructure, Manual Optimization
-GitHub: https://github.com/KushagraBharti/IMC-Prosperity-4
+Link: https://github.com/KushagraBharti/IMC-Prosperity-4
 Thumbnail: /portfolio/projects/imc-prosperity.png
 
 ### F1 Optimization Project
@@ -334,7 +334,7 @@ Highlights:
 - Measured headless simulator performance at 12.63 steps/sec with the full sensor/collision workload enabled.
 - Added Ray/RLlib SAC training and rollout entrypoints, but full training results remain incomplete because the modern environment needs a Ray-supported Python setup and updated RLlib API compatibility.
 Tags: Reinforcement Learning, Gymnasium, Ray RLlib, SAC, Pygame, OpenCV, Simulation, F1, Path Planning, Reward Design, Computer Vision, Python
-GitHub: https://github.com/KushagraBharti/HackTX-2024---F1-Optimization
+Link: https://github.com/KushagraBharti/HackTX-2024---F1-Optimization
 Thumbnail: /portfolio/projects/f1-optimization.png
 
 ### Beyond Chat
@@ -353,7 +353,7 @@ Highlights:
 - Built the frontend as a polished React/Vite/Tailwind app with protected routes, dedicated studio layouts, shared primitives, artifact library/detail flows, and route-state handoffs.
 - Used a Starbucks Cinder Orange launch workflow as an acceptance story to test research, data analysis, finance reasoning, writing outputs, image direction, model comparison, and artifact bundling through general product flows.
 Tags: TypeScript, React, Vite, Tailwind CSS, Python, FastAPI, Supabase, PostgreSQL, Supabase Auth, Supabase Storage, OpenRouter, Exa, Stripe, LLMs, Agentic AI, AI Agents, Tool Calling, Workflow Orchestration, Artifact Systems, Context Engineering, Model Comparison, Data Analysis, RAG, Full-Stack Development, System Design, Product Engineering
-GitHub: https://github.com/KushagraBharti/Beyond-Chat
+Link: https://github.com/KushagraBharti/Beyond-Chat
 Thumbnail: /portfolio/projects/beyond-chat.png
 
 ### Kaggle Titanic ML
@@ -366,7 +366,7 @@ Highlights:
 - Reached ~86.76% training accuracy with Decision Tree / Random Forest baselines while using the project mainly to learn the full ML workflow.
 - Wrote a PDF report documenting the process, mistakes, experiments, and lessons learned instead of only publishing final code.
 Tags: Machine Learning, Kaggle, Titanic, Data Analysis, Python, Pandas, scikit-learn, EDA, Feature Engineering, Random Forest, Matplotlib, Seaborn
-GitHub: https://github.com/KushagraBharti/Kaggle-Titanic-Solution
+Link: https://github.com/KushagraBharti/Kaggle-Titanic-Solution
 Thumbnail: /portfolio/projects/kaggle-titanic-ml.png
 
 ### PseudoLawyer
@@ -381,7 +381,7 @@ Highlights:
 - Measured OpenRouter chat-completion latency at p50/p95 = 897ms/981ms over 5 runs for the AI layer.
 - Built a polished dark UI with role-based flows, dashboard pages, negotiation detail views, contract detail views, typing/loading states, and simple download support.
 Tags: Next.js 15, TypeScript, Supabase, Supabase Auth, Supabase Realtime, PostgreSQL, OpenRouter, Claude 3.5 Sonnet, LLMs, AI Mediator, Contract Generation, Legal Tech, Tailwind CSS, Framer Motion, Full-Stack Development
-GitHub: https://github.com/KushagraBharti/PseudoLawyer
+Link: https://github.com/KushagraBharti/PseudoLawyer
 Thumbnail: /portfolio/projects/pseudo-lawyer.png
 
 ### Personal Portfolio Website
@@ -394,7 +394,7 @@ Highlights:
 - Integrated live GitHub and weather widgets with backend caching and graceful fallbacks so the homepage remains dynamic without depending on fragile client-side calls.
 - Built the app as a responsive React/Vite/Tailwind interface with Express APIs, motion, reusable components, and verification for build, lint, unit, integration, and live flows.
 Tags: TypeScript, Node.js, Express, React, Vite, Tailwind CSS, Framer Motion, Bun, Vitest, REST API, Full-Stack Development, API Integration, Live Widgets, System Design, Testing
-GitHub: https://github.com/KushagraBharti/Personal-Site
+Link: https://github.com/KushagraBharti/Personal-Site
 Thumbnail: /portfolio/projects/personal-site.png
 
 ### Algorithmic Trading Quantitative Test Environment
@@ -408,7 +408,7 @@ Highlights:
 - Benchmarked the full evaluation loop at ~1.54M bars/sec on a 199,951-bar seeded synthetic dataset, showing the research loop is fast enough for iteration.
 - Current limitations: slippage modeling, parameter sweeps, position sizing, and walk-forward validation are not fully implemented yet.
 Tags: Python, Alpaca API, Pandas, NumPy, Matplotlib, Algorithmic Trading, Backtesting, Paper Trading, Risk Metrics, Sharpe Ratio, Max Drawdown, Quant Research
-GitHub: https://github.com/KushagraBharti/Quant-Test-Environment
+Link: https://github.com/KushagraBharti/Quant-Test-Environment
 Thumbnail: /portfolio/projects/quant-test-environment.png
 
 ### Northstar Agentic Financial Memory Platform
@@ -424,7 +424,7 @@ Highlights:
 - Built the Express + TypeScript backend with Supabase/Postgres-ready persistence, OpenRouter/OpenAI-compatible model execution, memory/status APIs, agent streaming routes, and local JSON/JSONL mirrors.
 - Focused the architecture on agentic workflows, contextual memory, tool use, observability, audit trails, human-in-the-loop guardrails, and grounded retrieval/context packets.
 Tags: TypeScript, React, Vite, Express, Supabase, PostgreSQL, OpenRouter, LLMs, Agentic AI, AI Agents, Tool Calling, Contextual Memory, RAG, JSONL Tracing, Observability, Guardrails, FinTech, Portfolio Analytics, Scenario Analysis, Full-Stack Development, System Design
-GitHub: https://github.com/YuvrajKashyap/northstar
+Link: https://github.com/YuvrajKashyap/northstar
 Thumbnail: /portfolio/projects/northstar.png
 
 ### Age & Gender Recognition
@@ -435,7 +435,7 @@ Highlights:
 - Tuned confidence thresholds and padding around detected face regions to improve prediction stability.
 - Rendered bounding boxes and prediction labels directly on the video stream for immediate visual feedback.
 Tags: Python, OpenCV, DNN, Caffe, Face Detection, Real-Time Processing, Computer Vision
-GitHub: https://github.com/KushagraBharti/Gender-Age-Detection
+Link: https://github.com/KushagraBharti/Gender-Age-Detection
 Thumbnail: /portfolio/projects/age-gender-recognition.png
 
 ### PCB Design Project
@@ -446,7 +446,7 @@ Highlights:
 - Worked through design challenges involving ATmega328 variants, SMD/THT parts, capacitive-touch buttons, power routing, and component placement.
 - Assembled and tested the boards after delivery, gaining hands-on soldering, debugging, and hardware bring-up experience.
 Tags: PCB Design, Circuit Design, EasyEDA, JLCPCB, LCSC, Electronics, Hardware, Soldering, Embedded Systems
-GitHub: https://github.com/KushagraBharti/PCB-Design-Project
+Link: https://drive.google.com/drive/folders/1Zpps2I5CSq7O7xIUTwsn9uJrs2zYMwTK?usp=sharing
 Thumbnail: /portfolio/projects/pcb-design-project.png
 
 ### Self-Driving Car Project
@@ -456,7 +456,7 @@ Highlights:
 - Wrote C++ control logic to read ultrasonic distance data and perform obstacle detection/avoidance.
 - Learned the hardware/software debugging loop: wiring, sensor noise, motor control, soldering, and physical-world failure cases.
 Tags: Arduino, C++, Self-Driving, Autonomous Vehicle, RC Car, Electronics, Ultrasonic Sensors, Hardware
-GitHub: N/A
+Link: https://drive.google.com/drive/folders/1Ma02iYvhobL4ckcy6yOPA300WvIpOeDD?usp=sharing
 Thumbnail: /portfolio/projects/self-driving-car-project.png
 
 ### CircuitSeer (Circuit Solver)
@@ -468,7 +468,7 @@ Highlights:
 - Connected the detection outputs to downstream logic for simple series/parallel resistance and capacitance analysis.
 - Built the project with Python and Flask so users could upload circuit diagrams and receive structured analysis through a web interface.
 Tags: Python, YOLOv5, Flask, OpenCV, Computer Vision, Object Detection, Canny Edge Detection, Hough Transform, Circuit Analysis
-GitHub: https://github.com/Hteam121/circuit-seer
+Link: https://github.com/Hteam121/circuit-seer
 Thumbnail: /portfolio/projects/circuit-seer.png
 
 ### DataDrive: Unified Insights for Data & Fuel Optimization
@@ -481,7 +481,7 @@ Highlights:
 - Built interactive React/D3 visualizations and a 3D car viewer to make the model outputs easier to explore.
 - Integrated GPT-powered explanation generation and Pinata storage as experimental transparency/auditability features.
 Tags: Flask, Python, Machine Learning, Linear Regression, KMeans, React, D3.js, Three.js, Data Analytics, APScheduler, SHAP, OpenAI, Pinata
-GitHub: https://github.com/KushagraBharti/HACKUTD-Data-Drive
+Link: https://github.com/KushagraBharti/HACKUTD-Data-Drive
 Thumbnail: /portfolio/projects/data-drive.png
 
 ### Maze Traversal
@@ -492,7 +492,7 @@ Highlights:
 - Added file loading, start-position detection, intermediate maze printing, and execution-time measurement.
 - Used the project to practice recursion, backtracking, grid traversal, and simple algorithm visualization.
 Tags: Python, Depth-First Search, Recursion, Maze Solving, Backtracking, Algorithms
-GitHub: N/A
+Link: N/A
 Thumbnail: /portfolio/projects/maze-traversal.png
 
 ### Point Cloud Down Sampler
@@ -504,7 +504,7 @@ Highlights:
 - Built a small pipeline to load CSV point clouds, convert them into PCD format, downsample, and export processed outputs.
 - Used the project to understand the tradeoff between writing geometry code from scratch and relying on optimized library primitives.
 Tags: Python, Pandas, Open3D, Voxelization, Point Cloud, Downsampling, 3D Data, Geometry
-GitHub: https://github.com/KushagraBharti/PointCloud-DownSampler
+Link: N/A
 Thumbnail: /portfolio/projects/point-cloud-down-sampler.png
 
 ## Film and Creative Work

@@ -144,7 +144,7 @@ describe("llmsTextService", () => {
     expect(result).toContain("## Project Source Links");
     expect(result).toContain("### Monopoly Bench");
     expect(result).toContain("- Runs LLM competitions.");
-    expect(result).toContain("GitHub: https://github.com/kushagrabharti/monopoly-bench");
+    expect(result).toContain("Link: https://github.com/kushagrabharti/monopoly-bench");
     expect(result).toContain("## Film and Creative Work");
     expect(result).toContain("Section Summary: Stories and taste make us human");
     expect(result).toContain("- I like filmmaking.");

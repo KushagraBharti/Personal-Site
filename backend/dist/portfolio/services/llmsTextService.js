@@ -50,7 +50,7 @@ const formatProjects = (projects) => projects
     "Highlights:",
     ...project.description.map((detail) => `- ${detail}`),
     `Tags: ${project.tags.join(", ")}`,
-    `GitHub: ${project.githubLink || "N/A"}`,
+    `Link: ${project.githubLink || "N/A"}`,
     `Thumbnail: ${project.thumbnail || "N/A"}`,
 ].join("\n"))
     .join("\n\n");
