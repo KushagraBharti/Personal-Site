@@ -370,7 +370,7 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
       ],
       "tags": [
         "LLM Evaluation",
-        "Game Simulation",
+        "Agent Harness",
         "AI Agents",
         "Multi-Agent Systems",
         "Tool Calling",
@@ -416,13 +416,12 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
       ],
       "tags": [
         "Reinforcement Learning",
-        "Vehicle Dynamics",
+        "Physics Simulation",
         "Gymnasium",
         "PyTorch",
         "Stable-Baselines3",
         "PPO",
         "CUDA",
-        "Physics Simulation",
         "Control",
         "Reward Shaping",
         "Custom RL Environment",
@@ -486,7 +485,6 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
         "Statistical Arbitrage",
         "Residual Signals",
         "Drift / Carry",
-        "Backtesting",
         "PnL Attribution",
         "Drawdown Analysis",
         "Inventory Management",
@@ -516,8 +514,8 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
         "Shipped Pact as a working hackathon product and won 1st place in the HackSMU Solana Track."
       ],
       "tags": [
-        "Hackathon Winner",
         "React Native",
+        "Full-Stack Mobile",
         "TypeScript",
         "Expo",
         "Expo Router",
@@ -542,7 +540,7 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
     {
       "slug": "arachne-web-crawler",
       "order": 5,
-      "title": "Arachne - Web Crawler",
+      "title": "Go Web Crawler",
       "summary": "A high-concurrency Go web crawler with worker pools, host-aware frontier scheduling, PostgreSQL persistence, and 100,000-page public-web crawl runs.",
       "description": [
         "Context: Built a systems-heavy web crawler to crawl large web graphs, extract page content, preserve discovery structure, and make crawl runs inspectable instead of treating crawling as a black-box HTTP loop.",
@@ -557,10 +555,9 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
         "What made it hard: Large public-web crawling breaks simple assumptions quickly; the crawler has to handle duplicate pressure, frontier growth, host imbalance, fetch failures, HTML variance, persistence overhead, and benchmark reproducibility."
       ],
       "tags": [
-        "Web Crawling",
         "Go Concurrency",
-        "Go",
         "Goroutines",
+        "Go",
         "Channels",
         "Concurrency",
         "HTTP",
@@ -602,8 +599,8 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
         "Launched the platform with real usage, producing 47 benchmark runs and 194 generated ideas so far."
       ],
       "tags": [
-        "AI Benchmarking",
-        "Workflow Orchestration",
+        "LLM Evaluation",
+        "Evaluation Infrastructure",
         "TypeScript",
         "Next.js",
         "React",
@@ -612,7 +609,7 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
         "LLMs",
         "Realtime Systems",
         "System Design",
-        "Evaluation Infrastructure",
+        "Workflow Orchestration",
         "Prompt Engineering",
         "Product Engineering",
         "Research Infrastructure",
@@ -639,7 +636,7 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
       ],
       "tags": [
         "Computer Vision",
-        "Lens Correction",
+        "ResNet34 CNN",
         "Deep Learning",
         "PyTorch",
         "CNNs",
@@ -681,7 +678,7 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
         "Used a Starbucks Cinder Orange launch workflow as an acceptance story to test research, data analysis, finance reasoning, writing outputs, image direction, model comparison, and artifact bundling through general product flows."
       ],
       "tags": [
-        "AI Workspace",
+        "RAG",
         "Artifact Systems",
         "TypeScript",
         "React",
@@ -704,7 +701,6 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
         "Context Engineering",
         "Model Comparison",
         "Data Analysis",
-        "RAG",
         "Full-Stack Development",
         "System Design",
         "Product Engineering"
@@ -726,9 +722,8 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
         "Wrote a PDF report documenting the process, mistakes, experiments, and lessons learned instead of only publishing final code."
       ],
       "tags": [
-        "ML Pipeline",
-        "Feature Engineering",
         "Machine Learning",
+        "Feature Engineering",
         "Kaggle",
         "Titanic",
         "Data Analysis",

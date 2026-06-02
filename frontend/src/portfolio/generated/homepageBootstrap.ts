@@ -116,7 +116,7 @@ export const homepageBootstrap: HomePageBootstrap = {
       "summary": "A deterministic multi-agent LLM benchmark where tool-calling agents play full Monopoly games for research on planning, negotiation, deception, and bias.",
       "tags": [
         "LLM Evaluation",
-        "Game Simulation"
+        "Agent Harness"
       ],
       "thumbnail": "/portfolio/projects/monopoly-llm-benchmark.svg",
       "githubLink": "https://github.com/KushagraBharti/MonopolyBench"
@@ -127,7 +127,7 @@ export const homepageBootstrap: HomePageBootstrap = {
       "summary": "A custom Gymnasium Monza RL environment and PPO training stack with F1-style physics, ray-cast perception, telemetry calibration, and replay.",
       "tags": [
         "Reinforcement Learning",
-        "Vehicle Dynamics"
+        "Physics Simulation"
       ],
       "thumbnail": "/portfolio/projects/f1-optimization.png",
       "githubLink": "https://github.com/KushagraBharti/F1-ReinforcementLearning"
@@ -148,19 +148,19 @@ export const homepageBootstrap: HomePageBootstrap = {
       "title": "Pact",
       "summary": "A hackathon winner mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and rely on trusted validators.",
       "tags": [
-        "Hackathon Winner",
-        "React Native"
+        "React Native",
+        "Full-Stack Mobile"
       ],
       "thumbnail": "/portfolio/projects/pact.png",
       "githubLink": "https://github.com/KushagraBharti/Pact"
     },
     {
       "slug": "arachne-web-crawler",
-      "title": "Arachne - Web Crawler",
+      "title": "Go Web Crawler",
       "summary": "A high-concurrency Go web crawler with worker pools, host-aware frontier scheduling, PostgreSQL persistence, and 100,000-page public-web crawl runs.",
       "tags": [
-        "Web Crawling",
-        "Go Concurrency"
+        "Go Concurrency",
+        "Goroutines"
       ],
       "thumbnail": "/portfolio/projects/arachne.png",
       "githubLink": "https://github.com/KushagraBharti/Web-Crawler-Go"
@@ -170,8 +170,8 @@ export const homepageBootstrap: HomePageBootstrap = {
       "title": "NovelBench",
       "summary": "A live multi-stage LLM benchmark where frontier models generate, critique, revise, and vote on creative prompts under pressure.",
       "tags": [
-        "AI Benchmarking",
-        "Workflow Orchestration"
+        "LLM Evaluation",
+        "Evaluation Infrastructure"
       ],
       "thumbnail": "/portfolio/projects/novel-bench.png",
       "githubLink": "https://github.com/KushagraBharti/NovelBench"
@@ -182,7 +182,7 @@ export const homepageBootstrap: HomePageBootstrap = {
       "summary": "A geometry-first computer vision system for automatic lens correction, combining a staged ResNet34 hybrid CNN with Brown-Conrady camera geometry.",
       "tags": [
         "Computer Vision",
-        "Lens Correction"
+        "ResNet34 CNN"
       ],
       "thumbnail": "/portfolio/projects/autohdr-ml-lens-correction.png",
       "githubLink": "https://github.com/KushagraBharti/AutoHDR-LensCorrection"
@@ -192,7 +192,7 @@ export const homepageBootstrap: HomePageBootstrap = {
       "title": "Beyond Chat",
       "summary": "An artifact-first AI workspace with specialized studios, tool-calling runs, durable context, model comparison, and storage-backed outputs.",
       "tags": [
-        "AI Workspace",
+        "RAG",
         "Artifact Systems"
       ],
       "thumbnail": "/portfolio/projects/beyond-chat.png",
@@ -203,7 +203,7 @@ export const homepageBootstrap: HomePageBootstrap = {
       "title": "Kaggle Titanic ML",
       "summary": "A complete Titanic ML pipeline covering data cleaning, feature engineering, model comparison, EDA, and a documented learning report.",
       "tags": [
-        "ML Pipeline",
+        "Machine Learning",
         "Feature Engineering"
       ],
       "thumbnail": "/portfolio/projects/kaggle-titanic-ml.png",
