@@ -6,7 +6,7 @@ export const portfolioProjects: PortfolioProject[] = [
     order: 1,
     title: "MonopolyBench",
     summary:
-      "A deterministic multi-agent LLM evaluation harness where tool-calling agents play full Monopoly games, enabling research on planning, negotiation, deception, and bias in long-running agent environments.",
+      "A deterministic multi-agent LLM benchmark where tool-calling agents play full Monopoly games for research on planning, negotiation, deception, and bias.",
     description: [
       "Built MonopolyBench as a deterministic LLM-agent benchmark where multiple models play complete Monopoly games through schema-bound tool calls instead of free-form text.",
       "Implemented the core Monopoly rules engine from scratch with deterministic dice/cards, strict turn enforcement, property ownership, rent, auctions, jail, trades, liquidation, and bankruptcy.",
@@ -19,6 +19,7 @@ export const portfolioProjects: PortfolioProject[] = [
     ],
     tags: [
       "LLM Evaluation",
+      "Game Simulation",
       "AI Agents",
       "Multi-Agent Systems",
       "Tool Calling",
@@ -51,7 +52,7 @@ export const portfolioProjects: PortfolioProject[] = [
     order: 4,
     title: "Pact",
     summary:
-      "A hackathon winner mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.",
+      "A hackathon winner mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and rely on trusted validators.",
     description: [
       "Built Pact as a consumer accountability product: users create commitments, stake money, submit proof, and rely on a small trusted validator group to approve or reject the outcome.",
       "Designed the core product loop from pact creation → stake lock → proof upload → validator voting → stake release/forfeit, making accountability feel concrete instead of vague.",
@@ -62,8 +63,9 @@ export const portfolioProjects: PortfolioProject[] = [
       "Shipped Pact as a working hackathon product and won 1st place in the HackSMU Solana Track.",
     ],
     tags: [
-      "TypeScript",
+      "Hackathon Winner",
       "React Native",
+      "TypeScript",
       "Expo",
       "Expo Router",
       "Fastify",
@@ -80,7 +82,6 @@ export const portfolioProjects: PortfolioProject[] = [
       "Consumer Social",
       "Product Engineering",
       "System Design",
-      "Hackathon Winner",
     ],
     githubLink: "https://github.com/KushagraBharti/Pact",
     thumbnail: "/portfolio/projects/pact.png",
@@ -90,7 +91,7 @@ export const portfolioProjects: PortfolioProject[] = [
     order: 5,
     title: "Arachne - Web Crawler",
     summary:
-      "A high-concurrency Go web crawler built around goroutine worker pools, channel-based scheduling, a host-partitioned breadth-first frontier, PostgreSQL persistence, and public-web benchmarks up to 100,000 successful HTML pages.",
+      "A high-concurrency Go web crawler with worker pools, host-aware frontier scheduling, PostgreSQL persistence, and 100,000-page public-web crawl runs.",
     description: [
       "Context: Built a systems-heavy web crawler to crawl large web graphs, extract page content, preserve discovery structure, and make crawl runs inspectable instead of treating crawling as a black-box HTTP loop.",
       "Problem: A naive crawler can overload one domain, duplicate URLs, lose frontier state, hide failures, or produce unreadable output; Arachne needed bounded concurrency, host-aware scheduling, canonical deduplication, structured persistence, and reproducible benchmarks.",
@@ -104,12 +105,13 @@ export const portfolioProjects: PortfolioProject[] = [
       "What made it hard: Large public-web crawling breaks simple assumptions quickly; the crawler has to handle duplicate pressure, frontier growth, host imbalance, fetch failures, HTML variance, persistence overhead, and benchmark reproducibility.",
     ],
     tags: [
+      "Web Crawling",
+      "Go Concurrency",
       "Go",
       "Goroutines",
       "Channels",
       "Concurrency",
       "HTTP",
-      "Web Crawling",
       "BFS Frontier",
       "Frontier Scheduling",
       "Worker Pools",
@@ -137,7 +139,7 @@ export const portfolioProjects: PortfolioProject[] = [
     order: 7,
     title: "AutoHDR ML Lens Correction",
     summary:
-      "A geometry-first computer vision system for automatic lens correction, using a staged ResNet34 hybrid CNN, Brown–Conrady camera geometry, and learned residual flow.",
+      "A geometry-first computer vision system for automatic lens correction, combining a staged ResNet34 hybrid CNN with Brown-Conrady camera geometry.",
     description: [
       "Trained a staged ResNet34 hybrid CNN for lens correction on 23,118 paired images using cloud H200, moving from param-only → hybrid → finetune.",
       "Scored 0.8942 on the leaderboard and earned a CTO review for the model architecture and training approach.",
@@ -150,6 +152,7 @@ export const portfolioProjects: PortfolioProject[] = [
     ],
     tags: [
       "Computer Vision",
+      "Lens Correction",
       "Deep Learning",
       "PyTorch",
       "CNNs",
@@ -176,7 +179,7 @@ export const portfolioProjects: PortfolioProject[] = [
     order: 6,
     title: "NovelBench",
     summary:
-      "A live multi-stage LLM benchmark where frontier models generate, critique, revise, and vote on creative prompts to evaluate innovation under pressure.",
+      "A live multi-stage LLM benchmark where frontier models generate, critique, revise, and vote on creative prompts under pressure.",
     description: [
       "Built NovelBench to evaluate whether LLMs can actually innovate through a structured creative process instead of a single one-shot response.",
       "Designed a multi-stage workflow where 2–8 models generate ideas, anonymously critique each other, revise with aggregated feedback, and vote on final outputs.",
@@ -188,14 +191,14 @@ export const portfolioProjects: PortfolioProject[] = [
       "Launched the platform with real usage, producing 47 benchmark runs and 194 generated ideas so far.",
     ],
     tags: [
+      "AI Benchmarking",
+      "Workflow Orchestration",
       "TypeScript",
       "Next.js",
       "React",
       "Convex",
       "OpenRouter",
       "LLMs",
-      "AI Benchmarking",
-      "Workflow Orchestration",
       "Realtime Systems",
       "System Design",
       "Evaluation Infrastructure",
@@ -213,7 +216,7 @@ export const portfolioProjects: PortfolioProject[] = [
     order: 3,
     title: "IMC Prosperity 4 Quant Trading Competition",
     summary:
-      "A top-6%-worldwide IMC Prosperity 4 quant trading system with 203,249 XIREC, five rounds of fair-value market making, drift/carry, Black-Scholes voucher pricing, volatility-smile diagnostics, residual/stat-arb, DP hindsight oracles, and hundreds of backtests.",
+      "A top-6%-worldwide IMC Prosperity 4 trading system spanning fair-value market making, options pricing, residual signals, DP oracles, and replay diagnostics.",
     description: [
       "Context: Competed in IMC Prosperity 4, a multi-round global algorithmic trading competition with both algorithmic and manual trading components, finishing top 6% worldwide with 203,249 XIREC.",
       "Leaderboard result: Finished #1088 overall, #1404 algorithmic, #893 manual, and #295 country, using a combination of algorithmic strategies, manual puzzle optimization, and round-by-round research iteration.",
@@ -237,6 +240,7 @@ export const portfolioProjects: PortfolioProject[] = [
     ],
     tags: [
       "Quantitative Trading",
+      "Backtesting",
       "Algorithmic Trading",
       "IMC Prosperity",
       "Top 6% Worldwide",
@@ -272,7 +276,7 @@ export const portfolioProjects: PortfolioProject[] = [
     order: 8,
     title: "Beyond Chat",
     summary:
-      "An artifact-first AI workspace that turns chat into production workflows: studios, tool-calling runs, durable context, model comparison, storage-backed artifacts, and provider-aware orchestration.",
+      "An artifact-first AI workspace with specialized studios, tool-calling runs, durable context, model comparison, and storage-backed outputs.",
     description: [
       "Built Beyond Chat around specialized studios instead of endless chat threads, with dedicated surfaces for Chat, Writing, Research, Image, Data, Finance, Artifacts, Settings, and Compare.",
       "Designed the product around durable artifacts: meaningful outputs can be saved, searched, reopened, exported, bundled, and reused as context for future model calls.",
@@ -288,6 +292,8 @@ export const portfolioProjects: PortfolioProject[] = [
       "Used a Starbucks Cinder Orange launch workflow as an acceptance story to test research, data analysis, finance reasoning, writing outputs, image direction, model comparison, and artifact bundling through general product flows.",
     ],
     tags: [
+      "AI Workspace",
+      "Artifact Systems",
       "TypeScript",
       "React",
       "Vite",
@@ -306,7 +312,6 @@ export const portfolioProjects: PortfolioProject[] = [
       "AI Agents",
       "Tool Calling",
       "Workflow Orchestration",
-      "Artifact Systems",
       "Context Engineering",
       "Model Comparison",
       "Data Analysis",
@@ -393,7 +398,7 @@ export const portfolioProjects: PortfolioProject[] = [
     order: 2,
     title: "F1 Optimization Project",
     summary:
-      "A custom Gymnasium Monza RL environment and PPO training stack with F1-style vehicle physics, ray-cast perception, reward shaping, Fast-F1 telemetry calibration, CUDA checkpointing, rollout telemetry, and replay.",
+      "A custom Gymnasium Monza RL environment and PPO training stack with F1-style physics, ray-cast perception, telemetry calibration, and replay.",
     description: [
       "Context: Built a reinforcement-learning racing system around a custom Monza environment where agents learn to drive through simulated F1-style physics instead of controlling a toy gridworld.",
       "Problem: A credible racing RL project needs more than calling PPO on a demo environment; the environment must define a meaningful state space, action space, reward function, termination logic, physics model, baselines, telemetry, and replay loop.",
@@ -407,6 +412,7 @@ export const portfolioProjects: PortfolioProject[] = [
     ],
     tags: [
       "Reinforcement Learning",
+      "Vehicle Dynamics",
       "Gymnasium",
       "PyTorch",
       "Stable-Baselines3",
@@ -437,7 +443,7 @@ export const portfolioProjects: PortfolioProject[] = [
     order: 9,
     title: "Kaggle Titanic ML",
     summary:
-      "A complete beginner-to-intermediate ML pipeline for the Titanic dataset, focused on cleaning, feature engineering, model comparison, and documenting the full learning process.",
+      "A complete Titanic ML pipeline covering data cleaning, feature engineering, model comparison, EDA, and a documented learning report.",
     description: [
       "Built an end-to-end Titanic survival prediction workflow using Pandas and scikit-learn.",
       "Cleaned missing values, extracted passenger titles, encoded categorical variables, and engineered features such as FamilySize and IsAlone.",
@@ -447,6 +453,8 @@ export const portfolioProjects: PortfolioProject[] = [
       "Wrote a PDF report documenting the process, mistakes, experiments, and lessons learned instead of only publishing final code.",
     ],
     tags: [
+      "ML Pipeline",
+      "Feature Engineering",
       "Machine Learning",
       "Kaggle",
       "Titanic",
@@ -455,7 +463,6 @@ export const portfolioProjects: PortfolioProject[] = [
       "Pandas",
       "scikit-learn",
       "EDA",
-      "Feature Engineering",
       "Random Forest",
       "Matplotlib",
       "Seaborn",

@@ -225,7 +225,7 @@ Link: https://www.sstx.org/boarding/boarding-student-support
 ## Project Source Links
 
 ### MonopolyBench
-Summary: A deterministic multi-agent LLM evaluation harness where tool-calling agents play full Monopoly games, enabling research on planning, negotiation, deception, and bias in long-running agent environments.
+Summary: A deterministic multi-agent LLM benchmark where tool-calling agents play full Monopoly games for research on planning, negotiation, deception, and bias.
 Highlights:
 - Built MonopolyBench as a deterministic LLM-agent benchmark where multiple models play complete Monopoly games through schema-bound tool calls instead of free-form text.
 - Implemented the core Monopoly rules engine from scratch with deterministic dice/cards, strict turn enforcement, property ownership, rent, auctions, jail, trades, liquidation, and bankruptcy.
@@ -235,12 +235,12 @@ Highlights:
 - Built a FastAPI/WebSocket backend and render-only React UI so runs can be watched live while the engine remains the source of truth.
 - Designed the benchmark for an upcoming LLM-agent paper studying long-horizon planning, negotiation, deception, and bias in multi-agent game settings.
 - Roadmap includes TrueSkill rankings, micro-decision suites, human-vs-LLM multiplayer, and controlled player-descriptor experiments for bias probing.
-Tags: LLM Evaluation, AI Agents, Multi-Agent Systems, Tool Calling, Function Calling, Agent Benchmarking, Deterministic Simulation, Game AI, Long-Horizon Planning, Negotiation, Deception, Bias Evaluation, Telemetry, Event Sourcing, Replayable Artifacts, Python, FastAPI, WebSockets, React, TypeScript, Vite, Zod, JSON Schema, Pytest
+Tags: LLM Evaluation, Game Simulation, AI Agents, Multi-Agent Systems, Tool Calling, Function Calling, Agent Benchmarking, Deterministic Simulation, Game AI, Long-Horizon Planning, Negotiation, Deception, Bias Evaluation, Telemetry, Event Sourcing, Replayable Artifacts, Python, FastAPI, WebSockets, React, TypeScript, Vite, Zod, JSON Schema, Pytest
 Link: https://github.com/KushagraBharti/MonopolyBench
 Thumbnail: /portfolio/projects/monopoly-llm-benchmark.svg
 
 ### F1 Optimization Project
-Summary: A custom Gymnasium Monza RL environment and PPO training stack with F1-style vehicle physics, ray-cast perception, reward shaping, Fast-F1 telemetry calibration, CUDA checkpointing, rollout telemetry, and replay.
+Summary: A custom Gymnasium Monza RL environment and PPO training stack with F1-style physics, ray-cast perception, telemetry calibration, and replay.
 Highlights:
 - Context: Built a reinforcement-learning racing system around a custom Monza environment where agents learn to drive through simulated F1-style physics instead of controlling a toy gridworld.
 - Problem: A credible racing RL project needs more than calling PPO on a demo environment; the environment must define a meaningful state space, action space, reward function, termination logic, physics model, baselines, telemetry, and replay loop.
@@ -251,12 +251,12 @@ Highlights:
 - Evaluation and benchmarks: The system exposes the pieces needed to compare policies over reward, progress, crash/off-track rate, lap behavior, rollout traces, and replayable driving trajectories.
 - Impact and outcome: The project demonstrates full-stack ML systems work: custom environment design, physics simulation, reward engineering, RL training, GPU-backed evaluation, telemetry, and qualitative replay.
 - What made it hard: The hard part was not simply training PPO; it was making the simulator learnable, measurable, and debuggable while keeping physics, observations, rewards, baselines, and replays coherent enough to evaluate agent progress.
-Tags: Reinforcement Learning, Gymnasium, PyTorch, Stable-Baselines3, PPO, CUDA, Physics Simulation, Control, Reward Shaping, Custom RL Environment, Vehicle Dynamics, Bicycle Model, Ray-Cast Sensors, Telemetry, Policy Evaluation, Rollout Replay, Simulation, Python, NumPy, Pygame, OpenCV, Fast-F1
+Tags: Reinforcement Learning, Vehicle Dynamics, Gymnasium, PyTorch, Stable-Baselines3, PPO, CUDA, Physics Simulation, Control, Reward Shaping, Custom RL Environment, Vehicle Dynamics, Bicycle Model, Ray-Cast Sensors, Telemetry, Policy Evaluation, Rollout Replay, Simulation, Python, NumPy, Pygame, OpenCV, Fast-F1
 Link: https://github.com/KushagraBharti/F1-ReinforcementLearning
 Thumbnail: /portfolio/projects/f1-optimization.png
 
 ### IMC Prosperity 4 Quant Trading Competition
-Summary: A top-6%-worldwide IMC Prosperity 4 quant trading system with 203,249 XIREC, five rounds of fair-value market making, drift/carry, Black-Scholes voucher pricing, volatility-smile diagnostics, residual/stat-arb, DP hindsight oracles, and hundreds of backtests.
+Summary: A top-6%-worldwide IMC Prosperity 4 trading system spanning fair-value market making, options pricing, residual signals, DP oracles, and replay diagnostics.
 Highlights:
 - Context: Competed in IMC Prosperity 4, a multi-round global algorithmic trading competition with both algorithmic and manual trading components, finishing top 6% worldwide with 203,249 XIREC.
 - Leaderboard result: Finished #1088 overall, #1404 algorithmic, #893 manual, and #295 country, using a combination of algorithmic strategies, manual puzzle optimization, and round-by-round research iteration.
@@ -277,12 +277,12 @@ Highlights:
 - Manual optimization: Optimized manual decisions separately from algorithmic strategy, including a Round 1 manual portfolio worth 87,995.10 PnL and a 1st-place manual rank, plus a Round 2 allocation worth 164,664 manual PnL.
 - Impact and outcome: Built a serious quant research workflow rather than a one-file trading bot: strategy design, oracle research, signal generation, candidate promotion, replay diagnostics, drawdown analysis, and official constraint handling were all part of the system.
 - What made it hard: The challenge was not just finding profitable signals; it was separating robust alpha from overfit, simulator quirks, state-size failures, fill-model mismatch, regime transfer, and feedback-window traps.
-Tags: Quantitative Trading, Algorithmic Trading, IMC Prosperity, Top 6% Worldwide, Global Competition, Dynamic Programming, DP Hindsight Oracle, Market Making, Inventory-Skewed Quoting, Fair Value Modeling, Black-Scholes, Options Pricing, Volatility Smile, Statistical Arbitrage, Residual Signals, Drift / Carry, Backtesting, PnL Attribution, Drawdown Analysis, Inventory Management, Execution Strategy, Market Microstructure, Signal Research, State Serialization, Python, Data Analysis, Research Infrastructure
+Tags: Quantitative Trading, Backtesting, Algorithmic Trading, IMC Prosperity, Top 6% Worldwide, Global Competition, Dynamic Programming, DP Hindsight Oracle, Market Making, Inventory-Skewed Quoting, Fair Value Modeling, Black-Scholes, Options Pricing, Volatility Smile, Statistical Arbitrage, Residual Signals, Drift / Carry, Backtesting, PnL Attribution, Drawdown Analysis, Inventory Management, Execution Strategy, Market Microstructure, Signal Research, State Serialization, Python, Data Analysis, Research Infrastructure
 Link: https://github.com/KushagraBharti/IMC-Prosperity-4
 Thumbnail: /portfolio/projects/imc-prosperity.png
 
 ### Pact
-Summary: A hackathon winner mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.
+Summary: A hackathon winner mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and rely on trusted validators.
 Highlights:
 - Built Pact as a consumer accountability product: users create commitments, stake money, submit proof, and rely on a small trusted validator group to approve or reject the outcome.
 - Designed the core product loop from pact creation → stake lock → proof upload → validator voting → stake release/forfeit, making accountability feel concrete instead of vague.
@@ -291,12 +291,12 @@ Highlights:
 - Implemented proof-image uploads, validator membership checks, creator self-vote prevention, majority-based resolution, and resolved/cancelled pact lockout rules.
 - Designed the UI around commitment status, proof review, validator transparency, and financial stakes so users can clearly see what needs to happen next.
 - Shipped Pact as a working hackathon product and won 1st place in the HackSMU Solana Track.
-Tags: TypeScript, React Native, Expo, Expo Router, Fastify, Supabase, PostgreSQL, Supabase Auth, Supabase Storage, Solana, Web3, SPL Token, Mobile Development, Full-Stack Development, Fintech, Consumer Social, Product Engineering, System Design, Hackathon Winner
+Tags: Hackathon Winner, React Native, TypeScript, Expo, Expo Router, Fastify, Supabase, PostgreSQL, Supabase Auth, Supabase Storage, Solana, Web3, SPL Token, Mobile Development, Full-Stack Development, Fintech, Consumer Social, Product Engineering, System Design
 Link: https://github.com/KushagraBharti/Pact
 Thumbnail: /portfolio/projects/pact.png
 
 ### Arachne - Web Crawler
-Summary: A high-concurrency Go web crawler built around goroutine worker pools, channel-based scheduling, a host-partitioned breadth-first frontier, PostgreSQL persistence, and public-web benchmarks up to 100,000 successful HTML pages.
+Summary: A high-concurrency Go web crawler with worker pools, host-aware frontier scheduling, PostgreSQL persistence, and 100,000-page public-web crawl runs.
 Highlights:
 - Context: Built a systems-heavy web crawler to crawl large web graphs, extract page content, preserve discovery structure, and make crawl runs inspectable instead of treating crawling as a black-box HTTP loop.
 - Problem: A naive crawler can overload one domain, duplicate URLs, lose frontier state, hide failures, or produce unreadable output; Arachne needed bounded concurrency, host-aware scheduling, canonical deduplication, structured persistence, and reproducible benchmarks.
@@ -308,12 +308,12 @@ Highlights:
 - Impact and outcome: Turned the project from a standard crawler demo into a crawl dataset system with explicit graph structure, persistence, throughput metrics, and observable failure surfaces.
 - Technical depth: The high-signal engineering is in the scheduler: goroutines, channels, breadth-first frontier semantics, host partitioning, canonical dedupe, bounded worker pools, and persistent graph/data state.
 - What made it hard: Large public-web crawling breaks simple assumptions quickly; the crawler has to handle duplicate pressure, frontier growth, host imbalance, fetch failures, HTML variance, persistence overhead, and benchmark reproducibility.
-Tags: Go, Goroutines, Channels, Concurrency, HTTP, Web Crawling, BFS Frontier, Frontier Scheduling, Worker Pools, Host-Partitioned Scheduling, URL Canonicalization, Deduplication, HTML Parsing, PostgreSQL, Graph Data, Large-Scale Web Data, Benchmarking, Systems Engineering, Backend Engineering, Performance Engineering, TypeScript, Next.js, React, Server-Sent Events
+Tags: Web Crawling, Go Concurrency, Go, Goroutines, Channels, Concurrency, HTTP, BFS Frontier, Frontier Scheduling, Worker Pools, Host-Partitioned Scheduling, URL Canonicalization, Deduplication, HTML Parsing, PostgreSQL, Graph Data, Large-Scale Web Data, Benchmarking, Systems Engineering, Backend Engineering, Performance Engineering, TypeScript, Next.js, React, Server-Sent Events
 Link: https://github.com/KushagraBharti/Web-Crawler-Go
 Thumbnail: /portfolio/projects/arachne.png
 
 ### NovelBench
-Summary: A live multi-stage LLM benchmark where frontier models generate, critique, revise, and vote on creative prompts to evaluate innovation under pressure.
+Summary: A live multi-stage LLM benchmark where frontier models generate, critique, revise, and vote on creative prompts under pressure.
 Highlights:
 - Built NovelBench to evaluate whether LLMs can actually innovate through a structured creative process instead of a single one-shot response.
 - Designed a multi-stage workflow where 2–8 models generate ideas, anonymously critique each other, revise with aggregated feedback, and vote on final outputs.
@@ -323,12 +323,12 @@ Highlights:
 - Designed anonymous critique and voting systems to reduce model identity bias during evaluation and produce more meaningful comparative rankings.
 - Built a public Next.js product surface with a landing page, live arena, searchable archive, leaderboard views, and detailed run pages.
 - Launched the platform with real usage, producing 47 benchmark runs and 194 generated ideas so far.
-Tags: TypeScript, Next.js, React, Convex, OpenRouter, LLMs, AI Benchmarking, Workflow Orchestration, Realtime Systems, System Design, Evaluation Infrastructure, Prompt Engineering, Product Engineering, Research Infrastructure, Startup Tools, Solo Project
+Tags: AI Benchmarking, Workflow Orchestration, TypeScript, Next.js, React, Convex, OpenRouter, LLMs, Realtime Systems, System Design, Evaluation Infrastructure, Prompt Engineering, Product Engineering, Research Infrastructure, Startup Tools, Solo Project
 Link: https://github.com/KushagraBharti/NovelBench
 Thumbnail: /portfolio/projects/novel-bench.png
 
 ### AutoHDR ML Lens Correction
-Summary: A geometry-first computer vision system for automatic lens correction, using a staged ResNet34 hybrid CNN, Brown–Conrady camera geometry, and learned residual flow.
+Summary: A geometry-first computer vision system for automatic lens correction, combining a staged ResNet34 hybrid CNN with Brown-Conrady camera geometry.
 Highlights:
 - Trained a staged ResNet34 hybrid CNN for lens correction on 23,118 paired images using cloud H200, moving from param-only → hybrid → finetune.
 - Scored 0.8942 on the leaderboard and earned a CTO review for the model architecture and training approach.
@@ -338,12 +338,12 @@ Highlights:
 - Measured stage progression during cloud training: validation loss dropped 15.66%, and training warnings dropped from 64 in stage1 to 0 in later stages.
 - Validated the codebase with 108/108 passing tests covering geometry contracts, inference fallback behavior, training hooks, QA tooling, and submission flows.
 - Built this as a competition-grade system rather than a visual demo: training, inference, scoring, QA, and packaging were all treated as part of the product.
-Tags: Computer Vision, Deep Learning, PyTorch, CNNs, ResNet34, Image Geometry, Lens Distortion Correction, Brown–Conrady Model, Optical Flow, Residual Flow, Warping / grid_sample, Model Training, Staged Training, Benchmarking, Reproducible Systems, Testing, QA Tooling, Competition Engineering
+Tags: Computer Vision, Lens Correction, Deep Learning, PyTorch, CNNs, ResNet34, Image Geometry, Lens Distortion Correction, Brown–Conrady Model, Optical Flow, Residual Flow, Warping / grid_sample, Model Training, Staged Training, Benchmarking, Reproducible Systems, Testing, QA Tooling, Competition Engineering
 Link: https://github.com/KushagraBharti/AutoHDR-LensCorrection
 Thumbnail: /portfolio/projects/autohdr-ml-lens-correction.png
 
 ### Beyond Chat
-Summary: An artifact-first AI workspace that turns chat into production workflows: studios, tool-calling runs, durable context, model comparison, storage-backed artifacts, and provider-aware orchestration.
+Summary: An artifact-first AI workspace with specialized studios, tool-calling runs, durable context, model comparison, and storage-backed outputs.
 Highlights:
 - Built Beyond Chat around specialized studios instead of endless chat threads, with dedicated surfaces for Chat, Writing, Research, Image, Data, Finance, Artifacts, Settings, and Compare.
 - Designed the product around durable artifacts: meaningful outputs can be saved, searched, reopened, exported, bundled, and reused as context for future model calls.
@@ -357,12 +357,12 @@ Highlights:
 - Added operational features including provider status reporting, disconnected-safe UI states, Stripe billing endpoints, export-to-Markdown/PDF, and multi-artifact bundle export.
 - Built the frontend as a polished React/Vite/Tailwind app with protected routes, dedicated studio layouts, shared primitives, artifact library/detail flows, and route-state handoffs.
 - Used a Starbucks Cinder Orange launch workflow as an acceptance story to test research, data analysis, finance reasoning, writing outputs, image direction, model comparison, and artifact bundling through general product flows.
-Tags: TypeScript, React, Vite, Tailwind CSS, Python, FastAPI, Supabase, PostgreSQL, Supabase Auth, Supabase Storage, OpenRouter, Exa, Stripe, LLMs, Agentic AI, AI Agents, Tool Calling, Workflow Orchestration, Artifact Systems, Context Engineering, Model Comparison, Data Analysis, RAG, Full-Stack Development, System Design, Product Engineering
+Tags: AI Workspace, Artifact Systems, TypeScript, React, Vite, Tailwind CSS, Python, FastAPI, Supabase, PostgreSQL, Supabase Auth, Supabase Storage, OpenRouter, Exa, Stripe, LLMs, Agentic AI, AI Agents, Tool Calling, Workflow Orchestration, Context Engineering, Model Comparison, Data Analysis, RAG, Full-Stack Development, System Design, Product Engineering
 Link: https://github.com/KushagraBharti/Beyond-Chat
 Thumbnail: /portfolio/projects/beyond-chat.png
 
 ### Kaggle Titanic ML
-Summary: A complete beginner-to-intermediate ML pipeline for the Titanic dataset, focused on cleaning, feature engineering, model comparison, and documenting the full learning process.
+Summary: A complete Titanic ML pipeline covering data cleaning, feature engineering, model comparison, EDA, and a documented learning report.
 Highlights:
 - Built an end-to-end Titanic survival prediction workflow using Pandas and scikit-learn.
 - Cleaned missing values, extracted passenger titles, encoded categorical variables, and engineered features such as FamilySize and IsAlone.
@@ -370,7 +370,7 @@ Highlights:
 - Trained and compared Logistic Regression, SVM, KNN, Decision Tree, Random Forest, Naive Bayes, Perceptron, and SGD models.
 - Reached ~86.76% training accuracy with Decision Tree / Random Forest baselines while using the project mainly to learn the full ML workflow.
 - Wrote a PDF report documenting the process, mistakes, experiments, and lessons learned instead of only publishing final code.
-Tags: Machine Learning, Kaggle, Titanic, Data Analysis, Python, Pandas, scikit-learn, EDA, Feature Engineering, Random Forest, Matplotlib, Seaborn
+Tags: ML Pipeline, Feature Engineering, Machine Learning, Kaggle, Titanic, Data Analysis, Python, Pandas, scikit-learn, EDA, Random Forest, Matplotlib, Seaborn
 Link: https://github.com/KushagraBharti/Kaggle-Titanic-Solution
 Thumbnail: /portfolio/projects/kaggle-titanic-ml.png
 

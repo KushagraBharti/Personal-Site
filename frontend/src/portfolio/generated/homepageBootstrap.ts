@@ -113,10 +113,10 @@ export const homepageBootstrap: HomePageBootstrap = {
     {
       "slug": "monopolybench",
       "title": "MonopolyBench",
-      "summary": "A deterministic multi-agent LLM evaluation harness where tool-calling agents play full Monopoly games, enabling research on planning, negotiation, deception, and bias in long-running agent environments.",
+      "summary": "A deterministic multi-agent LLM benchmark where tool-calling agents play full Monopoly games for research on planning, negotiation, deception, and bias.",
       "tags": [
         "LLM Evaluation",
-        "AI Agents"
+        "Game Simulation"
       ],
       "thumbnail": "/portfolio/projects/monopoly-llm-benchmark.svg",
       "githubLink": "https://github.com/KushagraBharti/MonopolyBench"
@@ -124,10 +124,10 @@ export const homepageBootstrap: HomePageBootstrap = {
     {
       "slug": "f1-reinforcement-learning",
       "title": "F1 Optimization Project",
-      "summary": "A custom Gymnasium Monza RL environment and PPO training stack with F1-style vehicle physics, ray-cast perception, reward shaping, Fast-F1 telemetry calibration, CUDA checkpointing, rollout telemetry, and replay.",
+      "summary": "A custom Gymnasium Monza RL environment and PPO training stack with F1-style physics, ray-cast perception, telemetry calibration, and replay.",
       "tags": [
         "Reinforcement Learning",
-        "Gymnasium"
+        "Vehicle Dynamics"
       ],
       "thumbnail": "/portfolio/projects/f1-optimization.png",
       "githubLink": "https://github.com/KushagraBharti/F1-ReinforcementLearning"
@@ -135,10 +135,10 @@ export const homepageBootstrap: HomePageBootstrap = {
     {
       "slug": "imc-prosperity-4",
       "title": "IMC Prosperity 4 Quant Trading Competition",
-      "summary": "A top-6%-worldwide IMC Prosperity 4 quant trading system with 203,249 XIREC, five rounds of fair-value market making, drift/carry, Black-Scholes voucher pricing, volatility-smile diagnostics, residual/stat-arb, DP hindsight oracles, and hundreds of backtests.",
+      "summary": "A top-6%-worldwide IMC Prosperity 4 trading system spanning fair-value market making, options pricing, residual signals, DP oracles, and replay diagnostics.",
       "tags": [
         "Quantitative Trading",
-        "Algorithmic Trading"
+        "Backtesting"
       ],
       "thumbnail": "/portfolio/projects/imc-prosperity.png",
       "githubLink": "https://github.com/KushagraBharti/IMC-Prosperity-4"
@@ -146,9 +146,9 @@ export const homepageBootstrap: HomePageBootstrap = {
     {
       "slug": "pact",
       "title": "Pact",
-      "summary": "A hackathon winner mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.",
+      "summary": "A hackathon winner mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and rely on trusted validators.",
       "tags": [
-        "TypeScript",
+        "Hackathon Winner",
         "React Native"
       ],
       "thumbnail": "/portfolio/projects/pact.png",
@@ -157,10 +157,10 @@ export const homepageBootstrap: HomePageBootstrap = {
     {
       "slug": "arachne-web-crawler",
       "title": "Arachne - Web Crawler",
-      "summary": "A high-concurrency Go web crawler built around goroutine worker pools, channel-based scheduling, a host-partitioned breadth-first frontier, PostgreSQL persistence, and public-web benchmarks up to 100,000 successful HTML pages.",
+      "summary": "A high-concurrency Go web crawler with worker pools, host-aware frontier scheduling, PostgreSQL persistence, and 100,000-page public-web crawl runs.",
       "tags": [
-        "Go",
-        "Goroutines"
+        "Web Crawling",
+        "Go Concurrency"
       ],
       "thumbnail": "/portfolio/projects/arachne.png",
       "githubLink": "https://github.com/KushagraBharti/Web-Crawler-Go"
@@ -168,10 +168,10 @@ export const homepageBootstrap: HomePageBootstrap = {
     {
       "slug": "novelbench",
       "title": "NovelBench",
-      "summary": "A live multi-stage LLM benchmark where frontier models generate, critique, revise, and vote on creative prompts to evaluate innovation under pressure.",
+      "summary": "A live multi-stage LLM benchmark where frontier models generate, critique, revise, and vote on creative prompts under pressure.",
       "tags": [
-        "TypeScript",
-        "Next.js"
+        "AI Benchmarking",
+        "Workflow Orchestration"
       ],
       "thumbnail": "/portfolio/projects/novel-bench.png",
       "githubLink": "https://github.com/KushagraBharti/NovelBench"
@@ -179,10 +179,10 @@ export const homepageBootstrap: HomePageBootstrap = {
     {
       "slug": "autohdr-ml-lens-correction",
       "title": "AutoHDR ML Lens Correction",
-      "summary": "A geometry-first computer vision system for automatic lens correction, using a staged ResNet34 hybrid CNN, Brown–Conrady camera geometry, and learned residual flow.",
+      "summary": "A geometry-first computer vision system for automatic lens correction, combining a staged ResNet34 hybrid CNN with Brown-Conrady camera geometry.",
       "tags": [
         "Computer Vision",
-        "Deep Learning"
+        "Lens Correction"
       ],
       "thumbnail": "/portfolio/projects/autohdr-ml-lens-correction.png",
       "githubLink": "https://github.com/KushagraBharti/AutoHDR-LensCorrection"
@@ -190,10 +190,10 @@ export const homepageBootstrap: HomePageBootstrap = {
     {
       "slug": "beyond-chat",
       "title": "Beyond Chat",
-      "summary": "An artifact-first AI workspace that turns chat into production workflows: studios, tool-calling runs, durable context, model comparison, storage-backed artifacts, and provider-aware orchestration.",
+      "summary": "An artifact-first AI workspace with specialized studios, tool-calling runs, durable context, model comparison, and storage-backed outputs.",
       "tags": [
-        "TypeScript",
-        "React"
+        "AI Workspace",
+        "Artifact Systems"
       ],
       "thumbnail": "/portfolio/projects/beyond-chat.png",
       "githubLink": "https://github.com/KushagraBharti/Beyond-Chat"
@@ -201,10 +201,10 @@ export const homepageBootstrap: HomePageBootstrap = {
     {
       "slug": "kaggle-titanic-ml",
       "title": "Kaggle Titanic ML",
-      "summary": "A complete beginner-to-intermediate ML pipeline for the Titanic dataset, focused on cleaning, feature engineering, model comparison, and documenting the full learning process.",
+      "summary": "A complete Titanic ML pipeline covering data cleaning, feature engineering, model comparison, EDA, and a documented learning report.",
       "tags": [
-        "Machine Learning",
-        "Kaggle"
+        "ML Pipeline",
+        "Feature Engineering"
       ],
       "thumbnail": "/portfolio/projects/kaggle-titanic-ml.png",
       "githubLink": "https://github.com/KushagraBharti/Kaggle-Titanic-Solution"
