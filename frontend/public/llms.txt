@@ -125,50 +125,52 @@ Fewer destinations. More continuity.
 Date Range: Feb 2026 - Present
 Category: Research
 Timeline Tone: active
-Summary: Building computer vision tooling for behavioral neuroscience: a DeepLabCut/SuperAnimal pipeline that turns 3-chamber mouse videos into pose tracks, behavioral metrics, QC outputs, and CSV/XLSX scorecards for lab review.
+Summary: Fine-tuning DeepLabCut/SuperAnimal for lab-specific 3-chamber mouse-behavior video and building an end-to-end computer vision pipeline for pose extraction, behavioral scoring, QC, and researcher-facing scorecards.
 Highlights:
-- Built a DeepLabCut/SuperAnimal video-analysis pipeline for 3-chamber social-interaction videos, converting raw mouse videos into pose tracks, behavioral metrics, QC artifacts, and scorecards used for lab review.
-- Automated the core workflow from crop → enhancement → pose inference → behavior scoring → QC → CSV/XLSX export, making the analysis more reproducible and less dependent on manual script-by-script execution.
-- Improved pose tracking stability by 56.9% across 15 clip pairs using likelihood-aware filtering and interpolation, reducing frame-to-frame coordinate jitter in usable benchmark clips.
-- Corrected behavior-scoring logic around discrimination index (DI), ambiguous cup contact, interpolation boundaries, and chamber occupancy so downstream behavioral metrics better match the intended experimental definitions.
-- Built QC tooling to surface unreliable trials instead of hiding them, including occlusion/body-length flags and pose summaries that make failed or low-confidence tracking easier to diagnose.
-- Exported final analysis into lab-friendly CSV/XLSX scorecards, turning long-form behavior summaries into a format that is easier for researchers to inspect, compare, and hand off.
-- Prepared targeted DeepLabCut fine-tuning infrastructure (sampled frames, pseudo-labels, contact sheets, and project scaffolding) while keeping measured filtering gains separate from unverified model fine-tuning gains.
-Tags: Machine Learning, Computer Vision, DeepLabCut, SuperAnimal, Markerless Pose Estimation, Behavioral Analysis, Behavioral Phenotyping, Neuroscience, Autism Research, Pose Tracking, Video Analysis, Python, OpenCV, pandas, NumPy, HDF5, CSV/XLSX, QC Tooling, Research Software
+- Context: Working in the Tsai Lab at UT Southwestern on computer vision tooling for behavioral neuroscience, specifically 3-chamber mouse-behavior videos used to study social interaction and experimental phenotypes.
+- Problem: Off-the-shelf pose estimation and manual script-based analysis were not enough for reliable lab review; the workflow needed lab-specific model adaptation, consistent post-processing, interpretable QC, and researcher-friendly outputs.
+- Model architecture: Adapted the DeepLabCut/SuperAnimal pose-estimation stack to domain-specific 3-chamber mouse footage by hand-annotating lab frames and fine-tuning the base model against the visual conditions and behavioral setup used in the lab.
+- Core implementation: Built the end-to-end ML analysis pipeline from raw video to pose extraction, likelihood-aware filtering, dropped-keypoint interpolation, behavioral metric generation, QC reports, and CSV/XLSX scorecards.
+- Evaluation and benchmarks: Improved pose-track stability by 56.9% using fine-tuning, likelihood filtering, interpolation, and hardened post-processing across benchmark lab video clips.
+- Impact and outcome: Turned a fragile, script-heavy analysis workflow into a reproducible computer vision pipeline that produces interpretable pose tracks, behavioral summaries, and lab-review-ready scorecards instead of raw model outputs.
+- Technical depth: Corrected behavioral scoring logic around discrimination index, ambiguous cup contact, interpolation boundaries, chamber occupancy, occlusion/body-length flags, and low-confidence pose summaries so downstream metrics better match experimental definitions.
+- What made it hard: The project sits at the intersection of model adaptation, noisy animal video, experimental behavioral definitions, and researcher usability; the system needed to expose uncertainty instead of hiding unreliable trials behind clean-looking outputs.
+Tags: Machine Learning, Computer Vision, DeepLabCut, SuperAnimal, Markerless Pose Estimation, Model Fine-Tuning, Domain Adaptation, Behavioral Neuroscience, Behavioral Phenotyping, Mouse Behavior Analysis, Video Analysis, Pose Tracking, Likelihood Filtering, Keypoint Interpolation, QC Tooling, Research Software, Python, OpenCV, pandas, NumPy, HDF5, CSV/XLSX
 Link: https://labs.utsouthwestern.edu/tsai-lab
 
-### Software Engineer at Glydr.gg
-Date Range: Jan 2026 - Present
-Category: Product / Consulting
-Timeline Tone: active
-Summary: Leading technical/product direction for Glydr.gg’s customer-facing configuration hub: a Railway-deployed React/Vite + Fastify platform for discovering, importing, and managing foot-controller configs.
-Highlights:
-- Led technical/product direction for a 5-person team building Glydr.gg’s configuration hub, translating client needs into public config discovery, Steam login, admin tools, and Control Panel import flows.
-- Architected a React/Vite + Fastify platform backed by Postgres/Drizzle, with Railway deployment across frontend, backend API, worker, and database services.
-- Built a config system around checksum-versioned Control Panel JSON payloads, enabling stable deduplication, repeat-upload handling, and exact-version imports.
-- Engineered secure import handoffs using hashed 10-minute tokens, fetch caps, and rate limits so users can move selected configs into Glydr’s Control Panel without exposing large/private config payloads in URLs.
-- Implemented Steam OpenID-based identity and backend-owned sessions with HTTP-only cookies, CSRF checks, admin allowlists, and protected product actions.
-- Modeled the product domain with a relational schema covering users, Steam identities, sessions, games, categories, configs, immutable versions, imports, handoff tokens, jobs, and audit logs.
-- Built product flows for public game/category browsing, config detail pages, private config uploads, admin-published official configs, Steam library context, and import success states.
-- Verified launch readiness with passing typecheck/build and backend tests covering Control Panel JSON parsing, stable checksums, and invalid-payload rejection.
-Tags: Technical Leadership, Product Engineering, Client-Facing Development, Full-Stack Development, TypeScript, React, Vite, Fastify, PostgreSQL, Drizzle ORM, Steam OpenID, Railway, API Design, Authentication, CSRF, Rate Limiting, Config Versioning, Checksum Validation, Admin Tooling, Consulting
-Link: https://glydr.gg/
-
-### Undergraduate Researcher at UT Dallas (LLM Evaluation)
+### Undergraduate Researcher at UT Dallas, CAIR Lab
 Date Range: Apr 2025 - Present
 Category: Research
 Timeline Tone: active
-Summary: Built MonopolyBench, a deterministic multi-agent LLM harness where tool-calling agents play full Monopoly games, enabling research on long-horizon planning, negotiation, deception, and bias.
+Summary: Built MonopolyBench, a deterministic multi-agent LLM benchmark for evaluating tool-calling agents on long-horizon planning, negotiation, deception, bias, memory, and schema-constrained decision-making.
 Highlights:
-- Built MonopolyBench as a deterministic multi-agent LLM evaluation harness where tool-calling agents play full Monopoly games under an authoritative rules engine.
-- Designed each turn around state/history memory, schema-bound actions, and tool-call traces so model behavior is constrained, inspectable, and reproducible.
-- Implemented a deterministic engine + arena + telemetry stack: seeded randomness, legal action menus, strict validation, corrective retry, deterministic fallback, and full run artifact logging.
-- Logged complete traces for decisions, prompts, raw model responses, parsed actions, applied actions, events, snapshots, and summaries, making runs debuggable instead of black-box.
-- Built the system to support live spectator viewing and headless batch evaluation, with FastAPI/WebSocket streaming and a render-only React UI.
-- Designed the benchmark for an upcoming LLM agent paper studying planning, negotiation, deception, and bias in long-running, multi-agent game environments.
-- Research directions include win-rate ranking across models, TrueSkill ratings, micro-decision suites, negotiation/bluffing analysis, and bias experiments through controlled player descriptors.
-Tags: LLM Evaluation, AI Agents, Multi-Agent Systems, Tool Calling, Function Calling, Agent Benchmarking, Deterministic Simulation, Game AI, Long-Horizon Planning, Negotiation, Deception, Bias Evaluation, Telemetry, Event Sourcing, Replayable Artifacts, Python, FastAPI, WebSockets, React, TypeScript, Vite, Zod, JSON Schema, Pytest
-Link: https://github.com/KushagraBharti/MonopolyBench
+- Context: Working with the UT Dallas CAIR Lab on agentic AI evaluation, focusing on long-running multi-agent environments where models must plan, negotiate, remember state, and take schema-valid actions over many turns.
+- Problem: Many LLM-agent evaluations are short, single-agent, or hard to reproduce; MonopolyBench creates a deterministic, replayable environment where agent behavior can be inspected at the level of prompts, tool calls, state transitions, and strategic decisions.
+- System architecture: Built MonopolyBench as an authoritative rules engine plus multi-agent arena where tool-calling LLM agents play complete Monopoly games through schema-bound actions rather than unconstrained free text.
+- Core implementation: Implemented deterministic game mechanics including seeded dice/cards, turn order, legal action menus, property ownership, rent, auctions, jail, trades, liquidation, bankruptcy, strict validation, corrective retries, and deterministic fallbacks.
+- Evaluation design: Designed each decision around game state, recent history, memory, legal action schemas, model responses, parsed actions, tool-call traces, applied events, snapshots, summaries, and replayable artifacts.
+- Impact and outcome: Built the benchmark infrastructure for a forthcoming agentic AI research paper studying planning, negotiation, deception, and bias in long-horizon, multi-agent game environments.
+- Technical depth: Added full run telemetry so experiments are debuggable instead of black-box: prompts, raw responses, parsed actions, retries, fallbacks, validation failures, legal menus, state snapshots, and final summaries are all logged for analysis.
+- What made it hard: The system has to keep LLMs constrained without making the game trivial; every tool-call path needs strict validation, reproducibility, and fallback behavior while preserving meaningful strategic freedom.
+Tags: LLM Evaluation, Agentic AI, AI Agents, Multi-Agent Systems, Tool Calling, Function Calling, Agent Benchmarking, Deterministic Simulation, Long-Horizon Planning, Negotiation, Deception, Bias Evaluation, Schema-Bound Actions, JSON Schema, Event Sourcing, Replayable Artifacts, Telemetry, Python, FastAPI, WebSockets, React, TypeScript, Vite, Zod, Pytest
+Link: https://cairatutd.github.io/
+
+### Software Engineer at Glydr.gg
+Date Range: Jan 2026 - May 2026
+Category: Product / Platform Engineering
+Timeline Tone: past
+Summary: Led engineering for Glydr.gg's Railway-deployed, microservice-based configuration platform serving 1,000+ users, spanning public discovery, Steam authentication, admin tooling, Control Panel imports, CI/CD, and distributed config delivery.
+Highlights:
+- Context: Glydr.gg needed a customer-facing configuration hub for discovering, publishing, importing, and managing game-server / controller configuration payloads across public users, admins, and Control Panel workflows.
+- Problem: The product needed more than static config files; it required authenticated user flows, official/admin publishing, stable versioned imports, repeatable deployments, and safe handoffs into the Control Panel without exposing large or private payloads in URLs.
+- System architecture: Led engineering for a Railway-deployed, microservice-based platform serving 1,000+ users, with separate frontend, backend API, worker, and database services built around React/Vite, Fastify, PostgreSQL, Drizzle ORM, and GitHub Actions CI/CD.
+- Core implementation: Built public discovery, Steam authentication, admin tooling, Control Panel imports, config detail pages, official config publishing, private uploads, import success states, and backend-owned session flows.
+- Data model: Modeled the platform with relational tables for users, Steam identities, sessions, games, categories, configs, immutable config versions, imports, handoff tokens, background jobs, and audit logs.
+- Security and correctness: Engineered config delivery with checksum-versioned payloads, tokenized imports, throttling, validation guards, HTTP-only cookies, CSRF checks, admin allowlists, stable checksum parsing, and invalid-payload rejection.
+- Impact and outcome: Turned config sharing/importing into a repeatable product workflow for real users instead of an ad hoc file handoff, while giving the team deployment automation and backend validation for safer iteration.
+- What made it hard: The platform had to bridge product UX and backend correctness: users needed simple one-click imports, while the system needed stable versioning, safe auth boundaries, replayable imports, and repeatable deploys.
+Tags: Software Engineering, Technical Leadership, Product Engineering, Full-Stack Development, Platform Engineering, Microservices, TypeScript, React, Vite, Fastify, PostgreSQL, Drizzle ORM, Railway, GitHub Actions, CI/CD, Steam OpenID, Authentication, CSRF, HTTP-Only Cookies, Rate Limiting, Checksum Validation, Config Versioning, Admin Tooling, API Design
+Link: https://glydr.gg/
 
 ### Independent Researcher (Optimization + ML) at UT Dallas
 Date Range: Apr 2025 - Nov 2025
@@ -190,24 +192,23 @@ Link: https://personal.utdallas.edu/~daescu/
 Date Range: May 2024 - Aug 2024
 Category: Industry
 Timeline Tone: past
-Summary: Worked on Abilitie AI Cases, an LLM role-play training product, contributing to product flows, provider plumbing, structured outputs, telemetry, cost optimization, and perceived-latency improvements.
+Summary: Owned Llama 3.1 fine-tuning, structured-output engineering, cost optimization, telemetry, and latency work for Abilitie AI Cases, reducing LLM cost per conversation 70% across 27 role-play configurations and reaching 1.0s p95 TTFT.
 Highlights:
-- Contributed to Abilitie AI Cases, an LLM role-play training product used for scenario-based leadership and communication training.
-- Built React/TypeScript chat flows, scenario configuration pages, end-state UI fixes, streaming/loading states, and provider request plumbing around Azure/AWS-backed model calls.
-- Built structured JSON schemas to render LLM responses as product state instead of free-text blobs, making model output easier to validate and display inside the UI.
-- Optimized role-play prompts, model choice, and output structure across 27 configurations, using scenario testing and human review to improve instruction-following and role-play consistency.
-- Fine-tuned open-source models for Abilitie AI Cases, connecting model behavior work back to the product's role-play training goals instead of treating it as a standalone experiment.
-- Reduced LLM cost per conversation by ~70% through GPT-4o migration, ~20% fewer prompt tokens, ~8% fewer retries, and structured-output/prompt optimization.
-- Built a DynamoDB telemetry pipeline for TTFT/TTLT, tokens/sec, token counts, retries, errors, provider/model metadata, and per-request traces.
-- Used telemetry traces to identify bottlenecks, improve latency by ~10%, and reach ~95% success rate across the monitored role-play flows.
-- Improved perceived latency with a 3s idle prefetch path and stale-response invalidation, reducing TTFT after send to p95 = 1.5s.
-- Ran prompt-injection testing and hardening iterations to reduce out-of-format or unsafe model behavior in customer-facing role-play scenarios.
-- Shipped UI/UX fixes in React + TypeScript + Material UI, including theme-aware rich-text paste handling to prevent dark-mode invisibility in internal/admin workflows.
-Tags: LLMs, LLM Product Engineering, Software Engineering, React, TypeScript, Azure, AWS, DynamoDB, Telemetry, Observability, Structured Outputs, Prompt Engineering, Open-Source Model Fine-Tuning, Fine-Tuning, Model Evaluation, Prompt Injection Testing, Latency Optimization, Cost Optimization, Material UI, Product Engineering
+- Context: Worked on Abilitie AI Cases, an enterprise LLM role-play training product for scenario-based leadership, communication, and decision-making practice.
+- Problem: The product needed more reliable role-play behavior, lower LLM cost, structured model outputs, better latency visibility, and smoother perceived responsiveness across many scenario configurations.
+- Model architecture: Owned end-to-end Llama 3.1 fine-tuning on proprietary role-play conversations, scenario data, and structured-output targets to improve domain coaching and JSON/tool-calling behavior.
+- Core implementation: Built React/TypeScript chat flows, scenario configuration pages, end-state UI fixes, streaming/loading states, and Azure/AWS-backed provider request plumbing around production role-play flows.
+- Structured output system: Replaced brittle free-text responses with schema-constrained JSON outputs so model responses could be validated, rendered as deterministic product state, and retried when they failed format expectations.
+- Evaluation and optimization: Reduced LLM cost per conversation 70% across 27 role-play configurations through model migration, prompt compression of roughly 20%, schema-constrained outputs, and retry reduction of roughly 8%.
+- Telemetry architecture: Built DynamoDB telemetry for TTFT, TTLT, token throughput, token counts, retries, errors, provider/model metadata, and per-request traces, making latency and reliability problems diagnosable instead of anecdotal.
+- Latency impact: Optimized 3-second idle prefetching and stale-response invalidation to reach 1.0s p95 TTFT in the monitored role-play flow.
+- Safety and robustness: Ran prompt-injection testing and hardening iterations to reduce out-of-format, unsafe, or scenario-breaking model behavior in customer-facing role-play interactions.
+- What made it hard: The work required balancing cost, latency, model quality, schema validity, role-play realism, and user experience; optimizing one metric in isolation would have been easy, but the product needed all of them to hold together.
+Tags: Software Engineering, LLM Product Engineering, LLMs, Llama 3.1, Fine-Tuning, Structured Outputs, JSON Schema, Tool Calling, Prompt Engineering, Prompt Injection Testing, Model Evaluation, Cost Optimization, Latency Optimization, Telemetry, Observability, DynamoDB, AWS, Azure, React, TypeScript, Material UI, Streaming UX, Product Engineering
 Link: https://www.abilitie.com/case-challenges
 
 ### Dorm Proctor at St. Stephen's Episcopal School
-Date Range: 2021 - 2022
+Date Range: Aug 2021 - May 2022
 Category: Leadership
 Timeline Tone: past
 Summary: Supported younger boarding students through peer mentorship, safety training, and community-building in a residential school environment.
@@ -222,6 +223,65 @@ Tags: Leadership, Mentorship, Peer Support, Student Life, Counseling, Community 
 Link: https://www.sstx.org/boarding/boarding-student-support
 
 ## Project Source Links
+
+### F1 Reinforcement Learning
+Summary: A custom Gymnasium Monza RL environment and PPO training stack with F1-style vehicle physics, ray-cast perception, reward shaping, Fast-F1 telemetry calibration, CUDA checkpointing, rollout telemetry, and replay.
+Highlights:
+- Context: Built a reinforcement-learning racing system around a custom Monza environment where agents learn to drive through simulated F1-style physics instead of controlling a toy gridworld.
+- Problem: A credible racing RL project needs more than calling PPO on a demo environment; the environment must define a meaningful state space, action space, reward function, termination logic, physics model, baselines, telemetry, and replay loop.
+- Environment architecture: Built a Gymnasium-compatible Monza RL environment with 18-feature observations, 9 discrete controls, 7 ray-cast sensors, checkpoint reward shaping, collision/off-track termination, and structured episode telemetry.
+- Physics architecture: Implemented F1-style vehicle dynamics with a 60 Hz bicycle-model physics loop, speed/turning behavior, collision geometry, checkpoint progression, and control constraints designed for policy learning.
+- Telemetry calibration: Calibrated simulator scale, speed profiles, turning behavior, and ghost-lap baselines against real Fast-F1 timing/telemetry so the simulator is anchored to real Monza behavior instead of arbitrary toy physics.
+- ML implementation: Engineered the Stable-Baselines3 PPO training/evaluation stack with PyTorch, CUDA-backed checkpointing, rollout telemetry, policy evaluation, scripted baselines, Fast-F1 ghost baselines, and replay tooling.
+- Evaluation and benchmarks: The system exposes the pieces needed to compare policies over reward, progress, crash/off-track rate, lap behavior, rollout traces, and replayable driving trajectories.
+- Impact and outcome: The project demonstrates full-stack ML systems work: custom environment design, physics simulation, reward engineering, RL training, GPU-backed evaluation, telemetry, and qualitative replay.
+- What made it hard: The hard part was not simply training PPO; it was making the simulator learnable, measurable, and debuggable while keeping physics, observations, rewards, baselines, and replays coherent enough to evaluate agent progress.
+Tags: Reinforcement Learning, Gymnasium, PyTorch, Stable-Baselines3, PPO, CUDA, Physics Simulation, Control, Reward Shaping, Custom RL Environment, Vehicle Dynamics, Bicycle Model, Ray-Cast Sensors, Telemetry, Policy Evaluation, Rollout Replay, Simulation, Python, NumPy, Pygame, OpenCV, Fast-F1
+Link: https://github.com/KushagraBharti/F1-ReinforcementLearning
+Thumbnail: /portfolio/projects/f1-optimization.png
+
+### IMC Prosperity 4 Quant Trading Competition
+Summary: A top-6%-worldwide IMC Prosperity 4 quant trading system with 203,249 XIREC, five rounds of fair-value market making, drift/carry, Black-Scholes voucher pricing, volatility-smile diagnostics, residual/stat-arb, DP hindsight oracles, and hundreds of backtests.
+Highlights:
+- Context: Competed in IMC Prosperity 4, a multi-round global algorithmic trading competition with both algorithmic and manual trading components, finishing top 6% worldwide with 203,249 XIREC.
+- Leaderboard result: Finished #1088 overall, #1404 algorithmic, #893 manual, and #295 country, using a combination of algorithmic strategies, manual puzzle optimization, and round-by-round research iteration.
+- Problem: Each round introduced new products, market mechanics, position limits, state constraints, and feedback windows; the challenge was to build strategies that could capture edge without overfitting local or portal-window artifacts.
+- Research architecture: Engineered the repo as a reproducible quant research system with round-scoped strategies, final submissions, official feedback archives, replay logs, candidate scorecards, diagnostic scripts, process notes, and strategy-lineage records.
+- Round 1 / 2 strategy: Built fair-value market-making engines for ASH_COATED_OSMIUM and INTARIAN_PEPPER_ROOT, combining stationary fair value, top-book imbalance, inventory-skewed quoting, drift/carry accumulation, visible fills, and position-limit enforcement.
+- Round 2 mechanism design: Modeled the Market Access Fee and manual allocation challenge as expected-value optimization problems, separating algorithmic trading edge from manual puzzle PnL and fee mechanics.
+- Round 3 strategy: Built multi-asset options/fair-value logic for HYDROGEL_PACK, VELVETFRUIT_EXTRACT, and VEV vouchers using dynamic fair-value estimation, underlying-implied voucher anchors, Black-Scholes-style pricing, strike-specific volatility assumptions, expiry decay, inventory skew, and selective take/quote thresholds.
+- Round 4 strategy: Added volatility-smile diagnostics, implied-volatility reasoning, VFE/voucher role audits, participant-flow signals, Mark-driven mechanics, stale-inventory analysis, and anti-overfit labels for distinguishing robust improvements from portal-window-only gains.
+- Round 5 strategy: Scaled to a 50-product universe with residual/stat-arb strategies across Galaxy Sounds, Sleep Pods, Microchips, Pebbles, Robots, UV Visors, Translators, Panels, Oxygen Shakes, and Snack Packs.
+- Round 5 alpha families: Built PEBBLES synthetic fair value, TRANSLATOR/PEBBLES anchors, MICROCHIP/PANEL/UV/SLEEP/OXYGEN relative value, ROBOT/GALAXY momentum, product-specific reversal, category-relative residuals, and selective passive/taker execution.
+- Dynamic programming research: Built DP hindsight oracles over discrete inventory states to compute optimal trade schedules, upper-bound execution paths, and missed-edge attribution under inventory and fill constraints.
+- Signal distillation: Used DP oracle outputs to study causal z-score, anti-trend, imbalance, residual-spread, and category-relative signals without pretending the hindsight oracle itself was a valid live strategy.
+- Backtesting and validation: Ran hundreds of candidate/probe backtests using Kevin/Xeeshan/Rust-style replay tooling, official-window extraction, product/category/block PnL attribution, fill-sequence comparison, inventory-path inspection, drawdown diagnostics, and state-size checks.
+- State constraint engineering: Diagnosed official/local replay mismatch from oversized traderData; later candidates used aliases, delta-encoded integer histories, half-tick scaling, residual scaling, cache trimming, and state-cap checks to survive the 50,000-character official traderData ceiling.
+- Overfit control: Explicitly rejected strategies that looked strong in portal windows but failed full-history replay, including candidates where aggressive local PnL collapsed under broader replay or transfer-risk checks.
+- Metrics and outcomes: Tracked archived algorithmic results across final/best official artifacts including 89,306.8125 Round 1 algo PnL, 80,708 displayed Round 2 algo PnL after fees, 76,114.025390625 Round 3 algo PnL, 50,966.40673828125 Round 4 algo PnL, and 118,855.008789062 best stored Round 5 official algo PnL.
+- Manual optimization: Optimized manual decisions separately from algorithmic strategy, including a Round 1 manual portfolio worth 87,995.10 PnL and a 1st-place manual rank, plus a Round 2 allocation worth 164,664 manual PnL.
+- Impact and outcome: Built a serious quant research workflow rather than a one-file trading bot: strategy design, oracle research, signal generation, candidate promotion, replay diagnostics, drawdown analysis, and official constraint handling were all part of the system.
+- What made it hard: The challenge was not just finding profitable signals; it was separating robust alpha from overfit, simulator quirks, state-size failures, fill-model mismatch, regime transfer, and feedback-window traps.
+Tags: Quantitative Trading, Algorithmic Trading, IMC Prosperity, Top 6% Worldwide, Global Competition, Dynamic Programming, DP Hindsight Oracle, Market Making, Inventory-Skewed Quoting, Fair Value Modeling, Black-Scholes, Options Pricing, Volatility Smile, Statistical Arbitrage, Residual Signals, Drift / Carry, Backtesting, PnL Attribution, Drawdown Analysis, Inventory Management, Execution Strategy, Market Microstructure, Signal Research, State Serialization, Python, Data Analysis, Research Infrastructure
+Link: https://github.com/KushagraBharti/IMC-Prosperity-4
+Thumbnail: /portfolio/projects/imc-prosperity.png
+
+### Go Web Crawler
+Summary: A high-concurrency Go web crawler built around goroutine worker pools, channel-based scheduling, a host-partitioned breadth-first frontier, PostgreSQL persistence, and public-web benchmarks up to 100,000 successful HTML pages.
+Highlights:
+- Context: Built a systems-heavy web crawler to crawl large web graphs, extract page content, preserve discovery structure, and make crawl runs inspectable instead of treating crawling as a black-box HTTP loop.
+- Problem: A naive crawler can overload one domain, duplicate URLs, lose frontier state, hide failures, or produce unreadable output; Arachne needed bounded concurrency, host-aware scheduling, canonical deduplication, structured persistence, and reproducible benchmarks.
+- Crawler architecture: Built the crawler core in Go around goroutine worker pools, channel-based scheduling, global/per-host concurrency controls, and a host-partitioned breadth-first frontier to avoid single-domain starvation while expanding large web graphs.
+- Traversal model: Modeled crawl expansion as BFS-style frontier traversal: fetched pages emit outgoing links, links are canonicalized and deduplicated, new tasks are assigned to host queues, and workers pull tasks through bounded scheduling controls.
+- Core implementation: Implemented HTTP fetching, HTML link extraction, canonical URL normalization, duplicate suppression, frontier scheduling, page/content capture, discovery-edge construction, crawl error recording, and run-level metadata.
+- Persistence architecture: Persisted frontier state, fetched pages, extracted content, graph edges, crawl errors, and run metadata in PostgreSQL so crawl datasets can be queried, resumed, and analyzed instead of existing only as transient memory.
+- Evaluation and benchmarks: Benchmarked public-web crawling at 10,003 pages in 15.39s, roughly 649.8 pages/sec, and separately completed 100,000 successful HTML pages.
+- Impact and outcome: Turned the project from a standard crawler demo into a crawl dataset system with explicit graph structure, persistence, throughput metrics, and observable failure surfaces.
+- Technical depth: The high-signal engineering is in the scheduler: goroutines, channels, breadth-first frontier semantics, host partitioning, canonical dedupe, bounded worker pools, and persistent graph/data state.
+- What made it hard: Large public-web crawling breaks simple assumptions quickly; the crawler has to handle duplicate pressure, frontier growth, host imbalance, fetch failures, HTML variance, persistence overhead, and benchmark reproducibility.
+Tags: Go, Goroutines, Channels, Concurrency, HTTP, Web Crawling, BFS Frontier, Frontier Scheduling, Worker Pools, Host-Partitioned Scheduling, URL Canonicalization, Deduplication, HTML Parsing, PostgreSQL, Graph Data, Large-Scale Web Data, Benchmarking, Systems Engineering, Backend Engineering, Performance Engineering, TypeScript, Next.js, React, Server-Sent Events
+Link: https://github.com/KushagraBharti/Web-Crawler-Go
+Thumbnail: /portfolio/projects/arachne.png
 
 ### MonopolyBench
 Summary: A deterministic multi-agent LLM evaluation harness where tool-calling agents play full Monopoly games, enabling research on planning, negotiation, deception, and bias in long-running agent environments.
@@ -252,21 +312,6 @@ Tags: TypeScript, React Native, Expo, Expo Router, Fastify, Supabase, PostgreSQL
 Link: https://github.com/KushagraBharti/Pact
 Thumbnail: /portfolio/projects/pact.png
 
-### Arachne - Web Crawler
-Summary: A high-throughput Go web crawler with bounded concurrency, robots.txt handling, rooted discovery trees, live SSE updates, and local JSON artifacts for debugging runs.
-Highlights:
-- Built Arachne as a result-first web crawler: users choose a seed URL, read extracted page content, and inspect crawl expansion through a rooted discovery tree.
-- Engineered the crawler core in Go using frontier queues, worker pools, robots.txt gating, canonical URL deduplication, retry budgets, and bounded concurrency.
-- Configured the crawler with 64 global / 64 per-host concurrency for controlled local benchmarking while still respecting crawl limits and site policies.
-- Benchmarked a synthetic local workload of 501 pages in 1.51s, roughly 332 pages/sec, using an httptest server to remove public-internet noise.
-- Modeled output as a rooted discovery tree instead of a generic web graph, making it clear exactly how each page was discovered from the selected seed.
-- Built readable outputs around extracted page content, live SSE crawl updates, diagnostics, and JSON artifacts instead of treating the project as only a telemetry dashboard.
-- Persisted each run as local artifacts: run config, extracted pages, tree edges/nodes, diagnostics, skips, retries, errors, and stop reasons.
-- Verified the project with backend checks (`go test ./...`) and frontend build checks (`bun run build`).
-Tags: Go, TypeScript, Next.js, React, Web Crawling, Concurrent Systems, Worker Pools, Frontier Queues, Robots.txt, URL Canonicalization, Deduplication, Server-Sent Events, JSON Artifacts, Performance Benchmarking, System Design, Full-Stack Development
-Link: https://github.com/KushagraBharti/Web-Crawler-Go
-Thumbnail: /portfolio/projects/arachne.png
-
 ### AutoHDR ML Lens Correction
 Summary: A geometry-first computer vision system for automatic lens correction, using a staged ResNet34 hybrid CNN, Brown–Conrady camera geometry, and learned residual flow.
 Highlights:
@@ -296,46 +341,6 @@ Highlights:
 Tags: TypeScript, Next.js, React, Convex, OpenRouter, LLMs, AI Benchmarking, Workflow Orchestration, Realtime Systems, System Design, Evaluation Infrastructure, Prompt Engineering, Product Engineering, Research Infrastructure, Startup Tools, Solo Project
 Link: https://github.com/KushagraBharti/NovelBench
 Thumbnail: /portfolio/projects/novel-bench.png
-
-### IMC Prosperity 4 Quant Trading Competition
-Summary: A top 6% worldwide IMC Prosperity 4 trading system built across five rounds of market making, options pricing, alpha research, and replay-driven strategy diagnostics.
-Highlights:
-- Finished in the top 6% worldwide in IMC Prosperity 4 with a five-round algorithmic trading stack covering market making, deterministic drift capture, options pricing, residual baskets, execution research, state compression, and manual optimization.
-- Engineered the repo as a reproducible quant research system with round-scoped strategies, final submission packages, official feedback archives, replay logs, candidate scorecards, diagnostic scripts, process docs, and strategy-lineage notes.
-- Tracked archived algorithmic results across final/best official artifacts: 89,306.8125 Round 1 algo PnL, 81,359.0 raw / 80,708 displayed Round 2 algo PnL, 76,114.025390625 Round 3 algo PnL, 50,966.40673828125 Round 4 algo PnL, and 118,855.008789062 best stored Round 5 official algo PnL.
-- Accumulated 415,950.25341796825 displayed algorithmic PnL across the archived final/best official scorecard while keeping manual puzzle PnL separate from strategy PnL.
-- Integrated Kevin replay, Xeeshan replay, Rust backtesting, gsgill visualizers, Kevin visualizers, official-window extraction, fill-sequence comparison, product/time attribution, inventory-path inspection, and drawdown diagnostics.
-- Modeled execution constraints directly in strategy design: `Trader.run()` orders/conversions/traderData, Round 2 `bid()` market-access fees, AWS Lambda statelessness, aggregate position limits, immediate crossing fills, passive residual fills, auto-cancel behavior, and the 50,000-character official traderData ceiling.
-- Built two-product alpha engines for `ASH_COATED_OSMIUM` and `INTARIAN_PEPPER_ROOT`: Osmium used stationary fair-value/imbalance/deviation signals around 10,000, while Pepper used deterministic drift near 0.001 per timestamp with day anchors near 10,000, 11,000, and 12,000.
-- Implemented Pepper-heavy accumulation and Osmium specialist logic that ended Round 1 at Pepper +80 / Osmium +78, ended Round 2 at Pepper +80 / Osmium +80, and treated fill certainty as more valuable than fragile passive quote micro-optimization.
-- Optimized manual decisions outside the algorithmic engine, including a Round 1 manual portfolio worth 87,995.10 PnL and 1st-place manual rank, plus a Round 2 18% Research / 57% Scale / 25% Speed allocation worth 164,664 manual PnL.
-- Built a multi-asset Round 3 engine for `HYDROGEL_PACK`, `VELVETFRUIT_EXTRACT`, and VEV vouchers using dynamic fair-value estimation, underlying-implied voucher anchors, Black-Scholes-style pricing, strike-specific vol assumptions, expiry decay, inventory skew, and selective take/quote thresholds.
-- Validated Round 3 candidates with portal-window replay, full replay, and product attribution, then promoted dynamic Hydrogel fair estimation, VFE selectivity, and focused 5000-5300 voucher exposure while rejecting option-surface brute force and over-aggressive sizing.
-- Implemented Round 4 Mark-driven signal mechanics, VFE/voucher role audits, Hydrogel failure analysis, post-40k plateau diagnostics, candidate promotion gates, and anti-overfit labels for portal-window-only improvements versus robust improvements.
-- Diagnosed a major Round 4 regime-transfer failure where the exact same 830-line strategy scored 87,114.392 in earlier official feedback but only 50,966.40673828125 in the final package, highlighting simulator/final-window mismatch risk.
-- Scaled Round 5 to a 50-product universe with position limit 10 across Galaxy Sounds, Sleep Pods, Microchips, Pebbles, Robots, UV Visors, Translators, Panels, Oxygen Shakes, and Snack Packs.
-- Validated Round 5 market data integrity across all 50 expected products, 17-column price files, 7-column trade files, and mostly blank buyer/seller fields, shifting the research toward price-action, residual, anchor, category-relative, and fillability signals.
-- Built Round 5 alpha families for PEBBLES synthetic fair value, TRANSLATOR/PEBBLES anchors, MICROCHIP/PANEL/UV/SLEEP/OXYGEN relative value, ROBOT/GALAXY momentum, product-specific reversal, and selective passive/taker execution.
-- Diagnosed official/local replay mismatch from oversized state: strategies with 90k-130k character traderData looked strong locally but reset under official constraints, so later candidates used aliases, delta-encoded integer histories, half-tick scaling, residual scaling, and cache trimming.
-- Benchmarked Round 5 candidate tradeoffs explicitly: candidate 35 reached roughly 91.9k portal / 287k full, candidate 36 reached roughly 105.5k portal with weaker full robustness, candidate 42 reached roughly 421k full, candidate 49 reached roughly 126k portal, and candidate 50 showed how pure portal-window gambling could collapse.
-- Submitted a best stored Round 5 official strategy worth 118,855.008789062 PnL, with top realized contributors including PEBBLES_S, PEBBLES_XL, MICROCHIP_OVAL, TRANSLATOR_SPACE_GRAY, SLEEP_COTTON, PANEL_4X4, MICROCHIP_SQUARE, UV_AMBER, ROBOT_LAUNDRY, and GALAXY_PLANETARY.
-- Codified a promotion process that required local full replay, portal-window replay, official-feedback comparison, product attribution, inventory-path review, drawdown analysis, state-size checks, and a concrete transfer-risk explanation before trusting a candidate.
-Tags: Quantitative Trading, Algorithmic Trading, IMC Prosperity, Top 6% Worldwide, Global Competition, Market Making, Options Pricing, Black-Scholes, Backtesting, Alpha Research, Market Microstructure, Statistical Arbitrage, Fair Value Modeling, Inventory Management, Execution Strategy, Signal Research, Time-Series Analysis, Candidate Evaluation, Official Window Diagnostics, Simulator Reconciliation, State Serialization, Python, Data Analysis, Competition Engineering, Research Infrastructure, Manual Optimization
-Link: https://github.com/KushagraBharti/IMC-Prosperity-4
-Thumbnail: /portfolio/projects/imc-prosperity.png
-
-### F1 Optimization Project
-Summary: A custom F1-style racing simulation environment with OpenCV track extraction, Pygame rendering, ray-cast sensors, reward shaping, and RL training hooks.
-Highlights:
-- Built a custom Gym-style racing simulator with continuous controls, checkpoint-based rewards, collision termination, and headless stepping support.
-- Extracted a Monza-style track from image contours using OpenCV, generating 120 checkpoint lines and 2,749 collision segments.
-- Implemented a sensor-based observation model with 7 ray-cast distances plus normalized speed, giving the agent an 8D observation vector.
-- Built Pygame rendering, manual driving mode, `.npy` rollout export, and replay tooling for qualitative debugging.
-- Measured headless simulator performance at 12.63 steps/sec with the full sensor/collision workload enabled.
-- Added Ray/RLlib SAC training and rollout entrypoints, but full training results remain incomplete because the modern environment needs a Ray-supported Python setup and updated RLlib API compatibility.
-Tags: Reinforcement Learning, Gymnasium, Ray RLlib, SAC, Pygame, OpenCV, Simulation, F1, Path Planning, Reward Design, Computer Vision, Python
-Link: https://github.com/KushagraBharti/HackTX-2024---F1-Optimization
-Thumbnail: /portfolio/projects/f1-optimization.png
 
 ### Beyond Chat
 Summary: An artifact-first AI workspace that turns chat into production workflows: studios, tool-calling runs, durable context, model comparison, storage-backed artifacts, and provider-aware orchestration.

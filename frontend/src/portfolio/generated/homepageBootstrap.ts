@@ -65,24 +65,24 @@ export const homepageBootstrap: HomePageBootstrap = {
       "dateRange": "Feb 2026 - Present",
       "category": "Research",
       "position": "Machine Learning Engineer Intern at UT Southwestern Medical Center, Tsai Lab",
-      "summary": "Building computer vision tooling for behavioral neuroscience: a DeepLabCut/SuperAnimal pipeline that turns 3-chamber mouse videos into pose tracks, behavioral metrics, QC outputs, and CSV/XLSX scorecards for lab review.",
-      "timelineTone": "active"
-    },
-    {
-      "slug": "glydr-technical-lead-consultant",
-      "dateRange": "Jan 2026 - Present",
-      "category": "Product / Consulting",
-      "position": "Software Engineer at Glydr.gg",
-      "summary": "Leading technical/product direction for Glydr.gg’s customer-facing configuration hub: a Railway-deployed React/Vite + Fastify platform for discovering, importing, and managing foot-controller configs.",
+      "summary": "Fine-tuning DeepLabCut/SuperAnimal for lab-specific 3-chamber mouse-behavior video and building an end-to-end computer vision pipeline for pose extraction, behavioral scoring, QC, and researcher-facing scorecards.",
       "timelineTone": "active"
     },
     {
       "slug": "ut-dallas-undergraduate-researcher-monopolybench",
       "dateRange": "Apr 2025 - Present",
       "category": "Research",
-      "position": "Undergraduate Researcher at UT Dallas (LLM Evaluation)",
-      "summary": "Built MonopolyBench, a deterministic multi-agent LLM harness where tool-calling agents play full Monopoly games, enabling research on long-horizon planning, negotiation, deception, and bias.",
+      "position": "Undergraduate Researcher at UT Dallas, CAIR Lab",
+      "summary": "Built MonopolyBench, a deterministic multi-agent LLM benchmark for evaluating tool-calling agents on long-horizon planning, negotiation, deception, bias, memory, and schema-constrained decision-making.",
       "timelineTone": "active"
+    },
+    {
+      "slug": "glydr-software-engineer",
+      "dateRange": "Jan 2026 - May 2026",
+      "category": "Product / Platform Engineering",
+      "position": "Software Engineer at Glydr.gg",
+      "summary": "Led engineering for Glydr.gg's Railway-deployed, microservice-based configuration platform serving 1,000+ users, spanning public discovery, Steam authentication, admin tooling, Control Panel imports, CI/CD, and distributed config delivery.",
+      "timelineTone": "past"
     },
     {
       "slug": "ut-dallas-undergraduate-researcher-optimization",
@@ -97,12 +97,12 @@ export const homepageBootstrap: HomePageBootstrap = {
       "dateRange": "May 2024 - Aug 2024",
       "category": "Industry",
       "position": "Software Engineering Intern at Abilitie",
-      "summary": "Worked on Abilitie AI Cases, an LLM role-play training product, contributing to product flows, provider plumbing, structured outputs, telemetry, cost optimization, and perceived-latency improvements.",
+      "summary": "Owned Llama 3.1 fine-tuning, structured-output engineering, cost optimization, telemetry, and latency work for Abilitie AI Cases, reducing LLM cost per conversation 70% across 27 role-play configurations and reaching 1.0s p95 TTFT.",
       "timelineTone": "past"
     },
     {
       "slug": "st-stephens-dorm-proctor",
-      "dateRange": "2021 - 2022",
+      "dateRange": "Aug 2021 - May 2022",
       "category": "Leadership",
       "position": "Dorm Proctor at St. Stephen's Episcopal School",
       "summary": "Supported younger boarding students through peer mentorship, safety training, and community-building in a residential school environment.",
@@ -110,6 +110,39 @@ export const homepageBootstrap: HomePageBootstrap = {
     }
   ],
   "projects": [
+    {
+      "slug": "f1-reinforcement-learning",
+      "title": "F1 Reinforcement Learning",
+      "summary": "A custom Gymnasium Monza RL environment and PPO training stack with F1-style vehicle physics, ray-cast perception, reward shaping, Fast-F1 telemetry calibration, CUDA checkpointing, rollout telemetry, and replay.",
+      "tags": [
+        "Reinforcement Learning",
+        "Gymnasium"
+      ],
+      "thumbnail": "/portfolio/projects/f1-optimization.png",
+      "githubLink": "https://github.com/KushagraBharti/F1-ReinforcementLearning"
+    },
+    {
+      "slug": "imc-prosperity-4",
+      "title": "IMC Prosperity 4 Quant Trading Competition",
+      "summary": "A top-6%-worldwide IMC Prosperity 4 quant trading system with 203,249 XIREC, five rounds of fair-value market making, drift/carry, Black-Scholes voucher pricing, volatility-smile diagnostics, residual/stat-arb, DP hindsight oracles, and hundreds of backtests.",
+      "tags": [
+        "Quantitative Trading",
+        "Algorithmic Trading"
+      ],
+      "thumbnail": "/portfolio/projects/imc-prosperity.png",
+      "githubLink": "https://github.com/KushagraBharti/IMC-Prosperity-4"
+    },
+    {
+      "slug": "arachne-web-crawler",
+      "title": "Go Web Crawler",
+      "summary": "A high-concurrency Go web crawler built around goroutine worker pools, channel-based scheduling, a host-partitioned breadth-first frontier, PostgreSQL persistence, and public-web benchmarks up to 100,000 successful HTML pages.",
+      "tags": [
+        "Go",
+        "Goroutines"
+      ],
+      "thumbnail": "/portfolio/projects/arachne.png",
+      "githubLink": "https://github.com/KushagraBharti/Web-Crawler-Go"
+    },
     {
       "slug": "monopolybench",
       "title": "MonopolyBench",
@@ -133,17 +166,6 @@ export const homepageBootstrap: HomePageBootstrap = {
       "githubLink": "https://github.com/KushagraBharti/Pact"
     },
     {
-      "slug": "arachne-web-crawler",
-      "title": "Arachne - Web Crawler",
-      "summary": "A high-throughput Go web crawler with bounded concurrency, robots.txt handling, rooted discovery trees, live SSE updates, and local JSON artifacts for debugging runs.",
-      "tags": [
-        "Go",
-        "TypeScript"
-      ],
-      "thumbnail": "/portfolio/projects/arachne.png",
-      "githubLink": "https://github.com/KushagraBharti/Web-Crawler-Go"
-    },
-    {
       "slug": "autohdr-ml-lens-correction",
       "title": "AutoHDR ML Lens Correction",
       "summary": "A geometry-first computer vision system for automatic lens correction, using a staged ResNet34 hybrid CNN, Brown–Conrady camera geometry, and learned residual flow.",
@@ -164,28 +186,6 @@ export const homepageBootstrap: HomePageBootstrap = {
       ],
       "thumbnail": "/portfolio/projects/novel-bench.png",
       "githubLink": "https://github.com/KushagraBharti/NovelBench"
-    },
-    {
-      "slug": "imc-prosperity-4",
-      "title": "IMC Prosperity 4 Quant Trading Competition",
-      "summary": "A top 6% worldwide IMC Prosperity 4 trading system built across five rounds of market making, options pricing, alpha research, and replay-driven strategy diagnostics.",
-      "tags": [
-        "Quantitative Trading",
-        "Algorithmic Trading"
-      ],
-      "thumbnail": "/portfolio/projects/imc-prosperity.png",
-      "githubLink": "https://github.com/KushagraBharti/IMC-Prosperity-4"
-    },
-    {
-      "slug": "f1-optimization",
-      "title": "F1 Optimization Project",
-      "summary": "A custom F1-style racing simulation environment with OpenCV track extraction, Pygame rendering, ray-cast sensors, reward shaping, and RL training hooks.",
-      "tags": [
-        "Reinforcement Learning",
-        "Gymnasium"
-      ],
-      "thumbnail": "/portfolio/projects/f1-optimization.png",
-      "githubLink": "https://github.com/KushagraBharti/HackTX-2024---F1-Optimization"
     },
     {
       "slug": "beyond-chat",
