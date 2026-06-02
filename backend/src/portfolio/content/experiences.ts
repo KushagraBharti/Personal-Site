@@ -51,7 +51,7 @@ export const portfolioExperiences: PortfolioExperience[] = [
     slug: "glydr-software-engineer",
     order: 3,
     dateRange: "Jan 2026 - May 2026",
-    category: "Product / Platform Engineering",
+    category: "Industry",
     timelineTone: "past",
     position: "Software Engineer at Glydr.gg",
     summary:

@@ -4,7 +4,7 @@ exports.portfolioProjects = void 0;
 exports.portfolioProjects = [
     {
         slug: "monopolybench",
-        order: 4,
+        order: 1,
         title: "MonopolyBench",
         summary: "A deterministic multi-agent LLM evaluation harness where tool-calling agents play full Monopoly games, enabling research on planning, negotiation, deception, and bias in long-running agent environments.",
         description: [
@@ -48,7 +48,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "pact",
-        order: 5,
+        order: 4,
         title: "Pact",
         summary: "A hackathon winner mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.",
         description: [
@@ -86,8 +86,8 @@ exports.portfolioProjects = [
     },
     {
         slug: "arachne-web-crawler",
-        order: 3,
-        title: "Go Web Crawler",
+        order: 5,
+        title: "Arachne - Web Crawler",
         summary: "A high-concurrency Go web crawler built around goroutine worker pools, channel-based scheduling, a host-partitioned breadth-first frontier, PostgreSQL persistence, and public-web benchmarks up to 100,000 successful HTML pages.",
         description: [
             "Context: Built a systems-heavy web crawler to crawl large web graphs, extract page content, preserve discovery structure, and make crawl runs inspectable instead of treating crawling as a black-box HTTP loop.",
@@ -132,7 +132,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "autohdr-ml-lens-correction",
-        order: 6,
+        order: 7,
         title: "AutoHDR ML Lens Correction",
         summary: "A geometry-first computer vision system for automatic lens correction, using a staged ResNet34 hybrid CNN, Brown–Conrady camera geometry, and learned residual flow.",
         description: [
@@ -170,7 +170,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "novelbench",
-        order: 7,
+        order: 6,
         title: "NovelBench",
         summary: "A live multi-stage LLM benchmark where frontier models generate, critique, revise, and vote on creative prompts to evaluate innovation under pressure.",
         description: [
@@ -206,7 +206,7 @@ exports.portfolioProjects = [
     },
     {
         slug: "imc-prosperity-4",
-        order: 2,
+        order: 3,
         title: "IMC Prosperity 4 Quant Trading Competition",
         summary: "A top-6%-worldwide IMC Prosperity 4 quant trading system with 203,249 XIREC, five rounds of fair-value market making, drift/carry, Black-Scholes voucher pricing, volatility-smile diagnostics, residual/stat-arb, DP hindsight oracles, and hundreds of backtests.",
         description: [
@@ -382,8 +382,8 @@ exports.portfolioProjects = [
     },
     {
         slug: "f1-reinforcement-learning",
-        order: 1,
-        title: "F1 Reinforcement Learning",
+        order: 2,
+        title: "F1 Optimization Project",
         summary: "A custom Gymnasium Monza RL environment and PPO training stack with F1-style vehicle physics, ray-cast perception, reward shaping, Fast-F1 telemetry calibration, CUDA checkpointing, rollout telemetry, and replay.",
         description: [
             "Context: Built a reinforcement-learning racing system around a custom Monza environment where agents learn to drive through simulated F1-style physics instead of controlling a toy gridworld.",

@@ -157,7 +157,7 @@ Link: https://cairatutd.github.io/
 
 ### Software Engineer at Glydr.gg
 Date Range: Jan 2026 - May 2026
-Category: Product / Platform Engineering
+Category: Industry
 Timeline Tone: past
 Summary: Led engineering for Glydr.gg's Railway-deployed, microservice-based configuration platform serving 1,000+ users, spanning public discovery, Steam authentication, admin tooling, Control Panel imports, CI/CD, and distributed config delivery.
 Highlights:
@@ -224,7 +224,22 @@ Link: https://www.sstx.org/boarding/boarding-student-support
 
 ## Project Source Links
 
-### F1 Reinforcement Learning
+### MonopolyBench
+Summary: A deterministic multi-agent LLM evaluation harness where tool-calling agents play full Monopoly games, enabling research on planning, negotiation, deception, and bias in long-running agent environments.
+Highlights:
+- Built MonopolyBench as a deterministic LLM-agent benchmark where multiple models play complete Monopoly games through schema-bound tool calls instead of free-form text.
+- Implemented the core Monopoly rules engine from scratch with deterministic dice/cards, strict turn enforcement, property ownership, rent, auctions, jail, trades, liquidation, and bankruptcy.
+- Designed every decision point around full game state, recent history, private/public messages, persona configuration, and a legal action menu so models can only choose valid moves.
+- Built the arena layer that converts legal actions into tool schemas, validates model responses, applies one corrective retry, and falls back deterministically when the model still fails.
+- Logged full run artifacts for analysis: prompts, tool schemas, raw responses, parsed actions, retries, fallbacks, events, snapshots, summaries, and replayable decision traces.
+- Built a FastAPI/WebSocket backend and render-only React UI so runs can be watched live while the engine remains the source of truth.
+- Designed the benchmark for an upcoming LLM-agent paper studying long-horizon planning, negotiation, deception, and bias in multi-agent game settings.
+- Roadmap includes TrueSkill rankings, micro-decision suites, human-vs-LLM multiplayer, and controlled player-descriptor experiments for bias probing.
+Tags: LLM Evaluation, AI Agents, Multi-Agent Systems, Tool Calling, Function Calling, Agent Benchmarking, Deterministic Simulation, Game AI, Long-Horizon Planning, Negotiation, Deception, Bias Evaluation, Telemetry, Event Sourcing, Replayable Artifacts, Python, FastAPI, WebSockets, React, TypeScript, Vite, Zod, JSON Schema, Pytest
+Link: https://github.com/KushagraBharti/MonopolyBench
+Thumbnail: /portfolio/projects/monopoly-llm-benchmark.svg
+
+### F1 Optimization Project
 Summary: A custom Gymnasium Monza RL environment and PPO training stack with F1-style vehicle physics, ray-cast perception, reward shaping, Fast-F1 telemetry calibration, CUDA checkpointing, rollout telemetry, and replay.
 Highlights:
 - Context: Built a reinforcement-learning racing system around a custom Monza environment where agents learn to drive through simulated F1-style physics instead of controlling a toy gridworld.
@@ -266,7 +281,21 @@ Tags: Quantitative Trading, Algorithmic Trading, IMC Prosperity, Top 6% Worldwid
 Link: https://github.com/KushagraBharti/IMC-Prosperity-4
 Thumbnail: /portfolio/projects/imc-prosperity.png
 
-### Go Web Crawler
+### Pact
+Summary: A hackathon winner mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.
+Highlights:
+- Built Pact as a consumer accountability product: users create commitments, stake money, submit proof, and rely on a small trusted validator group to approve or reject the outcome.
+- Designed the core product loop from pact creation → stake lock → proof upload → validator voting → stake release/forfeit, making accountability feel concrete instead of vague.
+- Implemented a full-stack mobile product with React Native, Expo Router, Fastify, Supabase Auth/Postgres/Storage, and Solana escrow hooks.
+- Built server-side lifecycle enforcement so protected actions never trust client-supplied user identity, creator IDs, validator IDs, or pact state.
+- Implemented proof-image uploads, validator membership checks, creator self-vote prevention, majority-based resolution, and resolved/cancelled pact lockout rules.
+- Designed the UI around commitment status, proof review, validator transparency, and financial stakes so users can clearly see what needs to happen next.
+- Shipped Pact as a working hackathon product and won 1st place in the HackSMU Solana Track.
+Tags: TypeScript, React Native, Expo, Expo Router, Fastify, Supabase, PostgreSQL, Supabase Auth, Supabase Storage, Solana, Web3, SPL Token, Mobile Development, Full-Stack Development, Fintech, Consumer Social, Product Engineering, System Design, Hackathon Winner
+Link: https://github.com/KushagraBharti/Pact
+Thumbnail: /portfolio/projects/pact.png
+
+### Arachne - Web Crawler
 Summary: A high-concurrency Go web crawler built around goroutine worker pools, channel-based scheduling, a host-partitioned breadth-first frontier, PostgreSQL persistence, and public-web benchmarks up to 100,000 successful HTML pages.
 Highlights:
 - Context: Built a systems-heavy web crawler to crawl large web graphs, extract page content, preserve discovery structure, and make crawl runs inspectable instead of treating crawling as a black-box HTTP loop.
@@ -283,34 +312,20 @@ Tags: Go, Goroutines, Channels, Concurrency, HTTP, Web Crawling, BFS Frontier, F
 Link: https://github.com/KushagraBharti/Web-Crawler-Go
 Thumbnail: /portfolio/projects/arachne.png
 
-### MonopolyBench
-Summary: A deterministic multi-agent LLM evaluation harness where tool-calling agents play full Monopoly games, enabling research on planning, negotiation, deception, and bias in long-running agent environments.
+### NovelBench
+Summary: A live multi-stage LLM benchmark where frontier models generate, critique, revise, and vote on creative prompts to evaluate innovation under pressure.
 Highlights:
-- Built MonopolyBench as a deterministic LLM-agent benchmark where multiple models play complete Monopoly games through schema-bound tool calls instead of free-form text.
-- Implemented the core Monopoly rules engine from scratch with deterministic dice/cards, strict turn enforcement, property ownership, rent, auctions, jail, trades, liquidation, and bankruptcy.
-- Designed every decision point around full game state, recent history, private/public messages, persona configuration, and a legal action menu so models can only choose valid moves.
-- Built the arena layer that converts legal actions into tool schemas, validates model responses, applies one corrective retry, and falls back deterministically when the model still fails.
-- Logged full run artifacts for analysis: prompts, tool schemas, raw responses, parsed actions, retries, fallbacks, events, snapshots, summaries, and replayable decision traces.
-- Built a FastAPI/WebSocket backend and render-only React UI so runs can be watched live while the engine remains the source of truth.
-- Designed the benchmark for an upcoming LLM-agent paper studying long-horizon planning, negotiation, deception, and bias in multi-agent game settings.
-- Roadmap includes TrueSkill rankings, micro-decision suites, human-vs-LLM multiplayer, and controlled player-descriptor experiments for bias probing.
-Tags: LLM Evaluation, AI Agents, Multi-Agent Systems, Tool Calling, Function Calling, Agent Benchmarking, Deterministic Simulation, Game AI, Long-Horizon Planning, Negotiation, Deception, Bias Evaluation, Telemetry, Event Sourcing, Replayable Artifacts, Python, FastAPI, WebSockets, React, TypeScript, Vite, Zod, JSON Schema, Pytest
-Link: https://github.com/KushagraBharti/MonopolyBench
-Thumbnail: /portfolio/projects/monopoly-llm-benchmark.svg
-
-### Pact
-Summary: A hackathon winner mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.
-Highlights:
-- Built Pact as a consumer accountability product: users create commitments, stake money, submit proof, and rely on a small trusted validator group to approve or reject the outcome.
-- Designed the core product loop from pact creation → stake lock → proof upload → validator voting → stake release/forfeit, making accountability feel concrete instead of vague.
-- Implemented a full-stack mobile product with React Native, Expo Router, Fastify, Supabase Auth/Postgres/Storage, and Solana escrow hooks.
-- Built server-side lifecycle enforcement so protected actions never trust client-supplied user identity, creator IDs, validator IDs, or pact state.
-- Implemented proof-image uploads, validator membership checks, creator self-vote prevention, majority-based resolution, and resolved/cancelled pact lockout rules.
-- Designed the UI around commitment status, proof review, validator transparency, and financial stakes so users can clearly see what needs to happen next.
-- Shipped Pact as a working hackathon product and won 1st place in the HackSMU Solana Track.
-Tags: TypeScript, React Native, Expo, Expo Router, Fastify, Supabase, PostgreSQL, Supabase Auth, Supabase Storage, Solana, Web3, SPL Token, Mobile Development, Full-Stack Development, Fintech, Consumer Social, Product Engineering, System Design, Hackathon Winner
-Link: https://github.com/KushagraBharti/Pact
-Thumbnail: /portfolio/projects/pact.png
+- Built NovelBench to evaluate whether LLMs can actually innovate through a structured creative process instead of a single one-shot response.
+- Designed a multi-stage workflow where 2–8 models generate ideas, anonymously critique each other, revise with aggregated feedback, and vote on final outputs.
+- Built durable run orchestration around append-only events, persisted artifacts, leaderboard snapshots, archive pages, and replayable run traces.
+- Implemented a Convex-backed backend for active benchmark execution, durable state, usage tracking, read models, leaderboards, and concurrency control.
+- Integrated OpenRouter model execution with structured output normalization, scoring logic, failure tolerance, and stage-level workflow resilience.
+- Designed anonymous critique and voting systems to reduce model identity bias during evaluation and produce more meaningful comparative rankings.
+- Built a public Next.js product surface with a landing page, live arena, searchable archive, leaderboard views, and detailed run pages.
+- Launched the platform with real usage, producing 47 benchmark runs and 194 generated ideas so far.
+Tags: TypeScript, Next.js, React, Convex, OpenRouter, LLMs, AI Benchmarking, Workflow Orchestration, Realtime Systems, System Design, Evaluation Infrastructure, Prompt Engineering, Product Engineering, Research Infrastructure, Startup Tools, Solo Project
+Link: https://github.com/KushagraBharti/NovelBench
+Thumbnail: /portfolio/projects/novel-bench.png
 
 ### AutoHDR ML Lens Correction
 Summary: A geometry-first computer vision system for automatic lens correction, using a staged ResNet34 hybrid CNN, Brown–Conrady camera geometry, and learned residual flow.
@@ -326,21 +341,6 @@ Highlights:
 Tags: Computer Vision, Deep Learning, PyTorch, CNNs, ResNet34, Image Geometry, Lens Distortion Correction, Brown–Conrady Model, Optical Flow, Residual Flow, Warping / grid_sample, Model Training, Staged Training, Benchmarking, Reproducible Systems, Testing, QA Tooling, Competition Engineering
 Link: https://github.com/KushagraBharti/AutoHDR-LensCorrection
 Thumbnail: /portfolio/projects/autohdr-ml-lens-correction.png
-
-### NovelBench
-Summary: A live multi-stage LLM benchmark where frontier models generate, critique, revise, and vote on creative prompts to evaluate innovation under pressure.
-Highlights:
-- Built NovelBench to evaluate whether LLMs can actually innovate through a structured creative process instead of a single one-shot response.
-- Designed a multi-stage workflow where 2–8 models generate ideas, anonymously critique each other, revise with aggregated feedback, and vote on final outputs.
-- Built durable run orchestration around append-only events, persisted artifacts, leaderboard snapshots, archive pages, and replayable run traces.
-- Implemented a Convex-backed backend for active benchmark execution, durable state, usage tracking, read models, leaderboards, and concurrency control.
-- Integrated OpenRouter model execution with structured output normalization, scoring logic, failure tolerance, and stage-level workflow resilience.
-- Designed anonymous critique and voting systems to reduce model identity bias during evaluation and produce more meaningful comparative rankings.
-- Built a public Next.js product surface with a landing page, live arena, searchable archive, leaderboard views, and detailed run pages.
-- Launched the platform with real usage, producing 47 benchmark runs and 194 generated ideas so far.
-Tags: TypeScript, Next.js, React, Convex, OpenRouter, LLMs, AI Benchmarking, Workflow Orchestration, Realtime Systems, System Design, Evaluation Infrastructure, Prompt Engineering, Product Engineering, Research Infrastructure, Startup Tools, Solo Project
-Link: https://github.com/KushagraBharti/NovelBench
-Thumbnail: /portfolio/projects/novel-bench.png
 
 ### Beyond Chat
 Summary: An artifact-first AI workspace that turns chat into production workflows: studios, tool-calling runs, durable context, model comparison, storage-backed artifacts, and provider-aware orchestration.

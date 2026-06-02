@@ -3,7 +3,7 @@ import type { PortfolioProject } from "../contracts";
 export const portfolioProjects: PortfolioProject[] = [
   {
     slug: "monopolybench",
-    order: 4,
+    order: 1,
     title: "MonopolyBench",
     summary:
       "A deterministic multi-agent LLM evaluation harness where tool-calling agents play full Monopoly games, enabling research on planning, negotiation, deception, and bias in long-running agent environments.",
@@ -48,7 +48,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "pact",
-    order: 5,
+    order: 4,
     title: "Pact",
     summary:
       "A hackathon winner mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.",
@@ -87,8 +87,8 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "arachne-web-crawler",
-    order: 3,
-    title: "Go Web Crawler",
+    order: 5,
+    title: "Arachne - Web Crawler",
     summary:
       "A high-concurrency Go web crawler built around goroutine worker pools, channel-based scheduling, a host-partitioned breadth-first frontier, PostgreSQL persistence, and public-web benchmarks up to 100,000 successful HTML pages.",
     description: [
@@ -134,7 +134,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "autohdr-ml-lens-correction",
-    order: 6,
+    order: 7,
     title: "AutoHDR ML Lens Correction",
     summary:
       "A geometry-first computer vision system for automatic lens correction, using a staged ResNet34 hybrid CNN, Brown–Conrady camera geometry, and learned residual flow.",
@@ -173,7 +173,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "novelbench",
-    order: 7,
+    order: 6,
     title: "NovelBench",
     summary:
       "A live multi-stage LLM benchmark where frontier models generate, critique, revise, and vote on creative prompts to evaluate innovation under pressure.",
@@ -210,7 +210,7 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "imc-prosperity-4",
-    order: 2,
+    order: 3,
     title: "IMC Prosperity 4 Quant Trading Competition",
     summary:
       "A top-6%-worldwide IMC Prosperity 4 quant trading system with 203,249 XIREC, five rounds of fair-value market making, drift/carry, Black-Scholes voucher pricing, volatility-smile diagnostics, residual/stat-arb, DP hindsight oracles, and hundreds of backtests.",
@@ -390,8 +390,8 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "f1-reinforcement-learning",
-    order: 1,
-    title: "F1 Reinforcement Learning",
+    order: 2,
+    title: "F1 Optimization Project",
     summary:
       "A custom Gymnasium Monza RL environment and PPO training stack with F1-style vehicle physics, ray-cast perception, reward shaping, Fast-F1 telemetry calibration, CUDA checkpointing, rollout telemetry, and replay.",
     description: [

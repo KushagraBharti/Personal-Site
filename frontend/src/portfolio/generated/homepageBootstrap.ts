@@ -79,7 +79,7 @@ export const homepageBootstrap: HomePageBootstrap = {
     {
       "slug": "glydr-software-engineer",
       "dateRange": "Jan 2026 - May 2026",
-      "category": "Product / Platform Engineering",
+      "category": "Industry",
       "position": "Software Engineer at Glydr.gg",
       "summary": "Led engineering for Glydr.gg's Railway-deployed, microservice-based configuration platform serving 1,000+ users, spanning public discovery, Steam authentication, admin tooling, Control Panel imports, CI/CD, and distributed config delivery.",
       "timelineTone": "past"
@@ -111,8 +111,19 @@ export const homepageBootstrap: HomePageBootstrap = {
   ],
   "projects": [
     {
+      "slug": "monopolybench",
+      "title": "MonopolyBench",
+      "summary": "A deterministic multi-agent LLM evaluation harness where tool-calling agents play full Monopoly games, enabling research on planning, negotiation, deception, and bias in long-running agent environments.",
+      "tags": [
+        "LLM Evaluation",
+        "AI Agents"
+      ],
+      "thumbnail": "/portfolio/projects/monopoly-llm-benchmark.svg",
+      "githubLink": "https://github.com/KushagraBharti/MonopolyBench"
+    },
+    {
       "slug": "f1-reinforcement-learning",
-      "title": "F1 Reinforcement Learning",
+      "title": "F1 Optimization Project",
       "summary": "A custom Gymnasium Monza RL environment and PPO training stack with F1-style vehicle physics, ray-cast perception, reward shaping, Fast-F1 telemetry calibration, CUDA checkpointing, rollout telemetry, and replay.",
       "tags": [
         "Reinforcement Learning",
@@ -133,28 +144,6 @@ export const homepageBootstrap: HomePageBootstrap = {
       "githubLink": "https://github.com/KushagraBharti/IMC-Prosperity-4"
     },
     {
-      "slug": "arachne-web-crawler",
-      "title": "Go Web Crawler",
-      "summary": "A high-concurrency Go web crawler built around goroutine worker pools, channel-based scheduling, a host-partitioned breadth-first frontier, PostgreSQL persistence, and public-web benchmarks up to 100,000 successful HTML pages.",
-      "tags": [
-        "Go",
-        "Goroutines"
-      ],
-      "thumbnail": "/portfolio/projects/arachne.png",
-      "githubLink": "https://github.com/KushagraBharti/Web-Crawler-Go"
-    },
-    {
-      "slug": "monopolybench",
-      "title": "MonopolyBench",
-      "summary": "A deterministic multi-agent LLM evaluation harness where tool-calling agents play full Monopoly games, enabling research on planning, negotiation, deception, and bias in long-running agent environments.",
-      "tags": [
-        "LLM Evaluation",
-        "AI Agents"
-      ],
-      "thumbnail": "/portfolio/projects/monopoly-llm-benchmark.svg",
-      "githubLink": "https://github.com/KushagraBharti/MonopolyBench"
-    },
-    {
       "slug": "pact",
       "title": "Pact",
       "summary": "A hackathon winner mobile accountability app where users turn goals into escrow-backed commitments, submit proof, and let trusted validators decide whether the commitment was kept.",
@@ -166,15 +155,15 @@ export const homepageBootstrap: HomePageBootstrap = {
       "githubLink": "https://github.com/KushagraBharti/Pact"
     },
     {
-      "slug": "autohdr-ml-lens-correction",
-      "title": "AutoHDR ML Lens Correction",
-      "summary": "A geometry-first computer vision system for automatic lens correction, using a staged ResNet34 hybrid CNN, Brown–Conrady camera geometry, and learned residual flow.",
+      "slug": "arachne-web-crawler",
+      "title": "Arachne - Web Crawler",
+      "summary": "A high-concurrency Go web crawler built around goroutine worker pools, channel-based scheduling, a host-partitioned breadth-first frontier, PostgreSQL persistence, and public-web benchmarks up to 100,000 successful HTML pages.",
       "tags": [
-        "Computer Vision",
-        "Deep Learning"
+        "Go",
+        "Goroutines"
       ],
-      "thumbnail": "/portfolio/projects/autohdr-ml-lens-correction.png",
-      "githubLink": "https://github.com/KushagraBharti/AutoHDR-LensCorrection"
+      "thumbnail": "/portfolio/projects/arachne.png",
+      "githubLink": "https://github.com/KushagraBharti/Web-Crawler-Go"
     },
     {
       "slug": "novelbench",
@@ -186,6 +175,17 @@ export const homepageBootstrap: HomePageBootstrap = {
       ],
       "thumbnail": "/portfolio/projects/novel-bench.png",
       "githubLink": "https://github.com/KushagraBharti/NovelBench"
+    },
+    {
+      "slug": "autohdr-ml-lens-correction",
+      "title": "AutoHDR ML Lens Correction",
+      "summary": "A geometry-first computer vision system for automatic lens correction, using a staged ResNet34 hybrid CNN, Brown–Conrady camera geometry, and learned residual flow.",
+      "tags": [
+        "Computer Vision",
+        "Deep Learning"
+      ],
+      "thumbnail": "/portfolio/projects/autohdr-ml-lens-correction.png",
+      "githubLink": "https://github.com/KushagraBharti/AutoHDR-LensCorrection"
     },
     {
       "slug": "beyond-chat",
