@@ -113,7 +113,7 @@ export const homepageBootstrap: HomePageBootstrap = {
     {
       "slug": "monopolybench",
       "title": "MonopolyBench",
-      "summary": "A deterministic multi-agent LLM benchmark where tool-calling agents play full Monopoly games for research on planning, negotiation, deception, and bias.",
+      "summary": "A deterministic long-horizon LLM-agent benchmark for evaluating planning, negotiation, deception, memory, bias, and asset-management behavior.",
       "tags": [
         "LLM Evaluation",
         "Agent Harness"
