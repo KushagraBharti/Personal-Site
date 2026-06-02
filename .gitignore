@@ -9,7 +9,6 @@ package-lock.json
 dist
 dist-ssr
 coverage
-playwright-report
 test-results
 *.tsbuildinfo
 # Keep backend build output trackable in git (requested).
