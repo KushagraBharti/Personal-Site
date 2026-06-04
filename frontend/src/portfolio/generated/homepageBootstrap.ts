@@ -123,11 +123,11 @@ export const homepageBootstrap: HomePageBootstrap = {
     },
     {
       "slug": "f1-reinforcement-learning",
-      "title": "F1 Optimization Project",
-      "summary": "A custom Gymnasium Monza RL environment and PPO training stack with F1-style physics, ray-cast perception, telemetry calibration, and replay.",
+      "title": "F1 Reinforcement Learning",
+      "summary": "A custom Formula 1 Monza RL/simulation lab combining Gymnasium/SB3 PPO infrastructure with evolutionary controller search, calibrated bicycle-model physics, Fast-F1 telemetry baselines, and a 27,650-candidate search process that culminated in an 89.983s valid evolved Monza lap.",
       "tags": [
-        "Reinforcement Learning",
-        "Physics Simulation"
+        "Physics Simulation",
+        "Reinforcement Learning"
       ],
       "thumbnail": "/portfolio/projects/f1-optimization.png",
       "githubLink": "https://github.com/KushagraBharti/F1-ReinforcementLearning"

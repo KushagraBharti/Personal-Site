@@ -455,6 +455,7 @@ export const portfolioProjects: PortfolioProject[] = [
       "Current boundary: The strongest solved behavior is evolutionary controller search, not PPO itself. PPO infrastructure is implemented and tested, and the next milestone is transferring evolved trajectories and elite state libraries back into PPO curriculum training."
     ],
     tags: [
+      "Physics Simulation",
       "Reinforcement Learning",
       "Gymnasium",
       "Stable-Baselines3",
@@ -466,7 +467,6 @@ export const portfolioProjects: PortfolioProject[] = [
       "Policy Optimization",
       "Black-Box Optimization",
       "Simulation",
-      "Physics Simulation",
       "Vehicle Dynamics",
       "Bicycle Model",
       "Control",
