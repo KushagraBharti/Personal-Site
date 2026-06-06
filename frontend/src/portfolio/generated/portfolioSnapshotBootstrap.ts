@@ -408,7 +408,7 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
       "slug": "f1-reinforcement-learning",
       "order": 2,
       "title": "F1 Reinforcement Learning",
-      "summary": "A custom Monza RL/simulation lab with F1 telemetry-calibrated V2 physics, CUDA evolutionary search, BC/SAC learned-policy training, and a 78.683s normal-start learned lap.",
+      "summary": "A custom Formula 1 RL/simulation lab with telemetry-calibrated physics, GPU evolutionary search, BC/SAC policy training, and a 78.683s learned-policy lap.",
       "description": [
         "Context: Built F1RL as a custom Formula 1 racing AI lab around Monza, combining reinforcement learning, physics simulation, GPU evolutionary search, behavior cloning, SAC fine-tuning, telemetry, replay, and real Formula 1 reference data instead of training on an off-the-shelf toy environment.",
         "Problem: A racing policy has to solve long-horizon control: accelerate aggressively, brake late but stably, rotate through chicanes, use curbs without abusing track limits, recover from imperfect lines, avoid wall/off-track failures, and complete a full lap quickly. The challenge was not just producing motion; it was producing fast, legal, repeatable racing behavior under a simulator that actually punishes bad vehicle dynamics.",

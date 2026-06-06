@@ -124,7 +124,7 @@ export const homepageBootstrap: HomePageBootstrap = {
     {
       "slug": "f1-reinforcement-learning",
       "title": "F1 Reinforcement Learning",
-      "summary": "A custom Monza RL/simulation lab with F1 telemetry-calibrated V2 physics, CUDA evolutionary search, BC/SAC learned-policy training, and a 78.683s normal-start learned lap.",
+      "summary": "A custom Formula 1 RL/simulation lab with telemetry-calibrated physics, GPU evolutionary search, BC/SAC policy training, and a 78.683s learned-policy lap.",
       "tags": [
         "Reinforcement Learning",
         "Physics Simulation"
