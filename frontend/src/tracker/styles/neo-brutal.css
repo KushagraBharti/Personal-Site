@@ -3,6 +3,30 @@
    A bold, exaggerated, maximalist design system
    ============================================================================ */
 
+@font-face {
+  font-family: "Archivo Black";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/tracker/fonts/archivo-black-latin-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Space Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/tracker/fonts/space-mono-latin-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Space Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/tracker/fonts/space-mono-latin-700.woff2") format("woff2");
+}
+
 /* CSS Variables */
 :root {
   --neo-lime: #BFFF00;
@@ -24,8 +48,8 @@
   --neo-shadow-hover: 8px 8px 0 var(--neo-black);
   --neo-shadow-active: 2px 2px 0 var(--neo-black);
 
-  --neo-font-display: var(--portfolio-font-sans, "Inter", system-ui, sans-serif);
-  --neo-font-mono: var(--portfolio-font-mono, "IBM Plex Mono", "Courier New", monospace);
+  --neo-font-display: "Archivo Black", sans-serif;
+  --neo-font-mono: "Space Mono", monospace;
 
   --neo-radius: 0px;
   --neo-radius-chunky: 8px;
