@@ -27,6 +27,7 @@ const buildSyntheticDeleteJob = (input: {
   userId: string;
   listId: string;
   taskId: string;
+  source?: string;
 }): TrackerGoogleSyncJob => ({
   id: 0,
   user_id: input.userId,
@@ -36,7 +37,7 @@ const buildSyntheticDeleteJob = (input: {
   google_event_id: null,
   list_id: input.listId,
   job_type: "task_delete",
-  source: "delete_task_list",
+  source: input.source ?? "delete_task_list",
   dedupe_key: null,
   priority: 0,
   payload: {},
@@ -49,6 +50,123 @@ const buildSyntheticDeleteJob = (input: {
   created_at: nowIso(),
   updated_at: nowIso(),
 });
+
+type TaskDeleteRow = {
+  id: string;
+  list_id: string;
+  parent_task_id: string | null;
+};
+
+const collectTaskTreeForDelete = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  taskId: string
+) => {
+  const { data: rootTask, error: rootTaskError } = await supabaseAdmin
+    .from("tracker_tasks")
+    .select("id,list_id,parent_task_id")
+    .eq("user_id", userId)
+    .eq("id", taskId)
+    .maybeSingle();
+  if (rootTaskError) throw new Error(rootTaskError.message);
+  if (!rootTask) return null;
+
+  const rowsById = new Map<string, TaskDeleteRow>();
+  rowsById.set(String(rootTask.id), {
+    id: String(rootTask.id),
+    list_id: String(rootTask.list_id),
+    parent_task_id: rootTask.parent_task_id ? String(rootTask.parent_task_id) : null,
+  });
+
+  let frontier = [String(rootTask.id)];
+  while (frontier.length > 0) {
+    const { data: childRows, error: childRowsError } = await supabaseAdmin
+      .from("tracker_tasks")
+      .select("id,list_id,parent_task_id")
+      .eq("user_id", userId)
+      .in("parent_task_id", frontier);
+    if (childRowsError) throw new Error(childRowsError.message);
+
+    const nextFrontier: string[] = [];
+    for (const row of childRows ?? []) {
+      const id = String(row.id);
+      if (rowsById.has(id)) continue;
+      rowsById.set(id, {
+        id,
+        list_id: String(row.list_id),
+        parent_task_id: row.parent_task_id ? String(row.parent_task_id) : null,
+      });
+      nextFrontier.push(id);
+    }
+    frontier = nextFrontier;
+  }
+
+  return Array.from(rowsById.values());
+};
+
+const deleteCalendarLinksForTasks = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  taskIds: string[]
+) => {
+  if (taskIds.length === 0) return;
+
+  try {
+    const { error: projectionLinkError } = await supabaseAdmin
+      .from("tracker_task_google_projection_event_links")
+      .delete()
+      .eq("user_id", userId)
+      .in("task_id", taskIds);
+    if (projectionLinkError) throw new Error(projectionLinkError.message);
+  } catch (error) {
+    if (!isMissingProjectionSchemaError(error)) throw error;
+  }
+
+  const { error: primaryLinkError } = await supabaseAdmin
+    .from("tracker_task_google_event_links")
+    .delete()
+    .eq("user_id", userId)
+    .in("task_id", taskIds);
+  if (primaryLinkError) throw new Error(primaryLinkError.message);
+};
+
+export const deleteTaskForUser = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  taskId: string
+) => {
+  const taskRows = await collectTaskTreeForDelete(supabaseAdmin, userId, taskId);
+  if (!taskRows) return { ok: false as const, code: 404, error: "Task not found" };
+
+  const taskIds = taskRows.map((row) => row.id);
+
+  for (const row of taskRows) {
+    try {
+      await processTaskDeleteJob(
+        supabaseAdmin,
+        buildSyntheticDeleteJob({
+          userId,
+          listId: row.list_id,
+          taskId: row.id,
+          source: "delete_task",
+        })
+      );
+    } catch {
+      // Best effort: local delete should still succeed even if Google cleanup fails.
+    }
+  }
+
+  await deleteCalendarLinksForTasks(supabaseAdmin, userId, taskIds);
+
+  const { error: taskDeleteError } = await supabaseAdmin
+    .from("tracker_tasks")
+    .delete()
+    .eq("user_id", userId)
+    .in("id", taskIds);
+  if (taskDeleteError) throw new Error(taskDeleteError.message);
+
+  return { ok: true as const };
+};
 
 export const deleteTaskListForUser = async (
   supabaseAdmin: SupabaseClient,
@@ -117,23 +235,7 @@ export const deleteTaskListForUser = async (
       .in("parent_task_id", taskIds);
     if (clearParentRefsError) throw new Error(clearParentRefsError.message);
 
-    try {
-      const { error: projectionLinkError } = await supabaseAdmin
-        .from("tracker_task_google_projection_event_links")
-        .delete()
-        .eq("user_id", userId)
-        .in("task_id", taskIds);
-      if (projectionLinkError) throw new Error(projectionLinkError.message);
-    } catch (error) {
-      if (!isMissingProjectionSchemaError(error)) throw error;
-    }
-
-    const { error: primaryLinkError } = await supabaseAdmin
-      .from("tracker_task_google_event_links")
-      .delete()
-      .eq("user_id", userId)
-      .in("task_id", taskIds);
-    if (primaryLinkError) throw new Error(primaryLinkError.message);
+    await deleteCalendarLinksForTasks(supabaseAdmin, userId, taskIds);
 
     const { error: taskDeleteError } = await supabaseAdmin
       .from("tracker_tasks")

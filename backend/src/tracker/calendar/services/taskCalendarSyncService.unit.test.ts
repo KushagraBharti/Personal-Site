@@ -465,4 +465,53 @@ describe("taskCalendarSyncService", () => {
     expect(state.upsertedPrimaryLinks.at(-1)).toMatchObject({ is_deleted: true });
     expect(state.updatedProjectionRows).toHaveLength(3);
   });
+
+  it("deletes projected events from task-delete payload when link rows already cascaded", async () => {
+    const { processTaskDeleteJob } = await import("./taskCalendarSyncService");
+    const state: MockSupabaseState = {
+      taskById: {},
+      listSyncByListId: {},
+      primaryLinkByTaskId: {},
+      projectionLinksByTaskId: {},
+      upsertedPrimaryLinks: [],
+      upsertedProjectionLinks: [],
+      updatedPrimaryRows: [],
+      updatedProjectionRows: [],
+    };
+
+    await processTaskDeleteJob(createSupabaseMock(state), {
+      id: 1,
+      user_id: "user-1",
+      run_id: null,
+      lane: "live",
+      task_id: "task-1",
+      google_event_id: null,
+      list_id: "list-1",
+      job_type: "task_delete",
+      source: "trigger_task_delete",
+      dedupe_key: "dedupe-4",
+      priority: 5,
+      payload: {
+        projection_events: [
+          { calendar_id: "calendar-1", google_event_id: "evt-proj-1" },
+          { calendar_id: "calendar-1", google_event_id: "evt-proj-2" },
+        ],
+      },
+      status: "pending",
+      attempt_count: 0,
+      max_attempts: 5,
+      run_after: "2026-04-15T04:00:00.000Z",
+      last_error: null,
+      locked_at: null,
+      created_at: "2026-04-15T04:00:00.000Z",
+      updated_at: "2026-04-15T04:00:00.000Z",
+    });
+
+    expect(googleApiMocks.deleteGoogleEvent).toHaveBeenCalledTimes(2);
+    expect(googleApiMocks.deleteGoogleEvent.mock.calls.map((call) => call.slice(1, 3))).toEqual([
+      ["calendar-1", "evt-proj-1"],
+      ["calendar-1", "evt-proj-2"],
+    ]);
+    expect(state.updatedProjectionRows).toHaveLength(0);
+  });
 });

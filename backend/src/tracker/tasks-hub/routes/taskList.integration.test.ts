@@ -5,6 +5,7 @@ const getUserMock = vi.hoisted(() => vi.fn());
 const createClientMock = vi.hoisted(() => vi.fn());
 const getSupabaseAdminMock = vi.hoisted(() => vi.fn());
 const deleteTaskListForUserMock = vi.hoisted(() => vi.fn());
+const deleteTaskForUserMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@supabase/supabase-js", () => ({
   createClient: createClientMock,
@@ -15,6 +16,7 @@ vi.mock("../../calendar/services/calendarSyncQueueService", () => ({
 }));
 
 vi.mock("../services/taskListService", () => ({
+  deleteTaskForUser: deleteTaskForUserMock,
   deleteTaskListForUser: deleteTaskListForUserMock,
 }));
 
@@ -31,6 +33,7 @@ describe("task list routes", () => {
     createClientMock.mockReset();
     getSupabaseAdminMock.mockReset();
     deleteTaskListForUserMock.mockReset();
+    deleteTaskForUserMock.mockReset();
 
     createClientMock.mockReturnValue(authorizedClient);
     getUserMock.mockResolvedValue({
@@ -70,5 +73,18 @@ describe("task list routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ ok: true });
     expect(deleteTaskListForUserMock).toHaveBeenCalledWith({}, "user-1", "list-1");
+  });
+
+  it("deletes a task through the backend service", async () => {
+    deleteTaskForUserMock.mockResolvedValue({ ok: true });
+
+    const { default: app } = await import("../../../app");
+    const response = await request(app)
+      .delete("/api/private/tasks/task-1")
+      .set("authorization", "Bearer valid-token");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ ok: true });
+    expect(deleteTaskForUserMock).toHaveBeenCalledWith({}, "user-1", "task-1");
   });
 });

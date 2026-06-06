@@ -3,9 +3,9 @@ import { DateTime } from "luxon";
 import {
   createTask,
   createTaskList,
+  deleteTaskViaApi,
   deleteTaskListViaApi,
   disconnectCalendar,
-  deleteTask,
   fetchSortPreferences,
   fetchTaskLists,
   fetchTasks,
@@ -664,9 +664,11 @@ export const useTasksHubModule = () => {
 
   const removeTask = useCallback(
     async (taskId: string) => {
-      const result = await deleteTask(supabase, userId, taskId);
-      if (result.error) {
-        setErrorMessage(result.error.message || "Failed to delete task.");
+      try {
+        await deleteTaskViaApi(session.access_token, taskId);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to delete task.";
+        setErrorMessage(message);
         return false;
       }
 
@@ -675,7 +677,7 @@ export const useTasksHubModule = () => {
       scheduleLiveSyncPump();
       return true;
     },
-    [scheduleLiveSyncPump, supabase, userId]
+    [scheduleLiveSyncPump, session.access_token]
   );
 
   const toggleTaskCompletion = useCallback(

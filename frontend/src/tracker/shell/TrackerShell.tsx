@@ -344,8 +344,6 @@ const TrackerLayout: React.FC<{
   setSearchParams,
 }) => {
   const [time, setTime] = useState(new Date());
-  const mainWidthClass = activeModuleId === "tasks" ? "w-full max-w-none" : "max-w-7xl";
-
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(interval);
@@ -479,7 +477,7 @@ const TrackerLayout: React.FC<{
         <FloatingShapes />
 
         {/* Main Content */}
-        <main className={`${mainWidthClass} mx-auto px-4 py-6 relative z-10`}>
+        <main className="w-full max-w-none mx-auto px-4 py-6 relative z-10">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeModuleId}

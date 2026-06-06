@@ -74,6 +74,26 @@ const getJobStringPayload = (job: TrackerGoogleSyncJob, key: string) => {
   return typeof raw === "string" && raw.trim() ? raw.trim() : null;
 };
 
+const getJobProjectionEventsPayload = (job: TrackerGoogleSyncJob) => {
+  const raw = (job.payload as Record<string, unknown> | null | undefined)?.projection_events;
+  if (!Array.isArray(raw)) return [];
+
+  return raw
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const record = item as Record<string, unknown>;
+      const calendarId = typeof record.calendar_id === "string" ? record.calendar_id.trim() : "";
+      const googleEventId =
+        typeof record.google_event_id === "string" ? record.google_event_id.trim() : "";
+      if (!calendarId || !googleEventId) return null;
+      return {
+        calendarId,
+        googleEventId,
+      };
+    })
+    .filter((item): item is { calendarId: string; googleEventId: string } => !!item);
+};
+
 const getJobRunId = (job: TrackerGoogleSyncJob) => job.run_id || getJobStringPayload(job, "run_id");
 
 const withRunPayload = (base: Record<string, unknown>, runId: string | null) =>
@@ -864,6 +884,7 @@ export const processTaskDeleteJob = async (
 ) => {
   const payloadEventId = getJobStringPayload(job, "google_event_id");
   const payloadCalendarId = getJobStringPayload(job, "calendar_id");
+  const payloadProjectionEvents = getJobProjectionEventsPayload(job);
   let googleEventId = job.google_event_id || payloadEventId || null;
   let calendarId = payloadCalendarId || null;
   let link: any | null = null;
@@ -877,8 +898,14 @@ export const processTaskDeleteJob = async (
     projectionLinks = await getProjectionLinksByTaskId(supabaseAdmin, job.user_id, job.task_id);
     if (!calendarId) {
       const firstProjectionCalendarId = projectionLinks.find((item) => !item.is_deleted)?.calendar_id;
-      if (firstProjectionCalendarId) calendarId = firstProjectionCalendarId;
+      if (firstProjectionCalendarId) {
+        calendarId = firstProjectionCalendarId;
+      } else if (payloadProjectionEvents[0]?.calendarId) {
+        calendarId = payloadProjectionEvents[0].calendarId;
+      }
     }
+  } else if (!calendarId && payloadProjectionEvents[0]?.calendarId) {
+    calendarId = payloadProjectionEvents[0].calendarId;
   }
 
   const { accessToken, publicRow } = await getValidGoogleAccessToken(supabaseAdmin, job.user_id);
@@ -936,6 +963,25 @@ export const processTaskDeleteJob = async (
       if (!isGoogleNotFoundError(error)) throw error;
     }
     await markProjectionLinkDeleted(supabaseAdmin, currentProjectionLink.id, "app");
+  }
+
+  const handledProjectionEventIds = new Set(
+    projectionLinks.map((currentProjectionLink) => currentProjectionLink.google_event_id)
+  );
+  if (googleEventId) handledProjectionEventIds.add(googleEventId);
+
+  for (const projectionEvent of payloadProjectionEvents) {
+    if (handledProjectionEventIds.has(projectionEvent.googleEventId)) continue;
+    try {
+      await deleteGoogleEvent(
+        accessToken,
+        projectionEvent.calendarId,
+        projectionEvent.googleEventId
+      );
+    } catch (error) {
+      if (!isGoogleNotFoundError(error)) throw error;
+    }
+    handledProjectionEventIds.add(projectionEvent.googleEventId);
   }
 };
 const processReconcileAppPageJob = async (supabaseAdmin: SupabaseClient, job: TrackerGoogleSyncJob) => {

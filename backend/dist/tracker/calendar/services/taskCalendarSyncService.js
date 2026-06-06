@@ -39,6 +39,27 @@ const getJobStringPayload = (job, key) => {
     const raw = (_a = job.payload) === null || _a === void 0 ? void 0 : _a[key];
     return typeof raw === "string" && raw.trim() ? raw.trim() : null;
 };
+const getJobProjectionEventsPayload = (job) => {
+    var _a;
+    const raw = (_a = job.payload) === null || _a === void 0 ? void 0 : _a.projection_events;
+    if (!Array.isArray(raw))
+        return [];
+    return raw
+        .map((item) => {
+        if (!item || typeof item !== "object")
+            return null;
+        const record = item;
+        const calendarId = typeof record.calendar_id === "string" ? record.calendar_id.trim() : "";
+        const googleEventId = typeof record.google_event_id === "string" ? record.google_event_id.trim() : "";
+        if (!calendarId || !googleEventId)
+            return null;
+        return {
+            calendarId,
+            googleEventId,
+        };
+    })
+        .filter((item) => !!item);
+};
 const getJobRunId = (job) => job.run_id || getJobStringPayload(job, "run_id");
 const withRunPayload = (base, runId) => runId ? Object.assign(Object.assign({}, base), { run_id: runId }) : base;
 const getRawErrorMessage = (error) => {
@@ -641,9 +662,10 @@ const processTaskUpsertJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
 });
 exports.processTaskUpsertJob = processTaskUpsertJob;
 const processTaskDeleteJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b, _c;
     const payloadEventId = getJobStringPayload(job, "google_event_id");
     const payloadCalendarId = getJobStringPayload(job, "calendar_id");
+    const payloadProjectionEvents = getJobProjectionEventsPayload(job);
     let googleEventId = job.google_event_id || payloadEventId || null;
     let calendarId = payloadCalendarId || null;
     let link = null;
@@ -658,9 +680,16 @@ const processTaskDeleteJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
         projectionLinks = yield getProjectionLinksByTaskId(supabaseAdmin, job.user_id, job.task_id);
         if (!calendarId) {
             const firstProjectionCalendarId = (_a = projectionLinks.find((item) => !item.is_deleted)) === null || _a === void 0 ? void 0 : _a.calendar_id;
-            if (firstProjectionCalendarId)
+            if (firstProjectionCalendarId) {
                 calendarId = firstProjectionCalendarId;
+            }
+            else if ((_b = payloadProjectionEvents[0]) === null || _b === void 0 ? void 0 : _b.calendarId) {
+                calendarId = payloadProjectionEvents[0].calendarId;
+            }
         }
+    }
+    else if (!calendarId && ((_c = payloadProjectionEvents[0]) === null || _c === void 0 ? void 0 : _c.calendarId)) {
+        calendarId = payloadProjectionEvents[0].calendarId;
     }
     const { accessToken, publicRow } = yield (0, googleCalendarApiService_1.getValidGoogleAccessToken)(supabaseAdmin, job.user_id);
     if (!calendarId)
@@ -713,6 +742,21 @@ const processTaskDeleteJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
                 throw error;
         }
         yield markProjectionLinkDeleted(supabaseAdmin, currentProjectionLink.id, "app");
+    }
+    const handledProjectionEventIds = new Set(projectionLinks.map((currentProjectionLink) => currentProjectionLink.google_event_id));
+    if (googleEventId)
+        handledProjectionEventIds.add(googleEventId);
+    for (const projectionEvent of payloadProjectionEvents) {
+        if (handledProjectionEventIds.has(projectionEvent.googleEventId))
+            continue;
+        try {
+            yield (0, googleCalendarApiService_1.deleteGoogleEvent)(accessToken, projectionEvent.calendarId, projectionEvent.googleEventId);
+        }
+        catch (error) {
+            if (!isGoogleNotFoundError(error))
+                throw error;
+        }
+        handledProjectionEventIds.add(projectionEvent.googleEventId);
     }
 });
 exports.processTaskDeleteJob = processTaskDeleteJob;

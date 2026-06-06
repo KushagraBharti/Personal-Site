@@ -198,14 +198,19 @@ export const updateTask = async (
   return { data: (data as TrackerTask | null) ?? null, error };
 };
 
-export const deleteTask = async (client: SupabaseClient, userId: string, taskId: string) => {
-  const { error } = await client
-    .from("tracker_tasks")
-    .delete()
-    .eq("user_id", userId)
-    .eq("id", taskId);
-
-  return { error };
+export const deleteTaskViaApi = async (
+  accessToken: string,
+  taskId: string
+): Promise<{ ok: boolean }> => {
+  const res = await fetch(`${API_BASE}/api/private/tasks/${encodeURIComponent(taskId)}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Failed to delete task");
+  }
+  return res.json();
 };
 
 export const upsertSortPreference = async (

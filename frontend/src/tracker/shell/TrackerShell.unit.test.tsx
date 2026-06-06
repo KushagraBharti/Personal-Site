@@ -13,8 +13,6 @@ vi.mock("./registry", () => ({
   defaultModuleId: "tasks",
   trackerModules: [
     { id: "tasks", label: "Tasks", Component: () => <div>Tasks module</div> },
-    { id: "weekly", label: "Weekly Tasks", Component: () => <div>Weekly module</div> },
-    { id: "pipeline", label: "Active Deals", Component: () => <div>Pipeline module</div> },
   ],
 }));
 

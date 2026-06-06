@@ -3,7 +3,7 @@ BEGIN;
 CREATE TABLE IF NOT EXISTS public.tracker_task_google_projection_event_links (
   id bigserial PRIMARY KEY,
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  task_id uuid NOT NULL REFERENCES public.tracker_tasks(id),
+  task_id uuid NOT NULL REFERENCES public.tracker_tasks(id) ON DELETE CASCADE,
   calendar_id text NOT NULL,
   google_event_id text NOT NULL,
   projection_index integer NOT NULL CHECK (projection_index > 0),

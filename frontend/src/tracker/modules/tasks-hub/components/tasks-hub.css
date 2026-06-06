@@ -110,10 +110,11 @@
 }
 
 .tasks-hub .tasks-sidebar h3 {
-  font-family: var(--neo-font-display);
+  font-family: var(--neo-font-mono);
   margin: 0;
   font-size: 18px;
-  letter-spacing: 0.03em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -375,9 +376,10 @@
 
 .tasks-hub .tasks-card-title {
   margin: 0;
-  font-family: var(--neo-font-display);
+  font-family: var(--neo-font-mono);
   font-size: 18px;
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -398,7 +400,7 @@
    ============================================================================ */
 
 .tasks-hub .tasks-due-group-label {
-  font-family: var(--neo-font-display);
+  font-family: var(--neo-font-mono);
   font-weight: 700;
   font-size: 11px;
   letter-spacing: 0.08em;

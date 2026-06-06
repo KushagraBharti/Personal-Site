@@ -5,7 +5,7 @@
 This repository powers two connected products in one codebase:
 
 - `portfolio`: the public portfolio site, public API, `/ai`, and generated `llms.txt`/`portfolio.json`/`version.json`
-- `tracker`: a private task, workflow, and calendar-connected planning app
+- `tracker`: a private task and calendar-connected planning app
 
 The backend owns portfolio content and live integrations. The frontend owns rendering, interaction, routing, and the private tracker experience.
 
@@ -31,11 +31,9 @@ Public portfolio images should render through `PortfolioImage` when possible so 
 
 ### Tracker
 
-The private tracker lives at `/tracker`. It is lazy-loaded, Supabase-authenticated, and split into modules:
+The private tracker lives at `/tracker`. It is lazy-loaded, Supabase-authenticated, and currently has one active module:
 
 - `tasks`: the current tasks-hub interface
-- `weekly`: the older weekly tasks module
-- `pipeline`: active deals/workflow tracking
 
 Most tracker CRUD talks directly to Supabase from the frontend. Backend private APIs handle service-role operations, task-list deletion, cron, and Google Calendar sync.
 

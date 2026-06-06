@@ -7,7 +7,7 @@
 This repo has two product surfaces:
 
 - `portfolio`: public site, `/ai`, public APIs, generated `llms.txt`/`portfolio.json`/`version.json`, public assets
-- `tracker`: private task, workflow, pipeline, and calendar-connected planning app
+- `tracker`: private task and calendar-connected planning app
 
 Keep the split intact in both apps.
 
@@ -66,8 +66,6 @@ Tracker:
 Current tracker modules:
 
 - `tasks` -> tasks-hub UI
-- `weekly` -> older weekly tasks UI
-- `pipeline` -> active deals/workflow tracking
 
 ## Known Codebase Notes
 
