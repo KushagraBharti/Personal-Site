@@ -124,10 +124,10 @@ export const homepageBootstrap: HomePageBootstrap = {
     {
       "slug": "f1-reinforcement-learning",
       "title": "F1 Reinforcement Learning",
-      "summary": "A custom Monza RL/simulation lab with F1 telemetry-calibrated physics, Gymnasium/SB3 PPO infrastructure, CUDA-scale evolutionary search, and an 81.233s evolved lap from 300,000 candidates.",
+      "summary": "A custom Monza RL/simulation lab with real F1 telemetry-calibrated V2 physics, CUDA-scale evolutionary search, BC/SAC learned-policy training, and a 77.683s normal-start learned lap from a 300,000-candidate search.",
       "tags": [
-        "Physics Simulation",
-        "Reinforcement Learning"
+        "Reinforcement Learning",
+        "Physics Simulation"
       ],
       "thumbnail": "/portfolio/projects/f1-optimization.png",
       "githubLink": "https://github.com/KushagraBharti/F1-ReinforcementLearning"
