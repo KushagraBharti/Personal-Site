@@ -424,7 +424,7 @@ export const portfolioProjects: PortfolioProject[] = [
     order: 2,
     title: "F1 Reinforcement Learning",
     summary:
-      "A custom Formula 1 simulation lab with telemetry-calibrated physics, GPU evolutionary search, BC/SAC policy training, and a 78.683s learned-policy lap.",
+      "A custom Formula 1 simulation lab with telemetry-calibrated physics, GPU evolutionary search, BC/SAC policy training, and a 78.683s learned lap.",
  
     description: [
       "Context: Built F1RL as a custom Formula 1 racing AI lab around Monza, combining reinforcement learning, physics simulation, GPU evolutionary search, behavior cloning, SAC fine-tuning, telemetry, replay, and real Formula 1 reference data instead of training on an off-the-shelf toy environment.",
