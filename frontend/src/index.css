@@ -872,12 +872,15 @@ html {
 }
 
 .about-editorial__markdown {
-  display: grid;
-  gap: var(--writing-preview-gap);
+  display: block;
   font-family: var(--portfolio-font-sans);
   font-size: var(--writing-preview-body-size);
   line-height: var(--writing-preview-body-leading);
   color: rgba(245, 237, 223, 0.78);
+}
+
+.about-editorial__markdown > * {
+  margin: 0;
 }
 
 .about-editorial__markdown h4,
@@ -889,31 +892,57 @@ html {
 }
 
 .about-editorial__markdown h4 {
+  margin-bottom: calc(var(--writing-preview-gap) * 1.05);
   font-size: var(--writing-preview-title-size);
   line-height: 1;
 }
 
 .about-editorial__markdown h5 {
+  margin-top: calc(var(--writing-preview-gap) * 1.45);
+  margin-bottom: calc(var(--writing-preview-gap) * 0.48);
   font-size: var(--writing-preview-subtitle-size);
-  line-height: 1.08;
+  line-height: 1.05;
+}
+
+.about-editorial__markdown h5 + p {
+  margin-top: 0;
+}
+
+.about-editorial__markdown > p + p {
+  margin-top: calc(var(--writing-preview-gap) * 0.82);
+}
+
+.about-editorial__markdown p + ul,
+.about-editorial__markdown ul + blockquote,
+.about-editorial__markdown p + blockquote {
+  margin-top: calc(var(--writing-preview-gap) * 1.05);
 }
 
 .about-editorial__markdown blockquote {
   display: grid;
-  gap: calc(var(--writing-preview-gap) * 0.65);
-  padding: calc(var(--writing-preview-gap) * 0.8) 0 calc(var(--writing-preview-gap) * 0.8) 0.78rem;
+  gap: calc(var(--writing-preview-gap) * 0.36);
+  padding-left: 0.78rem;
   border-left: 2px solid #aa4d2e;
   font-family: var(--portfolio-font-mono);
   font-size: var(--writing-preview-quote-size);
-  line-height: 1.42;
+  line-height: 1.32;
   color: rgba(245, 237, 223, 0.7);
+}
+
+.about-editorial__markdown blockquote + p,
+.about-editorial__markdown blockquote + h5 {
+  margin-top: calc(var(--writing-preview-gap) * 1.05);
 }
 
 .about-editorial__markdown ul {
   display: grid;
-  gap: calc(var(--writing-preview-gap) * 0.48);
+  gap: calc(var(--writing-preview-gap) * 0.38);
   padding-left: 1rem;
   list-style: square;
+}
+
+.about-editorial__markdown ul + p {
+  margin-top: calc(var(--writing-preview-gap) * 0.95);
 }
 
 .about-editorial__markdown li::marker {
