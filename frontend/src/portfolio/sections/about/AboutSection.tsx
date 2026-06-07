@@ -41,15 +41,33 @@ export const WritingMarkdownPreview: React.FC<{ markdown: string }> = ({ markdow
     }
 
     if (line.startsWith("> ")) {
-      blocks.push(<blockquote key={index}>{renderInlineMarkdown(line.slice(2))}</blockquote>);
+      const quoteLines: string[] = [];
+      let quoteIndex = index;
+
+      while (quoteIndex < lines.length && lines[quoteIndex].trim().startsWith("> ")) {
+        quoteLines.push(lines[quoteIndex].trim().slice(2));
+        quoteIndex += 1;
+      }
+
+      blocks.push(
+        <blockquote key={index}>
+          {quoteLines.map((quoteLine) => (
+            <p key={quoteLine}>{renderInlineMarkdown(quoteLine)}</p>
+          ))}
+        </blockquote>,
+      );
+      index = quoteIndex - 1;
       continue;
     }
 
-    if (line.startsWith("- ")) {
+    if (line.startsWith("- ") || line.startsWith("* ")) {
       const items: string[] = [];
       let itemIndex = index;
 
-      while (itemIndex < lines.length && lines[itemIndex].trim().startsWith("- ")) {
+      while (
+        itemIndex < lines.length &&
+        (lines[itemIndex].trim().startsWith("- ") || lines[itemIndex].trim().startsWith("* "))
+      ) {
         items.push(lines[itemIndex].trim().slice(2));
         itemIndex += 1;
       }
@@ -69,6 +87,12 @@ export const WritingMarkdownPreview: React.FC<{ markdown: string }> = ({ markdow
   }
 
   return <div className="about-editorial__markdown">{blocks}</div>;
+};
+
+const getWritingPreviewDensity = (markdown: string) => {
+  if (markdown.length > 1_350) return "dense";
+  if (markdown.length > 950) return "compact";
+  return "standard";
 };
 
 export const FeaturedWritingList: React.FC<{ writings: PortfolioWriting[] }> = ({ writings }) => {
@@ -126,7 +150,11 @@ export const FeaturedWritingList: React.FC<{ writings: PortfolioWriting[] }> = (
         </ul>
 
         {activeWriting ? (
-          <article className="about-editorial__writing-preview" aria-live="polite">
+          <article
+            className="about-editorial__writing-preview"
+            data-density={getWritingPreviewDensity(activeWriting.markdown)}
+            aria-live="polite"
+          >
             <div className="about-editorial__writing-preview-rule" aria-hidden="true" />
             <p className="about-editorial__writing-preview-kicker">
               {String(activeWriting.order).padStart(2, "0")} / {activeWriting.category}

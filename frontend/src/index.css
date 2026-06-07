@@ -798,13 +798,14 @@ html {
 }
 
 .about-editorial__writing-preview {
-  position: absolute;
+  position: fixed;
   z-index: 4;
-  top: -1.55rem;
-  left: min(32rem, calc(100% + 1rem));
-  width: min(27rem, 44vw);
+  top: 50%;
+  left: clamp(39rem, 52vw, 54rem);
+  width: min(38rem, calc(100vw - clamp(39rem, 52vw, 54rem) - 3rem));
   min-height: 0;
-  padding: 1rem 1.15rem 1.15rem;
+  max-height: calc(100vh - 4rem);
+  padding: var(--writing-preview-pad, 1rem 1.15rem 1.15rem);
   overflow: visible;
   border: 1px solid rgba(246, 239, 226, 0.18);
   background:
@@ -814,7 +815,34 @@ html {
   box-shadow:
     0 1.6rem 3.5rem rgba(18, 15, 11, 0.26),
     0 0.45rem 0 rgba(170, 77, 46, 0.9);
+  transform: translateY(-50%);
   animation: writing-preview-in 160ms ease-out both;
+  --writing-preview-gap: 0.54rem;
+  --writing-preview-body-size: 0.76rem;
+  --writing-preview-body-leading: 1.45;
+  --writing-preview-title-size: 1.62rem;
+  --writing-preview-subtitle-size: 1rem;
+  --writing-preview-quote-size: 0.7rem;
+}
+
+.about-editorial__writing-preview[data-density="compact"] {
+  --writing-preview-gap: 0.42rem;
+  --writing-preview-body-size: 0.68rem;
+  --writing-preview-body-leading: 1.35;
+  --writing-preview-title-size: 1.35rem;
+  --writing-preview-subtitle-size: 0.86rem;
+  --writing-preview-quote-size: 0.62rem;
+  --writing-preview-pad: 0.9rem 1.05rem 1rem;
+}
+
+.about-editorial__writing-preview[data-density="dense"] {
+  --writing-preview-gap: 0.34rem;
+  --writing-preview-body-size: 0.6rem;
+  --writing-preview-body-leading: 1.28;
+  --writing-preview-title-size: 1.18rem;
+  --writing-preview-subtitle-size: 0.75rem;
+  --writing-preview-quote-size: 0.54rem;
+  --writing-preview-pad: 0.78rem 0.92rem 0.9rem;
 }
 
 .about-editorial__writing-preview::after {
@@ -831,12 +859,12 @@ html {
 .about-editorial__writing-preview-rule {
   width: 100%;
   height: 0.18rem;
-  margin-bottom: 0.72rem;
+  margin-bottom: var(--writing-preview-gap);
   background: linear-gradient(90deg, #f5eddf 0 18%, #aa4d2e 18% 42%, #d9b44a 42% 64%, rgba(245, 237, 223, 0.28) 64%);
 }
 
 .about-editorial__writing-preview-kicker {
-  margin-bottom: 0.62rem;
+  margin-bottom: var(--writing-preview-gap);
   font-size: 0.64rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -845,10 +873,10 @@ html {
 
 .about-editorial__markdown {
   display: grid;
-  gap: 0.54rem;
+  gap: var(--writing-preview-gap);
   font-family: var(--portfolio-font-sans);
-  font-size: 0.76rem;
-  line-height: 1.45;
+  font-size: var(--writing-preview-body-size);
+  line-height: var(--writing-preview-body-leading);
   color: rgba(245, 237, 223, 0.78);
 }
 
@@ -861,25 +889,29 @@ html {
 }
 
 .about-editorial__markdown h4 {
-  font-size: 1.62rem;
+  font-size: var(--writing-preview-title-size);
   line-height: 1;
 }
 
 .about-editorial__markdown h5 {
-  font-size: 1rem;
+  font-size: var(--writing-preview-subtitle-size);
+  line-height: 1.08;
 }
 
 .about-editorial__markdown blockquote {
-  padding: 0.56rem 0 0.56rem 0.78rem;
+  display: grid;
+  gap: calc(var(--writing-preview-gap) * 0.65);
+  padding: calc(var(--writing-preview-gap) * 0.8) 0 calc(var(--writing-preview-gap) * 0.8) 0.78rem;
   border-left: 2px solid #aa4d2e;
   font-family: var(--portfolio-font-mono);
-  font-size: 0.7rem;
+  font-size: var(--writing-preview-quote-size);
+  line-height: 1.42;
   color: rgba(245, 237, 223, 0.7);
 }
 
 .about-editorial__markdown ul {
   display: grid;
-  gap: 0.26rem;
+  gap: calc(var(--writing-preview-gap) * 0.48);
   padding-left: 1rem;
   list-style: square;
 }
@@ -898,12 +930,12 @@ html {
 @keyframes writing-preview-in {
   from {
     opacity: 0;
-    transform: translateY(0.45rem) scale(0.985);
+    transform: translateY(calc(-50% + 0.45rem)) scale(0.985);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(-50%) scale(1);
   }
 }
 
@@ -1546,6 +1578,9 @@ html {
     min-height: 0;
     padding: 1.15rem;
     margin-top: 1.1rem;
+    max-height: none;
+    transform: none;
+    animation: writing-preview-in-mobile 160ms ease-out both;
   }
 
   .about-editorial__markdown h4 {
@@ -1687,6 +1722,18 @@ html {
 
   .experiences-editorial__description {
     font-size: 0.9rem;
+  }
+}
+
+@keyframes writing-preview-in-mobile {
+  from {
+    opacity: 0;
+    transform: translateY(0.45rem) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 @keyframes gradientAnimation {
