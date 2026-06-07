@@ -39,24 +39,24 @@ export const homepageBootstrap: HomePageBootstrap = {
   },
   "writings": [
     {
-      "slug": "epistemic-velocity",
-      "title": "epistemic velocity",
-      "summary": "Lifelong learning as epistemic hygiene: curiosity, discipline, and pressure against stale competence."
+      "slug": "perpetual-learning",
+      "title": "perpetual learning",
+      "summary": "Learning as the discipline of staying corrigible before comfort, fluency, and success become inertia."
     },
     {
-      "slug": "adaptive-agency",
-      "title": "adaptive agency",
-      "summary": "High-agency adaptation under ambiguity: fast revision, clear authorship, tools kept subordinate."
+      "slug": "kinetic-agency",
+      "title": "kinetic agency",
+      "summary": "Turning abundant intelligence into motion through fast feedback, real shipping, and active adaptation."
     },
     {
-      "slug": "aesthetic-judgment",
-      "title": "aesthetic judgment",
-      "summary": "Taste as compressed perception: rhythm, restraint, framing, and selection when generation is cheap."
+      "slug": "discernment",
+      "title": "discernment",
+      "summary": "Taste as selection: the software and cinematic grammar of what to remove, automate, and make invisible."
     },
     {
-      "slug": "ambient-agency",
-      "title": "ambient agency",
-      "summary": "Software as ambient infrastructure: fewer destinations, stronger memory, cleaner preservation of intent."
+      "slug": "predictions",
+      "title": "predictions",
+      "summary": "Notes on agents as cognitive infrastructure, democratized capability, and freedom as the next luxury."
     }
   ],
   "experiences": [

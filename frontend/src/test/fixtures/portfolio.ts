@@ -75,12 +75,12 @@ export const portfolioSnapshotFixture: PortfolioSnapshot = {
   ],
   writings: [
     {
-      slug: "epistemic-velocity",
+      slug: "perpetual-learning",
       order: 1,
       category: "value",
-      title: "epistemic velocity",
-      summary: "A short note about learning quickly and staying accurate.",
-      markdown: "Learning is upkeep, not ambition.",
+      title: "perpetual learning",
+      summary: "A short note about staying corrigible before comfort becomes inertia.",
+      markdown: "Learning is the refusal to fossilize.",
     },
   ],
   media: [

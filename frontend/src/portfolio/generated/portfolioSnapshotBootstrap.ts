@@ -1152,36 +1152,36 @@ export const portfolioSnapshotBootstrap: PortfolioSnapshot = {
   ],
   "writings": [
     {
-      "slug": "epistemic-velocity",
+      "slug": "perpetual-learning",
       "order": 1,
       "category": "value",
-      "title": "epistemic velocity",
-      "summary": "Lifelong learning as epistemic hygiene: curiosity, discipline, and pressure against stale competence.",
-      "markdown": "# Epistemic Velocity\n\nI treat learning as upkeep, not ambition.\n\nThe half-life of useful knowledge keeps shrinking. Competence calcifies. You stop noticing the terrain moved because the patch you're standing on still feels solid.\n\nWhat I'm watching in myself:\n\n- how fast I can re-derive something I forgot\n- whether I update without making it identity-shaped\n- whether the breadth compounds or just collects\n- whether I'm getting enough adversarial input to expose bad priors\n\n> Curiosity is cheap. Discipline is what stops it becoming drift.\n\nYou don't usually get out-thought. You get out-iterated."
+      "title": "perpetual learning",
+      "summary": "Learning as the discipline of staying corrigible before comfort, fluency, and success become inertia.",
+      "markdown": "# Perpetual Learning\n\nLearning is the refusal to fossilize.\n\nI believe comfort is a slow form of surrender. Knowledge does not simply vanish; it sediments. Skill, left untested, ossifies into reflex. The mind begins to mistake familiarity for truth, and a little fluency can masquerade as depth.\n\nI want to remain an apprentice to reality: corrected by it, sharpened by it, unsettled by it. I want to keep moving before competence becomes ceremony, before success becomes anesthesia, before the self I have built becomes a room I can no longer leave.\n\nSo I return to the discipline:\n\n* Learn before knowledge becomes sediment.\n* Adapt before skill becomes architecture.\n* Compete before comfort dulls the edge.\n* Question before confidence becomes disguise.\n* Begin again before achievement becomes sleep.\n\n> What does not learn, hardens.\n> What does not adapt, is buried.\n> What does not question itself, decays first.\n> What does not contend, rots.\n> What does not begin again, dies."
     },
     {
-      "slug": "adaptive-agency",
+      "slug": "kinetic-agency",
       "order": 2,
       "category": "belief",
-      "title": "adaptive agency",
-      "summary": "High-agency adaptation under ambiguity: fast revision, clear authorship, tools kept subordinate.",
-      "markdown": "# Adaptive Agency\n\nI care more about reaction time than position.\n\nMost plans rot on contact. The skill is re-deriving fast, without making a thing of it. You drop the version of yourself that was right yesterday because that version is now a liability.\n\nHow I try to operate:\n\n- think from primitives, not analogies to last quarter\n- move before certainty turns into procrastination\n- change direction without performing the change\n- treat AI as exoskeleton, not identity\n\nWhen intelligence becomes common infrastructure, the floor on answers drops. The premium relocates: context, taste, conviction, execution.\n\n> A tool that absorbs your agency is just a tool that's using you."
+      "title": "kinetic agency",
+      "summary": "Turning abundant intelligence into motion through fast feedback, real shipping, and active adaptation.",
+      "markdown": "# Kinetic Agency\n\nAgency is the ability to turn uncertainty into motion.\n\nIntelligence is becoming infrastructure. AI can answer, generate, debug, scaffold, summarize, and compress. That changes the game: the scarce thing is no longer access to intelligence, but the will to use it.\n\nInaction is not neutral. In a fast world, delay compounds. Tools change. Stack choices change. Models change. The half-life of advantage keeps shrinking. What matters is not being perfectly prepared, but staying active enough to adapt.\n\nI care about doing: building, shipping, testing, accepting criticism, revising, moving. Learn the foundations, then put them to work. Progress comes through contact with reality.\n\nAI should not replace agency. It should accelerate it. It should make me faster, broader, more experimental, more dangerous to my own inertia.\n\nHow I try to operate:\n\n* Act while the feedback loop is still short.\n* Treat plans as drafts and reality as the editor.\n* Learn new tools faster than old tools can become habits.\n* Let AI compress the distance between intention and execution.\n* Reconfigure quickly; attachment is slower than adaptation.\n* Keep moving. The terrain changes whether you do or not.\n\n> Intelligence is becoming common.\n> Agency is what turns it into value."
     },
     {
-      "slug": "aesthetic-judgment",
+      "slug": "discernment",
       "order": 3,
       "category": "thought",
-      "title": "aesthetic judgment",
-      "summary": "Taste as compressed perception: rhythm, restraint, framing, and selection when generation is cheap.",
-      "markdown": "# Aesthetic Judgment\n\nFilm taught me taste before software did.\n\nA cut changes causality. A frame changes what matters. Silence outranks explanation more often than not. Two shots adjacent to each other can carry a thought neither shot owns alone.\n\nProduct is the same instrument:\n\n- what gets foregrounded\n- what disappears\n- where the rhythm slips\n- what's technically correct and still wrong\n\nTaste is compressed perception. The work is choosing what to leave out.\n\n> When generation gets cheap, judgment gets expensive.\n\nI want work that feels authored, not assembled."
+      "title": "discernment",
+      "summary": "Taste as selection: the software and cinematic grammar of what to remove, automate, and make invisible.",
+      "markdown": "# Discernment\n\nFilm taught me that the smallest choices carry the most weight.\n\nHold a scene two seconds too long and it starts to plead. Cut too early and it loses its nerve. Move the frame a few inches and the background becomes evidence. Leave the line unsaid and silence does the work.\n\nKuleshov’s lesson stayed with me: nothing means alone. Meaning comes from placement, timing, omission.\n\nSoftware became the same grammar under stricter conditions.\n\nTaste in software is not just how something appears. It is the instinct to hate repeated effort enough to remove it. To make the machine anticipate instead of merely respond. To build with enough pride that the work can survive being used, read, extended, and blamed.\n\nThe small choices decide the system: what gets automated, what gets named, what errors become impossible, what complexity disappears, what power becomes effortless.\n\nAI makes generation abundant, but it does not remove taste. It raises the standard for it. More can be made now, which means more has to be chosen, shaped, compressed, and made worth using.\n\nThe work is still the cut: what to automate, what to simplify, what to make invisible, what to make impossible to misunderstand.\n\n> Taste is the art of deciding what the world can do without."
     },
     {
-      "slug": "ambient-agency",
+      "slug": "predictions",
       "order": 4,
       "category": "prediction",
-      "title": "ambient agency",
-      "summary": "Software as ambient infrastructure: fewer destinations, stronger memory, cleaner preservation of intent.",
-      "markdown": "# Ambient Agency\n\nThe software I want stops asking me to be its integration layer.\n\nMost tools force you to rebuild the same scaffolding every time. Reopen the thread. Locate the file. Reconstruct yesterday's mental state. Translate your goal into the tool's grammar before the tool can help. The friction is the product.\n\nA better substrate would:\n\n- carry memory across sessions\n- carry context across surfaces\n- delegate with verification, not abdication\n- automate without erasing legibility\n- surface itself only when judgment is required\n\nThat's why AI tools, agents, planning systems, and artifact workflows interest me. The demo is bait. The substrate is the point.\n\n> You shouldn't have to be the connective tissue between your own apps.\n\nFewer destinations. More continuity."
+      "title": "predictions",
+      "summary": "Notes on agents as cognitive infrastructure, democratized capability, and freedom as the next luxury.",
+      "markdown": "# Predictions\n\nSome predictions and ideas I have for the future to come.\n\n## Agents Replace Everything\n\nCognitive work has always depended on human operators: people moving context, making judgments, using tools, and carrying tasks across fragmented systems.\n\n> Agents become the interface layer for cognitive work, turning intent into action across law, finance, software, marketing, research, and every field built on information.\n\nThe old unit was the app, the file, the meeting, the dashboard. The new unit is the work getting done.\n\n## Democratization of Access & Ability\n\nFor most of history, serious invention required rare access: experts, labs, capital, credentials, teams, and time. Most people had ideas they could not test.\n\n> AI turns intelligence into infrastructure, making research, analysis, creation, experimentation, and discovery available to far more people.\n\nThe lab becomes less of a place and more of a capability. More access means more attempts, more strange ideas, more local problems solved, and more breakthroughs from places nobody was watching.\n\n## Freedom Becomes Luxury\n\nThe world is getting faster, louder, and more optimized. Utility is everywhere, stimulation is endless, and attention is constantly being pulled apart.\n\n> The next luxury is freedom: control over your own attention, time, energy, and state of mind.\n\nThe best products, places, communities, and experiences will feel less like services and more like worlds: spaces that give people room to focus, wander, play, rest, belong, and breathe again."
     }
   ],
   "media": [
