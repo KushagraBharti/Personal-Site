@@ -81,6 +81,7 @@ Current tracker modules:
 - `AboutSection` renders backend-owned about copy and featured writings, while `FeaturedSection` still hardcodes some public project selections in the frontend. Prefer moving future public content changes to backend content rather than adding more frontend content sources.
 - Tracker frontend uses Supabase for auth/session. Task/list CRUD, custom ordering, sort preferences, task completion, recurrence repair, cron, and Google Calendar sync go through backend private APIs.
 - Tracker MCP uses a separate bearer token, scopes to `TRACKER_MCP_OWNER_USER_ID`, and only sees non-archived task lists with Google Calendar sync enabled.
+- Tracker UI realtime refresh uses Supabase Realtime Broadcast from DB on private `tracker:user:<user_id>` topics. Broadcast payloads are invalidation signals only; the frontend refetches backend private APIs.
 - Calendar sync uses the live queue path; do not add legacy task-change trigger paths back.
 - Supabase CLI config lives in `backend/supabase/config.toml`; this repo intentionally does not keep checked-in SQL snapshots or migrations.
 - The old `docs/` tree has been removed. Do not point new onboarding instructions at `docs/active/*`.

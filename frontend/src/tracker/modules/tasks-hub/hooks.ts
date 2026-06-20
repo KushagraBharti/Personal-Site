@@ -69,7 +69,8 @@ const buildTaskDraft = (
 });
 
 export const useTasksHubModule = () => {
-  const { session, startLoading, stopLoading } = useTrackerContext();
+  const { session, supabase, userId, startLoading, stopLoading } =
+    useTrackerContext();
 
   const [lists, setLists] = useState<TaskList[]>([]);
   const [tasks, setTasks] = useState<TrackerTask[]>([]);
@@ -93,6 +94,9 @@ export const useTasksHubModule = () => {
     failures: Array<{ id: number; error: string }>;
   } | null>(null);
   const livePumpTimerRef = useRef<number | null>(null);
+  const realtimeRefreshTimerRef = useRef<number | null>(null);
+  const realtimeRefreshInFlightRef = useRef(false);
+  const realtimeRefreshPendingRef = useRef(false);
 
   const runWithLoading = useCallback(
     async <T>(fn: () => Promise<T>) => {
@@ -106,53 +110,161 @@ export const useTasksHubModule = () => {
     [startLoading, stopLoading],
   );
 
-  const fetchAll = useCallback(async () => {
-    if (!session?.access_token) return;
+  const fetchAll = useCallback(
+    async (options?: { showLoading?: boolean }) => {
+      if (!session?.access_token) return;
 
-    await runWithLoading(async () => {
-      try {
-        const bootstrap = await fetchTrackerBootstrap(
-          session.access_token,
-          getBrowserTimeZone(),
-        );
-        setLists(bootstrap.lists);
-        setTasks(bootstrap.tasks);
-        setSortPreferences(bootstrap.sort_preferences);
-        setErrorMessage("");
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to load tasks.";
-        setErrorMessage(message);
+      const load = async () => {
+        try {
+          const bootstrap = await fetchTrackerBootstrap(
+            session.access_token,
+            getBrowserTimeZone(),
+          );
+          setLists(bootstrap.lists);
+          setTasks(bootstrap.tasks);
+          setSortPreferences(bootstrap.sort_preferences);
+          setErrorMessage("");
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : "Failed to load tasks.";
+          setErrorMessage(message);
+        }
+      };
+
+      if (options?.showLoading === false) {
+        await load();
+        return;
       }
-    });
-  }, [runWithLoading, session?.access_token]);
+
+      await runWithLoading(load);
+    },
+    [runWithLoading, session?.access_token],
+  );
 
   useEffect(() => {
     if (!session?.access_token) return;
     fetchAll();
   }, [session?.access_token, fetchAll]);
 
-  const loadCalendarStatus = useCallback(async () => {
-    if (!session?.access_token) {
-      setCalendarState(null);
-      return null;
-    }
-    try {
-      const status = await getCalendarStatus(session.access_token);
-      setCalendarState(status);
-      return status;
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to load calendar status";
-      setErrorMessage(message);
-      return null;
-    }
-  }, [session?.access_token]);
+  const loadCalendarStatus = useCallback(
+    async (options?: { reportErrors?: boolean }) => {
+      if (!session?.access_token) {
+        setCalendarState(null);
+        return null;
+      }
+      try {
+        const status = await getCalendarStatus(session.access_token);
+        setCalendarState(status);
+        return status;
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to load calendar status";
+        if (options?.reportErrors !== false) {
+          setErrorMessage(message);
+        }
+        return null;
+      }
+    },
+    [session?.access_token],
+  );
 
   useEffect(() => {
     if (!session?.access_token) return;
     loadCalendarStatus();
   }, [session?.access_token, loadCalendarStatus]);
+
+  const refreshFromRealtime = useCallback(async () => {
+    if (!session?.access_token) return;
+    if (realtimeRefreshInFlightRef.current) {
+      realtimeRefreshPendingRef.current = true;
+      return;
+    }
+
+    realtimeRefreshInFlightRef.current = true;
+    realtimeRefreshPendingRef.current = false;
+    try {
+      await Promise.all([
+        fetchAll({ showLoading: false }),
+        loadCalendarStatus({ reportErrors: false }),
+      ]);
+    } finally {
+      realtimeRefreshInFlightRef.current = false;
+      if (realtimeRefreshPendingRef.current) {
+        realtimeRefreshPendingRef.current = false;
+        realtimeRefreshTimerRef.current = window.setTimeout(() => {
+          realtimeRefreshTimerRef.current = null;
+          void refreshFromRealtime();
+        }, 250);
+      }
+    }
+  }, [fetchAll, loadCalendarStatus, session?.access_token]);
+
+  const scheduleRealtimeRefresh = useCallback(
+    (delayMs = 500) => {
+      if (!session?.access_token) return;
+      if (document.visibilityState === "hidden") {
+        realtimeRefreshPendingRef.current = true;
+        return;
+      }
+
+      realtimeRefreshPendingRef.current = true;
+      if (realtimeRefreshTimerRef.current) {
+        window.clearTimeout(realtimeRefreshTimerRef.current);
+      }
+      realtimeRefreshTimerRef.current = window.setTimeout(() => {
+        realtimeRefreshTimerRef.current = null;
+        void refreshFromRealtime();
+      }, delayMs);
+    },
+    [refreshFromRealtime, session?.access_token],
+  );
+
+  useEffect(() => {
+    if (!session?.access_token || !userId) return;
+
+    let active = true;
+    supabase.realtime.setAuth(session.access_token);
+
+    const channel = supabase
+      .channel(`tracker:user:${userId}`, { config: { private: true } })
+      .on("broadcast", { event: "tracker_change" }, () => {
+        if (!active) return;
+        scheduleRealtimeRefresh();
+      })
+      .subscribe((status, error) => {
+        if (!active) return;
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.error("Tracker realtime subscription failed", error);
+        }
+      });
+
+    return () => {
+      active = false;
+      void supabase.removeChannel(channel);
+    };
+  }, [scheduleRealtimeRefresh, session?.access_token, supabase, userId]);
+
+  useEffect(() => {
+    const refreshIfVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      scheduleRealtimeRefresh(0);
+    };
+
+    document.addEventListener("visibilitychange", refreshIfVisible);
+    window.addEventListener("focus", refreshIfVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", refreshIfVisible);
+      window.removeEventListener("focus", refreshIfVisible);
+    };
+  }, [scheduleRealtimeRefresh]);
+
+  useEffect(() => {
+    return () => {
+      if (realtimeRefreshTimerRef.current) {
+        window.clearTimeout(realtimeRefreshTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (selectedListId === ALL_LISTS_KEY) return;

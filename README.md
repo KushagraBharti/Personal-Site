@@ -37,6 +37,8 @@ The private tracker lives at `/tracker`. It is lazy-loaded, Supabase-authenticat
 
 The frontend uses Supabase for auth/session handling. Task/list CRUD, custom ordering, sort preferences, task completion, recurrence repair, cron, and Google Calendar sync go through backend private APIs under `/api/private`.
 
+The tracker UI uses Supabase Realtime Broadcast from DB as an invalidation layer. Live database triggers publish tiny private `tracker:user:<user_id>` events, and the frontend refetches backend private APIs instead of trusting realtime row payloads.
+
 The backend also exposes a personal tracker MCP endpoint at `/api/mcp` for Poke. It uses a separate bearer token, is scoped to one configured tracker owner, and only sees task lists where Google Calendar sync is enabled.
 
 ## Repository Layout
@@ -185,6 +187,8 @@ npm run supabase:start
 ```
 
 This repo intentionally does not keep checked-in SQL snapshots or migrations. The live Supabase project is the source of truth for tracker database objects.
+
+The live project also owns tracker realtime objects: `public.broadcast_tracker_change()`, a `tracker users can receive own broadcasts` policy on `realtime.messages`, and Broadcast triggers on tracker tasks, lists, sort preferences, list sync settings, and public Google Calendar connection status. See `backend/supabase/README.md` for the expected object names.
 
 ## Common Commands
 
