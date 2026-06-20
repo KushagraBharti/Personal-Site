@@ -23,6 +23,11 @@ Backend:
 - `backend/src/tracker`
 - `backend/src/routes`
 
+Database tooling:
+
+- `supabase/config.toml`
+- `supabase/migrations`
+
 Routes:
 
 - `/` -> public homepage
@@ -63,6 +68,11 @@ Tracker:
 - backend calendar/cron/task-list services -> `backend/src/tracker/*`
 - private auth middleware -> `backend/src/middleware/requireUser.ts`
 
+Supabase:
+
+- executable migrations -> `supabase/migrations`
+- schema snapshots/advisor cleanup context -> `backend/sql`
+
 Current tracker modules:
 
 - `tasks` -> tasks-hub UI
@@ -72,6 +82,7 @@ Current tracker modules:
 - `AboutSection` renders backend-owned about copy and featured writings, while `FeaturedSection` still hardcodes some public project selections in the frontend. Prefer moving future public content changes to backend content rather than adding more frontend content sources.
 - Tracker CRUD mostly uses Supabase from the browser. Backend private APIs are for service-role work, Google Calendar sync, cron, and task-list deletion.
 - Calendar sync has queue-based and legacy fallback paths; preserve compatibility unless the migration state is explicitly being cleaned up.
+- Supabase CLI config lives in `supabase/config.toml`; new runnable DB changes should be CLI migrations, not ad hoc SQL snapshots.
 - The old `docs/` tree has been removed. Do not point new onboarding instructions at `docs/active/*`.
 
 ## Environment
@@ -86,14 +97,16 @@ Backend env:
 
 - use `backend/.env.example`
 - key portfolio vars: `GITHUB_USERNAME`, `GITHUB_TOKEN`, `OPENWEATHER_API_KEY`
-- tracker/calendar vars: Supabase service-role values and Google Calendar OAuth/webhook values from the example file
+- tracker/calendar vars: Supabase service-role or `sb_secret_*` server values and Google Calendar OAuth/webhook URL values from the example file
+- frontend tracker env must use only Supabase anon/publishable values; never expose service-role or `sb_secret_*` keys to Vite env
 
 ## Workflow
 
-This repo is Bun-first, with one exception:
+This repo is Bun-first, with repo-level npm exceptions:
 
 - use Bun for normal app work, installs, dev servers, builds, and linting
 - use repo-level `verify` commands for broad testing
+- use repo-level `supabase:*` commands for Supabase CLI work
 - `verify` uses npm internally because it is more reliable for the test toolchain in this Windows + OneDrive environment
 
 Frontend:
@@ -124,6 +137,16 @@ bun install
 bun run verify
 ```
 
+Supabase:
+
+```bash
+npm install
+npm run supabase:start
+npm run supabase:migration:new -- migration_name
+npm run supabase:db:reset
+npm run supabase:db:push
+```
+
 Verification tiers:
 
 - `bun run verify` -> npm-backed installs, then build, lint, unit, integration
@@ -142,5 +165,5 @@ Verification tiers:
 
 1. `README.md`
 2. `backend/src/portfolio/content/*` for public content changes
-3. `frontend/src/App.tsx` and `backend/src/routes/index.ts` for route mounting
+3. `frontend/src/main.tsx` and `backend/src/routes/index.ts` for route mounting
 4. `frontend/src/tracker/shell/registry.ts` for tracker modules

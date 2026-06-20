@@ -4,6 +4,12 @@ import { importFresh } from "../test/utils/importWithEnv";
 
 const createClientMock = vi.hoisted(() => vi.fn());
 
+const createJwt = (role: string) => {
+  const encode = (value: Record<string, unknown>) =>
+    Buffer.from(JSON.stringify(value)).toString("base64url");
+  return `${encode({ alg: "none", typ: "JWT" })}.${encode({ role })}.signature`;
+};
+
 vi.mock("@supabase/supabase-js", () => ({
   createClient: createClientMock,
 }));
@@ -103,6 +109,35 @@ describe("requireUser", () => {
     expect(response.status).toHaveBeenCalledWith(500);
     expect(response.json).toHaveBeenCalledWith({ error: "Server misconfigured" });
     expect(errorSpy).toHaveBeenCalled();
+  });
+
+  it("returns 500 when the backend is configured with an anon JWT", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { requireUser } = await importFresh<typeof import("./requireUser")>(
+      () => import("./requireUser"),
+      {
+        SUPABASE_URL: "https://supabase.test",
+        SUPABASE_SECRET_KEY: createJwt("anon"),
+        SUPABASE_SERVICE_ROLE_KEY: undefined,
+      },
+    );
+    const response = makeResponse();
+
+    await requireUser(
+      {
+        header: vi.fn().mockImplementation((name: string) =>
+          name === "authorization" ? "Bearer token" : undefined
+        ),
+      } as unknown as Request,
+      response,
+      vi.fn() as NextFunction
+    );
+
+    expect(response.status).toHaveBeenCalledWith(500);
+    expect(response.json).toHaveBeenCalledWith({ error: "Server misconfigured" });
+    expect(errorSpy).toHaveBeenCalled();
+    expect(createClientMock).not.toHaveBeenCalled();
   });
 
   it("injects req.user and calls next on success", async () => {

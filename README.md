@@ -54,6 +54,10 @@ backend/
 
 scripts/
   verify.mjs       repo-level verification runner
+
+supabase/
+  config.toml      Supabase CLI local project config
+  migrations/      executable database migrations
 ```
 
 ## Routes
@@ -85,7 +89,7 @@ Backend:
 - Data/Auth: Supabase
 - Integrations: GitHub API, OpenWeather, Google Calendar
 - Testing: Vitest, Testing Library, Supertest
-- Deployment/Tooling: Vercel, Bun
+- Deployment/Tooling: Vercel, Bun, Supabase CLI
 
 ## Getting Started
 
@@ -95,6 +99,7 @@ Backend:
 - GitHub token for the public GitHub stats API
 - OpenWeather API key for the public weather API
 - Supabase credentials for tracker auth/data
+- Docker Desktop if running the local Supabase stack
 - Google Calendar credentials if working on calendar sync
 
 ### Frontend
@@ -114,6 +119,8 @@ VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
 ```
 
+Only anon/publishable Supabase keys belong in frontend env.
+
 ### Backend
 
 ```bash
@@ -132,6 +139,20 @@ OPENWEATHER_API_KEY=
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 ```
+
+Backend tracker routes require a Supabase service-role JWT or newer `sb_secret_*` server key via `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY`. Do not use the anon key for backend private APIs.
+
+### Supabase CLI
+
+The repo uses the official Supabase CLI for database migrations, local Supabase, schema diffs, remote pushes, and generated types. Supabase MCP is useful for AI-tool access to a Supabase project, but the CLI is the project-level source of truth because it creates checked-in, reproducible migrations.
+
+```bash
+npm install
+npm run supabase:link -- --project-ref <your-project-ref>
+npm run supabase:start
+```
+
+New runnable database changes should go in `supabase/migrations`. The existing `backend/sql` files are schema snapshots and advisor cleanup context unless a file is explicitly written as a migration.
 
 ## Common Commands
 
@@ -162,6 +183,18 @@ Repo-level verification:
 ```bash
 bun install
 bun run verify
+```
+
+Supabase:
+
+```bash
+npm run supabase:status
+npm run supabase:migration:new -- migration_name
+npm run supabase:db:diff -- --file migration_name
+npm run supabase:db:reset
+npm run supabase:db:push
+npm run supabase:types:local
+npm run supabase:types:linked
 ```
 
 Verification tiers:

@@ -10,15 +10,15 @@ describe("AboutSection", () => {
     await waitFor(() => {
       expect(screen.getByText("Hey there! I'm Kushagra Bharti")).toBeInTheDocument();
       expect(screen.getByText(/software builder who enjoys learning/i)).toBeInTheDocument();
-      expect(screen.getByText("epistemic velocity")).toBeInTheDocument();
+      expect(screen.getByText("perpetual learning")).toBeInTheDocument();
     });
 
-    expect(screen.queryByText(/upkeep, not ambition/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/refusal to fossilize/i)).not.toBeInTheDocument();
 
-    fireEvent.mouseEnter(screen.getByText("epistemic velocity").closest("li") as HTMLElement);
-    expect(screen.getByText(/upkeep, not ambition/i)).toBeInTheDocument();
+    fireEvent.mouseEnter(screen.getByText("perpetual learning").closest("li") as HTMLElement);
+    expect(screen.getByText(/refusal to fossilize/i)).toBeInTheDocument();
 
-    fireEvent.mouseLeave(screen.getByText("epistemic velocity").closest("li") as HTMLElement);
-    expect(screen.queryByText(/upkeep, not ambition/i)).not.toBeInTheDocument();
+    fireEvent.mouseLeave(screen.getByText("perpetual learning").closest("li") as HTMLElement);
+    expect(screen.queryByText(/refusal to fossilize/i)).not.toBeInTheDocument();
   });
 });

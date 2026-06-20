@@ -26,6 +26,12 @@ const authorizedClient = {
   },
 };
 
+const adminClient = {
+  auth: {
+    getUser: getUserMock,
+  },
+};
+
 describe("task list routes", () => {
   beforeEach(() => {
     vi.resetModules();
@@ -45,7 +51,7 @@ describe("task list routes", () => {
       },
       error: null,
     });
-    getSupabaseAdminMock.mockReturnValue({});
+    getSupabaseAdminMock.mockReturnValue(adminClient);
     process.env.SUPABASE_URL = "https://supabase.test";
     process.env.SUPABASE_SECRET_KEY = "service-key";
   });
@@ -72,7 +78,7 @@ describe("task list routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ ok: true });
-    expect(deleteTaskListForUserMock).toHaveBeenCalledWith({}, "user-1", "list-1");
+    expect(deleteTaskListForUserMock).toHaveBeenCalledWith(adminClient, "user-1", "list-1");
   });
 
   it("deletes a task through the backend service", async () => {
@@ -85,6 +91,6 @@ describe("task list routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ ok: true });
-    expect(deleteTaskForUserMock).toHaveBeenCalledWith({}, "user-1", "task-1");
+    expect(deleteTaskForUserMock).toHaveBeenCalledWith(adminClient, "user-1", "task-1");
   });
 });

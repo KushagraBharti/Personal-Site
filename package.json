@@ -5,6 +5,18 @@
   "scripts": {
     "build": "npm --prefix backend run build && npm --prefix frontend run build",
     "lint": "npm --prefix backend run lint && npm --prefix frontend run lint",
+    "supabase": "supabase",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status",
+    "supabase:link": "supabase link",
+    "supabase:migration:new": "supabase migration new",
+    "supabase:db:pull": "supabase db pull",
+    "supabase:db:push": "supabase db push",
+    "supabase:db:diff": "supabase db diff --schema public",
+    "supabase:db:reset": "supabase db reset",
+    "supabase:types:local": "supabase gen types typescript --local > frontend/src/tracker/shared/supabase/database.types.ts",
+    "supabase:types:linked": "supabase gen types typescript --linked > frontend/src/tracker/shared/supabase/database.types.ts",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "npm --prefix backend run test:unit && npm --prefix frontend run test:unit",
     "test:integration": "npm --prefix backend run test:integration && npm --prefix frontend run test:integration",
@@ -12,5 +24,8 @@
     "test:live": "npm --prefix backend run test:live",
     "verify": "node scripts/verify.mjs verify",
     "verify:live": "node scripts/verify.mjs verify:live"
+  },
+  "devDependencies": {
+    "supabase": "2.107.0"
   }
 }

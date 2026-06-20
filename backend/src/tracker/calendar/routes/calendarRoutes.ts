@@ -14,12 +14,12 @@ import {
   inferLanesForRunMode,
   isCalendarRebuildSchemaUnavailable,
   processCalendarSyncJobs,
+  queueListSyncCleanupForUser,
   queueLivePumpForUser,
   queueManualSyncForUser,
   queueRebuildRunForUser,
   queueFullBackfill,
   rebuildCalendarLegacyInlineForUser,
-  renewCalendarWatchForUser,
   runLegacyManualSyncForUser,
   upsertGoogleConnectionFromOAuth,
   upsertListSyncSetting,
@@ -113,44 +113,6 @@ router.get("/status", requireUser, async (req, res) => {
   }
 });
 
-router.post("/select-calendar", requireUser, async (req, res) => {
-  if (!isCalendarSyncEnabled()) return res.status(503).json({ error: "Calendar sync disabled" });
-  const calendarId = typeof req.body?.calendar_id === "string" ? req.body.calendar_id.trim() : "";
-  const calendarSummary =
-    typeof req.body?.calendar_summary === "string" ? req.body.calendar_summary.trim() : null;
-  if (!calendarId) {
-    return res.status(400).json({ error: "calendar_id is required" });
-  }
-
-  try {
-    const supabaseAdmin = getSupabaseAdmin();
-    const userId = req.user!.id;
-
-    const { error } = await supabaseAdmin
-      .from("tracker_google_calendar_connections_public")
-      .update({
-        selected_calendar_id: calendarId,
-        selected_calendar_summary: calendarSummary || calendarId,
-        status: "connected",
-        last_error: null,
-      })
-      .eq("user_id", userId);
-    if (error) throw new Error(error.message);
-
-    await supabaseAdmin
-      .from("tracker_google_calendar_connections_secrets")
-      .update({ sync_token: null })
-      .eq("user_id", userId);
-
-    await renewCalendarWatchForUser(supabaseAdmin, userId);
-    await queueFullBackfill(supabaseAdmin, userId);
-    return res.json({ ok: true });
-  } catch (error) {
-    console.error("Failed to select calendar", error);
-    return res.status(500).json({ error: "Failed to select calendar" });
-  }
-});
-
 router.post("/disconnect", requireUser, async (req, res) => {
   if (!isCalendarSyncEnabled()) return res.status(503).json({ error: "Calendar sync disabled" });
   try {
@@ -175,10 +137,17 @@ router.post("/list-sync", requireUser, async (req, res) => {
     const supabaseAdmin = getSupabaseAdmin();
     const userId = req.user!.id;
     await upsertListSyncSetting(supabaseAdmin, userId, listId, syncEnabled);
+    let cleanupJobCount = 0;
     if (syncEnabled) {
       await queueFullBackfill(supabaseAdmin, userId, listId);
+    } else {
+      cleanupJobCount = await queueListSyncCleanupForUser(supabaseAdmin, userId, listId);
     }
-    return res.json({ ok: true });
+    return res.json({
+      ok: true,
+      queued_cleanup: !syncEnabled && cleanupJobCount > 0,
+      cleanup_job_count: cleanupJobCount,
+    });
   } catch (error) {
     console.error("Failed to update list sync setting", error);
     return res.status(500).json({ error: "Failed to update list sync setting" });

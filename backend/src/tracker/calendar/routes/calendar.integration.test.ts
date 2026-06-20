@@ -16,6 +16,7 @@ const upsertListSyncSettingMock = vi.hoisted(() => vi.fn());
 const queueManualSyncForUserMock = vi.hoisted(() => vi.fn());
 const processCalendarSyncJobsMock = vi.hoisted(() => vi.fn());
 const runLegacyManualSyncForUserMock = vi.hoisted(() => vi.fn());
+const queueListSyncCleanupForUserMock = vi.hoisted(() => vi.fn());
 const queueLivePumpForUserMock = vi.hoisted(() => vi.fn());
 const queueRebuildRunForUserMock = vi.hoisted(() => vi.fn());
 const rebuildCalendarLegacyInlineForUserMock = vi.hoisted(() => vi.fn());
@@ -46,6 +47,7 @@ vi.mock("../services/taskCalendarSyncService", () => ({
   isCalendarRebuildSchemaUnavailable: isCalendarRebuildSchemaUnavailableMock,
   processCalendarSyncJobs: processCalendarSyncJobsMock,
   queueLivePumpForUser: queueLivePumpForUserMock,
+  queueListSyncCleanupForUser: queueListSyncCleanupForUserMock,
   queueManualSyncForUser: queueManualSyncForUserMock,
   queueRebuildRunForUser: queueRebuildRunForUserMock,
   queueFullBackfill: queueFullBackfillMock,
@@ -98,6 +100,7 @@ describe("calendar tracker routes", () => {
     queueManualSyncForUserMock.mockReset();
     processCalendarSyncJobsMock.mockReset();
     runLegacyManualSyncForUserMock.mockReset();
+    queueListSyncCleanupForUserMock.mockReset();
     queueLivePumpForUserMock.mockReset();
     queueRebuildRunForUserMock.mockReset();
     rebuildCalendarLegacyInlineForUserMock.mockReset();
@@ -108,6 +111,9 @@ describe("calendar tracker routes", () => {
     handleGoogleWebhookMock.mockReset();
     getSupabaseAdminMock.mockReset();
     getSupabaseAdminMock.mockReturnValue({
+      auth: {
+        getUser: getUserMock,
+      },
       from: vi.fn().mockReturnThis(),
       update: vi.fn().mockReturnThis(),
       eq: vi.fn().mockResolvedValue({ error: null }),
@@ -156,17 +162,6 @@ describe("calendar tracker routes", () => {
     expect(response.headers.location).toContain("missing_code_or_state");
   });
 
-  it("returns 400 when selecting a calendar without calendar_id", async () => {
-    const { default: app } = await import("../../../app");
-    const response = await request(app)
-      .post("/api/private/calendar/select-calendar")
-      .set("authorization", "Bearer valid-token")
-      .send({});
-
-    expect(response.status).toBe(400);
-    expect(response.body).toEqual({ error: "calendar_id is required" });
-  });
-
   it("returns 404 when a sync run is not found", async () => {
     getSyncRunDebugMock.mockResolvedValue(null);
 
@@ -192,5 +187,25 @@ describe("calendar tracker routes", () => {
     expect(response.status).toBe(500);
     expect(response.body).toEqual({ error: "legacy failed" });
     expect(errorSpy).toHaveBeenCalled();
+  });
+
+  it("queues cleanup jobs when list calendar sync is disabled", async () => {
+    queueListSyncCleanupForUserMock.mockResolvedValue(3);
+
+    const { default: app } = await import("../../../app");
+    const response = await request(app)
+      .post("/api/private/calendar/list-sync")
+      .set("authorization", "Bearer valid-token")
+      .send({ list_id: "list-1", sync_enabled: false });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      queued_cleanup: true,
+      cleanup_job_count: 3,
+    });
+    expect(upsertListSyncSettingMock).toHaveBeenCalledWith(expect.anything(), "user-1", "list-1", false);
+    expect(queueListSyncCleanupForUserMock).toHaveBeenCalledWith(expect.anything(), "user-1", "list-1");
+    expect(queueFullBackfillMock).not.toHaveBeenCalled();
   });
 });

@@ -277,7 +277,7 @@ export const setListSync = async (
   accessToken: string,
   listId: string,
   syncEnabled: boolean
-): Promise<{ ok: boolean }> => {
+): Promise<{ ok: boolean; queued_cleanup?: boolean; cleanup_job_count?: number }> => {
   const res = await fetch(`${API_BASE}/api/private/calendar/list-sync`, {
     method: "POST",
     headers: getAuthHeaders(accessToken),

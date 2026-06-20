@@ -10,21 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.requireUser = void 0;
-const supabase_js_1 = require("@supabase/supabase-js");
-const getSupabaseAdmin = () => {
-    const url = process.env.SUPABASE_URL;
-    const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !key) {
-        throw new Error("SUPABASE_URL and (SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY) must be set");
-    }
-    return (0, supabase_js_1.createClient)(url, key, {
-        auth: {
-            persistSession: false,
-            autoRefreshToken: false,
-            detectSessionInUrl: false,
-        },
-    });
-};
+const calendarSyncQueueService_1 = require("../tracker/calendar/services/calendarSyncQueueService");
 const requireUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const authHeader = req.header("authorization");
@@ -35,7 +21,7 @@ const requireUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         return res.status(401).json({ error: "Unauthorized" });
     }
     try {
-        const supabaseAdmin = getSupabaseAdmin();
+        const supabaseAdmin = (0, calendarSyncQueueService_1.getSupabaseAdmin)();
         const { data, error } = yield supabaseAdmin.auth.getUser(token);
         if (error || !data.user) {
             return res.status(401).json({ error: "Unauthorized" });

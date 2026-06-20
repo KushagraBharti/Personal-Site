@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.normalizeDueAtForSync = exports.inferLanesForRunMode = exports.getSyncRunDebug = exports.getSyncProgressForRun = exports.getCalendarStatusForUser = exports.upsertListSyncSetting = exports.listUserSyncEnabledLists = exports.renewExpiringCalendarWatches = exports.disconnectGoogleCalendarForUser = exports.isCalendarRebuildSchemaUnavailable = exports.rebuildCalendarLegacyInlineForUser = exports.upsertGoogleConnectionFromOAuth = exports.queueLivePumpForUser = exports.runLegacyManualSyncForUser = exports.queueManualSyncForUser = exports.queueRebuildRunForUser = exports.queueReconcileRunForUser = exports.queueFullBackfill = exports.processCalendarSyncJobs = exports.renewCalendarWatchForUser = exports.processTaskDeleteJob = exports.processTaskUpsertJob = void 0;
+exports.normalizeDueAtForSync = exports.inferLanesForRunMode = exports.getSyncRunDebug = exports.getSyncProgressForRun = exports.getCalendarStatusForUser = exports.upsertListSyncSetting = exports.listUserSyncEnabledLists = exports.renewExpiringCalendarWatches = exports.disconnectGoogleCalendarForUser = exports.isCalendarRebuildSchemaUnavailable = exports.rebuildCalendarLegacyInlineForUser = exports.upsertGoogleConnectionFromOAuth = exports.queueLivePumpForUser = exports.runLegacyManualSyncForUser = exports.queueManualSyncForUser = exports.queueRebuildRunForUser = exports.queueReconcileRunForUser = exports.queueListSyncCleanupForUser = exports.queueFullBackfill = exports.processCalendarSyncJobs = exports.renewCalendarWatchForUser = exports.processTaskDeleteJob = exports.processTaskUpsertJob = void 0;
 const crypto_1 = require("crypto");
 const calendarSyncQueueService_1 = require("./calendarSyncQueueService");
 const googleCalendarApiService_1 = require("./googleCalendarApiService");
@@ -1279,6 +1279,43 @@ const queueFullBackfill = (supabaseAdmin, userId, listId, options) => __awaiter(
     });
 });
 exports.queueFullBackfill = queueFullBackfill;
+const queueListSyncCleanupForUser = (supabaseAdmin, userId, listId) => __awaiter(void 0, void 0, void 0, function* () {
+    const pageSize = 100;
+    let from = 0;
+    let queued = 0;
+    while (true) {
+        const { data, error } = yield supabaseAdmin
+            .from("tracker_tasks")
+            .select("id,updated_at")
+            .eq("user_id", userId)
+            .eq("list_id", listId)
+            .not("due_at", "is", null)
+            .order("id", { ascending: true })
+            .range(from, from + pageSize - 1);
+        if (error)
+            throw new Error(error.message);
+        const page = data !== null && data !== void 0 ? data : [];
+        for (const row of page) {
+            const taskId = String(row.id);
+            yield enqueueTaskUpsert({
+                supabaseAdmin,
+                userId,
+                taskId,
+                listId,
+                lane: "live",
+                priority: PRIORITY_LIVE,
+                source: "list_sync_disabled_cleanup",
+                dedupeKey: `live:list-disable-cleanup:${listId}:${taskId}:${row.updated_at || "na"}`,
+            });
+            queued += 1;
+        }
+        if (page.length < pageSize)
+            break;
+        from += pageSize;
+    }
+    return queued;
+});
+exports.queueListSyncCleanupForUser = queueListSyncCleanupForUser;
 const queueReconcileRunForUser = (supabaseAdmin, userId) => __awaiter(void 0, void 0, void 0, function* () {
     const runId = yield createSyncRun(supabaseAdmin, userId, "reconcile");
     yield (0, calendarSyncQueueService_1.enqueueSyncJob)(supabaseAdmin, {

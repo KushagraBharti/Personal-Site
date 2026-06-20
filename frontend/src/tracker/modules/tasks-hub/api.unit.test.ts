@@ -5,6 +5,7 @@ import {
   getGoogleConnectUrl,
   getCalendarSyncProgress,
   triggerCalendarSyncNow,
+  setListSync,
 } from "./api";
 
 describe("tasks-hub API", () => {
@@ -77,6 +78,32 @@ describe("tasks-hub API", () => {
         method: "DELETE",
         headers: expect.objectContaining({
           Authorization: "Bearer token",
+        }),
+      })
+    );
+  });
+
+  it("calls the backend list-sync endpoint with auth and payload", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ ok: true, queued_cleanup: true, cleanup_job_count: 2 }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await setListSync("token", "list-1", false);
+
+    expect(result).toEqual({ ok: true, queued_cleanup: true, cleanup_job_count: 2 });
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/api/private/calendar/list-sync"),
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          Authorization: "Bearer token",
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({
+          list_id: "list-1",
+          sync_enabled: false,
         }),
       })
     );

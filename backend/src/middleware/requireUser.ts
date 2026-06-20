@@ -1,24 +1,7 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseAdmin } from "../tracker/calendar/services/calendarSyncQueueService";
 
 type AuthedUser = { id: string; email?: string };
-
-const getSupabaseAdmin = () => {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!url || !key) {
-    throw new Error("SUPABASE_URL and (SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY) must be set");
-  }
-
-  return createClient(url, key, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-    },
-  });
-};
 
 export const requireUser: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.header("authorization");

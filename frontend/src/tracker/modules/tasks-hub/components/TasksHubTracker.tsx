@@ -420,6 +420,91 @@ const DueQuickButtons: React.FC<{
   );
 };
 
+const TaskEditExpansion: React.FC<{
+  task: TrackerTask;
+  edit: TaskEditDraft;
+  onPatch: (taskId: string, patch: Partial<TaskEditDraft>) => void;
+  onSave: (task: TrackerTask) => Promise<void>;
+  onCancel: (task: TrackerTask) => void;
+}> = ({ task, edit, onPatch, onSave, onCancel }) => (
+  <motion.div
+    initial={{ opacity: 0, height: 0 }}
+    animate={{ opacity: 1, height: "auto" }}
+    exit={{ opacity: 0, height: 0 }}
+    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+    className="tasks-expansion"
+  >
+    <input
+      className="tasks-input"
+      value={edit.title}
+      onChange={(e) => onPatch(task.id, { title: e.target.value })}
+    />
+    <textarea
+      className="tasks-textarea"
+      placeholder="Task details"
+      value={edit.details}
+      onChange={(e) => onPatch(task.id, { details: e.target.value })}
+    />
+    <div className="tasks-recurrence-item tasks-due-field">
+      <label className="neo-label">Due</label>
+      <div className="tasks-due-inputs">
+        <input
+          className="tasks-input"
+          type="date"
+          value={getDueParts(edit.due_at).date}
+          onChange={(e) => onPatch(task.id, { due_at: setDueDatePart(edit.due_at, e.target.value) })}
+        />
+        <input
+          className="tasks-input"
+          type="time"
+          value={getDueParts(edit.due_at).time}
+          onChange={(e) => onPatch(task.id, { due_at: setDueTimePart(edit.due_at, e.target.value) })}
+        />
+      </div>
+    </div>
+    <DueQuickButtons
+      onPick={(value) => onPatch(task.id, { due_at: value })}
+      onSetTenPm={() => {
+        const next = setTimeToTenPm(edit.due_at);
+        if (next) onPatch(task.id, { due_at: next });
+      }}
+      canSetTenPm={!!setTimeToTenPm(edit.due_at)}
+    />
+    <TaskRepeatField
+      value={edit.recurrence_type}
+      onChange={(nextType) => onPatch(task.id, { recurrence_type: nextType })}
+    />
+    <TaskRecurrenceFields
+      value={{
+        recurrence_type: edit.recurrence_type,
+        recurrence_interval: edit.recurrence_interval,
+        recurrence_unit: edit.recurrence_unit,
+        recurrence_ends_at: edit.recurrence_ends_at,
+      }}
+      onChange={(patch) => onPatch(task.id, patch)}
+    />
+    <div className="flex gap-2">
+      <motion.button
+        className="neo-btn neo-btn-sm neo-btn-lime"
+        onClick={async () => {
+          await onSave(task);
+        }}
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.93 }}
+      >
+        Save
+      </motion.button>
+      <motion.button
+        className="neo-btn neo-btn-sm neo-btn-white"
+        onClick={() => onCancel(task)}
+        whileTap={{ scale: 0.93 }}
+      >
+        Cancel
+      </motion.button>
+    </div>
+  </motion.div>
+);
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -621,6 +706,11 @@ const TasksHubTracker: React.FC = () => {
     if (success) {
       setExpandedTaskIds((prev) => ({ ...prev, [task.id]: false }));
     }
+  };
+
+  const cancelTaskEdit = (task: TrackerTask) => {
+    setExpandedTaskIds((prev) => ({ ...prev, [task.id]: false }));
+    setTaskEditsById((prev) => ({ ...prev, [task.id]: createTaskEditDraft(task) }));
   };
 
   const handleToggleCompletion = async (task: TrackerTask) => {
@@ -1392,80 +1482,98 @@ const TasksHubTracker: React.FC = () => {
                               {/* Subtasks */}
                               {activeSubtasks.length > 0 && (
                                 <div className="tasks-subtasks">
-                                  {activeSubtasks.map((subtask, subtaskIndex) => (
-                                    <motion.div
-                                      key={subtask.id}
-                                      className={`tasks-subtask-row ${draggingTaskId === subtask.id ? "dragging" : ""} ${dragOverTaskId === subtask.id ? "drop-target" : ""}`}
-                                      initial={{ opacity: 0, x: -8 }}
-                                      animate={{ opacity: 1, x: 0 }}
-                                      transition={{ delay: subtaskIndex * 0.02 }}
-                                      draggable={canDrag}
-                                      onDragStart={() => {
-                                        setDraggingTaskId(subtask.id);
-                                        setDraggingParentId(task.id);
-                                      }}
-                                      onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-                                        if (!canDrag) return;
-                                        e.preventDefault();
-                                        setDragOverTaskId(subtask.id);
-                                      }}
-                                      onDrop={async (e: React.DragEvent<HTMLDivElement>) => {
-                                        if (!canDrag) return;
-                                        e.preventDefault();
-                                        await handleTaskDrop(list.id, task.id, activeSubtasks.map((item) => item.id), subtask.id);
-                                      }}
-                                      onDragEnd={() => {
-                                        setDraggingTaskId(null);
-                                        setDraggingParentId(null);
-                                        setDragOverTaskId(null);
-                                      }}
-                                    >
-                                      <div style={{ position: "relative" }}>
-                                        <Confetti trigger={!!justCheckedIds[subtask.id]} />
-                                        <motion.button
-                                          className={`tasks-checkbox ${subtask.is_completed ? "done" : ""}`}
-                                          onClick={async () => { await handleToggleCompletion(subtask); }}
-                                          whileHover={{ scale: 1.2 }}
-                                          whileTap={{ scale: 0.85 }}
+                                  {activeSubtasks.map((subtask, subtaskIndex) => {
+                                    const subtaskExpanded = !!expandedTaskIds[subtask.id];
+                                    const subtaskEdit = taskEditsById[subtask.id] ?? createTaskEditDraft(subtask);
+
+                                    return (
+                                      <React.Fragment key={subtask.id}>
+                                        <motion.div
+                                          className={`tasks-subtask-row ${draggingTaskId === subtask.id ? "dragging" : ""} ${dragOverTaskId === subtask.id ? "drop-target" : ""}`}
+                                          initial={{ opacity: 0, x: -8 }}
+                                          animate={{ opacity: 1, x: 0 }}
+                                          transition={{ delay: subtaskIndex * 0.02 }}
+                                          draggable={canDrag}
+                                          onDragStart={() => {
+                                            setDraggingTaskId(subtask.id);
+                                            setDraggingParentId(task.id);
+                                          }}
+                                          onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
+                                            if (!canDrag) return;
+                                            e.preventDefault();
+                                            setDragOverTaskId(subtask.id);
+                                          }}
+                                          onDrop={async (e: React.DragEvent<HTMLDivElement>) => {
+                                            if (!canDrag) return;
+                                            e.preventDefault();
+                                            await handleTaskDrop(list.id, task.id, activeSubtasks.map((item) => item.id), subtask.id);
+                                          }}
+                                          onDragEnd={() => {
+                                            setDraggingTaskId(null);
+                                            setDraggingParentId(null);
+                                            setDragOverTaskId(null);
+                                          }}
                                         >
-                                          <AnimatePresence>
-                                            {subtask.is_completed && (
-                                              <motion.span
-                                                initial={{ scale: 0, rotate: -90 }}
-                                                animate={{ scale: 1, rotate: 0 }}
-                                                exit={{ scale: 0, rotate: 90 }}
-                                                transition={{ duration: 0.15 }}
-                                              >
-                                                {"\u2713"}
-                                              </motion.span>
-                                            )}
-                                          </AnimatePresence>
-                                        </motion.button>
-                                      </div>
-                                      <div className="min-w-0">
-                                        <motion.button
-                                          className={`tasks-title-btn ${subtask.is_completed ? "done" : ""}`}
-                                          onClick={() => toggleExpandedTask(subtask)}
-                                          whileHover={{ x: 1 }}
-                                        >
-                                          {subtask.title}
-                                        </motion.button>
-                                        <div className="tasks-meta">
-                                          {subtask.due_at && <span className={dueChipClassName(subtask.due_at)}>{formatDue(subtask.due_at)}</span>}
-                                        </div>
-                                      </div>
-                                      <div className="tasks-row-actions">
-                                        <motion.button
-                                          className="tasks-icon-btn tasks-danger"
-                                          onClick={async () => { await removeTask(subtask.id); }}
-                                          whileHover={{ scale: 1.1 }}
-                                          whileTap={{ scale: 0.9 }}
-                                        >
-                                          Del
-                                        </motion.button>
-                                      </div>
-                                    </motion.div>
-                                  ))}
+                                          <div style={{ position: "relative" }}>
+                                            <Confetti trigger={!!justCheckedIds[subtask.id]} />
+                                            <motion.button
+                                              className={`tasks-checkbox ${subtask.is_completed ? "done" : ""}`}
+                                              onClick={async () => { await handleToggleCompletion(subtask); }}
+                                              whileHover={{ scale: 1.2 }}
+                                              whileTap={{ scale: 0.85 }}
+                                            >
+                                              <AnimatePresence>
+                                                {subtask.is_completed && (
+                                                  <motion.span
+                                                    initial={{ scale: 0, rotate: -90 }}
+                                                    animate={{ scale: 1, rotate: 0 }}
+                                                    exit={{ scale: 0, rotate: 90 }}
+                                                    transition={{ duration: 0.15 }}
+                                                  >
+                                                    {"\u2713"}
+                                                  </motion.span>
+                                                )}
+                                              </AnimatePresence>
+                                            </motion.button>
+                                          </div>
+                                          <div className="min-w-0">
+                                            <motion.button
+                                              className={`tasks-title-btn ${subtask.is_completed ? "done" : ""}`}
+                                              onClick={() => toggleExpandedTask(subtask)}
+                                              whileHover={{ x: 1 }}
+                                            >
+                                              {subtask.title}
+                                            </motion.button>
+                                            <div className="tasks-meta">
+                                              {subtask.due_at && <span className={dueChipClassName(subtask.due_at)}>{formatDue(subtask.due_at)}</span>}
+                                              {recurrenceLabel(subtask) && <span className="tasks-chip">{recurrenceLabel(subtask)}</span>}
+                                            </div>
+                                          </div>
+                                          <div className="tasks-row-actions">
+                                            <motion.button
+                                              className="tasks-icon-btn tasks-danger"
+                                              onClick={async () => { await removeTask(subtask.id); }}
+                                              whileHover={{ scale: 1.1 }}
+                                              whileTap={{ scale: 0.9 }}
+                                            >
+                                              Del
+                                            </motion.button>
+                                          </div>
+                                        </motion.div>
+                                        <AnimatePresence>
+                                          {subtaskExpanded && (
+                                            <TaskEditExpansion
+                                              task={subtask}
+                                              edit={subtaskEdit}
+                                              onPatch={updateTaskEdit}
+                                              onSave={saveTaskEdit}
+                                              onCancel={cancelTaskEdit}
+                                            />
+                                          )}
+                                        </AnimatePresence>
+                                      </React.Fragment>
+                                    );
+                                  })}
                                 </div>
                               )}
 
@@ -1556,74 +1664,13 @@ const TasksHubTracker: React.FC = () => {
                               {/* Task Edit Expansion */}
                               <AnimatePresence>
                                 {expanded && (
-                                  <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                                    className="tasks-expansion"
-                                  >
-                                    <input className="tasks-input" value={edit.title} onChange={(e) => updateTaskEdit(task.id, { title: e.target.value })} />
-                                    <textarea className="tasks-textarea" placeholder="Task details" value={edit.details} onChange={(e) => updateTaskEdit(task.id, { details: e.target.value })} />
-                                    <div className="tasks-recurrence-item tasks-due-field">
-                                      <label className="neo-label">Due</label>
-                                      <div className="tasks-due-inputs">
-                                        <input
-                                          className="tasks-input"
-                                          type="date"
-                                          value={getDueParts(edit.due_at).date}
-                                          onChange={(e) => updateTaskEdit(task.id, { due_at: setDueDatePart(edit.due_at, e.target.value) })}
-                                        />
-                                        <input
-                                          className="tasks-input"
-                                          type="time"
-                                          value={getDueParts(edit.due_at).time}
-                                          onChange={(e) => updateTaskEdit(task.id, { due_at: setDueTimePart(edit.due_at, e.target.value) })}
-                                        />
-                                      </div>
-                                    </div>
-                                    <DueQuickButtons
-                                      onPick={(value) => updateTaskEdit(task.id, { due_at: value })}
-                                      onSetTenPm={() => {
-                                        const next = setTimeToTenPm(edit.due_at);
-                                        if (next) updateTaskEdit(task.id, { due_at: next });
-                                      }}
-                                      canSetTenPm={!!setTimeToTenPm(edit.due_at)}
-                                    />
-                                    <TaskRepeatField
-                                      value={edit.recurrence_type}
-                                      onChange={(nextType) => updateTaskEdit(task.id, { recurrence_type: nextType })}
-                                    />
-                                    <TaskRecurrenceFields
-                                      value={{
-                                        recurrence_type: edit.recurrence_type,
-                                        recurrence_interval: edit.recurrence_interval,
-                                        recurrence_unit: edit.recurrence_unit,
-                                        recurrence_ends_at: edit.recurrence_ends_at,
-                                      }}
-                                      onChange={(patch) => updateTaskEdit(task.id, patch)}
-                                    />
-                                    <div className="flex gap-2">
-                                      <motion.button
-                                        className="neo-btn neo-btn-sm neo-btn-lime"
-                                        onClick={async () => { await saveTaskEdit(task); }}
-                                        whileHover={{ scale: 1.03 }}
-                                        whileTap={{ scale: 0.93 }}
-                                      >
-                                        Save
-                                      </motion.button>
-                                      <motion.button
-                                        className="neo-btn neo-btn-sm neo-btn-white"
-                                        onClick={() => {
-                                          setExpandedTaskIds((prev) => ({ ...prev, [task.id]: false }));
-                                          setTaskEditsById((prev) => ({ ...prev, [task.id]: createTaskEditDraft(task) }));
-                                        }}
-                                        whileTap={{ scale: 0.93 }}
-                                      >
-                                        Cancel
-                                      </motion.button>
-                                    </div>
-                                  </motion.div>
+                                  <TaskEditExpansion
+                                    task={task}
+                                    edit={edit}
+                                    onPatch={updateTaskEdit}
+                                    onSave={saveTaskEdit}
+                                    onCancel={cancelTaskEdit}
+                                  />
                                 )}
                               </AnimatePresence>
                             </motion.div>

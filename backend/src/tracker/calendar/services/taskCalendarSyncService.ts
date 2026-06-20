@@ -1544,6 +1544,49 @@ export const queueFullBackfill = async (
   });
 };
 
+export const queueListSyncCleanupForUser = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  listId: string
+) => {
+  const pageSize = 100;
+  let from = 0;
+  let queued = 0;
+
+  while (true) {
+    const { data, error } = await supabaseAdmin
+      .from("tracker_tasks")
+      .select("id,updated_at")
+      .eq("user_id", userId)
+      .eq("list_id", listId)
+      .not("due_at", "is", null)
+      .order("id", { ascending: true })
+      .range(from, from + pageSize - 1);
+    if (error) throw new Error(error.message);
+
+    const page = data ?? [];
+    for (const row of page) {
+      const taskId = String(row.id);
+      await enqueueTaskUpsert({
+        supabaseAdmin,
+        userId,
+        taskId,
+        listId,
+        lane: "live",
+        priority: PRIORITY_LIVE,
+        source: "list_sync_disabled_cleanup",
+        dedupeKey: `live:list-disable-cleanup:${listId}:${taskId}:${row.updated_at || "na"}`,
+      });
+      queued += 1;
+    }
+
+    if (page.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return queued;
+};
+
 export const queueReconcileRunForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
   const runId = await createSyncRun(supabaseAdmin, userId, "reconcile");
 
