@@ -392,6 +392,79 @@ describe("taskListService", () => {
     expect(state.insertedTasks).toHaveLength(1);
   });
 
+  it("normalizes date-only task creation to 10 PM in the browser timezone", async () => {
+    const { createTaskForUser } = await import("./taskListService");
+    const state: MockSupabaseState = {
+      tasks: [],
+      lists: [buildList()],
+      insertedTasks: [],
+      insertedLists: [],
+      updatedTasks: [],
+      updatedLists: [],
+    };
+
+    const result = await createTaskForUser(
+      createSupabaseMock(state),
+      "user-1",
+      {
+        list_id: "list-1",
+        parent_task_id: null,
+        title: "Date-only task",
+        due_at: "2026-04-16T12:00:00.777Z",
+        due_timezone: null,
+        recurrence_type: "none",
+        browser_timezone: "America/Chicago",
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("Expected successful result");
+    expect(result.task).toMatchObject({
+      due_at: "2026-04-17T03:00:00.000Z",
+      due_timezone: "America/Chicago",
+    });
+    expect(state.insertedTasks[0]).toMatchObject({
+      due_at: "2026-04-17T03:00:00.000Z",
+      due_timezone: "America/Chicago",
+    });
+  });
+
+  it("normalizes date-only task updates to 10 PM in the current task timezone", async () => {
+    const { updateTaskForUser } = await import("./taskListService");
+    const state: MockSupabaseState = {
+      tasks: [buildTask({ recurrence_type: "none" })],
+      lists: [buildList()],
+      insertedTasks: [],
+      insertedLists: [],
+      updatedTasks: [],
+      updatedLists: [],
+    };
+
+    const result = await updateTaskForUser(
+      createSupabaseMock(state),
+      "user-1",
+      "task-1",
+      {
+        due_at: "2026-04-16T12:00:00.777Z",
+        browser_timezone: "America/Los_Angeles",
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("Expected successful result");
+    expect(result.task).toMatchObject({
+      due_at: "2026-04-17T03:00:00.000Z",
+      due_timezone: "America/Chicago",
+    });
+    expect(state.updatedTasks[0]).toMatchObject({
+      taskId: "task-1",
+      payload: {
+        due_at: "2026-04-17T03:00:00.000Z",
+        due_timezone: "America/Chicago",
+      },
+    });
+  });
+
   it("rejects recurring task creation without a due date", async () => {
     const { createTaskForUser } = await import("./taskListService");
     const state: MockSupabaseState = {

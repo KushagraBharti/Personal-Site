@@ -65,14 +65,14 @@ const setDueDatePart = (current: string, date: string) => {
   const nextDate = date.trim();
   if (!nextDate) return "";
   const { time } = getDueParts(current);
-  return time ? `${nextDate}T${time}` : nextDate;
+  return `${nextDate}T${time || "22:00"}`;
 };
 
 const setDueTimePart = (current: string, time: string) => {
   const nextTime = time.trim();
   const { date } = getDueParts(current);
   if (!date) return "";
-  return nextTime ? `${date}T${nextTime}` : date;
+  return `${date}T${nextTime || "22:00"}`;
 };
 
 const toLocalInputFromDate = (date: Date) => {
@@ -83,7 +83,8 @@ const toLocalInputFromDate = (date: Date) => {
 const quickDue = (kind: "today" | "tonight" | "tomorrow" | "sunday") => {
   const base = new Date();
   if (kind === "today") {
-    return toLocalInputFromDate(base).slice(0, 10);
+    base.setHours(22, 0, 0, 0);
+    return toLocalInputFromDate(base);
   }
   if (kind === "tonight") {
     base.setHours(22, 0, 0, 0);
@@ -91,12 +92,14 @@ const quickDue = (kind: "today" | "tonight" | "tomorrow" | "sunday") => {
   }
   if (kind === "tomorrow") {
     base.setDate(base.getDate() + 1);
-    return toLocalInputFromDate(base).slice(0, 10);
+    base.setHours(22, 0, 0, 0);
+    return toLocalInputFromDate(base);
   }
   const dayOfWeek = base.getDay();
   const daysUntilSunday = 7 - dayOfWeek || 7;
   base.setDate(base.getDate() + daysUntilSunday);
-  return toLocalInputFromDate(base).slice(0, 10);
+  base.setHours(22, 0, 0, 0);
+  return toLocalInputFromDate(base);
 };
 
 const formatDue = (isoString: string | null) => {

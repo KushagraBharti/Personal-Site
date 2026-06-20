@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { TrackerTaskRow } from "../../../types/googleCalendar";
 import {
@@ -11,6 +12,7 @@ import {
 import {
   cleanNullableString,
   cleanOptionalString,
+  isValidIanaTimeZone,
   normalizeRecurrenceType,
   normalizeRecurrenceUnit,
   normalizeTaskDueTimeZone,
@@ -44,6 +46,50 @@ type TaskServiceFailure = ServiceFailure;
 const hasOwn = (input: object, key: string) =>
   Object.prototype.hasOwnProperty.call(input, key);
 
+const DATE_ONLY_MARKER_MS = 777;
+const DATE_ONLY_INPUT_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
+const resolveDueAtTimeZone = (
+  dueTimeZone: unknown,
+  browserTimeZone: unknown,
+  currentTimeZone?: string | null,
+) => {
+  for (const candidate of [dueTimeZone, currentTimeZone, browserTimeZone]) {
+    if (typeof candidate === "string" && isValidIanaTimeZone(candidate)) {
+      return candidate;
+    }
+  }
+  return "UTC";
+};
+
+const normalizeDateOnlyDueAt = (
+  value: string,
+  timeZone: string,
+): string | null => {
+  let localDate: string | null = null;
+
+  if (DATE_ONLY_INPUT_REGEX.test(value)) {
+    localDate = value;
+  } else {
+    const parsed = DateTime.fromISO(value, { zone: "utc" });
+    if (parsed.isValid && parsed.millisecond === DATE_ONLY_MARKER_MS) {
+      localDate = parsed.setZone(timeZone).toISODate();
+    }
+  }
+
+  if (!localDate) return null;
+
+  const normalized = DateTime.fromISO(localDate, { zone: timeZone }).set({
+    hour: 22,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  if (!normalized.isValid) return null;
+
+  return normalized.toUTC().toISO({ suppressMilliseconds: false });
+};
+
 const normalizePositiveInteger = (value: unknown, fallback: number) => {
   if (value === undefined || value === null || value === "") return fallback;
   const parsed = Number(value);
@@ -51,11 +97,31 @@ const normalizePositiveInteger = (value: unknown, fallback: number) => {
   return Math.max(1, Math.floor(parsed));
 };
 
-const normalizeDueAt = (value: unknown) => {
+const normalizeDueAt = (
+  value: unknown,
+  options?: {
+    dueTimeZone?: unknown;
+    browserTimeZone?: unknown;
+    currentTimeZone?: string | null;
+  },
+) => {
   if (value === undefined) return undefined;
   if (value === null) return null;
   if (typeof value !== "string") return null;
-  return value;
+
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const dateOnlyDueAt = normalizeDateOnlyDueAt(
+    trimmed,
+    resolveDueAtTimeZone(
+      options?.dueTimeZone,
+      options?.browserTimeZone,
+      options?.currentTimeZone,
+    ),
+  );
+
+  return dateOnlyDueAt ?? trimmed;
 };
 
 const normalizeRecurrenceCreateFields = (
@@ -223,7 +289,10 @@ export const createTaskForUser = async (
     return { ok: false, code: 400, error: "Invalid parent_task_id" };
   }
 
-  const dueAt = normalizeDueAt(input.due_at);
+  const dueAt = normalizeDueAt(input.due_at, {
+    dueTimeZone: input.due_timezone,
+    browserTimeZone: input.browser_timezone,
+  });
   if (dueAt === undefined) {
     return { ok: false, code: 400, error: "due_at is required" };
   }
@@ -356,7 +425,11 @@ export const updateTaskForUser = async (
 
   let nextDueAt = currentTask.due_at;
   if (hasOwn(input, "due_at")) {
-    const dueAt = normalizeDueAt(input.due_at);
+    const dueAt = normalizeDueAt(input.due_at, {
+      dueTimeZone: input.due_timezone,
+      browserTimeZone: input.browser_timezone,
+      currentTimeZone: currentTask.due_timezone,
+    });
     if (!(typeof dueAt === "string" || dueAt === null)) {
       return { ok: false, code: 400, error: "Invalid due_at" };
     }

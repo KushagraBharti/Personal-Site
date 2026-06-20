@@ -7,7 +7,8 @@ export const toIsoOrNull = (dateTimeLocal: string): string | null => {
   if (!trimmed) return null;
 
   if (DATE_ONLY_INPUT_REGEX.test(trimmed)) {
-    const parsedDate = new Date(`${trimmed}T12:00:00.${DATE_ONLY_MARKER_MS}Z`);
+    const [year, month, day] = trimmed.split("-").map(Number);
+    const parsedDate = new Date(year, month - 1, day, 22, 0, 0, 0);
     if (Number.isNaN(parsedDate.getTime())) return null;
     return parsedDate.toISOString();
   }

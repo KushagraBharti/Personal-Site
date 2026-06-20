@@ -10,11 +10,45 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.reorderTasksForUser = exports.deleteTaskForUser = exports.updateTaskForUser = exports.createTaskForUser = void 0;
+const luxon_1 = require("luxon");
 const taskHubUtils_1 = require("./taskHubUtils");
 const taskCalendarCleanupService_1 = require("./taskCalendarCleanupService");
 const taskCalendarSyncService_1 = require("../../calendar/services/taskCalendarSyncService");
 const taskRecurrenceService_1 = require("./taskRecurrenceService");
 const hasOwn = (input, key) => Object.prototype.hasOwnProperty.call(input, key);
+const DATE_ONLY_MARKER_MS = 777;
+const DATE_ONLY_INPUT_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const resolveDueAtTimeZone = (dueTimeZone, browserTimeZone, currentTimeZone) => {
+    for (const candidate of [dueTimeZone, currentTimeZone, browserTimeZone]) {
+        if (typeof candidate === "string" && (0, taskHubUtils_1.isValidIanaTimeZone)(candidate)) {
+            return candidate;
+        }
+    }
+    return "UTC";
+};
+const normalizeDateOnlyDueAt = (value, timeZone) => {
+    let localDate = null;
+    if (DATE_ONLY_INPUT_REGEX.test(value)) {
+        localDate = value;
+    }
+    else {
+        const parsed = luxon_1.DateTime.fromISO(value, { zone: "utc" });
+        if (parsed.isValid && parsed.millisecond === DATE_ONLY_MARKER_MS) {
+            localDate = parsed.setZone(timeZone).toISODate();
+        }
+    }
+    if (!localDate)
+        return null;
+    const normalized = luxon_1.DateTime.fromISO(localDate, { zone: timeZone }).set({
+        hour: 22,
+        minute: 0,
+        second: 0,
+        millisecond: 0,
+    });
+    if (!normalized.isValid)
+        return null;
+    return normalized.toUTC().toISO({ suppressMilliseconds: false });
+};
 const normalizePositiveInteger = (value, fallback) => {
     if (value === undefined || value === null || value === "")
         return fallback;
@@ -23,14 +57,18 @@ const normalizePositiveInteger = (value, fallback) => {
         return null;
     return Math.max(1, Math.floor(parsed));
 };
-const normalizeDueAt = (value) => {
+const normalizeDueAt = (value, options) => {
     if (value === undefined)
         return undefined;
     if (value === null)
         return null;
     if (typeof value !== "string")
         return null;
-    return value;
+    const trimmed = value.trim();
+    if (!trimmed)
+        return null;
+    const dateOnlyDueAt = normalizeDateOnlyDueAt(trimmed, resolveDueAtTimeZone(options === null || options === void 0 ? void 0 : options.dueTimeZone, options === null || options === void 0 ? void 0 : options.browserTimeZone, options === null || options === void 0 ? void 0 : options.currentTimeZone));
+    return dateOnlyDueAt !== null && dateOnlyDueAt !== void 0 ? dateOnlyDueAt : trimmed;
 };
 const normalizeRecurrenceCreateFields = (input) => {
     const recurrenceType = input.recurrence_type === undefined
@@ -146,7 +184,10 @@ const createTaskForUser = (supabaseAdmin, userId, input) => __awaiter(void 0, vo
     else {
         return { ok: false, code: 400, error: "Invalid parent_task_id" };
     }
-    const dueAt = normalizeDueAt(input.due_at);
+    const dueAt = normalizeDueAt(input.due_at, {
+        dueTimeZone: input.due_timezone,
+        browserTimeZone: input.browser_timezone,
+    });
     if (dueAt === undefined) {
         return { ok: false, code: 400, error: "due_at is required" };
     }
@@ -244,7 +285,11 @@ const updateTaskForUser = (supabaseAdmin, userId, taskId, input) => __awaiter(vo
     }
     let nextDueAt = currentTask.due_at;
     if (hasOwn(input, "due_at")) {
-        const dueAt = normalizeDueAt(input.due_at);
+        const dueAt = normalizeDueAt(input.due_at, {
+            dueTimeZone: input.due_timezone,
+            browserTimeZone: input.browser_timezone,
+            currentTimeZone: currentTask.due_timezone,
+        });
         if (!(typeof dueAt === "string" || dueAt === null)) {
             return { ok: false, code: 400, error: "Invalid due_at" };
         }
