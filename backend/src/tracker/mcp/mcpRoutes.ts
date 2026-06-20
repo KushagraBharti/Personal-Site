@@ -489,6 +489,20 @@ const handleMcpRequest = async (req: Request, res: Response) => {
   }
 };
 
+const handleMcpStreamProbe = (req: Request, res: Response) => {
+  const authResult = authenticateTrackerMcpRequest(req);
+  if (!authResult.ok) {
+    return sendTrackerMcpAuthFailure(res, authResult);
+  }
+
+  res.status(200);
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("Connection", "keep-alive");
+  res.write(": tracker-mcp stream ready\n\n");
+  return res.end();
+};
+
 const handleUnsupportedMcpMethod = (req: Request, res: Response) => {
   const authResult = authenticateTrackerMcpRequest(req);
   if (!authResult.ok) {
@@ -498,7 +512,7 @@ const handleUnsupportedMcpMethod = (req: Request, res: Response) => {
 };
 
 router.post("/", handleMcpRequest);
-router.get("/", handleUnsupportedMcpMethod);
+router.get("/", handleMcpStreamProbe);
 router.delete("/", handleUnsupportedMcpMethod);
 
 export default router;

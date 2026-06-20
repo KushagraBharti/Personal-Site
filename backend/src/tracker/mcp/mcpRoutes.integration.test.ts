@@ -83,12 +83,23 @@ describe("tracker MCP routes", () => {
     ]);
   });
 
-  it("requires MCP auth for GET stream requests", async () => {
+  it("requires MCP auth for GET stream probes", async () => {
     const { default: app } = await import("../../app");
     const response = await request(app).get("/api/mcp");
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({ error: "Unauthorized" });
+  });
+
+  it("returns an authenticated SSE response for GET stream probes", async () => {
+    const { default: app } = await import("../../app");
+    const response = await request(app)
+      .get("/api/mcp")
+      .set("authorization", "Bearer test-mcp-key");
+
+    expect(response.status).toBe(200);
+    expect(response.headers["content-type"]).toContain("text/event-stream");
+    expect(response.text).toContain("tracker-mcp stream ready");
   });
 
   it("returns an MCP-shaped 405 for unsupported authenticated methods", async () => {
