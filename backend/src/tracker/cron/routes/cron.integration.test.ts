@@ -1,7 +1,7 @@
 import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const processCalendarSyncJobsMock = vi.hoisted(() => vi.fn());
+const drainCalendarSyncJobsMock = vi.hoisted(() => vi.fn());
 const renewExpiringCalendarWatchesMock = vi.hoisted(() => vi.fn());
 const getSupabaseAdminMock = vi.hoisted(() => vi.fn());
 const reconcileCompletedRecurringTasksMock = vi.hoisted(() => vi.fn());
@@ -10,7 +10,7 @@ const deleteTaskListForUserMock = vi.hoisted(() => vi.fn());
 const setTaskCompletionForUserMock = vi.hoisted(() => vi.fn());
 
 vi.mock("../../calendar/services/taskCalendarSyncService", () => ({
-  processCalendarSyncJobs: processCalendarSyncJobsMock,
+  drainCalendarSyncJobs: drainCalendarSyncJobsMock,
   renewExpiringCalendarWatches: renewExpiringCalendarWatchesMock,
 }));
 
@@ -30,7 +30,13 @@ const adminClient = {};
 describe("cron routes", () => {
   beforeEach(() => {
     vi.resetModules();
-    processCalendarSyncJobsMock.mockReset();
+    drainCalendarSyncJobsMock.mockReset();
+    drainCalendarSyncJobsMock.mockResolvedValue({
+      processed: 0,
+      failed: 0,
+      exhausted: false,
+      results: [],
+    });
     renewExpiringCalendarWatchesMock.mockReset();
     getSupabaseAdminMock.mockReset();
     reconcileCompletedRecurringTasksMock.mockReset();
@@ -77,10 +83,12 @@ describe("cron routes", () => {
   });
 
   it("returns calendar sync results when processing succeeds", async () => {
-    processCalendarSyncJobsMock.mockResolvedValue([
-      { ok: true },
-      { ok: false },
-    ]);
+    drainCalendarSyncJobsMock.mockResolvedValue({
+      processed: 2,
+      failed: 1,
+      exhausted: false,
+      results: [{ ok: true }, { ok: false }],
+    });
 
     const { default: app } = await import("../../../app");
     const response = await request(app)
@@ -92,6 +100,12 @@ describe("cron routes", () => {
       ok: true,
       processed: 2,
       failed: 1,
+      exhausted: false,
+    });
+    expect(drainCalendarSyncJobsMock).toHaveBeenCalledWith({
+      batchSize: 10,
+      maxJobs: 80,
+      maxMs: 20_000,
     });
   });
 

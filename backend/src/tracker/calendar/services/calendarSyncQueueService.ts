@@ -1,31 +1,7 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { CalendarSyncJobType, CalendarSyncLane, TrackerGoogleSyncJob } from "../../../types/googleCalendar";
 
-const getSupabaseErrorMessage = (error: { message?: string } | null | undefined) =>
-  typeof error?.message === "string" ? error.message : "";
-
-const isLegacyQueueSchemaError = (error: { code?: string; message?: string } | null | undefined) => {
-  const message = getSupabaseErrorMessage(error).toLowerCase();
-  const code = error?.code || "";
-  if (code === "42703" || code === "42883" || code === "42P01") return true;
-  return (
-    message.includes("column") ||
-    message.includes("run_id") ||
-    message.includes("lane") ||
-    message.includes("dedupe_key") ||
-    message.includes("google_event_id") ||
-    message.includes("source") ||
-    message.includes("p_lanes") ||
-    message.includes("function claim_sync_jobs") ||
-    message.includes("tracker_google_sync_runs") ||
-    message.includes("tracker_google_sync_jobs_job_type_check")
-  );
-};
-
-const toLegacyJobType = (jobType: CalendarSyncJobType): CalendarSyncJobType => {
-  if (jobType === "reconcile_app_page") return "full_backfill";
-  return jobType;
-};
+const STALE_RUNNING_JOB_MS = 10 * 60 * 1000;
 
 const parseJwtRole = (jwt: string): string | null => {
   const parts = jwt.split(".");
@@ -127,29 +103,32 @@ export const enqueueSyncJob = async (
 
   const { error } = await supabaseAdmin.from("tracker_google_sync_jobs").insert(nextRow);
 
-  if (!error) return;
-
-  if (error.code === "23505") return;
-
-  if (isLegacyQueueSchemaError(error)) {
-    const { error: legacyError } = await supabaseAdmin.from("tracker_google_sync_jobs").insert({
-      user_id: input.userId,
-      task_id: input.taskId ?? null,
-      list_id: input.listId ?? null,
-      job_type: toLegacyJobType(input.jobType),
-      priority: input.priority ?? 100,
-      payload,
-      status: "pending",
-    });
-
-    if (!legacyError || legacyError.code === "23505") {
-      return;
-    }
-
-    throw new Error(legacyError.message);
-  }
-
+  if (!error) return true;
+  if (error.code === "23505") return false;
   throw new Error(error.message);
+};
+
+const recoverStaleRunningJobs = async (
+  supabaseAdmin: SupabaseClient,
+  userId?: string,
+  lanes?: CalendarSyncLane[],
+) => {
+  const staleBefore = new Date(Date.now() - STALE_RUNNING_JOB_MS).toISOString();
+  let query = supabaseAdmin
+    .from("tracker_google_sync_jobs")
+    .update({
+      status: "pending",
+      locked_at: null,
+      run_after: new Date().toISOString(),
+    })
+    .eq("status", "running")
+    .lt("locked_at", staleBefore);
+
+  if (userId) query = query.eq("user_id", userId);
+  if (lanes?.length) query = query.in("lane", lanes);
+
+  const { error } = await query;
+  if (error) throw new Error(error.message);
 };
 
 export const claimSyncJobs = async (
@@ -158,22 +137,14 @@ export const claimSyncJobs = async (
   userId?: string,
   lanes?: CalendarSyncLane[]
 ) => {
+  await recoverStaleRunningJobs(supabaseAdmin, userId, lanes);
+
   const { data, error } = await supabaseAdmin.rpc("claim_sync_jobs", {
     batch_size: batchSize,
     p_user_id: userId ?? null,
     p_lanes: lanes?.length ? lanes : null,
   });
   if (!error) return (data ?? []) as TrackerGoogleSyncJob[];
-
-  if (isLegacyQueueSchemaError(error)) {
-    const legacy = await supabaseAdmin.rpc("claim_sync_jobs", {
-      batch_size: batchSize,
-      p_user_id: userId ?? null,
-    });
-    if (legacy.error) throw new Error(legacy.error.message);
-    return (legacy.data ?? []) as TrackerGoogleSyncJob[];
-  }
-
   throw new Error(error.message);
 };
 

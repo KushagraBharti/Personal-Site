@@ -11,28 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.computeRetryDelayInterval = exports.failSyncJob = exports.completeSyncJob = exports.claimSyncJobs = exports.enqueueSyncJob = exports.getSupabaseAdmin = void 0;
 const supabase_js_1 = require("@supabase/supabase-js");
-const getSupabaseErrorMessage = (error) => typeof (error === null || error === void 0 ? void 0 : error.message) === "string" ? error.message : "";
-const isLegacyQueueSchemaError = (error) => {
-    const message = getSupabaseErrorMessage(error).toLowerCase();
-    const code = (error === null || error === void 0 ? void 0 : error.code) || "";
-    if (code === "42703" || code === "42883" || code === "42P01")
-        return true;
-    return (message.includes("column") ||
-        message.includes("run_id") ||
-        message.includes("lane") ||
-        message.includes("dedupe_key") ||
-        message.includes("google_event_id") ||
-        message.includes("source") ||
-        message.includes("p_lanes") ||
-        message.includes("function claim_sync_jobs") ||
-        message.includes("tracker_google_sync_runs") ||
-        message.includes("tracker_google_sync_jobs_job_type_check"));
-};
-const toLegacyJobType = (jobType) => {
-    if (jobType === "reconcile_app_page")
-        return "full_backfill";
-    return jobType;
-};
+const STALE_RUNNING_JOB_MS = 10 * 60 * 1000;
 const parseJwtRole = (jwt) => {
     const parts = jwt.split(".");
     if (parts.length < 2)
@@ -92,7 +71,7 @@ const getSupabaseAdmin = () => {
 };
 exports.getSupabaseAdmin = getSupabaseAdmin;
 const enqueueSyncJob = (supabaseAdmin, input) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     const payload = Object.assign({}, (input.payload || {}));
     const nextRow = {
         user_id: input.userId,
@@ -110,29 +89,33 @@ const enqueueSyncJob = (supabaseAdmin, input) => __awaiter(void 0, void 0, void 
     };
     const { error } = yield supabaseAdmin.from("tracker_google_sync_jobs").insert(nextRow);
     if (!error)
-        return;
+        return true;
     if (error.code === "23505")
-        return;
-    if (isLegacyQueueSchemaError(error)) {
-        const { error: legacyError } = yield supabaseAdmin.from("tracker_google_sync_jobs").insert({
-            user_id: input.userId,
-            task_id: (_j = input.taskId) !== null && _j !== void 0 ? _j : null,
-            list_id: (_k = input.listId) !== null && _k !== void 0 ? _k : null,
-            job_type: toLegacyJobType(input.jobType),
-            priority: (_l = input.priority) !== null && _l !== void 0 ? _l : 100,
-            payload,
-            status: "pending",
-        });
-        if (!legacyError || legacyError.code === "23505") {
-            return;
-        }
-        throw new Error(legacyError.message);
-    }
+        return false;
     throw new Error(error.message);
 });
 exports.enqueueSyncJob = enqueueSyncJob;
+const recoverStaleRunningJobs = (supabaseAdmin, userId, lanes) => __awaiter(void 0, void 0, void 0, function* () {
+    const staleBefore = new Date(Date.now() - STALE_RUNNING_JOB_MS).toISOString();
+    let query = supabaseAdmin
+        .from("tracker_google_sync_jobs")
+        .update({
+        status: "pending",
+        locked_at: null,
+        run_after: new Date().toISOString(),
+    })
+        .eq("status", "running")
+        .lt("locked_at", staleBefore);
+    if (userId)
+        query = query.eq("user_id", userId);
+    if (lanes === null || lanes === void 0 ? void 0 : lanes.length)
+        query = query.in("lane", lanes);
+    const { error } = yield query;
+    if (error)
+        throw new Error(error.message);
+});
 const claimSyncJobs = (supabaseAdmin_1, ...args_1) => __awaiter(void 0, [supabaseAdmin_1, ...args_1], void 0, function* (supabaseAdmin, batchSize = 25, userId, lanes) {
-    var _a;
+    yield recoverStaleRunningJobs(supabaseAdmin, userId, lanes);
     const { data, error } = yield supabaseAdmin.rpc("claim_sync_jobs", {
         batch_size: batchSize,
         p_user_id: userId !== null && userId !== void 0 ? userId : null,
@@ -140,15 +123,6 @@ const claimSyncJobs = (supabaseAdmin_1, ...args_1) => __awaiter(void 0, [supabas
     });
     if (!error)
         return (data !== null && data !== void 0 ? data : []);
-    if (isLegacyQueueSchemaError(error)) {
-        const legacy = yield supabaseAdmin.rpc("claim_sync_jobs", {
-            batch_size: batchSize,
-            p_user_id: userId !== null && userId !== void 0 ? userId : null,
-        });
-        if (legacy.error)
-            throw new Error(legacy.error.message);
-        return ((_a = legacy.data) !== null && _a !== void 0 ? _a : []);
-    }
     throw new Error(error.message);
 });
 exports.claimSyncJobs = claimSyncJobs;

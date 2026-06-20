@@ -254,42 +254,6 @@ describe("taskCalendarSyncService", () => {
     googleApiMocks.deleteGoogleEvent.mockResolvedValue(undefined);
   });
 
-  it("identifies old trigger jobs without suppressing newer live trigger jobs", async () => {
-    const { isLegacyTaskTriggerSyncJob } = await import("./taskCalendarSyncService");
-    const baseJob = {
-      id: 1,
-      user_id: "user-1",
-      run_id: null,
-      lane: "live",
-      task_id: "task-1",
-      google_event_id: null,
-      list_id: "list-1",
-      job_type: "task_upsert",
-      source: null,
-      dedupe_key: null,
-      priority: 100,
-      payload: { source: "trigger" },
-      status: "pending",
-      attempt_count: 0,
-      max_attempts: 5,
-      run_after: "2026-04-15T04:00:00.000Z",
-      last_error: null,
-      locked_at: null,
-      created_at: "2026-04-15T04:00:00.000Z",
-      updated_at: "2026-04-15T04:00:00.000Z",
-    } as const;
-
-    expect(isLegacyTaskTriggerSyncJob(baseJob)).toBe(true);
-    expect(
-      isLegacyTaskTriggerSyncJob({
-        ...baseJob,
-        source: "trigger_task_change",
-        payload: { source: "trigger_task_change" },
-        priority: 5,
-      })
-    ).toBe(false);
-  });
-
   it("creates one primary event and three projected events for overdue recurring tasks", async () => {
     const { processTaskUpsertJob } = await import("./taskCalendarSyncService");
     const state: MockSupabaseState = {
@@ -524,7 +488,7 @@ describe("taskCalendarSyncService", () => {
       google_event_id: null,
       list_id: "list-1",
       job_type: "task_delete",
-      source: "trigger_task_delete",
+      source: "api_task_delete",
       dedupe_key: "dedupe-4",
       priority: 5,
       payload: {

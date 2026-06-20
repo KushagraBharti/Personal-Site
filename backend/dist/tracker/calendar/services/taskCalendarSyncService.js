@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.normalizeDueAtForSync = exports.inferLanesForRunMode = exports.getSyncRunDebug = exports.getSyncProgressForRun = exports.getCalendarStatusForUser = exports.upsertListSyncSetting = exports.taskListBelongsToUser = exports.listUserSyncEnabledLists = exports.renewExpiringCalendarWatches = exports.disconnectGoogleCalendarForUser = exports.isCalendarRebuildSchemaUnavailable = exports.rebuildCalendarLegacyInlineForUser = exports.upsertGoogleConnectionFromOAuth = exports.queueLivePumpForUser = exports.runLegacyManualSyncForUser = exports.queueManualSyncForUser = exports.queueRebuildRunForUser = exports.queueReconcileRunForUser = exports.queueListSyncCleanupForUser = exports.queueListBackfillRunForUser = exports.queueFullBackfill = exports.processCalendarSyncJobs = exports.renewCalendarWatchForUser = exports.processTaskDeleteJob = exports.processTaskUpsertJob = exports.queueTaskDeleteForUser = exports.queueTaskUpsertForUser = exports.isLegacyTaskTriggerSyncJob = void 0;
+exports.normalizeDueAtForSync = exports.inferLanesForRunMode = exports.getSyncRunDebug = exports.getSyncProgressForRun = exports.getCalendarStatusForUser = exports.upsertListSyncSetting = exports.taskListBelongsToUser = exports.listUserSyncEnabledLists = exports.renewExpiringCalendarWatches = exports.disconnectGoogleCalendarForUser = exports.upsertGoogleConnectionFromOAuth = exports.queueLivePumpForUser = exports.queueManualSyncForUser = exports.queueRebuildRunForUser = exports.queueReconcileRunForUser = exports.queueListSyncCleanupForUser = exports.queueListBackfillRunForUser = exports.queueFullBackfill = exports.drainCalendarSyncJobs = exports.processCalendarSyncJobs = exports.renewCalendarWatchForUser = exports.processTaskDeleteJob = exports.processTaskUpsertJob = exports.queueTaskDeleteForUser = exports.queueTaskUpsertForUser = void 0;
 const crypto_1 = require("crypto");
 const calendarSyncQueueService_1 = require("./calendarSyncQueueService");
 const googleCalendarApiService_1 = require("./googleCalendarApiService");
@@ -22,7 +22,9 @@ const GOOGLE_WEBHOOK_URL = () => {
     return value;
 };
 const nowIso = () => new Date().toISOString();
-const LIVE_PUMP_BATCH_SIZE = 3;
+const LIVE_PUMP_BATCH_SIZE = 10;
+const LIVE_PUMP_MAX_JOBS = 50;
+const DRAIN_MAX_MS = 20000;
 const RECONCILE_APP_PAGE_SIZE = 60;
 const RECONCILE_GOOGLE_PAGE_SIZE = 60;
 const HARD_RESET_CLEAR_PAGE_SIZE = 15;
@@ -64,14 +66,6 @@ const getJobProjectionEventsPayload = (job) => {
 };
 const getJobRunId = (job) => job.run_id || getJobStringPayload(job, "run_id");
 const withRunPayload = (base, runId) => runId ? Object.assign(Object.assign({}, base), { run_id: runId }) : base;
-const isLegacyTaskTriggerSyncJob = (job) => {
-    const payloadSource = getJobStringPayload(job, "source");
-    const source = job.source || payloadSource;
-    return (source === "trigger" &&
-        payloadSource === "trigger" &&
-        (job.job_type === "task_upsert" || job.job_type === "task_delete"));
-};
-exports.isLegacyTaskTriggerSyncJob = isLegacyTaskTriggerSyncJob;
 const getRawErrorMessage = (error) => {
     var _a;
     if (error instanceof Error)
@@ -112,18 +106,6 @@ const formatSyncErrorMessage = (error) => {
         return apiErrMessage;
     return generic;
 };
-const isMissingRebuildSchemaError = (error) => {
-    const message = getRawErrorMessage(error).toLowerCase();
-    return (message.includes("tracker_google_sync_runs") ||
-        message.includes("run_id") ||
-        message.includes("lane") ||
-        message.includes("dedupe_key") ||
-        message.includes("google_event_id") ||
-        message.includes("p_lanes") ||
-        message.includes("hard_reset_clear_page") ||
-        message.includes("reconcile_google_page") ||
-        message.includes("reconcile_app_page"));
-};
 const getSyncErrorCode = (error) => {
     var _a;
     const err = error;
@@ -133,8 +115,9 @@ const getSyncErrorCode = (error) => {
     const code = err === null || err === void 0 ? void 0 : err.code;
     return typeof code === "string" && code.trim() ? code : null;
 };
+const jobOutcome = (action, detail) => (Object.assign({ action }, (detail !== null && detail !== void 0 ? detail : {})));
 const logSyncJobLifecycle = (input) => {
-    var _a, _b;
+    var _a, _b, _c;
     console.info("[calendar_sync_job]", JSON.stringify({
         run_id: input.runId,
         job_id: input.jobId,
@@ -145,8 +128,9 @@ const logSyncJobLifecycle = (input) => {
         attempt_count: input.attemptCount,
         duration_ms: input.durationMs,
         result: input.result,
-        error_code: (_a = input.errorCode) !== null && _a !== void 0 ? _a : null,
-        error_message: (_b = input.errorMessage) !== null && _b !== void 0 ? _b : null,
+        detail: (_a = input.detail) !== null && _a !== void 0 ? _a : null,
+        error_code: (_b = input.errorCode) !== null && _b !== void 0 ? _b : null,
+        error_message: (_c = input.errorMessage) !== null && _c !== void 0 ? _c : null,
     }));
 };
 const isAuthFatalSyncError = (error) => {
@@ -415,7 +399,7 @@ const refreshSyncRunState = (supabaseAdmin, runId) => __awaiter(void 0, void 0, 
 });
 const enqueueTaskUpsert = (input) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
-    yield (0, calendarSyncQueueService_1.enqueueSyncJob)(input.supabaseAdmin, {
+    return (0, calendarSyncQueueService_1.enqueueSyncJob)(input.supabaseAdmin, {
         userId: input.userId,
         runId: (_a = input.runId) !== null && _a !== void 0 ? _a : null,
         lane: input.lane,
@@ -443,7 +427,7 @@ const queueTaskUpsertForUser = (supabaseAdmin_1, userId_1, task_1, ...args_1) =>
 exports.queueTaskUpsertForUser = queueTaskUpsertForUser;
 const enqueueTaskDelete = (input) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e;
-    yield (0, calendarSyncQueueService_1.enqueueSyncJob)(input.supabaseAdmin, {
+    return (0, calendarSyncQueueService_1.enqueueSyncJob)(input.supabaseAdmin, {
         userId: input.userId,
         runId: (_a = input.runId) !== null && _a !== void 0 ? _a : null,
         lane: input.lane,
@@ -499,8 +483,9 @@ const queueTaskDeleteForUser = (supabaseAdmin, userId, input) => __awaiter(void 
 });
 exports.queueTaskDeleteForUser = queueTaskDeleteForUser;
 const deletePrimaryEventLink = (input) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!input.link || input.link.is_deleted)
-        return;
+    if (!input.link || input.link.is_deleted) {
+        return jobOutcome("noop", { reason: "no_active_primary_link" });
+    }
     try {
         yield (0, googleCalendarApiService_1.deleteGoogleEvent)(input.accessToken, input.link.calendar_id, input.link.google_event_id);
     }
@@ -518,6 +503,9 @@ const deletePrimaryEventLink = (input) => __awaiter(void 0, void 0, void 0, func
         lastSyncedTaskUpdatedAt: input.task.updated_at,
         lastSyncSource: "app",
         isDeleted: true,
+    });
+    return jobOutcome("deleted_primary_event", {
+        googleEventId: input.link.google_event_id,
     });
 });
 const deleteProjectionEventLink = (input) => __awaiter(void 0, void 0, void 0, function* () {
@@ -542,7 +530,7 @@ const syncPrimaryEventForTask = (input) => __awaiter(void 0, void 0, void 0, fun
         eventKind: "primary",
     });
     if (!eventPayload.start)
-        return;
+        return jobOutcome("noop", { reason: "invalid_or_missing_due_at" });
     if (input.existingLink && !input.existingLink.is_deleted) {
         try {
             const patched = yield (0, googleCalendarApiService_1.patchGoogleEvent)(input.accessToken, input.existingLink.calendar_id, input.existingLink.google_event_id, eventPayload);
@@ -557,7 +545,9 @@ const syncPrimaryEventForTask = (input) => __awaiter(void 0, void 0, void 0, fun
                 lastSyncSource: "app",
                 isDeleted: false,
             });
-            return;
+            return jobOutcome("patched_primary_event", {
+                googleEventId: input.existingLink.google_event_id,
+            });
         }
         catch (error) {
             if (!isGoogleNotFoundError(error))
@@ -578,7 +568,9 @@ const syncPrimaryEventForTask = (input) => __awaiter(void 0, void 0, void 0, fun
             lastSyncSource: "app",
             isDeleted: false,
         });
-        return;
+        return jobOutcome("inserted_primary_event", {
+            googleEventId: inserted.id,
+        });
     }
     catch (error) {
         if (!isGoogleConflictError(error))
@@ -595,6 +587,9 @@ const syncPrimaryEventForTask = (input) => __awaiter(void 0, void 0, void 0, fun
         lastSyncedTaskUpdatedAt: input.task.updated_at,
         lastSyncSource: "app",
         isDeleted: false,
+    });
+    return jobOutcome("patched_primary_event", {
+        googleEventId: deterministicEventId,
     });
 });
 const syncProjectedEventsForTask = (input) => __awaiter(void 0, void 0, void 0, function* () {
@@ -690,18 +685,19 @@ const syncProjectedEventsForTask = (input) => __awaiter(void 0, void 0, void 0, 
 });
 const processTaskUpsertJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
     if (!job.task_id)
-        return;
+        return jobOutcome("noop", { reason: "missing_task_id" });
     const task = yield getTaskById(supabaseAdmin, job.user_id, job.task_id);
     if (!task)
-        return;
+        return jobOutcome("noop", { reason: "task_not_found" });
     const listEnabled = yield isListSyncEnabled(supabaseAdmin, job.user_id, task.list_id);
     const { accessToken, publicRow } = yield (0, googleCalendarApiService_1.getValidGoogleAccessToken)(supabaseAdmin, job.user_id);
     const calendarId = publicRow.selected_calendar_id;
     if (!calendarId)
-        return;
+        return jobOutcome("noop", { reason: "missing_selected_calendar" });
     const existingLink = yield getLinkByTaskId(supabaseAdmin, job.user_id, task.id);
+    let primaryOutcome;
     if (shouldRetainPrimaryCalendarEvent(task, listEnabled)) {
-        yield syncPrimaryEventForTask({
+        primaryOutcome = yield syncPrimaryEventForTask({
             supabaseAdmin,
             accessToken,
             calendarId,
@@ -710,13 +706,14 @@ const processTaskUpsertJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
         });
     }
     else {
-        yield deletePrimaryEventLink({
+        primaryOutcome = yield deletePrimaryEventLink({
             supabaseAdmin,
             accessToken,
             task,
             link: existingLink,
         });
     }
+    let deletedProjectionCount = 0;
     if (shouldRetainProjectedCalendarEvents(task, listEnabled)) {
         yield syncProjectedEventsForTask({
             supabaseAdmin,
@@ -724,10 +721,15 @@ const processTaskUpsertJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
             calendarId,
             task,
         });
-        return;
+        return jobOutcome(primaryOutcome.action, {
+            googleEventId: primaryOutcome.googleEventId,
+            reason: primaryOutcome.reason,
+        });
     }
     const projectionLinks = yield getProjectionLinksByTaskId(supabaseAdmin, job.user_id, task.id);
     for (const projectionLink of projectionLinks) {
+        if (!projectionLink.is_deleted)
+            deletedProjectionCount += 1;
         yield deleteProjectionEventLink({
             supabaseAdmin,
             accessToken,
@@ -735,6 +737,11 @@ const processTaskUpsertJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
             link: projectionLink,
         });
     }
+    return jobOutcome(primaryOutcome.action, {
+        googleEventId: primaryOutcome.googleEventId,
+        reason: primaryOutcome.reason,
+        deletedEventCount: deletedProjectionCount,
+    });
 });
 exports.processTaskUpsertJob = processTaskUpsertJob;
 const processTaskDeleteJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
@@ -771,10 +778,12 @@ const processTaskDeleteJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
     if (!calendarId)
         calendarId = publicRow.selected_calendar_id;
     if (!calendarId)
-        return;
+        return jobOutcome("noop", { reason: "missing_selected_calendar" });
+    let deletedEventCount = 0;
     if (googleEventId) {
         try {
             yield (0, googleCalendarApiService_1.deleteGoogleEvent)(accessToken, calendarId, googleEventId);
+            deletedEventCount += 1;
         }
         catch (error) {
             if (!isGoogleNotFoundError(error))
@@ -812,6 +821,7 @@ const processTaskDeleteJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
             continue;
         try {
             yield (0, googleCalendarApiService_1.deleteGoogleEvent)(accessToken, currentProjectionLink.calendar_id, currentProjectionLink.google_event_id);
+            deletedEventCount += 1;
         }
         catch (error) {
             if (!isGoogleNotFoundError(error))
@@ -827,6 +837,7 @@ const processTaskDeleteJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
             continue;
         try {
             yield (0, googleCalendarApiService_1.deleteGoogleEvent)(accessToken, projectionEvent.calendarId, projectionEvent.googleEventId);
+            deletedEventCount += 1;
         }
         catch (error) {
             if (!isGoogleNotFoundError(error))
@@ -834,6 +845,7 @@ const processTaskDeleteJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
         }
         handledProjectionEventIds.add(projectionEvent.googleEventId);
     }
+    return jobOutcome("deleted_task_events", { deletedEventCount });
 });
 exports.processTaskDeleteJob = processTaskDeleteJob;
 const processReconcileAppPageJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
@@ -843,7 +855,7 @@ const processReconcileAppPageJob = (supabaseAdmin, job) => __awaiter(void 0, voi
     const listId = job.list_id || listIdFromPayload || null;
     const enabledListIds = yield getScopedSyncEnabledListIds(supabaseAdmin, job.user_id);
     if (enabledListIds.length === 0)
-        return;
+        return jobOutcome("noop", { reason: "no_sync_enabled_lists" });
     let query = supabaseAdmin
         .from("tracker_tasks")
         .select("id,list_id,updated_at,due_at,is_completed,recurrence_type")
@@ -860,13 +872,14 @@ const processReconcileAppPageJob = (supabaseAdmin, job) => __awaiter(void 0, voi
     if (error)
         throw new Error(error.message);
     const page = rows !== null && rows !== void 0 ? rows : [];
+    let childJobCount = 0;
     for (const row of page) {
         const typedRow = row;
         if (!typedRow.due_at ||
             !shouldRetainPrimaryCalendarEvent(typedRow, true)) {
             continue;
         }
-        yield enqueueTaskUpsert({
+        const inserted = yield enqueueTaskUpsert({
             supabaseAdmin,
             userId: job.user_id,
             taskId: String(typedRow.id),
@@ -875,8 +888,10 @@ const processReconcileAppPageJob = (supabaseAdmin, job) => __awaiter(void 0, voi
             runId,
             priority: PRIORITY_TASK_FROM_RECONCILE,
             source: "reconcile_app_page",
-            dedupeKey: `reconcile:upsert:${typedRow.id}:${typedRow.updated_at || "na"}`,
+            dedupeKey: `${job.lane}:${runId || "system"}:reconcile-upsert:${typedRow.id}:${typedRow.updated_at || "na"}`,
         });
+        if (inserted)
+            childJobCount += 1;
     }
     if (page.length === RECONCILE_APP_PAGE_SIZE) {
         const lastTaskId = String(page[page.length - 1].id);
@@ -896,6 +911,7 @@ const processReconcileAppPageJob = (supabaseAdmin, job) => __awaiter(void 0, voi
             dedupeKey: `reconcile:app-page:${runId || "system"}:${listId || "all"}:${lastTaskId}`,
         });
     }
+    return jobOutcome("queued_reconcile_task_upserts", { childJobCount });
 });
 const processReconcileGooglePageJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j;
@@ -904,7 +920,7 @@ const processReconcileGooglePageJob = (supabaseAdmin, job) => __awaiter(void 0, 
     const { accessToken, publicRow } = yield (0, googleCalendarApiService_1.getValidGoogleAccessToken)(supabaseAdmin, job.user_id);
     const calendarId = publicRow.selected_calendar_id;
     if (!calendarId)
-        return;
+        return jobOutcome("noop", { reason: "missing_selected_calendar" });
     const page = yield (0, googleCalendarApiService_1.listGoogleEventsPage)({
         accessToken,
         calendarId,
@@ -917,6 +933,7 @@ const processReconcileGooglePageJob = (supabaseAdmin, job) => __awaiter(void 0, 
         .filter((id) => typeof id === "string" && id.trim())));
     const enabledListIds = new Set(yield getScopedSyncEnabledListIds(supabaseAdmin, job.user_id));
     const scopedTasksById = new Map();
+    let childJobCount = 0;
     if (referencedTaskIds.length > 0) {
         const { data: tasks, error } = yield supabaseAdmin
             .from("tracker_tasks")
@@ -943,7 +960,7 @@ const processReconcileGooglePageJob = (supabaseAdmin, job) => __awaiter(void 0, 
             ? taskIdRaw.trim()
             : null;
         if (!trackerTaskId) {
-            yield enqueueTaskDelete({
+            const inserted = yield enqueueTaskDelete({
                 supabaseAdmin,
                 userId: job.user_id,
                 lane: job.lane,
@@ -951,13 +968,15 @@ const processReconcileGooglePageJob = (supabaseAdmin, job) => __awaiter(void 0, 
                 googleEventId,
                 calendarId,
                 source: "reconcile_orphan_google_event",
-                dedupeKey: `reconcile:delete-orphan:${googleEventId}`,
+                dedupeKey: `${job.lane}:${runId || "system"}:delete-orphan:${googleEventId}`,
                 priority: PRIORITY_TASK_FROM_RECONCILE,
             });
+            if (inserted)
+                childJobCount += 1;
             continue;
         }
         if (eventKind === "projection" && !projectionIndex) {
-            yield enqueueTaskDelete({
+            const inserted = yield enqueueTaskDelete({
                 supabaseAdmin,
                 userId: job.user_id,
                 lane: job.lane,
@@ -966,14 +985,16 @@ const processReconcileGooglePageJob = (supabaseAdmin, job) => __awaiter(void 0, 
                 googleEventId,
                 calendarId,
                 source: "reconcile_invalid_projection_event",
-                dedupeKey: `reconcile:delete-invalid-projection:${trackerTaskId}:${googleEventId}`,
+                dedupeKey: `${job.lane}:${runId || "system"}:delete-invalid-projection:${trackerTaskId}:${googleEventId}`,
                 priority: PRIORITY_TASK_FROM_RECONCILE,
             });
+            if (inserted)
+                childJobCount += 1;
             continue;
         }
         const scopedTask = scopedTasksById.get(trackerTaskId);
         if (!scopedTask) {
-            yield enqueueTaskDelete({
+            const inserted = yield enqueueTaskDelete({
                 supabaseAdmin,
                 userId: job.user_id,
                 lane: job.lane,
@@ -982,9 +1003,11 @@ const processReconcileGooglePageJob = (supabaseAdmin, job) => __awaiter(void 0, 
                 googleEventId,
                 calendarId,
                 source: "reconcile_out_of_scope_task",
-                dedupeKey: `reconcile:delete-out:${trackerTaskId}:${googleEventId}`,
+                dedupeKey: `${job.lane}:${runId || "system"}:delete-out:${trackerTaskId}:${googleEventId}`,
                 priority: PRIORITY_TASK_FROM_RECONCILE,
             });
+            if (inserted)
+                childJobCount += 1;
             continue;
         }
         if (eventKind === "projection") {
@@ -1015,7 +1038,7 @@ const processReconcileGooglePageJob = (supabaseAdmin, job) => __awaiter(void 0, 
                 isDeleted: false,
             });
         }
-        yield enqueueTaskUpsert({
+        const inserted = yield enqueueTaskUpsert({
             supabaseAdmin,
             userId: job.user_id,
             taskId: scopedTask.id,
@@ -1024,8 +1047,10 @@ const processReconcileGooglePageJob = (supabaseAdmin, job) => __awaiter(void 0, 
             runId,
             priority: PRIORITY_TASK_FROM_RECONCILE,
             source: "reconcile_google_page",
-            dedupeKey: `reconcile:confirm:${scopedTask.id}:${scopedTask.updated_at}`,
+            dedupeKey: `${job.lane}:${runId || "system"}:confirm:${scopedTask.id}:${scopedTask.updated_at}`,
         });
+        if (inserted)
+            childJobCount += 1;
     }
     if (page.nextPageToken) {
         yield (0, calendarSyncQueueService_1.enqueueSyncJob)(supabaseAdmin, {
@@ -1042,6 +1067,7 @@ const processReconcileGooglePageJob = (supabaseAdmin, job) => __awaiter(void 0, 
             dedupeKey: `reconcile:google-page:${runId || "system"}:${page.nextPageToken}`,
         });
     }
+    return jobOutcome("queued_google_reconcile_jobs", { childJobCount });
 });
 const processHardResetClearPageJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -1051,7 +1077,7 @@ const processHardResetClearPageJob = (supabaseAdmin, job) => __awaiter(void 0, v
     const { accessToken, publicRow } = yield (0, googleCalendarApiService_1.getValidGoogleAccessToken)(supabaseAdmin, job.user_id);
     const calendarId = publicRow.selected_calendar_id;
     if (!calendarId)
-        return;
+        return jobOutcome("noop", { reason: "missing_selected_calendar" });
     const page = yield (0, googleCalendarApiService_1.listGoogleEventsPage)({
         accessToken,
         calendarId,
@@ -1059,7 +1085,7 @@ const processHardResetClearPageJob = (supabaseAdmin, job) => __awaiter(void 0, v
     });
     const events = ((_a = page.items) !== null && _a !== void 0 ? _a : []).filter((event) => !!(event === null || event === void 0 ? void 0 : event.id));
     if (events.length === 0) {
-        yield (0, calendarSyncQueueService_1.enqueueSyncJob)(supabaseAdmin, {
+        const inserted = yield (0, calendarSyncQueueService_1.enqueueSyncJob)(supabaseAdmin, {
             userId: job.user_id,
             runId,
             lane: "rebuild",
@@ -1069,14 +1095,19 @@ const processHardResetClearPageJob = (supabaseAdmin, job) => __awaiter(void 0, v
             payload: withRunPayload({ source: "rebuild_seed_reconcile" }, runId),
             dedupeKey: `rebuild:seed-reconcile:${runId}`,
         });
-        return;
+        return jobOutcome("queued_rebuild_seed", {
+            childJobCount: inserted ? 1 : 0,
+            deletedEventCount: 0,
+        });
     }
     const eventIds = [];
+    let deletedEventCount = 0;
     for (const event of events) {
         const eventId = String(event.id);
         eventIds.push(eventId);
         try {
             yield (0, googleCalendarApiService_1.deleteGoogleEvent)(accessToken, calendarId, eventId);
+            deletedEventCount += 1;
         }
         catch (error) {
             if (!isGoogleNotFoundError(error))
@@ -1103,7 +1134,7 @@ const processHardResetClearPageJob = (supabaseAdmin, job) => __awaiter(void 0, v
                 throw error;
         }
     }
-    yield (0, calendarSyncQueueService_1.enqueueSyncJob)(supabaseAdmin, {
+    const inserted = yield (0, calendarSyncQueueService_1.enqueueSyncJob)(supabaseAdmin, {
         userId: job.user_id,
         runId,
         lane: "rebuild",
@@ -1113,13 +1144,17 @@ const processHardResetClearPageJob = (supabaseAdmin, job) => __awaiter(void 0, v
         payload: withRunPayload({ source: "rebuild_clear_cont" }, runId),
         dedupeKey: `rebuild:clear:${runId}:${(0, crypto_1.randomBytes)(4).toString("hex")}`,
     });
+    return jobOutcome("queued_rebuild_clear_continuation", {
+        childJobCount: inserted ? 1 : 0,
+        deletedEventCount,
+    });
 });
 const processInboundDeltaJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e;
     const { accessToken, publicRow, secretsRow } = yield (0, googleCalendarApiService_1.getValidGoogleAccessToken)(supabaseAdmin, job.user_id);
     const calendarId = publicRow.selected_calendar_id;
     if (!calendarId)
-        return;
+        return jobOutcome("noop", { reason: "missing_selected_calendar" });
     const pageToken = getJobStringPayload(job, "page_token");
     const syncTokenFromPayload = getJobStringPayload(job, "sync_token");
     const syncToken = syncTokenFromPayload || secretsRow.sync_token || null;
@@ -1145,11 +1180,12 @@ const processInboundDeltaJob = (supabaseAdmin, job) => __awaiter(void 0, void 0,
                 .eq("id", secretsRow.id);
             if (error)
                 throw new Error(error.message);
-            return;
+            return jobOutcome("reset_inbound_sync_token", { reason: "google_410" });
         }
         throw err;
     }
     const enabledListIds = new Set(yield getScopedSyncEnabledListIds(supabaseAdmin, job.user_id));
+    let childJobCount = 0;
     for (const event of (_b = delta.items) !== null && _b !== void 0 ? _b : []) {
         if (!(event === null || event === void 0 ? void 0 : event.id) || event.status !== "cancelled")
             continue;
@@ -1166,7 +1202,7 @@ const processInboundDeltaJob = (supabaseAdmin, job) => __awaiter(void 0, void 0,
             continue;
         if (task.is_completed || !task.due_at)
             continue;
-        yield enqueueTaskUpsert({
+        const inserted = yield enqueueTaskUpsert({
             supabaseAdmin,
             userId: job.user_id,
             taskId: task.id,
@@ -1176,9 +1212,11 @@ const processInboundDeltaJob = (supabaseAdmin, job) => __awaiter(void 0, void 0,
             source: "inbound_cancelled_restore",
             dedupeKey: `inbound:restore:${task.id}:${task.updated_at}`,
         });
+        if (inserted)
+            childJobCount += 1;
     }
     if (delta.nextPageToken) {
-        yield (0, calendarSyncQueueService_1.enqueueSyncJob)(supabaseAdmin, {
+        const inserted = yield (0, calendarSyncQueueService_1.enqueueSyncJob)(supabaseAdmin, {
             userId: job.user_id,
             lane: "system",
             jobType: "inbound_delta",
@@ -1191,7 +1229,9 @@ const processInboundDeltaJob = (supabaseAdmin, job) => __awaiter(void 0, void 0,
             },
             dedupeKey: `inbound:page:${job.user_id}:${delta.nextPageToken}`,
         });
-        return;
+        return jobOutcome("queued_inbound_delta_continuation", {
+            childJobCount: childJobCount + (inserted ? 1 : 0),
+        });
     }
     const { error: secretErr } = yield supabaseAdmin
         .from("tracker_google_calendar_connections_secrets")
@@ -1206,6 +1246,7 @@ const processInboundDeltaJob = (supabaseAdmin, job) => __awaiter(void 0, void 0,
         status: "connected",
         last_error: null,
     });
+    return jobOutcome("processed_inbound_delta", { childJobCount });
 });
 const renewWatchForUser = (supabaseAdmin, userId) => __awaiter(void 0, void 0, void 0, function* () {
     const { accessToken, publicRow, secretsRow } = yield (0, googleCalendarApiService_1.getValidGoogleAccessToken)(supabaseAdmin, userId);
@@ -1245,10 +1286,9 @@ const renewCalendarWatchForUser = (supabaseAdmin, userId) => __awaiter(void 0, v
 exports.renewCalendarWatchForUser = renewCalendarWatchForUser;
 const processRenewWatchJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
     yield renewWatchForUser(supabaseAdmin, job.user_id);
+    return jobOutcome("renewed_watch");
 });
 const processOneJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
-    if ((0, exports.isLegacyTaskTriggerSyncJob)(job))
-        return;
     if (job.job_type === "task_upsert")
         return (0, exports.processTaskUpsertJob)(supabaseAdmin, job);
     if (job.job_type === "task_delete")
@@ -1259,13 +1299,11 @@ const processOneJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, 
         return processReconcileGooglePageJob(supabaseAdmin, job);
     if (job.job_type === "hard_reset_clear_page")
         return processHardResetClearPageJob(supabaseAdmin, job);
-    // Legacy compatibility while old jobs drain.
-    if (job.job_type === "full_backfill")
-        return processReconcileAppPageJob(supabaseAdmin, job);
     if (job.job_type === "inbound_delta")
         return processInboundDeltaJob(supabaseAdmin, job);
     if (job.job_type === "renew_watch")
         return processRenewWatchJob(supabaseAdmin, job);
+    return jobOutcome("noop", { reason: "unknown_job_type" });
 });
 const processCalendarSyncJobs = (input) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -1277,7 +1315,7 @@ const processCalendarSyncJobs = (input) => __awaiter(void 0, void 0, void 0, fun
         const runId = getJobRunId(job);
         const startedAt = Date.now();
         try {
-            yield processOneJob(supabaseAdmin, job);
+            const outcome = yield processOneJob(supabaseAdmin, job);
             yield (0, calendarSyncQueueService_1.completeSyncJob)(supabaseAdmin, job.id);
             yield setConnectionHealth(supabaseAdmin, job.user_id, {
                 status: "connected",
@@ -1292,16 +1330,17 @@ const processCalendarSyncJobs = (input) => __awaiter(void 0, void 0, void 0, fun
                 jobType: job.job_type,
                 taskId: job.task_id,
                 googleEventId: job.google_event_id,
-                attemptCount: job.attempt_count + 1,
+                attemptCount: job.attempt_count,
                 durationMs: Math.max(0, Date.now() - startedAt),
                 result: "ok",
+                detail: outcome !== null && outcome !== void 0 ? outcome : null,
             });
             results.push({ id: job.id, ok: true, lane: job.lane });
         }
         catch (error) {
             const message = formatSyncErrorMessage(error);
             const errorCode = getSyncErrorCode(error);
-            const retryDelay = (0, calendarSyncQueueService_1.computeRetryDelayInterval)(job.attempt_count + 1);
+            const retryDelay = (0, calendarSyncQueueService_1.computeRetryDelayInterval)(job.attempt_count);
             const authFatal = isAuthFatalSyncError(error);
             try {
                 yield (0, calendarSyncQueueService_1.failSyncJob)(supabaseAdmin, job.id, message, retryDelay);
@@ -1331,7 +1370,7 @@ const processCalendarSyncJobs = (input) => __awaiter(void 0, void 0, void 0, fun
                 jobType: job.job_type,
                 taskId: job.task_id,
                 googleEventId: job.google_event_id,
-                attemptCount: job.attempt_count + 1,
+                attemptCount: job.attempt_count,
                 durationMs: Math.max(0, Date.now() - startedAt),
                 result: "failed",
                 errorCode,
@@ -1346,6 +1385,32 @@ const processCalendarSyncJobs = (input) => __awaiter(void 0, void 0, void 0, fun
     return results;
 });
 exports.processCalendarSyncJobs = processCalendarSyncJobs;
+const drainCalendarSyncJobs = (input) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
+    const batchSize = Math.max(1, (_a = input === null || input === void 0 ? void 0 : input.batchSize) !== null && _a !== void 0 ? _a : 10);
+    const maxJobs = Math.max(1, (_b = input === null || input === void 0 ? void 0 : input.maxJobs) !== null && _b !== void 0 ? _b : 50);
+    const maxMs = Math.max(250, (_c = input === null || input === void 0 ? void 0 : input.maxMs) !== null && _c !== void 0 ? _c : DRAIN_MAX_MS);
+    const startedAt = Date.now();
+    const results = [];
+    while (results.length < maxJobs && Date.now() - startedAt < maxMs) {
+        const remaining = maxJobs - results.length;
+        const batch = yield (0, exports.processCalendarSyncJobs)({
+            userId: input === null || input === void 0 ? void 0 : input.userId,
+            lanes: input === null || input === void 0 ? void 0 : input.lanes,
+            batchSize: Math.min(batchSize, remaining),
+        });
+        if (batch.length === 0)
+            break;
+        results.push(...batch);
+    }
+    return {
+        processed: results.length,
+        failed: results.filter((item) => !item.ok).length,
+        results,
+        exhausted: results.length >= maxJobs || Date.now() - startedAt >= maxMs,
+    };
+});
+exports.drainCalendarSyncJobs = drainCalendarSyncJobs;
 const queueFullBackfill = (supabaseAdmin, userId, listId, options) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const runId = ((_a = options === null || options === void 0 ? void 0 : options.runId) === null || _a === void 0 ? void 0 : _a.trim()) || null;
@@ -1458,41 +1523,19 @@ const queueManualSyncForUser = (supabaseAdmin, userId) => __awaiter(void 0, void
     return (0, exports.queueReconcileRunForUser)(supabaseAdmin, userId);
 });
 exports.queueManualSyncForUser = queueManualSyncForUser;
-const runLegacyManualSyncForUser = (supabaseAdmin, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, exports.queueFullBackfill)(supabaseAdmin, userId, undefined, {
-        source: "legacy_manual_sync_now",
-    });
-    const failures = [];
-    let processed = 0;
-    for (let i = 0; i < 15; i += 1) {
-        const results = yield (0, exports.processCalendarSyncJobs)({ userId, batchSize: 10 });
-        if (results.length === 0)
-            break;
-        processed += results.length;
-        failures.push(...results
-            .filter((item) => !item.ok)
-            .map((item) => ({
-            id: item.id,
-            error: item.error || "Unknown sync error",
-        })));
-    }
-    return {
-        processed,
-        failed: failures.length,
-        failures: failures.slice(0, 10),
-    };
-});
-exports.runLegacyManualSyncForUser = runLegacyManualSyncForUser;
 const queueLivePumpForUser = (supabaseAdmin, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    const results = yield (0, exports.processCalendarSyncJobs)({
+    const drain = yield (0, exports.drainCalendarSyncJobs)({
         userId,
         batchSize: LIVE_PUMP_BATCH_SIZE,
+        maxJobs: LIVE_PUMP_MAX_JOBS,
+        maxMs: DRAIN_MAX_MS,
         lanes: ["live"],
     });
     return {
-        processed: results.length,
-        failed: results.filter((item) => !item.ok).length,
-        failures: results
+        processed: drain.processed,
+        failed: drain.failed,
+        exhausted: drain.exhausted,
+        failures: drain.results
             .filter((item) => !item.ok)
             .slice(0, 5)
             .map((item) => ({
@@ -1558,63 +1601,6 @@ const upsertGoogleConnectionFromOAuth = (params) => __awaiter(void 0, void 0, vo
     };
 });
 exports.upsertGoogleConnectionFromOAuth = upsertGoogleConnectionFromOAuth;
-const rebuildCalendarLegacyInlineForUser = (supabaseAdmin, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const { accessToken, publicRow } = yield (0, googleCalendarApiService_1.getValidGoogleAccessToken)(supabaseAdmin, userId);
-    const calendarId = publicRow.selected_calendar_id;
-    if (!calendarId) {
-        throw new Error("No selected Google calendar found.");
-    }
-    let deleted = 0;
-    for (let pageIndex = 0; pageIndex < 20; pageIndex += 1) {
-        const page = yield (0, googleCalendarApiService_1.listGoogleEventsPage)({
-            accessToken,
-            calendarId,
-            maxResults: HARD_RESET_CLEAR_PAGE_SIZE,
-        });
-        const events = ((_a = page.items) !== null && _a !== void 0 ? _a : []).filter((event) => !!(event === null || event === void 0 ? void 0 : event.id));
-        if (events.length === 0)
-            break;
-        const deletedIds = [];
-        for (const event of events) {
-            const eventId = String(event.id);
-            try {
-                yield (0, googleCalendarApiService_1.deleteGoogleEvent)(accessToken, calendarId, eventId);
-            }
-            catch (error) {
-                if (!isGoogleNotFoundError(error))
-                    throw error;
-            }
-            deletedIds.push(eventId);
-            deleted += 1;
-        }
-        if (deletedIds.length > 0) {
-            yield supabaseAdmin
-                .from("tracker_task_google_event_links")
-                .update({ is_deleted: true, last_sync_source: "system" })
-                .eq("user_id", userId)
-                .eq("calendar_id", calendarId)
-                .in("google_event_id", deletedIds);
-            try {
-                yield supabaseAdmin
-                    .from("tracker_task_google_projection_event_links")
-                    .update({ is_deleted: true, last_sync_source: "system" })
-                    .eq("user_id", userId)
-                    .eq("calendar_id", calendarId)
-                    .in("google_event_id", deletedIds);
-            }
-            catch (error) {
-                if (!isMissingProjectionSchemaError(error))
-                    throw error;
-            }
-        }
-    }
-    const syncResult = yield (0, exports.runLegacyManualSyncForUser)(supabaseAdmin, userId);
-    return Object.assign({ deleted }, syncResult);
-});
-exports.rebuildCalendarLegacyInlineForUser = rebuildCalendarLegacyInlineForUser;
-const isCalendarRebuildSchemaUnavailable = (error) => isMissingRebuildSchemaError(error);
-exports.isCalendarRebuildSchemaUnavailable = isCalendarRebuildSchemaUnavailable;
 const disconnectGoogleCalendarForUser = (supabaseAdmin, userId) => __awaiter(void 0, void 0, void 0, function* () {
     const { publicRow, secretsRow } = yield (0, googleCalendarApiService_1.loadCalendarConnection)(supabaseAdmin, userId);
     if (!publicRow || !secretsRow)

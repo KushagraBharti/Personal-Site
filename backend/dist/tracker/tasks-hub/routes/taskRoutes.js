@@ -23,6 +23,20 @@ const queueTaskUpsertBestEffort = (supabaseAdmin, userId, task, source) => __awa
         console.error("Failed to enqueue live calendar task sync", error);
     }
 });
+const drainLiveSyncBestEffort = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield (0, taskCalendarSyncService_1.drainCalendarSyncJobs)({
+            userId,
+            lanes: ["live"],
+            batchSize: 10,
+            maxJobs: 50,
+            maxMs: 20000,
+        });
+    }
+    catch (error) {
+        console.error("Failed to drain live calendar sync", error);
+    }
+});
 router.post("/", requireUser_1.requireUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -32,6 +46,7 @@ router.post("/", requireUser_1.requireUser, (req, res) => __awaiter(void 0, void
             return res.status(result.code).json({ error: result.error });
         }
         yield queueTaskUpsertBestEffort(supabaseAdmin, req.user.id, result.task, "api_task_create");
+        yield drainLiveSyncBestEffort(req.user.id);
         return res.status(201).json({ ok: true, task: result.task });
     }
     catch (error) {
@@ -74,6 +89,7 @@ router.patch("/:taskId/completion", requireUser_1.requireUser, (req, res) => __a
         if (result.createdNextTask) {
             yield queueTaskUpsertBestEffort(supabaseAdmin, req.user.id, result.createdNextTask, "api_task_completion_next");
         }
+        yield drainLiveSyncBestEffort(req.user.id);
         return res.json({
             ok: true,
             task: result.task,
@@ -100,6 +116,7 @@ router.patch("/:taskId", requireUser_1.requireUser, (req, res) => __awaiter(void
             return res.status(result.code).json({ error: result.error });
         }
         yield queueTaskUpsertBestEffort(supabaseAdmin, req.user.id, result.task, "api_task_update");
+        yield drainLiveSyncBestEffort(req.user.id);
         return res.json({ ok: true, task: result.task });
     }
     catch (error) {
@@ -118,6 +135,7 @@ router.delete("/:taskId", requireUser_1.requireUser, (req, res) => __awaiter(voi
         if (!result.ok) {
             return res.status(result.code).json({ error: result.error });
         }
+        yield drainLiveSyncBestEffort(req.user.id);
         return res.json({ ok: true });
     }
     catch (error) {

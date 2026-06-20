@@ -1,7 +1,10 @@
 import { Router } from "express";
 import { requireUser } from "../../../middleware/requireUser";
 import { getSupabaseAdmin } from "../../calendar/services/calendarSyncQueueService";
-import { queueTaskUpsertForUser } from "../../calendar/services/taskCalendarSyncService";
+import {
+  drainCalendarSyncJobs,
+  queueTaskUpsertForUser,
+} from "../../calendar/services/taskCalendarSyncService";
 import {
   createTaskForUser,
   deleteTaskForUser,
@@ -25,6 +28,20 @@ const queueTaskUpsertBestEffort = async (
   }
 };
 
+const drainLiveSyncBestEffort = async (userId: string) => {
+  try {
+    await drainCalendarSyncJobs({
+      userId,
+      lanes: ["live"],
+      batchSize: 10,
+      maxJobs: 50,
+      maxMs: 20_000,
+    });
+  } catch (error) {
+    console.error("Failed to drain live calendar sync", error);
+  }
+};
+
 router.post("/", requireUser, async (req, res) => {
   try {
     const supabaseAdmin = getSupabaseAdmin();
@@ -42,6 +59,7 @@ router.post("/", requireUser, async (req, res) => {
       result.task,
       "api_task_create",
     );
+    await drainLiveSyncBestEffort(req.user!.id);
     return res.status(201).json({ ok: true, task: result.task });
   } catch (error) {
     console.error("Failed to create task", error);
@@ -105,6 +123,7 @@ router.patch("/:taskId/completion", requireUser, async (req, res) => {
         "api_task_completion_next",
       );
     }
+    await drainLiveSyncBestEffort(req.user!.id);
     return res.json({
       ok: true,
       task: result.task,
@@ -142,6 +161,7 @@ router.patch("/:taskId", requireUser, async (req, res) => {
       result.task,
       "api_task_update",
     );
+    await drainLiveSyncBestEffort(req.user!.id);
     return res.json({ ok: true, task: result.task });
   } catch (error) {
     console.error("Failed to update task", error);
@@ -162,6 +182,7 @@ router.delete("/:taskId", requireUser, async (req, res) => {
     if (!result.ok) {
       return res.status(result.code).json({ error: result.error });
     }
+    await drainLiveSyncBestEffort(req.user!.id);
     return res.json({ ok: true });
   } catch (error) {
     console.error("Failed to delete task", error);

@@ -8,19 +8,16 @@ import {
 } from "../services/googleCalendarOAuthService";
 import {
   disconnectGoogleCalendarForUser,
+  drainCalendarSyncJobs,
   getCalendarStatusForUser,
   getSyncRunDebug,
   getSyncProgressForRun,
   inferLanesForRunMode,
-  isCalendarRebuildSchemaUnavailable,
-  processCalendarSyncJobs,
   queueListBackfillRunForUser,
   queueListSyncCleanupForUser,
   queueLivePumpForUser,
   queueManualSyncForUser,
   queueRebuildRunForUser,
-  rebuildCalendarLegacyInlineForUser,
-  runLegacyManualSyncForUser,
   taskListBelongsToUser,
   upsertGoogleConnectionFromOAuth,
   upsertListSyncSetting,
@@ -44,9 +41,11 @@ router.post("/google/webhook", async (req, res) => {
       supabaseAdmin,
       req.headers as Record<string, string | string[] | undefined>,
     );
-    await processCalendarSyncJobs({
+    await drainCalendarSyncJobs({
       userId: webhookMeta.userId,
-      batchSize: 1,
+      batchSize: 10,
+      maxJobs: 40,
+      maxMs: 20_000,
       lanes: ["system"],
     });
     return res.status(200).json({ ok: true });
@@ -203,32 +202,21 @@ router.post("/sync-now", requireUser, async (req, res) => {
     return res.status(503).json({ error: "Calendar sync disabled" });
   try {
     const supabaseAdmin = getSupabaseAdmin();
-    let runId: string | null = null;
-    try {
-      runId = await queueManualSyncForUser(supabaseAdmin, req.user!.id);
-      await processCalendarSyncJobs({
-        userId: req.user!.id,
-        batchSize: 1,
-        lanes: ["reconcile"],
-      }).catch(() => {});
-    } catch (error) {
-      const fallback = await runLegacyManualSyncForUser(
-        supabaseAdmin,
-        req.user!.id,
-      );
-      return res.json({
-        ok: true,
-        run_id: "",
-        queued: false,
-        processed: fallback.processed,
-        failed: fallback.failed,
-        failures: fallback.failures,
-      });
-    }
+    const runId = await queueManualSyncForUser(supabaseAdmin, req.user!.id);
+    const drain = await drainCalendarSyncJobs({
+      userId: req.user!.id,
+      batchSize: 10,
+      maxJobs: 120,
+      maxMs: 20_000,
+      lanes: ["reconcile"],
+    });
     return res.json({
       ok: true,
       run_id: runId,
       queued: true,
+      processed: drain.processed,
+      failed: drain.failed,
+      exhausted: drain.exhausted,
     });
   } catch (error) {
     console.error("Failed to sync calendar now", error);
@@ -256,30 +244,22 @@ router.post("/rebuild", requireUser, async (req, res) => {
     return res.status(503).json({ error: "Calendar sync disabled" });
   try {
     const supabaseAdmin = getSupabaseAdmin();
-    try {
-      const runId = await queueRebuildRunForUser(supabaseAdmin, req.user!.id);
-      await processCalendarSyncJobs({
-        userId: req.user!.id,
-        batchSize: 1,
-        lanes: ["rebuild"],
-      }).catch(() => {});
-      return res.json({ ok: true, run_id: runId, queued: true });
-    } catch (error) {
-      if (!isCalendarRebuildSchemaUnavailable(error)) throw error;
-      const fallback = await rebuildCalendarLegacyInlineForUser(
-        supabaseAdmin,
-        req.user!.id,
-      );
-      return res.json({
-        ok: true,
-        run_id: "",
-        queued: false,
-        processed: fallback.processed,
-        failed: fallback.failed,
-        failures: fallback.failures,
-        deleted: fallback.deleted,
-      });
-    }
+    const runId = await queueRebuildRunForUser(supabaseAdmin, req.user!.id);
+    const drain = await drainCalendarSyncJobs({
+      userId: req.user!.id,
+      batchSize: 10,
+      maxJobs: 160,
+      maxMs: 20_000,
+      lanes: ["rebuild"],
+    });
+    return res.json({
+      ok: true,
+      run_id: runId,
+      queued: true,
+      processed: drain.processed,
+      failed: drain.failed,
+      exhausted: drain.exhausted,
+    });
   } catch (error) {
     console.error("Failed to start calendar rebuild", error);
     const message =
@@ -308,9 +288,11 @@ router.get("/sync-progress", requireUser, async (req, res) => {
       return res.json({ ok: true, ...snapshot });
     }
     const lanes = inferLanesForRunMode(snapshot.mode);
-    await processCalendarSyncJobs({
+    await drainCalendarSyncJobs({
       userId: req.user!.id,
-      batchSize: 1,
+      batchSize: 10,
+      maxJobs: 80,
+      maxMs: 20_000,
       lanes,
     }).catch(() => {});
     const progress = await getSyncProgressForRun(

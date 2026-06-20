@@ -43,18 +43,18 @@ const dueAtSchema = zod_1.z
     .min(1)
     .nullable()
     .optional()
-    .describe("Due date/time as ISO 8601, YYYY-MM-DD for date-only, or null for no due date.");
+    .describe("Due date/time. Use YYYY-MM-DD for 10:00 PM in due_timezone, offsetless ISO for local time, absolute ISO for a fixed instant, or null for no due date.");
 const dueTimezoneSchema = zod_1.z
     .string()
     .trim()
     .min(1)
     .nullable()
     .optional()
-    .describe("IANA timezone for the due date/time, such as America/Chicago.");
+    .describe("IANA timezone used for date-only and offsetless due_at values, such as America/Chicago.");
 exports.createTaskInputSchema = Object.assign(Object.assign({}, exports.listReferenceInputSchema), { parent_task_id: idSchema("Parent task")
         .nullable()
         .optional()
-        .describe("Optional parent task ID for creating a subtask."), title: zod_1.z.string().trim().min(1).describe("Task title."), details: zod_1.z
+        .describe("Optional parent task ID for creating a subtask."), title: zod_1.z.string().trim().min(1).describe("Short clean task title. Put links, descriptions, and extra context in details."), details: zod_1.z
         .string()
         .trim()
         .nullable()

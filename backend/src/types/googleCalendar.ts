@@ -2,7 +2,6 @@ export type CalendarSyncJobType =
   | "task_upsert"
   | "task_delete"
   | "inbound_delta"
-  | "full_backfill"
   | "reconcile_app_page"
   | "reconcile_google_page"
   | "hard_reset_clear_page"

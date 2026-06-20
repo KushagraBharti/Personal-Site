@@ -5,15 +5,22 @@ import { TrackerTaskListRow } from "../tasks-hub/services/taskHubTypes";
 const listUserSyncEnabledListsMock = vi.hoisted(() => vi.fn());
 const queueTaskUpsertForUserMock = vi.hoisted(() => vi.fn());
 const queueManualSyncForUserMock = vi.hoisted(() => vi.fn());
-const processCalendarSyncJobsMock = vi.hoisted(() => vi.fn());
-const runLegacyManualSyncForUserMock = vi.hoisted(() => vi.fn());
+const drainCalendarSyncJobsMock = vi.hoisted(() => vi.fn());
+const createTaskForUserMock = vi.hoisted(() => vi.fn());
+const updateTaskForUserMock = vi.hoisted(() => vi.fn());
+const deleteTaskForUserMock = vi.hoisted(() => vi.fn());
 
 vi.mock("../calendar/services/taskCalendarSyncService", () => ({
   listUserSyncEnabledLists: listUserSyncEnabledListsMock,
-  processCalendarSyncJobs: processCalendarSyncJobsMock,
+  drainCalendarSyncJobs: drainCalendarSyncJobsMock,
   queueManualSyncForUser: queueManualSyncForUserMock,
   queueTaskUpsertForUser: queueTaskUpsertForUserMock,
-  runLegacyManualSyncForUser: runLegacyManualSyncForUserMock,
+}));
+
+vi.mock("../tasks-hub/services/taskMutationService", () => ({
+  createTaskForUser: createTaskForUserMock,
+  deleteTaskForUser: deleteTaskForUserMock,
+  updateTaskForUser: updateTaskForUserMock,
 }));
 
 interface MockSupabaseState {
@@ -151,8 +158,16 @@ describe("tracker MCP service", () => {
     listUserSyncEnabledListsMock.mockReset();
     queueTaskUpsertForUserMock.mockReset();
     queueManualSyncForUserMock.mockReset();
-    processCalendarSyncJobsMock.mockReset();
-    runLegacyManualSyncForUserMock.mockReset();
+    drainCalendarSyncJobsMock.mockReset();
+    drainCalendarSyncJobsMock.mockResolvedValue({
+      processed: 0,
+      failed: 0,
+      exhausted: false,
+      results: [],
+    });
+    createTaskForUserMock.mockReset();
+    updateTaskForUserMock.mockReset();
+    deleteTaskForUserMock.mockReset();
     process.env.TRACKER_MCP_DEFAULT_TIMEZONE = "America/Chicago";
   });
 
@@ -361,6 +376,100 @@ describe("tracker MCP service", () => {
       code: 404,
       message: "List not found in MCP-visible calendar-synced lists.",
     });
+  });
+
+  it("normalizes MCP date-only and offsetless due dates in the requested timezone", async () => {
+    visibleSettings();
+    createTaskForUserMock.mockResolvedValue({
+      ok: true,
+      task: buildTask({
+        id: "task-created",
+        title: "MCP test",
+        due_at: "2026-06-21T03:00:00.000Z",
+        due_timezone: "America/Chicago",
+      }),
+    });
+    const { createMcpTask } = await import("./trackerMcpService");
+
+    await createMcpTask(
+      {
+        supabaseAdmin: createSupabaseMock(baseState()),
+        userId: "user-1",
+      },
+      {
+        list_name: "School",
+        title: "MCP test",
+        due_at: "2026-06-20",
+        due_timezone: "America/Chicago",
+      },
+    );
+
+    expect(createTaskForUserMock).toHaveBeenCalledWith(
+      expect.anything(),
+      "user-1",
+      expect.objectContaining({
+        due_at: "2026-06-21T03:00:00.000Z",
+        due_timezone: "America/Chicago",
+        browser_timezone: "America/Chicago",
+      }),
+    );
+
+    createTaskForUserMock.mockClear();
+    await createMcpTask(
+      {
+        supabaseAdmin: createSupabaseMock(baseState()),
+        userId: "user-1",
+      },
+      {
+        list_name: "School",
+        title: "MCP test",
+        due_at: "2026-06-20T22:00:00",
+        due_timezone: "America/Chicago",
+      },
+    );
+
+    expect(createTaskForUserMock).toHaveBeenCalledWith(
+      expect.anything(),
+      "user-1",
+      expect.objectContaining({
+        due_at: "2026-06-21T03:00:00.000Z",
+      }),
+    );
+  });
+
+  it("keeps absolute MCP due dates as the caller-provided instant", async () => {
+    visibleSettings();
+    createTaskForUserMock.mockResolvedValue({
+      ok: true,
+      task: buildTask({
+        id: "task-created",
+        title: "MCP test",
+        due_at: "2026-06-21T03:00:00.000Z",
+        due_timezone: "America/Chicago",
+      }),
+    });
+    const { createMcpTask } = await import("./trackerMcpService");
+
+    await createMcpTask(
+      {
+        supabaseAdmin: createSupabaseMock(baseState()),
+        userId: "user-1",
+      },
+      {
+        list_name: "School",
+        title: "MCP test",
+        due_at: "2026-06-21T03:00:00Z",
+        due_timezone: "America/Chicago",
+      },
+    );
+
+    expect(createTaskForUserMock).toHaveBeenCalledWith(
+      expect.anything(),
+      "user-1",
+      expect.objectContaining({
+        due_at: "2026-06-21T03:00:00.000Z",
+      }),
+    );
   });
 
   it("requires explicit child confirmation before deleting a task subtree", async () => {

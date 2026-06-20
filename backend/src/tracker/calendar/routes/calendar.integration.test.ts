@@ -16,16 +16,13 @@ const upsertListSyncSettingMock = vi.hoisted(() => vi.fn());
 const taskListBelongsToUserMock = vi.hoisted(() => vi.fn());
 const queueListBackfillRunForUserMock = vi.hoisted(() => vi.fn());
 const queueManualSyncForUserMock = vi.hoisted(() => vi.fn());
-const processCalendarSyncJobsMock = vi.hoisted(() => vi.fn());
-const runLegacyManualSyncForUserMock = vi.hoisted(() => vi.fn());
+const drainCalendarSyncJobsMock = vi.hoisted(() => vi.fn());
 const queueListSyncCleanupForUserMock = vi.hoisted(() => vi.fn());
 const queueLivePumpForUserMock = vi.hoisted(() => vi.fn());
 const queueRebuildRunForUserMock = vi.hoisted(() => vi.fn());
-const rebuildCalendarLegacyInlineForUserMock = vi.hoisted(() => vi.fn());
 const getSyncProgressForRunMock = vi.hoisted(() => vi.fn());
 const getSyncRunDebugMock = vi.hoisted(() => vi.fn());
 const inferLanesForRunModeMock = vi.hoisted(() => vi.fn());
-const isCalendarRebuildSchemaUnavailableMock = vi.hoisted(() => vi.fn());
 const handleGoogleWebhookMock = vi.hoisted(() => vi.fn());
 const getSupabaseAdminMock = vi.hoisted(() => vi.fn());
 
@@ -46,17 +43,14 @@ vi.mock("../services/taskCalendarSyncService", () => ({
   getSyncRunDebug: getSyncRunDebugMock,
   getSyncProgressForRun: getSyncProgressForRunMock,
   inferLanesForRunMode: inferLanesForRunModeMock,
-  isCalendarRebuildSchemaUnavailable: isCalendarRebuildSchemaUnavailableMock,
-  processCalendarSyncJobs: processCalendarSyncJobsMock,
+  drainCalendarSyncJobs: drainCalendarSyncJobsMock,
   queueLivePumpForUser: queueLivePumpForUserMock,
   queueListBackfillRunForUser: queueListBackfillRunForUserMock,
   queueListSyncCleanupForUser: queueListSyncCleanupForUserMock,
   queueManualSyncForUser: queueManualSyncForUserMock,
   queueRebuildRunForUser: queueRebuildRunForUserMock,
   queueFullBackfill: queueFullBackfillMock,
-  rebuildCalendarLegacyInlineForUser: rebuildCalendarLegacyInlineForUserMock,
   renewCalendarWatchForUser: renewCalendarWatchForUserMock,
-  runLegacyManualSyncForUser: runLegacyManualSyncForUserMock,
   taskListBelongsToUser: taskListBelongsToUserMock,
   upsertGoogleConnectionFromOAuth: upsertGoogleConnectionFromOAuthMock,
   upsertListSyncSetting: upsertListSyncSettingMock,
@@ -106,16 +100,21 @@ describe("calendar tracker routes", () => {
     queueListBackfillRunForUserMock.mockReset();
     queueListBackfillRunForUserMock.mockResolvedValue("run-1");
     queueManualSyncForUserMock.mockReset();
-    processCalendarSyncJobsMock.mockReset();
-    runLegacyManualSyncForUserMock.mockReset();
+    queueManualSyncForUserMock.mockResolvedValue("run-manual");
+    drainCalendarSyncJobsMock.mockReset();
+    drainCalendarSyncJobsMock.mockResolvedValue({
+      processed: 0,
+      failed: 0,
+      exhausted: false,
+      results: [],
+    });
     queueListSyncCleanupForUserMock.mockReset();
     queueLivePumpForUserMock.mockReset();
     queueRebuildRunForUserMock.mockReset();
-    rebuildCalendarLegacyInlineForUserMock.mockReset();
+    queueRebuildRunForUserMock.mockResolvedValue("run-rebuild");
     getSyncProgressForRunMock.mockReset();
     getSyncRunDebugMock.mockReset();
     inferLanesForRunModeMock.mockReset();
-    isCalendarRebuildSchemaUnavailableMock.mockReset();
     handleGoogleWebhookMock.mockReset();
     getSupabaseAdminMock.mockReset();
     getSupabaseAdminMock.mockReturnValue({
@@ -188,9 +187,6 @@ describe("calendar tracker routes", () => {
   it("returns 500 and logs when sync-now fails", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     queueManualSyncForUserMock.mockRejectedValue(new Error("queue failed"));
-    runLegacyManualSyncForUserMock.mockRejectedValue(
-      new Error("legacy failed"),
-    );
 
     const { default: app } = await import("../../../app");
     const response = await request(app)
@@ -198,8 +194,72 @@ describe("calendar tracker routes", () => {
       .set("authorization", "Bearer valid-token");
 
     expect(response.status).toBe(500);
-    expect(response.body).toEqual({ error: "legacy failed" });
+    expect(response.body).toEqual({ error: "queue failed" });
     expect(errorSpy).toHaveBeenCalled();
+  });
+
+  it("sync-now queues and drains a bounded reconcile batch", async () => {
+    queueManualSyncForUserMock.mockResolvedValue("run-manual-1");
+    drainCalendarSyncJobsMock.mockResolvedValue({
+      processed: 12,
+      failed: 0,
+      exhausted: false,
+      results: [],
+    });
+
+    const { default: app } = await import("../../../app");
+    const response = await request(app)
+      .post("/api/private/calendar/sync-now")
+      .set("authorization", "Bearer valid-token");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      run_id: "run-manual-1",
+      queued: true,
+      processed: 12,
+      failed: 0,
+      exhausted: false,
+    });
+    expect(drainCalendarSyncJobsMock).toHaveBeenCalledWith({
+      userId: "user-1",
+      batchSize: 10,
+      maxJobs: 120,
+      maxMs: 20_000,
+      lanes: ["reconcile"],
+    });
+  });
+
+  it("rebuild queues and drains a bounded rebuild batch", async () => {
+    queueRebuildRunForUserMock.mockResolvedValue("run-rebuild-1");
+    drainCalendarSyncJobsMock.mockResolvedValue({
+      processed: 9,
+      failed: 0,
+      exhausted: false,
+      results: [],
+    });
+
+    const { default: app } = await import("../../../app");
+    const response = await request(app)
+      .post("/api/private/calendar/rebuild")
+      .set("authorization", "Bearer valid-token");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      run_id: "run-rebuild-1",
+      queued: true,
+      processed: 9,
+      failed: 0,
+      exhausted: false,
+    });
+    expect(drainCalendarSyncJobsMock).toHaveBeenCalledWith({
+      userId: "user-1",
+      batchSize: 10,
+      maxJobs: 160,
+      maxMs: 20_000,
+      lanes: ["rebuild"],
+    });
   });
 
   it("queues cleanup jobs when list calendar sync is disabled", async () => {

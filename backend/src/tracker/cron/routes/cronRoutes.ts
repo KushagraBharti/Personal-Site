@@ -2,7 +2,7 @@ import { Router } from "express";
 import { Request, Response } from "express";
 import { cronAuth } from "../../../middleware/cronAuth";
 import {
-  processCalendarSyncJobs,
+  drainCalendarSyncJobs,
   renewExpiringCalendarWatches,
 } from "../../calendar/services/taskCalendarSyncService";
 import { getSupabaseAdmin } from "../../calendar/services/calendarSyncQueueService";
@@ -21,12 +21,17 @@ const runCalendarSync = async (req: Request, res: Response) => {
   if (!isCalendarSyncEnabled()) return res.json({ ok: true, disabled: true });
   try {
     // Keep cron execution bounded for serverless limits.
-    const results = await processCalendarSyncJobs({ batchSize: 1 });
+    const drain = await drainCalendarSyncJobs({
+      batchSize: 10,
+      maxJobs: 80,
+      maxMs: 20_000,
+    });
     return res.json({
       ok: true,
-      processed: results.length,
-      failed: results.filter((item) => !item.ok).length,
-      results,
+      processed: drain.processed,
+      failed: drain.failed,
+      exhausted: drain.exhausted,
+      results: drain.results,
     });
   } catch (error) {
     console.error("Failed to run calendar sync", error);

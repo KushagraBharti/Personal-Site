@@ -19,6 +19,7 @@ const taskRecurrenceService_1 = require("../tasks-hub/services/taskRecurrenceSer
 const taskHubUtils_1 = require("../tasks-hub/services/taskHubUtils");
 const DEFAULT_TIME_ZONE = "America/Chicago";
 const DATE_ONLY_INPUT_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const EXPLICIT_TIME_ZONE_REGEX = /(?:z|[+-]\d{2}:?\d{2})$/i;
 const COMPLETED_TASK_DEFAULT_LIMIT = 10;
 exports.COMPLETED_TASK_MAX_LIMIT = 75;
 class TrackerMcpServiceError extends Error {
@@ -40,7 +41,7 @@ const getDefaultTimeZone = () => {
 const normalizeMcpTimeZone = (value) => typeof value === "string" && (0, taskHubUtils_1.isValidIanaTimeZone)(value)
     ? value
     : getDefaultTimeZone();
-const normalizeMcpDueAt = (value, fieldName = "due_at") => {
+const normalizeMcpDueAt = (value, fieldName = "due_at", timeZone = getDefaultTimeZone()) => {
     if (value === undefined)
         return undefined;
     if (value === null)
@@ -52,20 +53,26 @@ const normalizeMcpDueAt = (value, fieldName = "due_at") => {
     if (!trimmed)
         return null;
     if (DATE_ONLY_INPUT_REGEX.test(trimmed)) {
-        const parsed = new Date(`${trimmed}T12:00:00.${taskCalendarEventUtils_1.DATE_ONLY_MARKER_MS}Z`);
-        if (Number.isNaN(parsed.getTime())) {
+        const parsed = luxon_1.DateTime.fromISO(trimmed, { zone: timeZone }).set({
+            hour: 22,
+            minute: 0,
+            second: 0,
+            millisecond: 0,
+        });
+        if (!parsed.isValid) {
             throw new TrackerMcpServiceError(`${fieldName} is not a valid date.`);
         }
-        return parsed.toISOString();
+        return parsed.toUTC().toISO({ suppressMilliseconds: false });
     }
-    const parsed = new Date(trimmed);
-    if (Number.isNaN(parsed.getTime())) {
+    const parsed = EXPLICIT_TIME_ZONE_REGEX.test(trimmed)
+        ? luxon_1.DateTime.fromISO(trimmed, { setZone: true })
+        : luxon_1.DateTime.fromISO(trimmed, { zone: timeZone });
+    if (!parsed.isValid) {
         throw new TrackerMcpServiceError(`${fieldName} must be ISO 8601, YYYY-MM-DD, or null.`);
     }
-    if (parsed.getMilliseconds() !== taskCalendarEventUtils_1.DATE_ONLY_MARKER_MS) {
-        parsed.setMilliseconds(0);
-    }
-    return parsed.toISOString();
+    return parsed.set({ millisecond: 0 }).toUTC().toISO({
+        suppressMilliseconds: false,
+    });
 };
 const safeTimestamp = (value) => {
     if (!value)
@@ -201,6 +208,22 @@ const queueTaskUpsertBestEffort = (context, task, source) => __awaiter(void 0, v
     }
     catch (error) {
         console.error("Failed to enqueue MCP calendar task sync", error);
+        return;
+    }
+    yield drainLiveSyncBestEffort(context);
+});
+const drainLiveSyncBestEffort = (context) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield (0, taskCalendarSyncService_1.drainCalendarSyncJobs)({
+            userId: context.userId,
+            lanes: ["live"],
+            batchSize: 10,
+            maxJobs: 50,
+            maxMs: 20000,
+        });
+    }
+    catch (error) {
+        console.error("Failed to drain MCP live calendar sync", error);
     }
 });
 const getDueDay = (task, fallbackTimeZone) => {
@@ -324,9 +347,10 @@ const createMcpTask = (context, input) => __awaiter(void 0, void 0, void 0, func
     if (!targetList) {
         throw new TrackerMcpServiceError("A visible list is required.");
     }
-    const dueAt = normalizeMcpDueAt((_a = input.due_at) !== null && _a !== void 0 ? _a : null);
-    const dueTimeZone = dueAt ? normalizeMcpTimeZone(input.due_timezone) : null;
-    const result = yield (0, taskMutationService_1.createTaskForUser)(context.supabaseAdmin, context.userId, Object.assign(Object.assign({}, input), { list_id: targetList.id, due_at: dueAt, due_timezone: dueTimeZone, browser_timezone: dueTimeZone !== null && dueTimeZone !== void 0 ? dueTimeZone : getDefaultTimeZone() }));
+    const dueTimeZone = normalizeMcpTimeZone(input.due_timezone);
+    const dueAt = normalizeMcpDueAt((_a = input.due_at) !== null && _a !== void 0 ? _a : null, "due_at", dueTimeZone);
+    const taskDueTimeZone = dueAt ? dueTimeZone : null;
+    const result = yield (0, taskMutationService_1.createTaskForUser)(context.supabaseAdmin, context.userId, Object.assign(Object.assign({}, input), { list_id: targetList.id, due_at: dueAt, due_timezone: taskDueTimeZone, browser_timezone: dueTimeZone }));
     if (!result.ok) {
         throw new TrackerMcpServiceError(result.error, result.code);
     }
@@ -340,7 +364,7 @@ const createMcpTask = (context, input) => __awaiter(void 0, void 0, void 0, func
 });
 exports.createMcpTask = createMcpTask;
 const updateMcpTask = (context, input) => __awaiter(void 0, void 0, void 0, function* () {
-    yield getVisibleTaskOrThrow(context, input.task_id);
+    const current = yield getVisibleTaskOrThrow(context, input.task_id);
     const payload = {};
     if (hasOwn(input, "list_id") || hasOwn(input, "list_name")) {
         const targetList = yield resolveSingleVisibleList(context, input, {
@@ -360,15 +384,18 @@ const updateMcpTask = (context, input) => __awaiter(void 0, void 0, void 0, func
         if (hasOwn(input, field))
             payload[field] = input[field];
     }
+    const nextDueTimeZone = hasOwn(input, "due_timezone")
+        ? normalizeMcpTimeZone(input.due_timezone)
+        : normalizeMcpTimeZone(current.task.due_timezone);
     if (hasOwn(input, "due_at")) {
-        payload.due_at = normalizeMcpDueAt(input.due_at);
+        payload.due_at = normalizeMcpDueAt(input.due_at, "due_at", nextDueTimeZone);
     }
     if (hasOwn(input, "due_timezone")) {
-        payload.due_timezone = normalizeMcpTimeZone(input.due_timezone);
+        payload.due_timezone = nextDueTimeZone;
         payload.browser_timezone = payload.due_timezone;
     }
     else if (hasOwn(input, "due_at")) {
-        payload.browser_timezone = getDefaultTimeZone();
+        payload.browser_timezone = nextDueTimeZone;
     }
     const result = yield (0, taskMutationService_1.updateTaskForUser)(context.supabaseAdmin, context.userId, input.task_id, payload);
     if (!result.ok) {
@@ -470,6 +497,7 @@ const deleteMcpTask = (context, input) => __awaiter(void 0, void 0, void 0, func
     if (!result.ok) {
         throw new TrackerMcpServiceError(result.error, result.code);
     }
+    yield drainLiveSyncBestEffort(context);
     return {
         deleted_task_id: input.task_id,
         deleted_task_title: data.task.title,
@@ -482,26 +510,20 @@ const syncCalendarNow = (context) => __awaiter(void 0, void 0, void 0, function*
     if (process.env.CALENDAR_SYNC_ENABLED === "0") {
         throw new TrackerMcpServiceError("Calendar sync is disabled.", 503);
     }
-    try {
-        const runId = yield (0, taskCalendarSyncService_1.queueManualSyncForUser)(context.supabaseAdmin, context.userId);
-        yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({
-            userId: context.userId,
-            batchSize: 1,
-            lanes: ["reconcile"],
-        }).catch(() => { });
-        return {
-            run_id: runId,
-            queued: true,
-        };
-    }
-    catch (_a) {
-        const fallback = yield (0, taskCalendarSyncService_1.runLegacyManualSyncForUser)(context.supabaseAdmin, context.userId);
-        return compactRecord({
-            queued: false,
-            processed: fallback.processed,
-            failed: fallback.failed,
-            failures: fallback.failures,
-        });
-    }
+    const runId = yield (0, taskCalendarSyncService_1.queueManualSyncForUser)(context.supabaseAdmin, context.userId);
+    const drain = yield (0, taskCalendarSyncService_1.drainCalendarSyncJobs)({
+        userId: context.userId,
+        batchSize: 10,
+        maxJobs: 120,
+        maxMs: 20000,
+        lanes: ["reconcile"],
+    });
+    return {
+        run_id: runId,
+        queued: true,
+        processed: drain.processed,
+        failed: drain.failed,
+        exhausted: drain.exhausted,
+    };
 });
 exports.syncCalendarNow = syncCalendarNow;

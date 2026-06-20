@@ -5,6 +5,7 @@ const getUserMock = vi.hoisted(() => vi.fn());
 const createClientMock = vi.hoisted(() => vi.fn());
 const getSupabaseAdminMock = vi.hoisted(() => vi.fn());
 const queueTaskUpsertForUserMock = vi.hoisted(() => vi.fn());
+const drainCalendarSyncJobsMock = vi.hoisted(() => vi.fn());
 const getTrackerBootstrapForUserMock = vi.hoisted(() => vi.fn());
 const createTaskListForUserMock = vi.hoisted(() => vi.fn());
 const updateTaskListForUserMock = vi.hoisted(() => vi.fn());
@@ -27,6 +28,7 @@ vi.mock("../../calendar/services/calendarSyncQueueService", () => ({
 }));
 
 vi.mock("../../calendar/services/taskCalendarSyncService", () => ({
+  drainCalendarSyncJobs: drainCalendarSyncJobsMock,
   queueTaskUpsertForUser: queueTaskUpsertForUserMock,
 }));
 
@@ -65,6 +67,13 @@ describe("task list routes", () => {
     getSupabaseAdminMock.mockReset();
     queueTaskUpsertForUserMock.mockReset();
     queueTaskUpsertForUserMock.mockResolvedValue(undefined);
+    drainCalendarSyncJobsMock.mockReset();
+    drainCalendarSyncJobsMock.mockResolvedValue({
+      processed: 0,
+      failed: 0,
+      exhausted: false,
+      results: [],
+    });
     getTrackerBootstrapForUserMock.mockReset();
     createTaskListForUserMock.mockReset();
     updateTaskListForUserMock.mockReset();
@@ -346,6 +355,14 @@ describe("task list routes", () => {
       },
       "api_task_update",
     );
+    expect(drainCalendarSyncJobsMock).toHaveBeenCalledTimes(2);
+    expect(drainCalendarSyncJobsMock).toHaveBeenNthCalledWith(1, {
+      userId: "user-1",
+      lanes: ["live"],
+      batchSize: 10,
+      maxJobs: 50,
+      maxMs: 20_000,
+    });
   });
 
   it("deletes a task through the backend service", async () => {
@@ -363,6 +380,13 @@ describe("task list routes", () => {
       "user-1",
       "task-1",
     );
+    expect(drainCalendarSyncJobsMock).toHaveBeenCalledWith({
+      userId: "user-1",
+      lanes: ["live"],
+      batchSize: 10,
+      maxJobs: 50,
+      maxMs: 20_000,
+    });
   });
 
   it("updates task completion through the backend service", async () => {
@@ -411,6 +435,13 @@ describe("task list routes", () => {
       },
       "api_task_completion",
     );
+    expect(drainCalendarSyncJobsMock).toHaveBeenCalledWith({
+      userId: "user-1",
+      lanes: ["live"],
+      batchSize: 10,
+      maxJobs: 50,
+      maxMs: 20_000,
+    });
   });
 
   it("rejects malformed task completion payloads", async () => {
