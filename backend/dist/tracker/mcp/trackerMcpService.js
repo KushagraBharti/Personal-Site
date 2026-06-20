@@ -89,37 +89,41 @@ const sortCompletedTasks = (tasks) => [...tasks].sort((left, right) => {
     return safeTimestamp((_a = right.completed_at) !== null && _a !== void 0 ? _a : right.updated_at) -
         safeTimestamp((_b = left.completed_at) !== null && _b !== void 0 ? _b : left.updated_at);
 });
-const serializeTask = (task) => ({
-    id: task.id,
-    list_id: task.list_id,
-    parent_task_id: task.parent_task_id,
-    title: task.title,
-    details: task.details,
-    due_at: task.due_at,
-    due_timezone: task.due_timezone,
-    due_kind: task.due_at
-        ? (0, taskCalendarEventUtils_1.isDateOnlyIso)(task.due_at)
-            ? "date"
-            : "date_time"
-        : null,
-    is_completed: task.is_completed,
-    completed_at: task.completed_at,
-    recurrence_type: task.recurrence_type,
-    recurrence_interval: task.recurrence_interval,
-    recurrence_unit: task.recurrence_unit,
-    recurrence_ends_at: task.recurrence_ends_at,
-    is_recurring: (0, taskCalendarEventUtils_1.isRecurringTask)(task),
-    sort_order: task.sort_order,
-    created_at: task.created_at,
-    updated_at: task.updated_at,
-});
-const serializeList = (list) => ({
+const compactRecord = (input) => Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined && value !== null));
+const optionalText = (value) => {
+    const trimmed = value === null || value === void 0 ? void 0 : value.trim();
+    return trimmed ? trimmed : undefined;
+};
+const serializeTask = (task, options = {}) => {
+    const recurring = (0, taskCalendarEventUtils_1.isRecurringTask)(task);
+    return compactRecord({
+        id: task.id,
+        list_id: options.includeListId ? task.list_id : undefined,
+        parent_task_id: task.parent_task_id,
+        title: task.title,
+        details: optionalText(task.details),
+        due_at: task.due_at,
+        due_timezone: task.due_at ? task.due_timezone : undefined,
+        due_kind: task.due_at
+            ? (0, taskCalendarEventUtils_1.isDateOnlyIso)(task.due_at)
+                ? "date"
+                : "date_time"
+            : undefined,
+        is_completed: options.includeCompletionState
+            ? task.is_completed
+            : undefined,
+        completed_at: options.includeCompletion ? task.completed_at : undefined,
+        recurrence_type: recurring ? task.recurrence_type : undefined,
+        recurrence_interval: recurring ? task.recurrence_interval : undefined,
+        recurrence_unit: recurring ? task.recurrence_unit : undefined,
+        recurrence_ends_at: recurring ? task.recurrence_ends_at : undefined,
+    });
+};
+const serializeList = (list) => compactRecord({
     id: list.id,
     name: list.name,
     color_hex: list.color_hex,
     sort_order: list.sort_order,
-    created_at: list.created_at,
-    updated_at: list.updated_at,
 });
 const getVisibleTrackerData = (context) => __awaiter(void 0, void 0, void 0, function* () {
     const [lists, tasks, syncSettings] = yield Promise.all([
@@ -142,7 +146,7 @@ const getVisibleTrackerData = (context) => __awaiter(void 0, void 0, void 0, fun
 const getCalendarConnectionSummary = (context) => __awaiter(void 0, void 0, void 0, function* () {
     const { data, error } = yield context.supabaseAdmin
         .from("tracker_google_calendar_connections_public")
-        .select("status,selected_calendar_summary,last_full_sync_at,last_incremental_sync_at,last_error")
+        .select("status,last_error")
         .eq("user_id", context.userId)
         .maybeSingle();
     if (error)
@@ -240,9 +244,7 @@ const summarizeTasksForList = (list, tasks, now, fallbackTimeZone) => {
         if ((0, taskCalendarEventUtils_1.isRecurringTask)(task))
             recurringActive += 1;
     }
-    return {
-        list: serializeList(list),
-        counts: {
+    return Object.assign(Object.assign({}, serializeList(list)), { counts: {
             active: activeTasks.length,
             completed: completedTasks.length,
             total: listTasks.length,
@@ -251,11 +253,10 @@ const summarizeTasksForList = (list, tasks, now, fallbackTimeZone) => {
             tomorrow,
             no_due: noDue,
             recurring_active: recurringActive,
-        },
-    };
+        } });
 };
 const getTrackerSnapshot = (context, input) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+    var _a;
     const data = yield getVisibleTrackerData(context);
     const fallbackTimeZone = normalizeMcpTimeZone(input === null || input === void 0 ? void 0 : input.timezone);
     const now = luxon_1.DateTime.utc();
@@ -277,19 +278,13 @@ const getTrackerSnapshot = (context, input) => __awaiter(void 0, void 0, void 0,
     });
     const calendarStatus = yield getCalendarConnectionSummary(context).catch(() => null);
     return {
-        ok: true,
-        generated_at: now.toISO(),
-        scope: "Only non-archived task lists with Google Calendar sync enabled are visible through MCP.",
         timezone: fallbackTimeZone,
         calendar: calendarStatus
-            ? {
+            ? compactRecord({
                 connected: calendarStatus.status === "connected",
                 status: calendarStatus.status,
-                selected_calendar_summary: (_a = calendarStatus.selected_calendar_summary) !== null && _a !== void 0 ? _a : null,
-                last_full_sync_at: (_b = calendarStatus.last_full_sync_at) !== null && _b !== void 0 ? _b : null,
-                last_incremental_sync_at: (_c = calendarStatus.last_incremental_sync_at) !== null && _c !== void 0 ? _c : null,
-                last_error: (_d = calendarStatus.last_error) !== null && _d !== void 0 ? _d : null,
-            }
+                last_error: (_a = calendarStatus.last_error) !== null && _a !== void 0 ? _a : null,
+            })
             : null,
         totals,
         lists,
@@ -299,15 +294,9 @@ exports.getTrackerSnapshot = getTrackerSnapshot;
 const listTasks = (context_1, ...args_1) => __awaiter(void 0, [context_1, ...args_1], void 0, function* (context, input = {}) {
     const data = yield getRequestedVisibleLists(context, input);
     return {
-        ok: true,
-        scope: "Only active incomplete tasks from calendar-synced lists are returned.",
         lists: data.selectedLists.map((list) => {
             const activeTasks = sortTasksForDisplay(data.visibleTasks.filter((task) => task.list_id === list.id && !task.is_completed));
-            return {
-                list: serializeList(list),
-                active_task_count: activeTasks.length,
-                tasks: activeTasks.map(serializeTask),
-            };
+            return Object.assign(Object.assign({}, serializeList(list)), { active_task_count: activeTasks.length, tasks: activeTasks.map((task) => serializeTask(task)) });
         }),
     };
 });
@@ -318,18 +307,11 @@ const listCompletedTasks = (context_1, ...args_1) => __awaiter(void 0, [context_
         ? Math.floor(input.limit_per_list)
         : COMPLETED_TASK_DEFAULT_LIMIT, exports.COMPLETED_TASK_MAX_LIMIT));
     return {
-        ok: true,
-        scope: "Only recently completed tasks from calendar-synced lists are returned.",
         limit_per_list: limitPerList,
         lists: data.selectedLists.map((list) => {
             const completedTasks = sortCompletedTasks(data.visibleTasks.filter((task) => task.list_id === list.id && task.is_completed));
             const tasks = completedTasks.slice(0, limitPerList);
-            return {
-                list: serializeList(list),
-                completed_task_count: completedTasks.length,
-                returned_task_count: tasks.length,
-                tasks: tasks.map(serializeTask),
-            };
+            return Object.assign(Object.assign({}, serializeList(list)), { completed_task_count: completedTasks.length, returned_task_count: tasks.length, tasks: tasks.map((task) => serializeTask(task, { includeCompletion: true })) });
         }),
     };
 });
@@ -350,8 +332,10 @@ const createMcpTask = (context, input) => __awaiter(void 0, void 0, void 0, func
     }
     yield queueTaskUpsertBestEffort(context, result.task, "mcp_task_create");
     return {
-        ok: true,
-        task: serializeTask(result.task),
+        task: serializeTask(result.task, {
+            includeListId: true,
+            includeCompletionState: true,
+        }),
     };
 });
 exports.createMcpTask = createMcpTask;
@@ -393,8 +377,11 @@ const updateMcpTask = (context, input) => __awaiter(void 0, void 0, void 0, func
     yield getVisibleTaskOrThrow(context, result.task.id);
     yield queueTaskUpsertBestEffort(context, result.task, "mcp_task_update");
     return {
-        ok: true,
-        task: serializeTask(result.task),
+        task: serializeTask(result.task, {
+            includeListId: true,
+            includeCompletion: true,
+            includeCompletionState: true,
+        }),
     };
 });
 exports.updateMcpTask = updateMcpTask;
@@ -408,13 +395,19 @@ const completeMcpTask = (context, taskId) => __awaiter(void 0, void 0, void 0, f
     if (result.createdNextTask) {
         yield queueTaskUpsertBestEffort(context, result.createdNextTask, "mcp_task_completion_next");
     }
-    return {
-        ok: true,
-        task: serializeTask(result.task),
+    return compactRecord({
+        task: serializeTask(result.task, {
+            includeListId: true,
+            includeCompletion: true,
+            includeCompletionState: true,
+        }),
         created_next_task: result.createdNextTask
-            ? serializeTask(result.createdNextTask)
-            : null,
-    };
+            ? serializeTask(result.createdNextTask, {
+                includeListId: true,
+                includeCompletionState: true,
+            })
+            : undefined,
+    });
 });
 exports.completeMcpTask = completeMcpTask;
 const uncompleteMcpTask = (context, taskId) => __awaiter(void 0, void 0, void 0, function* () {
@@ -425,8 +418,10 @@ const uncompleteMcpTask = (context, taskId) => __awaiter(void 0, void 0, void 0,
     }
     yield queueTaskUpsertBestEffort(context, result.task, "mcp_task_uncomplete");
     return {
-        ok: true,
-        task: serializeTask(result.task),
+        task: serializeTask(result.task, {
+            includeListId: true,
+            includeCompletionState: true,
+        }),
     };
 });
 exports.uncompleteMcpTask = uncompleteMcpTask;
@@ -476,7 +471,6 @@ const deleteMcpTask = (context, input) => __awaiter(void 0, void 0, void 0, func
         throw new TrackerMcpServiceError(result.error, result.code);
     }
     return {
-        ok: true,
         deleted_task_id: input.task_id,
         deleted_task_title: data.task.title,
         deleted_task_count: subtree.length,
@@ -496,21 +490,18 @@ const syncCalendarNow = (context) => __awaiter(void 0, void 0, void 0, function*
             lanes: ["reconcile"],
         }).catch(() => { });
         return {
-            ok: true,
             run_id: runId,
             queued: true,
         };
     }
     catch (_a) {
         const fallback = yield (0, taskCalendarSyncService_1.runLegacyManualSyncForUser)(context.supabaseAdmin, context.userId);
-        return {
-            ok: true,
-            run_id: "",
+        return compactRecord({
             queued: false,
             processed: fallback.processed,
             failed: fallback.failed,
             failures: fallback.failures,
-        };
+        });
     }
 });
 exports.syncCalendarNow = syncCalendarNow;

@@ -238,15 +238,22 @@ describe("tracker MCP service", () => {
       overdue: 1,
       today: 1,
     });
+    expect(snapshot).not.toHaveProperty("ok");
+    expect(snapshot).not.toHaveProperty("scope");
     expect(snapshot.lists).toHaveLength(1);
-    expect(snapshot.lists[0].list).toMatchObject({
+    expect(snapshot.lists[0]).toMatchObject({
       id: "list-visible",
       name: "School",
     });
+    expect(snapshot.lists[0]).not.toHaveProperty("list");
+    expect(snapshot.lists[0]).not.toHaveProperty("created_at");
+    expect(snapshot.lists[0]).not.toHaveProperty("updated_at");
     expect(snapshot.calendar).toMatchObject({
       connected: true,
-      selected_calendar_summary: "Tracker Tasks",
+      status: "connected",
     });
+    expect(snapshot.calendar).not.toHaveProperty("selected_calendar_summary");
+    expect(snapshot.calendar).not.toHaveProperty("last_incremental_sync_at");
   });
 
   it("lists active tasks only from synced lists", async () => {
@@ -262,10 +269,24 @@ describe("tracker MCP service", () => {
     );
 
     expect(result.lists).toHaveLength(1);
+    expect(result).not.toHaveProperty("ok");
+    expect(result).not.toHaveProperty("scope");
+    expect(result.lists[0]).toMatchObject({
+      id: "list-visible",
+      name: "School",
+      active_task_count: 2,
+    });
+    expect(result.lists[0]).not.toHaveProperty("list");
     expect(result.lists[0].tasks.map((task) => task.id)).toEqual([
       "task-today",
       "task-overdue",
     ]);
+    expect(result.lists[0].tasks[0]).not.toHaveProperty("list_id");
+    expect(result.lists[0].tasks[0]).not.toHaveProperty("is_completed");
+    expect(result.lists[0].tasks[0]).not.toHaveProperty("completed_at");
+    expect(result.lists[0].tasks[0]).not.toHaveProperty("created_at");
+    expect(result.lists[0].tasks[0]).not.toHaveProperty("updated_at");
+    expect(result.lists[0].tasks[0]).not.toHaveProperty("recurrence_type");
   });
 
   it("returns the latest 10 completed tasks per synced list by default", async () => {
@@ -301,11 +322,21 @@ describe("tracker MCP service", () => {
     );
 
     expect(result.limit_per_list).toBe(10);
+    expect(result).not.toHaveProperty("ok");
+    expect(result).not.toHaveProperty("scope");
+    expect(result.lists[0]).toMatchObject({
+      id: "list-visible",
+      name: "School",
+    });
+    expect(result.lists[0]).not.toHaveProperty("list");
     expect(result.lists[0].returned_task_count).toBe(10);
     expect(result.lists[0].tasks[0]).toMatchObject({
       id: "done-12",
       title: "Done 12",
     });
+    expect(result.lists[0].tasks[0]).toHaveProperty("completed_at");
+    expect(result.lists[0].tasks[0]).not.toHaveProperty("list_id");
+    expect(result.lists[0].tasks[0]).not.toHaveProperty("is_completed");
     expect(result.lists[0].tasks.map((task) => task.id)).not.toContain(
       "hidden-done",
     );

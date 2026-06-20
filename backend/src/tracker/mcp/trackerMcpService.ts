@@ -160,39 +160,58 @@ const sortCompletedTasks = (tasks: TrackerTaskRow[]) =>
       safeTimestamp(left.completed_at ?? left.updated_at),
   );
 
-const serializeTask = (task: TrackerTaskRow) => ({
-  id: task.id,
-  list_id: task.list_id,
-  parent_task_id: task.parent_task_id,
-  title: task.title,
-  details: task.details,
-  due_at: task.due_at,
-  due_timezone: task.due_timezone,
-  due_kind: task.due_at
-    ? isDateOnlyIso(task.due_at)
-      ? "date"
-      : "date_time"
-    : null,
-  is_completed: task.is_completed,
-  completed_at: task.completed_at,
-  recurrence_type: task.recurrence_type,
-  recurrence_interval: task.recurrence_interval,
-  recurrence_unit: task.recurrence_unit,
-  recurrence_ends_at: task.recurrence_ends_at,
-  is_recurring: isRecurringTask(task),
-  sort_order: task.sort_order,
-  created_at: task.created_at,
-  updated_at: task.updated_at,
-});
+const compactRecord = <T extends Record<string, unknown>>(input: T) =>
+  Object.fromEntries(
+    Object.entries(input).filter(
+      ([, value]) => value !== undefined && value !== null,
+    ),
+  ) as Partial<T>;
 
-const serializeList = (list: TrackerTaskListRow) => ({
-  id: list.id,
-  name: list.name,
-  color_hex: list.color_hex,
-  sort_order: list.sort_order,
-  created_at: list.created_at,
-  updated_at: list.updated_at,
-});
+const optionalText = (value: string | null | undefined) => {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+};
+
+const serializeTask = (
+  task: TrackerTaskRow,
+  options: {
+    includeListId?: boolean;
+    includeCompletion?: boolean;
+    includeCompletionState?: boolean;
+  } = {},
+) => {
+  const recurring = isRecurringTask(task);
+  return compactRecord({
+    id: task.id,
+    list_id: options.includeListId ? task.list_id : undefined,
+    parent_task_id: task.parent_task_id,
+    title: task.title,
+    details: optionalText(task.details),
+    due_at: task.due_at,
+    due_timezone: task.due_at ? task.due_timezone : undefined,
+    due_kind: task.due_at
+      ? isDateOnlyIso(task.due_at)
+        ? "date"
+        : "date_time"
+      : undefined,
+    is_completed: options.includeCompletionState
+      ? task.is_completed
+      : undefined,
+    completed_at: options.includeCompletion ? task.completed_at : undefined,
+    recurrence_type: recurring ? task.recurrence_type : undefined,
+    recurrence_interval: recurring ? task.recurrence_interval : undefined,
+    recurrence_unit: recurring ? task.recurrence_unit : undefined,
+    recurrence_ends_at: recurring ? task.recurrence_ends_at : undefined,
+  });
+};
+
+const serializeList = (list: TrackerTaskListRow) =>
+  compactRecord({
+    id: list.id,
+    name: list.name,
+    color_hex: list.color_hex,
+    sort_order: list.sort_order,
+  });
 
 const getVisibleTrackerData = async (context: TrackerMcpContext) => {
   const [lists, tasks, syncSettings] = await Promise.all([
@@ -219,18 +238,13 @@ const getVisibleTrackerData = async (context: TrackerMcpContext) => {
 const getCalendarConnectionSummary = async (context: TrackerMcpContext) => {
   const { data, error } = await context.supabaseAdmin
     .from("tracker_google_calendar_connections_public")
-    .select(
-      "status,selected_calendar_summary,last_full_sync_at,last_incremental_sync_at,last_error",
-    )
+    .select("status,last_error")
     .eq("user_id", context.userId)
     .maybeSingle();
   if (error) throw new Error(error.message);
   return data as
     | {
         status: string | null;
-        selected_calendar_summary: string | null;
-        last_full_sync_at: string | null;
-        last_incremental_sync_at: string | null;
         last_error: string | null;
       }
     | null;
@@ -382,7 +396,7 @@ const summarizeTasksForList = (
   }
 
   return {
-    list: serializeList(list),
+    ...serializeList(list),
     counts: {
       active: activeTasks.length,
       completed: completedTasks.length,
@@ -430,22 +444,13 @@ export const getTrackerSnapshot = async (
   );
 
   return {
-    ok: true,
-    generated_at: now.toISO(),
-    scope:
-      "Only non-archived task lists with Google Calendar sync enabled are visible through MCP.",
     timezone: fallbackTimeZone,
     calendar: calendarStatus
-      ? {
+      ? compactRecord({
           connected: calendarStatus.status === "connected",
           status: calendarStatus.status,
-          selected_calendar_summary:
-            calendarStatus.selected_calendar_summary ?? null,
-          last_full_sync_at: calendarStatus.last_full_sync_at ?? null,
-          last_incremental_sync_at:
-            calendarStatus.last_incremental_sync_at ?? null,
           last_error: calendarStatus.last_error ?? null,
-        }
+        })
       : null,
     totals,
     lists,
@@ -458,9 +463,6 @@ export const listTasks = async (
 ) => {
   const data = await getRequestedVisibleLists(context, input);
   return {
-    ok: true,
-    scope:
-      "Only active incomplete tasks from calendar-synced lists are returned.",
     lists: data.selectedLists.map((list) => {
       const activeTasks = sortTasksForDisplay(
         data.visibleTasks.filter(
@@ -468,9 +470,9 @@ export const listTasks = async (
         ),
       );
       return {
-        list: serializeList(list),
+        ...serializeList(list),
         active_task_count: activeTasks.length,
-        tasks: activeTasks.map(serializeTask),
+        tasks: activeTasks.map((task) => serializeTask(task)),
       };
     }),
   };
@@ -492,9 +494,6 @@ export const listCompletedTasks = async (
   );
 
   return {
-    ok: true,
-    scope:
-      "Only recently completed tasks from calendar-synced lists are returned.",
     limit_per_list: limitPerList,
     lists: data.selectedLists.map((list) => {
       const completedTasks = sortCompletedTasks(
@@ -504,10 +503,12 @@ export const listCompletedTasks = async (
       );
       const tasks = completedTasks.slice(0, limitPerList);
       return {
-        list: serializeList(list),
+        ...serializeList(list),
         completed_task_count: completedTasks.length,
         returned_task_count: tasks.length,
-        tasks: tasks.map(serializeTask),
+        tasks: tasks.map((task) =>
+          serializeTask(task, { includeCompletion: true }),
+        ),
       };
     }),
   };
@@ -539,8 +540,10 @@ export const createMcpTask = async (
 
   await queueTaskUpsertBestEffort(context, result.task, "mcp_task_create");
   return {
-    ok: true,
-    task: serializeTask(result.task),
+    task: serializeTask(result.task, {
+      includeListId: true,
+      includeCompletionState: true,
+    }),
   };
 };
 
@@ -591,8 +594,11 @@ export const updateMcpTask = async (
   await getVisibleTaskOrThrow(context, result.task.id);
   await queueTaskUpsertBestEffort(context, result.task, "mcp_task_update");
   return {
-    ok: true,
-    task: serializeTask(result.task),
+    task: serializeTask(result.task, {
+      includeListId: true,
+      includeCompletion: true,
+      includeCompletionState: true,
+    }),
   };
 };
 
@@ -620,13 +626,19 @@ export const completeMcpTask = async (
     );
   }
 
-  return {
-    ok: true,
-    task: serializeTask(result.task),
+  return compactRecord({
+    task: serializeTask(result.task, {
+      includeListId: true,
+      includeCompletion: true,
+      includeCompletionState: true,
+    }),
     created_next_task: result.createdNextTask
-      ? serializeTask(result.createdNextTask)
-      : null,
-  };
+      ? serializeTask(result.createdNextTask, {
+          includeListId: true,
+          includeCompletionState: true,
+        })
+      : undefined,
+  });
 };
 
 export const uncompleteMcpTask = async (
@@ -646,8 +658,10 @@ export const uncompleteMcpTask = async (
 
   await queueTaskUpsertBestEffort(context, result.task, "mcp_task_uncomplete");
   return {
-    ok: true,
-    task: serializeTask(result.task),
+    task: serializeTask(result.task, {
+      includeListId: true,
+      includeCompletionState: true,
+    }),
   };
 };
 
@@ -719,7 +733,6 @@ export const deleteMcpTask = async (
   }
 
   return {
-    ok: true,
     deleted_task_id: input.task_id,
     deleted_task_title: data.task.title,
     deleted_task_count: subtree.length,
@@ -743,7 +756,6 @@ export const syncCalendarNow = async (context: TrackerMcpContext) => {
       lanes: ["reconcile"],
     }).catch(() => {});
     return {
-      ok: true,
       run_id: runId,
       queued: true,
     };
@@ -752,13 +764,11 @@ export const syncCalendarNow = async (context: TrackerMcpContext) => {
       context.supabaseAdmin,
       context.userId,
     );
-    return {
-      ok: true,
-      run_id: "",
+    return compactRecord({
       queued: false,
       processed: fallback.processed,
       failed: fallback.failed,
       failures: fallback.failures,
-    };
+    });
   }
 };

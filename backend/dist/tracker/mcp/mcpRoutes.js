@@ -22,75 +22,75 @@ const SERVER_INFO = {
 const toolDefinitions = [
     {
         name: "get_tracker_snapshot",
-        description: "Summarize calendar-synced tracker lists with active/completed/today/tomorrow/overdue counts. Does not list task bodies.",
+        description: "Counts for MCP-visible tracker lists. No task bodies.",
         inputSchema: {
             type: "object",
             properties: {
                 timezone: {
                     type: "string",
-                    description: "IANA timezone for today/tomorrow counts. Defaults to tracker MCP timezone.",
+                    description: "IANA timezone for today/tomorrow counts.",
                 },
             },
         },
     },
     {
         name: "list_tasks",
-        description: "List active incomplete tasks from all calendar-synced tracker lists, or from one exact list ID/name.",
+        description: "Active tasks from all visible lists or one exact list.",
         inputSchema: {
             type: "object",
             properties: {
                 list_id: {
                     type: "string",
-                    description: "Exact task list ID. Provide either list_id or list_name, not both.",
+                    description: "Visible list ID.",
                 },
                 list_name: {
                     type: "string",
-                    description: "Exact normalized task list name. Provide either list_id or list_name, not both.",
+                    description: "Exact visible list name.",
                 },
             },
         },
     },
     {
         name: "list_completed_tasks",
-        description: "List the most recently completed tasks from calendar-synced tracker lists. Defaults to 10 per list.",
+        description: "Recent completed tasks from visible lists.",
         inputSchema: {
             type: "object",
             properties: {
                 list_id: {
                     type: "string",
-                    description: "Exact task list ID. Provide either list_id or list_name, not both.",
+                    description: "Visible list ID.",
                 },
                 list_name: {
                     type: "string",
-                    description: "Exact normalized task list name. Provide either list_id or list_name, not both.",
+                    description: "Exact visible list name.",
                 },
                 limit_per_list: {
                     type: "integer",
                     minimum: 1,
                     maximum: 75,
                     default: 10,
-                    description: "Most recent completed tasks to return per list. Max 75.",
+                    description: "Completed tasks per list. Max 75.",
                 },
             },
         },
     },
     {
         name: "create_task",
-        description: "Create a task in a calendar-synced tracker list. Requires exact list_id or exact list_name.",
+        description: "Create a task in a visible list.",
         inputSchema: {
             type: "object",
             properties: {
                 list_id: {
                     type: "string",
-                    description: "Exact task list ID. Provide either list_id or list_name, not both.",
+                    description: "Visible list ID.",
                 },
                 list_name: {
                     type: "string",
-                    description: "Exact normalized task list name. Provide either list_id or list_name, not both.",
+                    description: "Exact visible list name.",
                 },
                 parent_task_id: {
                     type: ["string", "null"],
-                    description: "Optional parent task ID for creating a subtask.",
+                    description: "Parent task ID.",
                 },
                 title: {
                     type: "string",
@@ -98,35 +98,35 @@ const toolDefinitions = [
                 },
                 details: {
                     type: ["string", "null"],
-                    description: "Optional task details. Null clears details.",
+                    description: "Task details.",
                 },
                 due_at: {
                     type: ["string", "null"],
-                    description: "Due date/time as ISO 8601, YYYY-MM-DD for date-only, or null for no due date.",
+                    description: "ISO date/time, YYYY-MM-DD, or null.",
                 },
                 due_timezone: {
                     type: ["string", "null"],
-                    description: "IANA timezone for the due date/time, such as America/Chicago.",
+                    description: "IANA timezone.",
                 },
                 recurrence_type: {
                     type: "string",
                     enum: ["none", "daily", "weekly", "biweekly", "custom"],
                     default: "none",
-                    description: "Task recurrence type.",
+                    description: "Recurrence type.",
                 },
                 recurrence_interval: {
                     type: ["integer", "null"],
                     minimum: 1,
-                    description: "Custom recurrence interval. Only used when recurrence_type is custom.",
+                    description: "Custom recurrence interval.",
                 },
                 recurrence_unit: {
                     type: ["string", "null"],
                     enum: ["day", "week", "month", null],
-                    description: "Custom recurrence unit. Only used when recurrence_type is custom.",
+                    description: "Custom recurrence unit.",
                 },
                 recurrence_ends_at: {
                     type: ["string", "null"],
-                    description: "Optional ISO 8601 timestamp when recurrence ends.",
+                    description: "ISO timestamp when recurrence ends.",
                 },
             },
             required: ["title"],
@@ -134,25 +134,25 @@ const toolDefinitions = [
     },
     {
         name: "update_task",
-        description: "Update fields on one MCP-visible tracker task. Moving a task is allowed only into another calendar-synced list.",
+        description: "Update one visible task.",
         inputSchema: {
             type: "object",
             properties: {
                 task_id: {
                     type: "string",
-                    description: "Task ID from a prior tool result.",
+                    description: "Task ID.",
                 },
                 list_id: {
                     type: "string",
-                    description: "Exact task list ID. Provide either list_id or list_name, not both.",
+                    description: "Visible list ID.",
                 },
                 list_name: {
                     type: "string",
-                    description: "Exact normalized task list name. Provide either list_id or list_name, not both.",
+                    description: "Exact visible list name.",
                 },
                 parent_task_id: {
                     type: ["string", "null"],
-                    description: "Set a parent task ID, or null to make this a root task.",
+                    description: "Parent task ID, or null.",
                 },
                 title: {
                     type: "string",
@@ -164,30 +164,30 @@ const toolDefinitions = [
                 },
                 due_at: {
                     type: ["string", "null"],
-                    description: "Due date/time as ISO 8601, YYYY-MM-DD for date-only, or null for no due date.",
+                    description: "ISO date/time, YYYY-MM-DD, or null.",
                 },
                 due_timezone: {
                     type: ["string", "null"],
-                    description: "IANA timezone for the due date/time, such as America/Chicago.",
+                    description: "IANA timezone.",
                 },
                 recurrence_type: {
                     type: "string",
                     enum: ["none", "daily", "weekly", "biweekly", "custom"],
-                    description: "Task recurrence type.",
+                    description: "Recurrence type.",
                 },
                 recurrence_interval: {
                     type: ["integer", "null"],
                     minimum: 1,
-                    description: "Custom recurrence interval. Only used when recurrence_type is custom.",
+                    description: "Custom recurrence interval.",
                 },
                 recurrence_unit: {
                     type: ["string", "null"],
                     enum: ["day", "week", "month", null],
-                    description: "Custom recurrence unit. Only used when recurrence_type is custom.",
+                    description: "Custom recurrence unit.",
                 },
                 recurrence_ends_at: {
                     type: ["string", "null"],
-                    description: "Optional ISO 8601 timestamp when recurrence ends. Null clears it.",
+                    description: "ISO timestamp when recurrence ends.",
                 },
             },
             required: ["task_id"],
@@ -195,13 +195,13 @@ const toolDefinitions = [
     },
     {
         name: "complete_task",
-        description: "Mark one MCP-visible tracker task complete. Recurring tasks may create the next occurrence.",
+        description: "Mark one visible task complete.",
         inputSchema: {
             type: "object",
             properties: {
                 task_id: {
                     type: "string",
-                    description: "Task ID from a prior tool result.",
+                    description: "Task ID.",
                 },
             },
             required: ["task_id"],
@@ -209,13 +209,13 @@ const toolDefinitions = [
     },
     {
         name: "uncomplete_task",
-        description: "Mark one MCP-visible tracker task incomplete again. Does not remove any recurrence task already created earlier.",
+        description: "Mark one visible task incomplete.",
         inputSchema: {
             type: "object",
             properties: {
                 task_id: {
                     type: "string",
-                    description: "Task ID from a prior tool result.",
+                    description: "Task ID.",
                 },
             },
             required: ["task_id"],
@@ -223,25 +223,25 @@ const toolDefinitions = [
     },
     {
         name: "delete_task",
-        description: "Delete one MCP-visible tracker task. Requires confirm_delete and may require confirm_delete_children for subtasks.",
+        description: "Delete one visible task. Confirm first.",
         inputSchema: {
             type: "object",
             properties: {
                 task_id: {
                     type: "string",
-                    description: "Task ID from a prior tool result.",
+                    description: "Task ID.",
                 },
                 expected_title: {
                     type: "string",
-                    description: "Optional safety check. Delete is refused if this does not match the current title.",
+                    description: "Optional title safety check.",
                 },
                 confirm_delete: {
                     type: "boolean",
-                    description: "Must be true to delete the task.",
+                    description: "Must be true.",
                 },
                 confirm_delete_children: {
                     type: "boolean",
-                    description: "Must be true when deleting a task that has subtasks.",
+                    description: "Required for subtasks.",
                 },
             },
             required: ["task_id", "confirm_delete"],
@@ -249,7 +249,7 @@ const toolDefinitions = [
     },
     {
         name: "sync_calendar_now",
-        description: "Queue and start a manual Google Calendar reconciliation for the configured tracker owner.",
+        description: "Run tracker Google Calendar sync.",
         inputSchema: {
             type: "object",
             properties: {},
@@ -270,7 +270,7 @@ const toolResult = (payload, isError = false) => ({
     content: [
         {
             type: "text",
-            text: JSON.stringify(payload, null, 2),
+            text: JSON.stringify(payload),
         },
     ],
     isError,
