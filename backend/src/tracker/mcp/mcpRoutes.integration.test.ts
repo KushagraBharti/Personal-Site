@@ -58,6 +58,31 @@ describe("tracker MCP routes", () => {
     expect(response.body).toEqual({ error: "Origin not allowed" });
   });
 
+  it("lists Poke-visible tracker tools over plain JSON-RPC", async () => {
+    const { default: app } = await import("../../app");
+    const response = await request(app)
+      .post("/api/mcp")
+      .set("authorization", "Bearer test-mcp-key")
+      .send({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "tools/list",
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.tools.map((tool: { name: string }) => tool.name)).toEqual([
+      "get_tracker_snapshot",
+      "list_tasks",
+      "list_completed_tasks",
+      "create_task",
+      "update_task",
+      "complete_task",
+      "uncomplete_task",
+      "delete_task",
+      "sync_calendar_now",
+    ]);
+  });
+
   it("requires MCP auth for GET stream requests", async () => {
     const { default: app } = await import("../../app");
     const response = await request(app).get("/api/mcp");
