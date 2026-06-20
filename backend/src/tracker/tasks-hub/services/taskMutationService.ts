@@ -19,6 +19,7 @@ import {
   deleteCalendarLinksForTasks,
   processBestEffortTaskDeleteCleanup,
 } from "./taskCalendarCleanupService";
+import { queueTaskDeleteForUser } from "../../calendar/services/taskCalendarSyncService";
 import { getNextTaskSortOrder } from "./taskRecurrenceService";
 
 type TaskPayload = {
@@ -40,7 +41,8 @@ type TaskPayload = {
 
 type TaskServiceFailure = ServiceFailure;
 
-const hasOwn = (input: object, key: string) => Object.prototype.hasOwnProperty.call(input, key);
+const hasOwn = (input: object, key: string) =>
+  Object.prototype.hasOwnProperty.call(input, key);
 
 const normalizePositiveInteger = (value: unknown, fallback: number) => {
   if (value === undefined || value === null || value === "") return fallback;
@@ -57,17 +59,19 @@ const normalizeDueAt = (value: unknown) => {
 };
 
 const normalizeRecurrenceCreateFields = (
-  input: TaskCreateInput
+  input: TaskCreateInput,
 ): ServiceResult<{
   recurrenceType: RecurrenceType;
   recurrenceInterval: number | null;
   recurrenceUnit: RecurrenceUnit;
   recurrenceEndsAt: string | null;
 }> => {
-  const recurrenceType = input.recurrence_type === undefined
-    ? "none"
-    : normalizeRecurrenceType(input.recurrence_type);
-  if (!recurrenceType) return { ok: false, code: 400, error: "Invalid recurrence_type" };
+  const recurrenceType =
+    input.recurrence_type === undefined
+      ? "none"
+      : normalizeRecurrenceType(input.recurrence_type);
+  if (!recurrenceType)
+    return { ok: false, code: 400, error: "Invalid recurrence_type" };
 
   if (recurrenceType === "none") {
     return {
@@ -80,7 +84,11 @@ const normalizeRecurrenceCreateFields = (
   }
 
   const recurrenceEndsAt = cleanNullableString(input.recurrence_ends_at);
-  if (recurrenceEndsAt === undefined || recurrenceEndsAt === null || typeof recurrenceEndsAt === "string") {
+  if (
+    recurrenceEndsAt === undefined ||
+    recurrenceEndsAt === null ||
+    typeof recurrenceEndsAt === "string"
+  ) {
     if (recurrenceType !== "custom") {
       return {
         ok: true,
@@ -91,14 +99,19 @@ const normalizeRecurrenceCreateFields = (
       };
     }
 
-    const recurrenceInterval = normalizePositiveInteger(input.recurrence_interval, 1);
+    const recurrenceInterval = normalizePositiveInteger(
+      input.recurrence_interval,
+      1,
+    );
     if (!recurrenceInterval) {
       return { ok: false, code: 400, error: "Invalid recurrence_interval" };
     }
-    const recurrenceUnit = input.recurrence_unit === undefined
-      ? "day"
-      : normalizeRecurrenceUnit(input.recurrence_unit);
-    if (!recurrenceUnit) return { ok: false, code: 400, error: "Invalid recurrence_unit" };
+    const recurrenceUnit =
+      input.recurrence_unit === undefined
+        ? "day"
+        : normalizeRecurrenceUnit(input.recurrence_unit);
+    if (!recurrenceUnit)
+      return { ok: false, code: 400, error: "Invalid recurrence_unit" };
 
     return {
       ok: true,
@@ -115,7 +128,7 @@ const normalizeRecurrenceCreateFields = (
 const fetchTaskForUser = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
-  taskId: string
+  taskId: string,
 ) => {
   const { data, error } = await supabaseAdmin
     .from("tracker_tasks")
@@ -130,7 +143,7 @@ const fetchTaskForUser = async (
 const assertListBelongsToUser = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
-  listId: string
+  listId: string,
 ): Promise<TaskServiceFailure | null> => {
   const { data, error } = await supabaseAdmin
     .from("tracker_task_lists")
@@ -149,17 +162,26 @@ const assertParentBelongsToList = async (
   userId: string,
   listId: string,
   parentTaskId: string | null,
-  editedTaskId?: string
+  editedTaskId?: string,
 ): Promise<TaskServiceFailure | null> => {
   if (!parentTaskId) return null;
   if (parentTaskId === editedTaskId) {
     return { ok: false, code: 400, error: "Task cannot be its own parent" };
   }
 
-  const parentTask = await fetchTaskForUser(supabaseAdmin, userId, parentTaskId);
-  if (!parentTask) return { ok: false, code: 404, error: "Parent task not found" };
+  const parentTask = await fetchTaskForUser(
+    supabaseAdmin,
+    userId,
+    parentTaskId,
+  );
+  if (!parentTask)
+    return { ok: false, code: 404, error: "Parent task not found" };
   if (parentTask.list_id !== listId) {
-    return { ok: false, code: 400, error: "Parent task must be in the same list" };
+    return {
+      ok: false,
+      code: 400,
+      error: "Parent task must be in the same list",
+    };
   }
   return null;
 };
@@ -167,7 +189,7 @@ const assertParentBelongsToList = async (
 export const createTaskForUser = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
-  input: TaskCreateInput
+  input: TaskCreateInput,
 ): Promise<ServiceResult<{ task: TrackerTaskRow }>> => {
   const listId = cleanOptionalString(input.list_id);
   if (!listId) return { ok: false, code: 400, error: "list_id is required" };
@@ -175,16 +197,26 @@ export const createTaskForUser = async (
   const title = cleanOptionalString(input.title);
   if (!title) return { ok: false, code: 400, error: "Task title is required" };
 
-  const listFailure = await assertListBelongsToUser(supabaseAdmin, userId, listId);
+  const listFailure = await assertListBelongsToUser(
+    supabaseAdmin,
+    userId,
+    listId,
+  );
   if (listFailure) return listFailure;
 
-  const parentTaskId = cleanNullableString(input.parent_task_id, { trim: true });
-  if (parentTaskId === undefined || typeof parentTaskId === "string" || parentTaskId === null) {
+  const parentTaskId = cleanNullableString(input.parent_task_id, {
+    trim: true,
+  });
+  if (
+    parentTaskId === undefined ||
+    typeof parentTaskId === "string" ||
+    parentTaskId === null
+  ) {
     const parentFailure = await assertParentBelongsToList(
       supabaseAdmin,
       userId,
       listId,
-      parentTaskId ?? null
+      parentTaskId ?? null,
     );
     if (parentFailure) return parentFailure;
   } else {
@@ -202,12 +234,21 @@ export const createTaskForUser = async (
   const recurrenceFields = normalizeRecurrenceCreateFields(input);
   if (!recurrenceFields.ok) return recurrenceFields;
   if (recurrenceFields.recurrenceType !== "none" && !dueAt) {
-    return { ok: false, code: 400, error: "Recurring tasks require a due date." };
+    return {
+      ok: false,
+      code: 400,
+      error: "Recurring tasks require a due date.",
+    };
   }
 
   const detailsInput = cleanNullableString(input.details, { trim: true });
   const details = detailsInput ? detailsInput : null;
-  const sortOrder = await getNextTaskSortOrder(supabaseAdmin, userId, listId, parentTaskId ?? null);
+  const sortOrder = await getNextTaskSortOrder(
+    supabaseAdmin,
+    userId,
+    listId,
+    parentTaskId ?? null,
+  );
   const payload: TaskPayload = {
     user_id: userId,
     list_id: listId,
@@ -215,7 +256,11 @@ export const createTaskForUser = async (
     title,
     details,
     due_at: dueAt,
-    due_timezone: normalizeTaskDueTimeZone(dueAt, input.due_timezone, input.browser_timezone),
+    due_timezone: normalizeTaskDueTimeZone(
+      dueAt,
+      input.due_timezone,
+      input.browser_timezone,
+    ),
     is_completed: false,
     completed_at: null,
     recurrence_type: recurrenceFields.recurrenceType,
@@ -239,7 +284,7 @@ export const updateTaskForUser = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
   taskId: string,
-  input: TaskUpdateInput
+  input: TaskUpdateInput,
 ): Promise<ServiceResult<{ task: TrackerTaskRow }>> => {
   const currentTask = await fetchTaskForUser(supabaseAdmin, userId, taskId);
   if (!currentTask) return { ok: false, code: 404, error: "Task not found" };
@@ -249,7 +294,11 @@ export const updateTaskForUser = async (
   if (hasOwn(input, "list_id")) {
     const listId = cleanOptionalString(input.list_id);
     if (!listId) return { ok: false, code: 400, error: "list_id is required" };
-    const listFailure = await assertListBelongsToUser(supabaseAdmin, userId, listId);
+    const listFailure = await assertListBelongsToUser(
+      supabaseAdmin,
+      userId,
+      listId,
+    );
     if (listFailure) return listFailure;
     nextListId = listId;
     payload.list_id = listId;
@@ -257,8 +306,16 @@ export const updateTaskForUser = async (
 
   let nextParentTaskId = currentTask.parent_task_id;
   if (hasOwn(input, "parent_task_id")) {
-    const parentTaskId = cleanNullableString(input.parent_task_id, { trim: true });
-    if (!(parentTaskId === undefined || typeof parentTaskId === "string" || parentTaskId === null)) {
+    const parentTaskId = cleanNullableString(input.parent_task_id, {
+      trim: true,
+    });
+    if (
+      !(
+        parentTaskId === undefined ||
+        typeof parentTaskId === "string" ||
+        parentTaskId === null
+      )
+    ) {
       return { ok: false, code: 400, error: "Invalid parent_task_id" };
     }
     nextParentTaskId = parentTaskId ?? null;
@@ -271,20 +328,27 @@ export const updateTaskForUser = async (
       userId,
       nextListId,
       nextParentTaskId,
-      taskId
+      taskId,
     );
     if (parentFailure) return parentFailure;
   }
 
   if (hasOwn(input, "title")) {
     const title = cleanOptionalString(input.title);
-    if (!title) return { ok: false, code: 400, error: "Task title is required" };
+    if (!title)
+      return { ok: false, code: 400, error: "Task title is required" };
     payload.title = title;
   }
 
   if (hasOwn(input, "details")) {
     const details = cleanNullableString(input.details, { trim: true });
-    if (!(details === undefined || details === null || typeof details === "string")) {
+    if (
+      !(
+        details === undefined ||
+        details === null ||
+        typeof details === "string"
+      )
+    ) {
       return { ok: false, code: 400, error: "Invalid details" };
     }
     payload.details = details ? details : null;
@@ -310,14 +374,19 @@ export const updateTaskForUser = async (
   let nextRecurrenceType = currentTask.recurrence_type;
   if (hasOwn(input, "recurrence_type")) {
     const recurrenceType = normalizeRecurrenceType(input.recurrence_type);
-    if (!recurrenceType) return { ok: false, code: 400, error: "Invalid recurrence_type" };
+    if (!recurrenceType)
+      return { ok: false, code: 400, error: "Invalid recurrence_type" };
     nextRecurrenceType = recurrenceType;
     payload.recurrence_type = recurrenceType;
   }
 
   if (recurrenceTouched) {
     if (nextRecurrenceType !== "none" && !nextDueAt) {
-      return { ok: false, code: 400, error: "Recurring tasks require a due date." };
+      return {
+        ok: false,
+        code: 400,
+        error: "Recurring tasks require a due date.",
+      };
     }
 
     if (nextRecurrenceType === "none") {
@@ -326,22 +395,32 @@ export const updateTaskForUser = async (
       payload.recurrence_ends_at = null;
     } else if (nextRecurrenceType === "custom") {
       const recurrenceInterval = hasOwn(input, "recurrence_interval")
-        ? normalizePositiveInteger(input.recurrence_interval, currentTask.recurrence_interval ?? 1)
-        : currentTask.recurrence_interval ?? 1;
+        ? normalizePositiveInteger(
+            input.recurrence_interval,
+            currentTask.recurrence_interval ?? 1,
+          )
+        : (currentTask.recurrence_interval ?? 1);
       if (!recurrenceInterval) {
         return { ok: false, code: 400, error: "Invalid recurrence_interval" };
       }
 
       const recurrenceUnit = hasOwn(input, "recurrence_unit")
         ? normalizeRecurrenceUnit(input.recurrence_unit)
-        : currentTask.recurrence_unit ?? "day";
-      if (!recurrenceUnit) return { ok: false, code: 400, error: "Invalid recurrence_unit" };
+        : (currentTask.recurrence_unit ?? "day");
+      if (!recurrenceUnit)
+        return { ok: false, code: 400, error: "Invalid recurrence_unit" };
       payload.recurrence_interval = recurrenceInterval;
       payload.recurrence_unit = recurrenceUnit;
 
       if (hasOwn(input, "recurrence_ends_at")) {
         const recurrenceEndsAt = cleanNullableString(input.recurrence_ends_at);
-        if (!(recurrenceEndsAt === undefined || recurrenceEndsAt === null || typeof recurrenceEndsAt === "string")) {
+        if (
+          !(
+            recurrenceEndsAt === undefined ||
+            recurrenceEndsAt === null ||
+            typeof recurrenceEndsAt === "string"
+          )
+        ) {
           return { ok: false, code: 400, error: "Invalid recurrence_ends_at" };
         }
         payload.recurrence_ends_at = recurrenceEndsAt ?? null;
@@ -351,7 +430,13 @@ export const updateTaskForUser = async (
       payload.recurrence_unit = null;
       if (hasOwn(input, "recurrence_ends_at")) {
         const recurrenceEndsAt = cleanNullableString(input.recurrence_ends_at);
-        if (!(recurrenceEndsAt === undefined || recurrenceEndsAt === null || typeof recurrenceEndsAt === "string")) {
+        if (
+          !(
+            recurrenceEndsAt === undefined ||
+            recurrenceEndsAt === null ||
+            typeof recurrenceEndsAt === "string"
+          )
+        ) {
           return { ok: false, code: 400, error: "Invalid recurrence_ends_at" };
         }
         payload.recurrence_ends_at = recurrenceEndsAt ?? null;
@@ -359,12 +444,16 @@ export const updateTaskForUser = async (
     }
   }
 
-  if (hasOwn(input, "due_at") || hasOwn(input, "due_timezone") || recurrenceTouched) {
+  if (
+    hasOwn(input, "due_at") ||
+    hasOwn(input, "due_timezone") ||
+    recurrenceTouched
+  ) {
     payload.due_timezone = normalizeTaskDueTimeZone(
       nextDueAt,
       input.due_timezone,
       input.browser_timezone,
-      currentTask.due_timezone
+      currentTask.due_timezone,
     );
   }
 
@@ -391,7 +480,7 @@ type TaskDeleteRow = {
 const collectTaskTreeForDelete = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
-  taskId: string
+  taskId: string,
 ) => {
   const { data: rootTask, error: rootTaskError } = await supabaseAdmin
     .from("tracker_tasks")
@@ -406,7 +495,9 @@ const collectTaskTreeForDelete = async (
   rowsById.set(String(rootTask.id), {
     id: String(rootTask.id),
     list_id: String(rootTask.list_id),
-    parent_task_id: rootTask.parent_task_id ? String(rootTask.parent_task_id) : null,
+    parent_task_id: rootTask.parent_task_id
+      ? String(rootTask.parent_task_id)
+      : null,
   });
 
   let frontier = [String(rootTask.id)];
@@ -438,12 +529,25 @@ const collectTaskTreeForDelete = async (
 export const deleteTaskForUser = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
-  taskId: string
+  taskId: string,
 ) => {
-  const taskRows = await collectTaskTreeForDelete(supabaseAdmin, userId, taskId);
-  if (!taskRows) return { ok: false as const, code: 404, error: "Task not found" };
+  const taskRows = await collectTaskTreeForDelete(
+    supabaseAdmin,
+    userId,
+    taskId,
+  );
+  if (!taskRows)
+    return { ok: false as const, code: 404, error: "Task not found" };
 
   const taskIds = taskRows.map((row) => row.id);
+
+  for (const row of taskRows) {
+    await queueTaskDeleteForUser(supabaseAdmin, userId, {
+      listId: row.list_id,
+      taskId: row.id,
+      source: "api_task_delete",
+    }).catch(() => {});
+  }
 
   for (const row of taskRows) {
     await processBestEffortTaskDeleteCleanup(supabaseAdmin, {
@@ -473,24 +577,44 @@ export const reorderTasksForUser = async (
     list_id?: unknown;
     parent_task_id?: unknown;
     ordered_task_ids?: unknown;
-  }
+  },
 ): Promise<ServiceResult<{ tasks: TrackerTaskRow[] }>> => {
   const listId = cleanOptionalString(input.list_id);
   if (!listId) return { ok: false, code: 400, error: "list_id is required" };
 
-  const parentTaskId = cleanNullableString(input.parent_task_id, { trim: true });
-  if (!(parentTaskId === undefined || parentTaskId === null || typeof parentTaskId === "string")) {
+  const parentTaskId = cleanNullableString(input.parent_task_id, {
+    trim: true,
+  });
+  if (
+    !(
+      parentTaskId === undefined ||
+      parentTaskId === null ||
+      typeof parentTaskId === "string"
+    )
+  ) {
     return { ok: false, code: 400, error: "Invalid parent_task_id" };
   }
 
   const orderedTaskIds = input.ordered_task_ids;
-  if (!Array.isArray(orderedTaskIds) || orderedTaskIds.some((id) => typeof id !== "string")) {
-    return { ok: false, code: 400, error: "ordered_task_ids must be an array of task ids" };
+  if (
+    !Array.isArray(orderedTaskIds) ||
+    orderedTaskIds.some((id) => typeof id !== "string")
+  ) {
+    return {
+      ok: false,
+      code: 400,
+      error: "ordered_task_ids must be an array of task ids",
+    };
   }
-  if (orderedTaskIds.length === 0) return { ok: false, code: 400, error: "ordered_task_ids is required" };
+  if (orderedTaskIds.length === 0)
+    return { ok: false, code: 400, error: "ordered_task_ids is required" };
   const uniqueIds = new Set(orderedTaskIds);
   if (uniqueIds.size !== orderedTaskIds.length) {
-    return { ok: false, code: 400, error: "ordered_task_ids must not contain duplicates" };
+    return {
+      ok: false,
+      code: 400,
+      error: "ordered_task_ids must not contain duplicates",
+    };
   }
 
   let siblingQuery = supabaseAdmin
@@ -504,9 +628,22 @@ export const reorderTasksForUser = async (
   const { data: siblingRows, error: siblingError } = await siblingQuery;
   if (siblingError) throw new Error(siblingError.message);
 
-  const siblingById = new Map(((siblingRows ?? []) as TrackerTaskRow[]).map((task) => [task.id, task]));
+  const siblingById = new Map(
+    ((siblingRows ?? []) as TrackerTaskRow[]).map((task) => [task.id, task]),
+  );
   if (orderedTaskIds.some((taskId) => !siblingById.has(taskId))) {
-    return { ok: false, code: 400, error: "ordered_task_ids contains an unknown task" };
+    return {
+      ok: false,
+      code: 400,
+      error: "ordered_task_ids contains an unknown task",
+    };
+  }
+  if (orderedTaskIds.length !== siblingById.size) {
+    return {
+      ok: false,
+      code: 400,
+      error: "ordered_task_ids must include every sibling task",
+    };
   }
 
   const updatedTasks: TrackerTaskRow[] = [];
@@ -524,6 +661,8 @@ export const reorderTasksForUser = async (
 
   return {
     ok: true,
-    tasks: updatedTasks.sort((left, right) => left.sort_order - right.sort_order),
+    tasks: updatedTasks.sort(
+      (left, right) => left.sort_order - right.sort_order,
+    ),
   };
 };

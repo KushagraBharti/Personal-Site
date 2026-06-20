@@ -35,7 +35,7 @@ The private tracker lives at `/tracker`. It is lazy-loaded, Supabase-authenticat
 
 - `tasks`: the current tasks-hub interface
 
-Most tracker CRUD talks directly to Supabase from the frontend. Backend private APIs handle service-role operations, task/list deletion, task completion recurrence, cron, and Google Calendar sync.
+The frontend uses Supabase for auth/session handling. Task/list CRUD, custom ordering, sort preferences, task completion, recurrence repair, cron, and Google Calendar sync go through backend private APIs under `/api/private`.
 
 ## Repository Layout
 
@@ -142,6 +142,8 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 Backend tracker routes prefer a Supabase service-role JWT in `SUPABASE_SERVICE_ROLE_KEY`, with `SUPABASE_SECRET_KEY` as a fallback server key. Do not use the anon key for backend private APIs.
 
+Production CORS is restricted to known frontend aliases by default. Set `ALLOW_VERCEL_PREVIEW_ORIGINS=1` only when arbitrary `*.vercel.app` preview origins should be accepted.
+
 ### Supabase CLI
 
 The repo uses the official Supabase CLI for local Supabase, remote linking, and generated types. The CLI project config lives under `backend/supabase`; root scripts pass the correct `--workdir`.
@@ -165,6 +167,8 @@ bun run build
 bun run lint
 bun run test:unit
 bun run test:integration
+bun run test:smoke
+bun run test:e2e
 ```
 
 Backend:

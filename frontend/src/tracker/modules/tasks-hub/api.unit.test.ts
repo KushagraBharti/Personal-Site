@@ -43,7 +43,7 @@ describe("tasks-hub API", () => {
         headers: expect.objectContaining({
           Authorization: "Bearer token",
         }),
-      })
+      }),
     );
   });
 
@@ -54,7 +54,9 @@ describe("tasks-hub API", () => {
         .fn()
         .mockResolvedValueOnce({
           ok: false,
-          json: async () => ({ error: "Failed to generate Google connect URL" }),
+          json: async () => ({
+            error: "Failed to generate Google connect URL",
+          }),
         })
         .mockResolvedValueOnce({
           ok: false,
@@ -63,12 +65,18 @@ describe("tasks-hub API", () => {
         .mockResolvedValueOnce({
           ok: false,
           json: async () => ({ error: "Failed to fetch sync progress" }),
-        })
+        }),
     );
 
-    await expect(getGoogleConnectUrl("token")).rejects.toThrow("Failed to generate Google connect URL");
-    await expect(triggerCalendarSyncNow("token")).rejects.toThrow("Failed to sync calendar");
-    await expect(getCalendarSyncProgress("token", "run-1")).rejects.toThrow("Failed to fetch sync progress");
+    await expect(getGoogleConnectUrl("token")).rejects.toThrow(
+      "Failed to generate Google connect URL",
+    );
+    await expect(triggerCalendarSyncNow("token")).rejects.toThrow(
+      "Failed to sync calendar",
+    );
+    await expect(getCalendarSyncProgress("token", "run-1")).rejects.toThrow(
+      "Failed to fetch sync progress",
+    );
   });
 
   it("calls the backend delete-list endpoint with auth", async () => {
@@ -88,7 +96,7 @@ describe("tasks-hub API", () => {
         headers: expect.objectContaining({
           Authorization: "Bearer token",
         }),
-      })
+      }),
     );
   });
 
@@ -113,7 +121,7 @@ describe("tasks-hub API", () => {
       sort_preferences: [{ id: "pref-1" }],
     });
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining("/api/private/tracker/bootstrap"),
+      "http://localhost:5000/api/private/tracker/bootstrap",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({
@@ -123,7 +131,7 @@ describe("tasks-hub API", () => {
         body: JSON.stringify({
           browser_timezone: "America/Chicago",
         }),
-      })
+      }),
     );
   });
 
@@ -136,11 +144,17 @@ describe("tasks-hub API", () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ ok: true, list: { id: "list-1", name: "Personal" } }),
+        json: async () => ({
+          ok: true,
+          list: { id: "list-1", name: "Personal" },
+        }),
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ ok: true, lists: [{ id: "list-2" }, { id: "list-1" }] }),
+        json: async () => ({
+          ok: true,
+          lists: [{ id: "list-2" }, { id: "list-1" }],
+        }),
       });
     vi.stubGlobal("fetch", fetchMock);
 
@@ -148,14 +162,15 @@ describe("tasks-hub API", () => {
       id: "list-1",
       name: "Work",
     });
-    await expect(updateTaskList("token", "list-1", { name: "Personal" })).resolves.toEqual({
+    await expect(
+      updateTaskList("token", "list-1", { name: "Personal" }),
+    ).resolves.toEqual({
       id: "list-1",
       name: "Personal",
     });
-    await expect(reorderTaskLists("token", ["list-2", "list-1"])).resolves.toEqual([
-      { id: "list-2" },
-      { id: "list-1" },
-    ]);
+    await expect(
+      reorderTaskLists("token", ["list-2", "list-1"]),
+    ).resolves.toEqual([{ id: "list-2" }, { id: "list-1" }]);
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       1,
@@ -163,7 +178,7 @@ describe("tasks-hub API", () => {
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ name: "Work" }),
-      })
+      }),
     );
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
@@ -171,7 +186,7 @@ describe("tasks-hub API", () => {
       expect.objectContaining({
         method: "PATCH",
         body: JSON.stringify({ name: "Personal" }),
-      })
+      }),
     );
     expect(fetchMock).toHaveBeenNthCalledWith(
       3,
@@ -179,7 +194,7 @@ describe("tasks-hub API", () => {
       expect.objectContaining({
         method: "PATCH",
         body: JSON.stringify({ ordered_list_ids: ["list-2", "list-1"] }),
-      })
+      }),
     );
   });
 
@@ -188,7 +203,10 @@ describe("tasks-hub API", () => {
       .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ ok: true, task: { id: "task-1", title: "Write" } }),
+        json: async () => ({
+          ok: true,
+          task: { id: "task-1", title: "Write" },
+        }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -196,37 +214,51 @@ describe("tasks-hub API", () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ ok: true, tasks: [{ id: "task-2" }, { id: "task-1" }] }),
+        json: async () => ({
+          ok: true,
+          tasks: [{ id: "task-2" }, { id: "task-1" }],
+        }),
       })
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           ok: true,
-          sort_preference: { id: "pref-1", sort_mode: "title", sort_direction: "asc" },
+          sort_preference: {
+            id: "pref-1",
+            sort_mode: "title",
+            sort_direction: "asc",
+          },
         }),
       });
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(createTask("token", {
-      list_id: "list-1",
-      parent_task_id: null,
-      title: "Write",
-      details: null,
-      due_at: null,
-      due_timezone: null,
-      recurrence_type: "none",
-      recurrence_interval: null,
-      recurrence_unit: null,
-      recurrence_ends_at: null,
-      browser_timezone: "America/Chicago",
-    })).resolves.toEqual({ id: "task-1", title: "Write" });
-    await expect(updateTask("token", "task-1", { title: "Ship" })).resolves.toEqual({
+    await expect(
+      createTask("token", {
+        list_id: "list-1",
+        parent_task_id: null,
+        title: "Write",
+        details: null,
+        due_at: null,
+        due_timezone: null,
+        recurrence_type: "none",
+        recurrence_interval: null,
+        recurrence_unit: null,
+        recurrence_ends_at: null,
+        browser_timezone: "America/Chicago",
+      }),
+    ).resolves.toEqual({ id: "task-1", title: "Write" });
+    await expect(
+      updateTask("token", "task-1", { title: "Ship" }),
+    ).resolves.toEqual({
       id: "task-1",
       title: "Ship",
     });
-    await expect(reorderTasksViaApi("token", "list-1", null, ["task-2", "task-1"]))
-      .resolves.toEqual([{ id: "task-2" }, { id: "task-1" }]);
-    await expect(upsertSortPreference("token", "list-1", "title", "asc")).resolves.toEqual({
+    await expect(
+      reorderTasksViaApi("token", "list-1", null, ["task-2", "task-1"]),
+    ).resolves.toEqual([{ id: "task-2" }, { id: "task-1" }]);
+    await expect(
+      upsertSortPreference("token", "list-1", "title", "asc"),
+    ).resolves.toEqual({
       id: "pref-1",
       sort_mode: "title",
       sort_direction: "asc",
@@ -235,12 +267,15 @@ describe("tasks-hub API", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(
       1,
       expect.stringContaining("/api/private/tasks"),
-      expect.objectContaining({ method: "POST" })
+      expect.objectContaining({ method: "POST" }),
     );
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       expect.stringContaining("/api/private/tasks/task-1"),
-      expect.objectContaining({ method: "PATCH", body: JSON.stringify({ title: "Ship" }) })
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ title: "Ship" }),
+      }),
     );
     expect(fetchMock).toHaveBeenNthCalledWith(
       3,
@@ -252,7 +287,7 @@ describe("tasks-hub API", () => {
           parent_task_id: null,
           ordered_task_ids: ["task-2", "task-1"],
         }),
-      })
+      }),
     );
     expect(fetchMock).toHaveBeenNthCalledWith(
       4,
@@ -260,7 +295,7 @@ describe("tasks-hub API", () => {
       expect.objectContaining({
         method: "PUT",
         body: JSON.stringify({ sort_mode: "title", sort_direction: "asc" }),
-      })
+      }),
     );
   });
 
@@ -293,20 +328,30 @@ describe("tasks-hub API", () => {
         body: JSON.stringify({
           is_completed: true,
         }),
-      })
+      }),
     );
   });
 
   it("calls the backend list-sync endpoint with auth and payload", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ ok: true, queued_cleanup: true, cleanup_job_count: 2 }),
+      json: async () => ({
+        ok: true,
+        run_id: "",
+        queued_cleanup: true,
+        cleanup_job_count: 2,
+      }),
     });
     vi.stubGlobal("fetch", fetchMock);
 
     const result = await setListSync("token", "list-1", false);
 
-    expect(result).toEqual({ ok: true, queued_cleanup: true, cleanup_job_count: 2 });
+    expect(result).toEqual({
+      ok: true,
+      run_id: "",
+      queued_cleanup: true,
+      cleanup_job_count: 2,
+    });
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/api/private/calendar/list-sync"),
       expect.objectContaining({
@@ -319,7 +364,7 @@ describe("tasks-hub API", () => {
           list_id: "list-1",
           sync_enabled: false,
         }),
-      })
+      }),
     );
   });
 });

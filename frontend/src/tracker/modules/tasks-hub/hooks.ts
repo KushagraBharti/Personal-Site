@@ -52,7 +52,10 @@ const getBrowserTimeZone = () => {
   return isValidIanaTimeZone(resolved) ? resolved : "UTC";
 };
 
-const buildTaskDraft = (listId: string, parentTaskId: string | null = null): TaskDraft => ({
+const buildTaskDraft = (
+  listId: string,
+  parentTaskId: string | null = null,
+): TaskDraft => ({
   list_id: listId,
   parent_task_id: parentTaskId,
   title: "",
@@ -70,12 +73,14 @@ export const useTasksHubModule = () => {
 
   const [lists, setLists] = useState<TaskList[]>([]);
   const [tasks, setTasks] = useState<TrackerTask[]>([]);
-  const [sortPreferences, setSortPreferences] = useState<TaskSortPreference[]>([]);
+  const [sortPreferences, setSortPreferences] = useState<TaskSortPreference[]>(
+    [],
+  );
   const [selectedListId, setSelectedListId] = useState<string>(ALL_LISTS_KEY);
-  const [showCompleted, setShowCompleted] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
-  const [calendarState, setCalendarState] = useState<CalendarConnectionState | null>(null);
+  const [calendarState, setCalendarState] =
+    useState<CalendarConnectionState | null>(null);
   const [calendarBusy, setCalendarBusy] = useState(false);
   const [calendarSyncResult, setCalendarSyncResult] = useState<{
     processed: number;
@@ -98,7 +103,7 @@ export const useTasksHubModule = () => {
         stopLoading();
       }
     },
-    [startLoading, stopLoading]
+    [startLoading, stopLoading],
   );
 
   const fetchAll = useCallback(async () => {
@@ -106,13 +111,17 @@ export const useTasksHubModule = () => {
 
     await runWithLoading(async () => {
       try {
-        const bootstrap = await fetchTrackerBootstrap(session.access_token, getBrowserTimeZone());
+        const bootstrap = await fetchTrackerBootstrap(
+          session.access_token,
+          getBrowserTimeZone(),
+        );
         setLists(bootstrap.lists);
         setTasks(bootstrap.tasks);
         setSortPreferences(bootstrap.sort_preferences);
         setErrorMessage("");
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to load tasks.";
+        const message =
+          error instanceof Error ? error.message : "Failed to load tasks.";
         setErrorMessage(message);
       }
     });
@@ -133,7 +142,8 @@ export const useTasksHubModule = () => {
       setCalendarState(status);
       return status;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to load calendar status";
+      const message =
+        err instanceof Error ? err.message : "Failed to load calendar status";
       setErrorMessage(message);
       return null;
     }
@@ -157,7 +167,7 @@ export const useTasksHubModule = () => {
 
   const tasksForKnownLists = useMemo(
     () => tasks.filter((task) => listIds.has(task.list_id)),
-    [tasks, listIds]
+    [tasks, listIds],
   );
 
   const tasksByParent = useMemo(() => {
@@ -178,7 +188,7 @@ export const useTasksHubModule = () => {
 
     lists.forEach((list) => {
       const roots = tasksForKnownLists.filter(
-        (task) => task.list_id === list.id && !task.parent_task_id
+        (task) => task.list_id === list.id && !task.parent_task_id,
       );
       grouped[list.id] = roots;
     });
@@ -187,10 +197,15 @@ export const useTasksHubModule = () => {
   }, [lists, tasksForKnownLists]);
 
   const countsByList = useMemo(() => {
-    const counts: Record<string, { total: number; open: number; completed: number }> = {};
+    const counts: Record<
+      string,
+      { total: number; open: number; completed: number }
+    > = {};
 
     lists.forEach((list) => {
-      const listTasks = tasksForKnownLists.filter((task) => task.list_id === list.id);
+      const listTasks = tasksForKnownLists.filter(
+        (task) => task.list_id === list.id,
+      );
       const completed = listTasks.filter((task) => task.is_completed).length;
       counts[list.id] = {
         total: listTasks.length,
@@ -204,17 +219,22 @@ export const useTasksHubModule = () => {
 
   const totalOpenCount = useMemo(
     () => Object.values(countsByList).reduce((sum, item) => sum + item.open, 0),
-    [countsByList]
+    [countsByList],
   );
 
   const totalCompletedCount = useMemo(
-    () => Object.values(countsByList).reduce((sum, item) => sum + item.completed, 0),
-    [countsByList]
+    () =>
+      Object.values(countsByList).reduce(
+        (sum, item) => sum + item.completed,
+        0,
+      ),
+    [countsByList],
   );
 
   const totalTaskCount = useMemo(
-    () => Object.values(countsByList).reduce((sum, item) => sum + item.total, 0),
-    [countsByList]
+    () =>
+      Object.values(countsByList).reduce((sum, item) => sum + item.total, 0),
+    [countsByList],
   );
 
   const createList = useCallback(
@@ -237,14 +257,15 @@ export const useTasksHubModule = () => {
         setErrorMessage("");
         return result;
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to create list.";
+        const message =
+          error instanceof Error ? error.message : "Failed to create list.";
         setErrorMessage(message);
         return null;
       } finally {
         setIsSaving(false);
       }
     },
-    [session?.access_token]
+    [session?.access_token],
   );
 
   const saveList = useCallback(
@@ -266,17 +287,24 @@ export const useTasksHubModule = () => {
       }
 
       try {
-        const result = await updateTaskList(session.access_token, listId, payload);
-        setLists((prev) => prev.map((list) => (list.id === listId ? result : list)));
+        const result = await updateTaskList(
+          session.access_token,
+          listId,
+          payload,
+        );
+        setLists((prev) =>
+          prev.map((list) => (list.id === listId ? result : list)),
+        );
         setErrorMessage("");
         return true;
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to update list.";
+        const message =
+          error instanceof Error ? error.message : "Failed to update list.";
         setErrorMessage(message);
         return false;
       }
     },
-    [session?.access_token]
+    [session?.access_token],
   );
 
   const removeList = useCallback(
@@ -288,36 +316,50 @@ export const useTasksHubModule = () => {
       try {
         await deleteTaskListViaApi(session.access_token, listId);
       } catch (error) {
-        setErrorMessage(error instanceof Error ? error.message : "Failed to delete list.");
+        setErrorMessage(
+          error instanceof Error ? error.message : "Failed to delete list.",
+        );
         return false;
       }
 
       setLists((prev) => prev.filter((list) => list.id !== listId));
       setTasks((prev) => prev.filter((task) => task.list_id !== listId));
-      setSortPreferences((prev) => prev.filter((pref) => pref.list_id !== listId));
+      setSortPreferences((prev) =>
+        prev.filter((pref) => pref.list_id !== listId),
+      );
       if (selectedListId === listId) {
         setSelectedListId(ALL_LISTS_KEY);
       }
       setErrorMessage("");
       return true;
     },
-    [selectedListId, session?.access_token]
+    [selectedListId, session?.access_token],
   );
 
   const pollSyncRun = useCallback(
-    async (runId: string, options?: { timeoutMs?: number; pollEveryMs?: number }) => {
+    async (
+      runId: string,
+      options?: { timeoutMs?: number; pollEveryMs?: number },
+    ) => {
       if (!session?.access_token) return;
       const timeoutMs = Math.max(options?.timeoutMs ?? 25_000, 2_000);
       const pollEveryMs = Math.max(options?.pollEveryMs ?? 1_000, 300);
       const startedAt = Date.now();
-      let latestSnapshot: { processed: number; failed: number; failures: Array<{ id: number; error: string }> } = {
+      let latestSnapshot: {
+        processed: number;
+        failed: number;
+        failures: Array<{ id: number; error: string }>;
+      } = {
         processed: 0,
         failed: 0,
         failures: [],
       };
 
       while (Date.now() - startedAt < timeoutMs) {
-        const progress = await getCalendarSyncProgress(session.access_token, runId);
+        const progress = await getCalendarSyncProgress(
+          session.access_token,
+          runId,
+        );
         latestSnapshot = {
           processed: progress.processed,
           failed: progress.failed,
@@ -334,7 +376,7 @@ export const useTasksHubModule = () => {
       setCalendarSyncResult(latestSnapshot);
       await loadCalendarStatus();
     },
-    [loadCalendarStatus, session?.access_token]
+    [loadCalendarStatus, session?.access_token],
   );
 
   const scheduleLiveSyncPump = useCallback(
@@ -356,14 +398,15 @@ export const useTasksHubModule = () => {
             await loadCalendarStatus();
           }
         } catch (err) {
-          const message = err instanceof Error ? err.message : "Live calendar sync failed";
+          const message =
+            err instanceof Error ? err.message : "Live calendar sync failed";
           setErrorMessage(message);
         } finally {
           livePumpTimerRef.current = null;
         }
       }, delayMs);
     },
-    [calendarState?.connected, loadCalendarStatus, session?.access_token]
+    [calendarState?.connected, loadCalendarStatus, session?.access_token],
   );
 
   const createTaskFromDraft = useCallback(
@@ -372,7 +415,10 @@ export const useTasksHubModule = () => {
       if (!cleanedTitle) return null;
 
       const recurrenceType = draft.recurrence_type;
-      const interval = recurrenceType === "custom" ? Math.max(draft.recurrence_interval || 1, 1) : null;
+      const interval =
+        recurrenceType === "custom"
+          ? Math.max(draft.recurrence_interval || 1, 1)
+          : null;
       const unit = recurrenceType === "custom" ? draft.recurrence_unit : null;
       const dueAtIso = toIsoOrNull(draft.due_at);
       if (recurrenceType !== "none" && !dueAtIso) {
@@ -395,7 +441,10 @@ export const useTasksHubModule = () => {
           recurrence_type: recurrenceType,
           recurrence_interval: interval,
           recurrence_unit: unit,
-          recurrence_ends_at: recurrenceType === "none" ? null : toIsoOrNull(draft.recurrence_ends_at),
+          recurrence_ends_at:
+            recurrenceType === "none"
+              ? null
+              : toIsoOrNull(draft.recurrence_ends_at),
           browser_timezone: getBrowserTimeZone(),
         });
         setTasks((prev) => [...prev, result]);
@@ -403,12 +452,13 @@ export const useTasksHubModule = () => {
         scheduleLiveSyncPump();
         return result;
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to create task.";
+        const message =
+          error instanceof Error ? error.message : "Failed to create task.";
         setErrorMessage(message);
         return null;
       }
     },
-    [scheduleLiveSyncPump, session?.access_token]
+    [scheduleLiveSyncPump, session?.access_token],
   );
 
   const saveTask = useCallback(
@@ -421,7 +471,10 @@ export const useTasksHubModule = () => {
       }
 
       const currentTask = tasks.find((task) => task.id === taskId) || null;
-      const touchesDueAt = Object.prototype.hasOwnProperty.call(payload, "due_at");
+      const touchesDueAt = Object.prototype.hasOwnProperty.call(
+        payload,
+        "due_at",
+      );
       const touchesRecurrence =
         Object.prototype.hasOwnProperty.call(payload, "recurrence_type") ||
         Object.prototype.hasOwnProperty.call(payload, "recurrence_interval") ||
@@ -430,8 +483,11 @@ export const useTasksHubModule = () => {
         touchesDueAt;
       if (touchesRecurrence) {
         const nextDueAt =
-          payload.due_at !== undefined ? payload.due_at : (currentTask?.due_at ?? null);
-        const nextRecurrenceType = payload.recurrence_type ?? currentTask?.recurrence_type ?? "none";
+          payload.due_at !== undefined
+            ? payload.due_at
+            : (currentTask?.due_at ?? null);
+        const nextRecurrenceType =
+          payload.recurrence_type ?? currentTask?.recurrence_type ?? "none";
         if (nextRecurrenceType !== "none" && !nextDueAt) {
           setErrorMessage("Recurring tasks require a due date.");
           return false;
@@ -448,17 +504,20 @@ export const useTasksHubModule = () => {
           ...payload,
           browser_timezone: getBrowserTimeZone(),
         });
-        setTasks((prev) => prev.map((task) => (task.id === taskId ? result : task)));
+        setTasks((prev) =>
+          prev.map((task) => (task.id === taskId ? result : task)),
+        );
         setErrorMessage("");
         scheduleLiveSyncPump();
         return true;
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to save task.";
+        const message =
+          error instanceof Error ? error.message : "Failed to save task.";
         setErrorMessage(message);
         return false;
       }
     },
-    [scheduleLiveSyncPump, session?.access_token, tasks]
+    [scheduleLiveSyncPump, session?.access_token, tasks],
   );
 
   const removeTask = useCallback(
@@ -466,17 +525,22 @@ export const useTasksHubModule = () => {
       try {
         await deleteTaskViaApi(session.access_token, taskId);
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to delete task.";
+        const message =
+          error instanceof Error ? error.message : "Failed to delete task.";
         setErrorMessage(message);
         return false;
       }
 
-      setTasks((prev) => prev.filter((task) => task.id !== taskId && task.parent_task_id !== taskId));
+      setTasks((prev) =>
+        prev.filter(
+          (task) => task.id !== taskId && task.parent_task_id !== taskId,
+        ),
+      );
       setErrorMessage("");
       scheduleLiveSyncPump();
       return true;
     },
-    [scheduleLiveSyncPump, session.access_token]
+    [scheduleLiveSyncPump, session.access_token],
   );
 
   const toggleTaskCompletion = useCallback(
@@ -485,15 +549,24 @@ export const useTasksHubModule = () => {
 
       let result: Awaited<ReturnType<typeof setTaskCompletionViaApi>>;
       try {
-        result = await setTaskCompletionViaApi(session.access_token, task.id, nextCompleted);
+        result = await setTaskCompletionViaApi(
+          session.access_token,
+          task.id,
+          nextCompleted,
+        );
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to update task status.";
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to update task status.";
         setErrorMessage(message);
         return false;
       }
 
       const updatedTask = result.task;
-      setTasks((prev) => prev.map((current) => (current.id === task.id ? updatedTask : current)));
+      setTasks((prev) =>
+        prev.map((current) => (current.id === task.id ? updatedTask : current)),
+      );
       const createdNextTask = result.created_next_task;
       if (createdNextTask) {
         setTasks((prev) => [...prev, createdNextTask]);
@@ -503,22 +576,31 @@ export const useTasksHubModule = () => {
       scheduleLiveSyncPump();
       return true;
     },
-    [scheduleLiveSyncPump, session.access_token]
+    [scheduleLiveSyncPump, session.access_token],
   );
 
   const reorderTasks = useCallback(
-    async (listId: string, orderedTaskIds: string[], parentTaskId: string | null) => {
+    async (
+      listId: string,
+      orderedTaskIds: string[],
+      parentTaskId: string | null,
+    ) => {
       if (orderedTaskIds.length <= 1) return true;
 
-      const orderMap = new Map(orderedTaskIds.map((taskId, index) => [taskId, index + 1]));
+      const orderMap = new Map(
+        orderedTaskIds.map((taskId, index) => [taskId, index + 1]),
+      );
       const previous = tasks;
 
       setTasks((prev) =>
         prev.map((task) => {
-          if (task.list_id !== listId || task.parent_task_id !== parentTaskId) return task;
+          if (task.list_id !== listId || task.parent_task_id !== parentTaskId)
+            return task;
           const nextOrder = orderMap.get(task.id);
-          return typeof nextOrder === "number" ? { ...task, sort_order: nextOrder } : task;
-        })
+          return typeof nextOrder === "number"
+            ? { ...task, sort_order: nextOrder }
+            : task;
+        }),
       );
 
       if (!session?.access_token) {
@@ -532,35 +614,46 @@ export const useTasksHubModule = () => {
           session.access_token,
           listId,
           parentTaskId,
-          orderedTaskIds
+          orderedTaskIds,
         );
-        const updatedById = new Map(updatedTasks.map((task) => [task.id, task]));
-        setTasks((prev) => prev.map((task) => updatedById.get(task.id) || task));
+        const updatedById = new Map(
+          updatedTasks.map((task) => [task.id, task]),
+        );
+        setTasks((prev) =>
+          prev.map((task) => updatedById.get(task.id) || task),
+        );
         setErrorMessage("");
         scheduleLiveSyncPump();
         return true;
       } catch (error) {
         setTasks(previous);
-        const message = error instanceof Error ? error.message : "Failed to persist custom order.";
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to persist custom order.";
         setErrorMessage(message);
         return false;
       }
     },
-    [scheduleLiveSyncPump, session?.access_token, tasks]
+    [scheduleLiveSyncPump, session?.access_token, tasks],
   );
 
   const reorderLists = useCallback(
     async (orderedListIds: string[]) => {
       if (orderedListIds.length <= 1) return true;
 
-      const orderMap = new Map(orderedListIds.map((listId, index) => [listId, index + 1]));
+      const orderMap = new Map(
+        orderedListIds.map((listId, index) => [listId, index + 1]),
+      );
       const previous = lists;
 
       setLists((prev) =>
         prev.map((list) => {
           const nextOrder = orderMap.get(list.id);
-          return typeof nextOrder === "number" ? { ...list, sort_order: nextOrder } : list;
-        })
+          return typeof nextOrder === "number"
+            ? { ...list, sort_order: nextOrder }
+            : list;
+        }),
       );
 
       if (!session?.access_token) {
@@ -570,19 +663,29 @@ export const useTasksHubModule = () => {
       }
 
       try {
-        const updatedLists = await reorderTaskLists(session.access_token, orderedListIds);
-        const updatedById = new Map(updatedLists.map((list) => [list.id, list]));
-        setLists((prev) => prev.map((list) => updatedById.get(list.id) || list));
+        const updatedLists = await reorderTaskLists(
+          session.access_token,
+          orderedListIds,
+        );
+        const updatedById = new Map(
+          updatedLists.map((list) => [list.id, list]),
+        );
+        setLists((prev) =>
+          prev.map((list) => updatedById.get(list.id) || list),
+        );
         setErrorMessage("");
         return true;
       } catch (error) {
         setLists(previous);
-        const message = error instanceof Error ? error.message : "Failed to persist list order.";
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to persist list order.";
         setErrorMessage(message);
         return false;
       }
     },
-    [lists, session?.access_token]
+    [lists, session?.access_token],
   );
 
   const getSortForList = useCallback(
@@ -593,7 +696,7 @@ export const useTasksHubModule = () => {
         direction: pref?.sort_direction ?? DEFAULT_SORT_DIRECTION,
       };
     },
-    [sortPreferences]
+    [sortPreferences],
   );
 
   const setSortForList = useCallback(
@@ -608,11 +711,13 @@ export const useTasksHubModule = () => {
           session.access_token,
           listId,
           mode,
-          direction
+          direction,
         );
 
         setSortPreferences((prev) => {
-          const existingIndex = prev.findIndex((item) => item.list_id === listId);
+          const existingIndex = prev.findIndex(
+            (item) => item.list_id === listId,
+          );
           if (existingIndex < 0) {
             return [...prev, result];
           }
@@ -624,12 +729,15 @@ export const useTasksHubModule = () => {
         setErrorMessage("");
         return true;
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to save sort preference.";
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to save sort preference.";
         setErrorMessage(message);
         return false;
       }
     },
-    [session?.access_token]
+    [session?.access_token],
   );
 
   const setSortForCurrentView = useCallback(
@@ -640,12 +748,17 @@ export const useTasksHubModule = () => {
 
       await setSortForList(selectedListId, mode, direction);
     },
-    [selectedListId, setSortForList]
+    [selectedListId, setSortForList],
   );
 
   const sortedLists = useMemo(
-    () => [...lists].sort((a, b) => (a.sort_order === b.sort_order ? a.name.localeCompare(b.name) : a.sort_order - b.sort_order)),
-    [lists]
+    () =>
+      [...lists].sort((a, b) =>
+        a.sort_order === b.sort_order
+          ? a.name.localeCompare(b.name)
+          : a.sort_order - b.sort_order,
+      ),
+    [lists],
   );
   const selectedListSort =
     selectedListId === ALL_LISTS_KEY
@@ -670,7 +783,10 @@ export const useTasksHubModule = () => {
       const { url } = await getGoogleConnectUrl(session.access_token);
       window.location.href = url;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to connect Google Calendar";
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to connect Google Calendar";
       setErrorMessage(message);
     } finally {
       setCalendarBusy(false);
@@ -684,7 +800,10 @@ export const useTasksHubModule = () => {
       await disconnectCalendar(session.access_token);
       await loadCalendarStatus();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to disconnect Google Calendar";
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to disconnect Google Calendar";
       setErrorMessage(message);
     } finally {
       setCalendarBusy(false);
@@ -695,17 +814,31 @@ export const useTasksHubModule = () => {
     async (listId: string, enabled: boolean) => {
       if (!session?.access_token) return false;
       try {
-        await setListSync(session.access_token, listId, enabled);
+        const result = await setListSync(session.access_token, listId, enabled);
         await loadCalendarStatus();
-        if (enabled) scheduleLiveSyncPump(true);
+        if (enabled && result.run_id) {
+          setCalendarSyncResult({ processed: 0, failed: 0, failures: [] });
+          await pollSyncRun(result.run_id, {
+            timeoutMs: 90_000,
+            pollEveryMs: 1_100,
+          });
+        } else if (enabled || result.queued_cleanup) {
+          scheduleLiveSyncPump(true);
+        }
         return true;
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to update list sync";
+        const message =
+          err instanceof Error ? err.message : "Failed to update list sync";
         setErrorMessage(message);
         return false;
       }
     },
-    [loadCalendarStatus, scheduleLiveSyncPump, session?.access_token]
+    [
+      loadCalendarStatus,
+      pollSyncRun,
+      scheduleLiveSyncPump,
+      session?.access_token,
+    ],
   );
 
   const syncCalendarNow = useCallback(async () => {
@@ -715,7 +848,10 @@ export const useTasksHubModule = () => {
       const result = await triggerCalendarSyncNow(session.access_token);
       setCalendarSyncResult({ processed: 0, failed: 0, failures: [] });
       if (result.run_id) {
-        await pollSyncRun(result.run_id, { timeoutMs: 90_000, pollEveryMs: 1_100 });
+        await pollSyncRun(result.run_id, {
+          timeoutMs: 90_000,
+          pollEveryMs: 1_100,
+        });
       } else {
         setCalendarSyncResult({
           processed: result.processed ?? 0,
@@ -726,7 +862,8 @@ export const useTasksHubModule = () => {
       }
       return true;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to sync calendar now";
+      const message =
+        err instanceof Error ? err.message : "Failed to sync calendar now";
       setErrorMessage(message);
       return false;
     } finally {
@@ -737,7 +874,7 @@ export const useTasksHubModule = () => {
   const rebuildCalendarNow = useCallback(async () => {
     if (!session?.access_token) return false;
     const confirmed = window.confirm(
-      "Rebuild Tracker Tasks calendar? This will delete all events in that calendar and rebuild from the tracker tasks that should currently appear there."
+      "Rebuild Tracker Tasks calendar? This will delete all events in that calendar and rebuild from the tracker tasks that should currently appear there.",
     );
     if (!confirmed) return false;
 
@@ -746,7 +883,10 @@ export const useTasksHubModule = () => {
       const result = await triggerCalendarRebuild(session.access_token);
       setCalendarSyncResult({ processed: 0, failed: 0, failures: [] });
       if (result.run_id) {
-        await pollSyncRun(result.run_id, { timeoutMs: 180_000, pollEveryMs: 1_200 });
+        await pollSyncRun(result.run_id, {
+          timeoutMs: 180_000,
+          pollEveryMs: 1_200,
+        });
       } else {
         setCalendarSyncResult({
           processed: result.processed ?? 0,
@@ -757,7 +897,8 @@ export const useTasksHubModule = () => {
       }
       return true;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to rebuild calendar";
+      const message =
+        err instanceof Error ? err.message : "Failed to rebuild calendar";
       setErrorMessage(message);
       return false;
     } finally {
@@ -782,8 +923,6 @@ export const useTasksHubModule = () => {
     setSortForCurrentView,
     getSortForList,
     setSortForList,
-    showCompleted,
-    setShowCompleted,
     isSaving,
     calendarState,
     calendarBusy,

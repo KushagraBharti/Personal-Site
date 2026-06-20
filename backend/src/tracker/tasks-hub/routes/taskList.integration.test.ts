@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const getUserMock = vi.hoisted(() => vi.fn());
 const createClientMock = vi.hoisted(() => vi.fn());
 const getSupabaseAdminMock = vi.hoisted(() => vi.fn());
+const queueTaskUpsertForUserMock = vi.hoisted(() => vi.fn());
 const getTrackerBootstrapForUserMock = vi.hoisted(() => vi.fn());
 const createTaskListForUserMock = vi.hoisted(() => vi.fn());
 const updateTaskListForUserMock = vi.hoisted(() => vi.fn());
@@ -23,6 +24,10 @@ vi.mock("@supabase/supabase-js", () => ({
 
 vi.mock("../../calendar/services/calendarSyncQueueService", () => ({
   getSupabaseAdmin: getSupabaseAdminMock,
+}));
+
+vi.mock("../../calendar/services/taskCalendarSyncService", () => ({
+  queueTaskUpsertForUser: queueTaskUpsertForUserMock,
 }));
 
 vi.mock("../services/taskListService", () => ({
@@ -58,6 +63,8 @@ describe("task list routes", () => {
     getUserMock.mockReset();
     createClientMock.mockReset();
     getSupabaseAdminMock.mockReset();
+    queueTaskUpsertForUserMock.mockReset();
+    queueTaskUpsertForUserMock.mockResolvedValue(undefined);
     getTrackerBootstrapForUserMock.mockReset();
     createTaskListForUserMock.mockReset();
     updateTaskListForUserMock.mockReset();
@@ -118,9 +125,13 @@ describe("task list routes", () => {
       tasks: [{ id: "task-1" }],
       sort_preferences: [{ id: "pref-1" }],
     });
-    expect(getTrackerBootstrapForUserMock).toHaveBeenCalledWith(adminClient, "user-1", {
-      browserTimeZone: "America/Chicago",
-    });
+    expect(getTrackerBootstrapForUserMock).toHaveBeenCalledWith(
+      adminClient,
+      "user-1",
+      {
+        browserTimeZone: "America/Chicago",
+      },
+    );
   });
 
   it("creates a task list through the backend service", async () => {
@@ -136,10 +147,17 @@ describe("task list routes", () => {
       .send({ name: "Work" });
 
     expect(response.status).toBe(201);
-    expect(response.body).toEqual({ ok: true, list: { id: "list-1", name: "Work" } });
-    expect(createTaskListForUserMock).toHaveBeenCalledWith(adminClient, "user-1", {
-      name: "Work",
+    expect(response.body).toEqual({
+      ok: true,
+      list: { id: "list-1", name: "Work" },
     });
+    expect(createTaskListForUserMock).toHaveBeenCalledWith(
+      adminClient,
+      "user-1",
+      {
+        name: "Work",
+      },
+    );
   });
 
   it("updates and reorders task lists through the backend service", async () => {
@@ -149,7 +167,10 @@ describe("task list routes", () => {
     });
     reorderTaskListsForUserMock.mockResolvedValueOnce({
       ok: true,
-      lists: [{ id: "list-2", sort_order: 1 }, { id: "list-1", sort_order: 2 }],
+      lists: [
+        { id: "list-2", sort_order: 1 },
+        { id: "list-1", sort_order: 2 },
+      ],
     });
 
     const { default: app } = await import("../../../app");
@@ -163,19 +184,31 @@ describe("task list routes", () => {
       .send({ ordered_list_ids: ["list-2", "list-1"] });
 
     expect(updateResponse.status).toBe(200);
-    expect(updateResponse.body).toEqual({ ok: true, list: { id: "list-1", name: "Personal" } });
-    expect(updateTaskListForUserMock).toHaveBeenCalledWith(adminClient, "user-1", "list-1", {
-      name: "Personal",
+    expect(updateResponse.body).toEqual({
+      ok: true,
+      list: { id: "list-1", name: "Personal" },
     });
+    expect(updateTaskListForUserMock).toHaveBeenCalledWith(
+      adminClient,
+      "user-1",
+      "list-1",
+      {
+        name: "Personal",
+      },
+    );
     expect(reorderResponse.status).toBe(200);
     expect(reorderResponse.body).toEqual({
       ok: true,
-      lists: [{ id: "list-2", sort_order: 1 }, { id: "list-1", sort_order: 2 }],
+      lists: [
+        { id: "list-2", sort_order: 1 },
+        { id: "list-1", sort_order: 2 },
+      ],
     });
-    expect(reorderTaskListsForUserMock).toHaveBeenCalledWith(adminClient, "user-1", [
-      "list-2",
-      "list-1",
-    ]);
+    expect(reorderTaskListsForUserMock).toHaveBeenCalledWith(
+      adminClient,
+      "user-1",
+      ["list-2", "list-1"],
+    );
   });
 
   it("deletes the list through the backend service", async () => {
@@ -188,21 +221,38 @@ describe("task list routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ ok: true });
-    expect(deleteTaskListForUserMock).toHaveBeenCalledWith(adminClient, "user-1", "list-1");
+    expect(deleteTaskListForUserMock).toHaveBeenCalledWith(
+      adminClient,
+      "user-1",
+      "list-1",
+    );
   });
 
   it("creates, updates, and reorders tasks through the backend service", async () => {
     createTaskForUserMock.mockResolvedValueOnce({
       ok: true,
-      task: { id: "task-1", title: "Write" },
+      task: {
+        id: "task-1",
+        list_id: "list-1",
+        title: "Write",
+        updated_at: "2026-06-20T00:00:00.000Z",
+      },
     });
     updateTaskForUserMock.mockResolvedValueOnce({
       ok: true,
-      task: { id: "task-1", title: "Ship" },
+      task: {
+        id: "task-1",
+        list_id: "list-1",
+        title: "Ship",
+        updated_at: "2026-06-20T00:01:00.000Z",
+      },
     });
     reorderTasksForUserMock.mockResolvedValueOnce({
       ok: true,
-      tasks: [{ id: "task-2", sort_order: 1 }, { id: "task-1", sort_order: 2 }],
+      tasks: [
+        { id: "task-2", sort_order: 1 },
+        { id: "task-1", sort_order: 2 },
+      ],
     });
 
     const { default: app } = await import("../../../app");
@@ -224,26 +274,78 @@ describe("task list routes", () => {
       });
 
     expect(createResponse.status).toBe(201);
-    expect(createResponse.body).toEqual({ ok: true, task: { id: "task-1", title: "Write" } });
+    expect(createResponse.body).toEqual({
+      ok: true,
+      task: {
+        id: "task-1",
+        list_id: "list-1",
+        title: "Write",
+        updated_at: "2026-06-20T00:00:00.000Z",
+      },
+    });
     expect(createTaskForUserMock).toHaveBeenCalledWith(adminClient, "user-1", {
       list_id: "list-1",
       title: "Write",
     });
     expect(updateResponse.status).toBe(200);
-    expect(updateResponse.body).toEqual({ ok: true, task: { id: "task-1", title: "Ship" } });
-    expect(updateTaskForUserMock).toHaveBeenCalledWith(adminClient, "user-1", "task-1", {
-      title: "Ship",
+    expect(updateResponse.body).toEqual({
+      ok: true,
+      task: {
+        id: "task-1",
+        list_id: "list-1",
+        title: "Ship",
+        updated_at: "2026-06-20T00:01:00.000Z",
+      },
     });
+    expect(updateTaskForUserMock).toHaveBeenCalledWith(
+      adminClient,
+      "user-1",
+      "task-1",
+      {
+        title: "Ship",
+      },
+    );
     expect(reorderResponse.status).toBe(200);
     expect(reorderResponse.body).toEqual({
       ok: true,
-      tasks: [{ id: "task-2", sort_order: 1 }, { id: "task-1", sort_order: 2 }],
+      tasks: [
+        { id: "task-2", sort_order: 1 },
+        { id: "task-1", sort_order: 2 },
+      ],
     });
-    expect(reorderTasksForUserMock).toHaveBeenCalledWith(adminClient, "user-1", {
-      list_id: "list-1",
-      parent_task_id: null,
-      ordered_task_ids: ["task-2", "task-1"],
-    });
+    expect(reorderTasksForUserMock).toHaveBeenCalledWith(
+      adminClient,
+      "user-1",
+      {
+        list_id: "list-1",
+        parent_task_id: null,
+        ordered_task_ids: ["task-2", "task-1"],
+      },
+    );
+    expect(queueTaskUpsertForUserMock).toHaveBeenNthCalledWith(
+      1,
+      adminClient,
+      "user-1",
+      {
+        id: "task-1",
+        list_id: "list-1",
+        title: "Write",
+        updated_at: "2026-06-20T00:00:00.000Z",
+      },
+      "api_task_create",
+    );
+    expect(queueTaskUpsertForUserMock).toHaveBeenNthCalledWith(
+      2,
+      adminClient,
+      "user-1",
+      {
+        id: "task-1",
+        list_id: "list-1",
+        title: "Ship",
+        updated_at: "2026-06-20T00:01:00.000Z",
+      },
+      "api_task_update",
+    );
   });
 
   it("deletes a task through the backend service", async () => {
@@ -256,13 +358,22 @@ describe("task list routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ ok: true });
-    expect(deleteTaskForUserMock).toHaveBeenCalledWith(adminClient, "user-1", "task-1");
+    expect(deleteTaskForUserMock).toHaveBeenCalledWith(
+      adminClient,
+      "user-1",
+      "task-1",
+    );
   });
 
   it("updates task completion through the backend service", async () => {
     setTaskCompletionForUserMock.mockResolvedValue({
       ok: true,
-      task: { id: "task-1", is_completed: true },
+      task: {
+        id: "task-1",
+        list_id: "list-1",
+        is_completed: true,
+        updated_at: "2026-06-20T00:02:00.000Z",
+      },
       createdNextTask: null,
     });
 
@@ -275,14 +386,30 @@ describe("task list routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       ok: true,
-      task: { id: "task-1", is_completed: true },
+      task: {
+        id: "task-1",
+        list_id: "list-1",
+        is_completed: true,
+        updated_at: "2026-06-20T00:02:00.000Z",
+      },
       created_next_task: null,
     });
     expect(setTaskCompletionForUserMock).toHaveBeenCalledWith(
       adminClient,
       "user-1",
       "task-1",
-      true
+      true,
+    );
+    expect(queueTaskUpsertForUserMock).toHaveBeenCalledWith(
+      adminClient,
+      "user-1",
+      {
+        id: "task-1",
+        list_id: "list-1",
+        is_completed: true,
+        updated_at: "2026-06-20T00:02:00.000Z",
+      },
+      "api_task_completion",
     );
   });
 
@@ -294,7 +421,9 @@ describe("task list routes", () => {
       .send({ is_completed: "yes" });
 
     expect(response.status).toBe(400);
-    expect(response.body).toEqual({ error: "is_completed boolean is required" });
+    expect(response.body).toEqual({
+      error: "is_completed boolean is required",
+    });
     expect(setTaskCompletionForUserMock).not.toHaveBeenCalled();
   });
 
@@ -329,7 +458,7 @@ describe("task list routes", () => {
       adminClient,
       "user-1",
       "list-1",
-      { sort_mode: "title", sort_direction: "asc" }
+      { sort_mode: "title", sort_direction: "asc" },
     );
   });
 });

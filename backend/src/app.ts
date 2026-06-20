@@ -19,8 +19,11 @@ const allowedOrigins = [
 ];
 
 const vercelRegex = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i;
-const localLanRegex = /^http:\/\/(?:10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[0-1])\.)[0-9.]+:5173$/i;
+const localLanRegex =
+  /^http:\/\/(?:10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[0-1])\.)[0-9.]+:5173$/i;
 const isDev = process.env.NODE_ENV !== "production";
+const allowVercelPreviewOrigins =
+  process.env.ALLOW_VERCEL_PREVIEW_ORIGINS === "1";
 
 app.use(
   cors({
@@ -29,8 +32,8 @@ app.use(
         isDev ||
         !origin ||
         allowedOrigins.includes(origin) ||
-        vercelRegex.test(origin) ||
-        localLanRegex.test(origin)
+        (allowVercelPreviewOrigins && vercelRegex.test(origin)) ||
+        (isDev && localLanRegex.test(origin))
       ) {
         callback(null, true);
       } else {
@@ -38,7 +41,7 @@ app.use(
         callback(new Error("Not allowed by CORS"));
       }
     },
-  })
+  }),
 );
 
 app.use(express.json());

@@ -12,8 +12,9 @@ import {
   TaskUpdateInput,
   TrackerTask,
 } from "./types";
+import { getApiBaseUrl } from "../../../shared/lib/apiBaseUrl";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+const API_BASE = getApiBaseUrl();
 
 interface TrackerBootstrapResult {
   ok: boolean;
@@ -71,8 +72,11 @@ const getAuthHeaders = (accessToken: string) => ({
   Authorization: `Bearer ${accessToken}`,
 });
 
-const readJson = async <T>(res: Response, fallbackError: string): Promise<T> => {
-  const body = await res.json().catch(() => ({} as { error?: string }));
+const readJson = async <T>(
+  res: Response,
+  fallbackError: string,
+): Promise<T> => {
+  const body = await res.json().catch(() => ({}) as { error?: string });
   if (!res.ok) {
     const errorMessage =
       typeof body === "object" && body !== null && "error" in body
@@ -85,7 +89,7 @@ const readJson = async <T>(res: Response, fallbackError: string): Promise<T> => 
 
 export const fetchTrackerBootstrap = async (
   accessToken: string,
-  browserTimeZone: string
+  browserTimeZone: string,
 ): Promise<TrackerBootstrapResult> => {
   const res = await fetch(`${API_BASE}/api/private/tracker/bootstrap`, {
     method: "POST",
@@ -99,7 +103,7 @@ export const fetchTrackerBootstrap = async (
 
 export const createTaskList = async (
   accessToken: string,
-  payload: TaskListCreateInput
+  payload: TaskListCreateInput,
 ): Promise<TaskList> => {
   const res = await fetch(`${API_BASE}/api/private/lists`, {
     method: "POST",
@@ -113,20 +117,23 @@ export const createTaskList = async (
 export const updateTaskList = async (
   accessToken: string,
   listId: string,
-  updates: ListUpdateInput
+  updates: ListUpdateInput,
 ): Promise<TaskList> => {
-  const res = await fetch(`${API_BASE}/api/private/lists/${encodeURIComponent(listId)}`, {
-    method: "PATCH",
-    headers: getAuthHeaders(accessToken),
-    body: JSON.stringify(updates),
-  });
+  const res = await fetch(
+    `${API_BASE}/api/private/lists/${encodeURIComponent(listId)}`,
+    {
+      method: "PATCH",
+      headers: getAuthHeaders(accessToken),
+      body: JSON.stringify(updates),
+    },
+  );
   const result = await readJson<TaskListResult>(res, "Failed to update list.");
   return result.list;
 };
 
 export const reorderTaskLists = async (
   accessToken: string,
-  orderedListIds: string[]
+  orderedListIds: string[],
 ): Promise<TaskList[]> => {
   const res = await fetch(`${API_BASE}/api/private/lists/reorder`, {
     method: "PATCH",
@@ -135,24 +142,30 @@ export const reorderTaskLists = async (
       ordered_list_ids: orderedListIds,
     }),
   });
-  const result = await readJson<TaskListReorderResult>(res, "Failed to persist list order.");
+  const result = await readJson<TaskListReorderResult>(
+    res,
+    "Failed to persist list order.",
+  );
   return result.lists;
 };
 
 export const deleteTaskListViaApi = async (
   accessToken: string,
-  listId: string
+  listId: string,
 ): Promise<{ ok: boolean }> => {
-  const res = await fetch(`${API_BASE}/api/private/lists/${encodeURIComponent(listId)}`, {
-    method: "DELETE",
-    headers: getAuthHeaders(accessToken),
-  });
+  const res = await fetch(
+    `${API_BASE}/api/private/lists/${encodeURIComponent(listId)}`,
+    {
+      method: "DELETE",
+      headers: getAuthHeaders(accessToken),
+    },
+  );
   return readJson<{ ok: boolean }>(res, "Failed to delete list");
 };
 
 export const createTask = async (
   accessToken: string,
-  payload: TaskCreateInput
+  payload: TaskCreateInput,
 ): Promise<TrackerTask> => {
   const res = await fetch(`${API_BASE}/api/private/tasks`, {
     method: "POST",
@@ -166,13 +179,16 @@ export const createTask = async (
 export const updateTask = async (
   accessToken: string,
   taskId: string,
-  updates: TaskUpdateInput & { browser_timezone?: string }
+  updates: TaskUpdateInput & { browser_timezone?: string },
 ): Promise<TrackerTask> => {
-  const res = await fetch(`${API_BASE}/api/private/tasks/${encodeURIComponent(taskId)}`, {
-    method: "PATCH",
-    headers: getAuthHeaders(accessToken),
-    body: JSON.stringify(updates),
-  });
+  const res = await fetch(
+    `${API_BASE}/api/private/tasks/${encodeURIComponent(taskId)}`,
+    {
+      method: "PATCH",
+      headers: getAuthHeaders(accessToken),
+      body: JSON.stringify(updates),
+    },
+  );
   const result = await readJson<TaskResult>(res, "Failed to save task.");
   return result.task;
 };
@@ -181,7 +197,7 @@ export const reorderTasksViaApi = async (
   accessToken: string,
   listId: string,
   parentTaskId: string | null,
-  orderedTaskIds: string[]
+  orderedTaskIds: string[],
 ): Promise<TrackerTask[]> => {
   const res = await fetch(`${API_BASE}/api/private/tasks/reorder`, {
     method: "PATCH",
@@ -192,25 +208,31 @@ export const reorderTasksViaApi = async (
       ordered_task_ids: orderedTaskIds,
     }),
   });
-  const result = await readJson<TaskReorderResult>(res, "Failed to persist custom order.");
+  const result = await readJson<TaskReorderResult>(
+    res,
+    "Failed to persist custom order.",
+  );
   return result.tasks;
 };
 
 export const deleteTaskViaApi = async (
   accessToken: string,
-  taskId: string
+  taskId: string,
 ): Promise<{ ok: boolean }> => {
-  const res = await fetch(`${API_BASE}/api/private/tasks/${encodeURIComponent(taskId)}`, {
-    method: "DELETE",
-    headers: getAuthHeaders(accessToken),
-  });
+  const res = await fetch(
+    `${API_BASE}/api/private/tasks/${encodeURIComponent(taskId)}`,
+    {
+      method: "DELETE",
+      headers: getAuthHeaders(accessToken),
+    },
+  );
   return readJson<{ ok: boolean }>(res, "Failed to delete task");
 };
 
 export const setTaskCompletionViaApi = async (
   accessToken: string,
   taskId: string,
-  isCompleted: boolean
+  isCompleted: boolean,
 ): Promise<TaskCompletionResult> => {
   const res = await fetch(
     `${API_BASE}/api/private/tasks/${encodeURIComponent(taskId)}/completion`,
@@ -220,7 +242,7 @@ export const setTaskCompletionViaApi = async (
       body: JSON.stringify({
         is_completed: isCompleted,
       }),
-    }
+    },
   );
   return readJson<TaskCompletionResult>(res, "Failed to update task status");
 };
@@ -229,37 +251,58 @@ export const upsertSortPreference = async (
   accessToken: string,
   listId: string,
   sortMode: TaskSortMode,
-  sortDirection: SortDirection
+  sortDirection: SortDirection,
 ): Promise<TaskSortPreference> => {
-  const res = await fetch(`${API_BASE}/api/private/task-sort-preferences/${encodeURIComponent(listId)}`, {
-    method: "PUT",
-    headers: getAuthHeaders(accessToken),
-    body: JSON.stringify({
-      sort_mode: sortMode,
-      sort_direction: sortDirection,
-    }),
-  });
-  const result = await readJson<SortPreferenceResult>(res, "Failed to save sort preference.");
+  const res = await fetch(
+    `${API_BASE}/api/private/task-sort-preferences/${encodeURIComponent(listId)}`,
+    {
+      method: "PUT",
+      headers: getAuthHeaders(accessToken),
+      body: JSON.stringify({
+        sort_mode: sortMode,
+        sort_direction: sortDirection,
+      }),
+    },
+  );
+  const result = await readJson<SortPreferenceResult>(
+    res,
+    "Failed to save sort preference.",
+  );
   return result.sort_preference;
 };
 
-export const getCalendarStatus = async (accessToken: string): Promise<CalendarConnectionState> => {
+export const getCalendarStatus = async (
+  accessToken: string,
+): Promise<CalendarConnectionState> => {
   const res = await fetch(`${API_BASE}/api/private/calendar/status`, {
     method: "GET",
     headers: getAuthHeaders(accessToken),
   });
-  return readJson<CalendarConnectionState>(res, "Failed to fetch calendar status");
+  return readJson<CalendarConnectionState>(
+    res,
+    "Failed to fetch calendar status",
+  );
 };
 
-export const getGoogleConnectUrl = async (accessToken: string): Promise<{ url: string }> => {
-  const res = await fetch(`${API_BASE}/api/private/calendar/google/connect-url`, {
-    method: "POST",
-    headers: getAuthHeaders(accessToken),
-  });
-  return readJson<{ url: string }>(res, "Failed to generate Google connect URL");
+export const getGoogleConnectUrl = async (
+  accessToken: string,
+): Promise<{ url: string }> => {
+  const res = await fetch(
+    `${API_BASE}/api/private/calendar/google/connect-url`,
+    {
+      method: "POST",
+      headers: getAuthHeaders(accessToken),
+    },
+  );
+  return readJson<{ url: string }>(
+    res,
+    "Failed to generate Google connect URL",
+  );
 };
 
-export const disconnectCalendar = async (accessToken: string): Promise<{ ok: boolean }> => {
+export const disconnectCalendar = async (
+  accessToken: string,
+): Promise<{ ok: boolean }> => {
   const res = await fetch(`${API_BASE}/api/private/calendar/disconnect`, {
     method: "POST",
     headers: getAuthHeaders(accessToken),
@@ -270,8 +313,13 @@ export const disconnectCalendar = async (accessToken: string): Promise<{ ok: boo
 export const setListSync = async (
   accessToken: string,
   listId: string,
-  syncEnabled: boolean
-): Promise<{ ok: boolean; queued_cleanup?: boolean; cleanup_job_count?: number }> => {
+  syncEnabled: boolean,
+): Promise<{
+  ok: boolean;
+  run_id?: string;
+  queued_cleanup?: boolean;
+  cleanup_job_count?: number;
+}> => {
   const res = await fetch(`${API_BASE}/api/private/calendar/list-sync`, {
     method: "POST",
     headers: getAuthHeaders(accessToken),
@@ -280,13 +328,17 @@ export const setListSync = async (
       sync_enabled: syncEnabled,
     }),
   });
-  return readJson<{ ok: boolean; queued_cleanup?: boolean; cleanup_job_count?: number }>(
-    res,
-    "Failed to update list sync setting"
-  );
+  return readJson<{
+    ok: boolean;
+    run_id?: string;
+    queued_cleanup?: boolean;
+    cleanup_job_count?: number;
+  }>(res, "Failed to update list sync setting");
 };
 
-export const triggerCalendarSyncNow = async (accessToken: string): Promise<SyncNowResult> => {
+export const triggerCalendarSyncNow = async (
+  accessToken: string,
+): Promise<SyncNowResult> => {
   const res = await fetch(`${API_BASE}/api/private/calendar/sync-now`, {
     method: "POST",
     headers: getAuthHeaders(accessToken),
@@ -294,7 +346,9 @@ export const triggerCalendarSyncNow = async (accessToken: string): Promise<SyncN
   return readJson<SyncNowResult>(res, "Failed to sync calendar");
 };
 
-export const triggerCalendarLivePump = async (accessToken: string): Promise<LivePumpResult> => {
+export const triggerCalendarLivePump = async (
+  accessToken: string,
+): Promise<LivePumpResult> => {
   const res = await fetch(`${API_BASE}/api/private/calendar/live-pump`, {
     method: "POST",
     headers: getAuthHeaders(accessToken),
@@ -302,7 +356,9 @@ export const triggerCalendarLivePump = async (accessToken: string): Promise<Live
   return readJson<LivePumpResult>(res, "Failed to process live sync");
 };
 
-export const triggerCalendarRebuild = async (accessToken: string): Promise<SyncNowResult> => {
+export const triggerCalendarRebuild = async (
+  accessToken: string,
+): Promise<SyncNowResult> => {
   const res = await fetch(`${API_BASE}/api/private/calendar/rebuild`, {
     method: "POST",
     headers: getAuthHeaders(accessToken),
@@ -312,14 +368,14 @@ export const triggerCalendarRebuild = async (accessToken: string): Promise<SyncN
 
 export const getCalendarSyncProgress = async (
   accessToken: string,
-  runId: string
+  runId: string,
 ): Promise<SyncProgressResult> => {
   const res = await fetch(
     `${API_BASE}/api/private/calendar/sync-progress?run_id=${encodeURIComponent(runId)}`,
     {
       method: "GET",
       headers: getAuthHeaders(accessToken),
-    }
+    },
   );
   return readJson<SyncProgressResult>(res, "Failed to fetch sync progress");
 };

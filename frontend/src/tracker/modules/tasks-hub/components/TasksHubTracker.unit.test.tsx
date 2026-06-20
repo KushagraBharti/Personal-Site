@@ -49,7 +49,26 @@ const subtask: TrackerTask = {
   sort_order: 1,
 };
 
-const buildModuleState = (saveTask = vi.fn().mockResolvedValue(true)) => ({
+const secondRootTask: TrackerTask = {
+  ...rootTask,
+  id: "root-2",
+  title: "Second root",
+  sort_order: 2,
+};
+
+const completedRootTask: TrackerTask = {
+  ...rootTask,
+  id: "root-done",
+  title: "Completed root",
+  is_completed: true,
+  completed_at: "2026-06-20T01:00:00.000Z",
+  sort_order: 3,
+};
+
+const buildModuleState = (
+  saveTask = vi.fn().mockResolvedValue(true),
+  overrides: Record<string, unknown> = {},
+) => ({
   allListsKey: "all",
   lists: [list],
   tasksByParent: { "root-1": [subtask] },
@@ -90,6 +109,7 @@ const buildModuleState = (saveTask = vi.fn().mockResolvedValue(true)) => ({
   setListCalendarSync: vi.fn(),
   syncCalendarNow: vi.fn(),
   rebuildCalendarNow: vi.fn(),
+  ...overrides,
 });
 
 describe("TasksHubTracker", () => {
@@ -115,7 +135,7 @@ describe("TasksHubTracker", () => {
         expect.objectContaining({
           title: "Edited child task",
           details: "Existing child details",
-        })
+        }),
       );
     });
   });
@@ -133,8 +153,46 @@ describe("TasksHubTracker", () => {
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
     await waitFor(() => {
-      expect(screen.queryByDisplayValue("Edited child task")).not.toBeInTheDocument();
+      expect(
+        screen.queryByDisplayValue("Edited child task"),
+      ).not.toBeInTheDocument();
     });
     expect(saveTask).not.toHaveBeenCalled();
+  });
+
+  it("includes completed sibling tasks when reordering visible root tasks", async () => {
+    const reorderTasks = vi.fn().mockResolvedValue(true);
+    useTasksHubModuleMock.mockReturnValue(
+      buildModuleState(undefined, {
+        rootTasksByList: {
+          "list-1": [rootTask, secondRootTask, completedRootTask],
+        },
+        countsByList: { "list-1": { open: 2, completed: 1, total: 3 } },
+        reorderTasks,
+      }),
+    );
+
+    render(<TasksHubTracker />);
+
+    const sourceRow = screen
+      .getByRole("button", { name: "Root task" })
+      .closest(".tasks-task-row");
+    const targetRow = screen
+      .getByRole("button", { name: "Second root" })
+      .closest(".tasks-task-row");
+    if (!sourceRow || !targetRow)
+      throw new Error("Expected draggable task rows");
+
+    fireEvent.dragStart(sourceRow);
+    fireEvent.dragOver(targetRow);
+    fireEvent.drop(targetRow);
+
+    await waitFor(() => {
+      expect(reorderTasks).toHaveBeenCalledWith(
+        "list-1",
+        ["root-2", "root-1", "root-done"],
+        null,
+      );
+    });
   });
 });

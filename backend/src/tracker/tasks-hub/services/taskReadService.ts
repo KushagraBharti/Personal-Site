@@ -1,6 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { TrackerTaskRow } from "../../../types/googleCalendar";
-import { isDateOnlyIso } from "../../calendar/services/taskCalendarEventUtils";
 import {
   TrackerTaskListRow,
   TrackerTaskSortPreferenceRow,
@@ -13,7 +12,7 @@ import {
 
 export const fetchTaskListsForUser = async (
   supabaseAdmin: SupabaseClient,
-  userId: string
+  userId: string,
 ) => {
   const { data, error } = await supabaseAdmin
     .from("tracker_task_lists")
@@ -28,7 +27,7 @@ export const fetchTaskListsForUser = async (
 
 export const fetchTasksForUser = async (
   supabaseAdmin: SupabaseClient,
-  userId: string
+  userId: string,
 ) => {
   const { data, error } = await supabaseAdmin
     .from("tracker_tasks")
@@ -44,7 +43,7 @@ export const fetchTasksForUser = async (
 
 export const fetchSortPreferencesForUser = async (
   supabaseAdmin: SupabaseClient,
-  userId: string
+  userId: string,
 ) => {
   const { data, error } = await supabaseAdmin
     .from("tracker_task_sort_preferences")
@@ -56,7 +55,7 @@ export const fetchSortPreferencesForUser = async (
 
 const seedDefaultTaskListForUser = async (
   supabaseAdmin: SupabaseClient,
-  userId: string
+  userId: string,
 ) => {
   const { data, error } = await supabaseAdmin
     .from("tracker_task_lists")
@@ -77,17 +76,14 @@ const normalizeStoredTaskTimeZones = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
   tasks: TrackerTaskRow[],
-  browserTimeZone: string
+  browserTimeZone: string,
 ) => {
-  const missingTimedTimeZone = tasks.filter(
-    (task) => !!task.due_at && !task.due_timezone && !isDateOnlyIso(task.due_at)
-  );
-  const dateOnlyWithTimeZone = tasks.filter(
-    (task) => !!task.due_at && !!task.due_timezone && isDateOnlyIso(task.due_at)
+  const missingDueTimeZone = tasks.filter(
+    (task) => !!task.due_at && !task.due_timezone,
   );
 
   const updates: Array<Promise<unknown>> = [];
-  missingTimedTimeZone.forEach((task) => {
+  missingDueTimeZone.forEach((task) => {
     updates.push(
       (async () => {
         const { error } = await supabaseAdmin
@@ -96,19 +92,7 @@ const normalizeStoredTaskTimeZones = async (
           .eq("user_id", userId)
           .eq("id", task.id);
         if (error) throw new Error(error.message);
-      })()
-    );
-  });
-  dateOnlyWithTimeZone.forEach((task) => {
-    updates.push(
-      (async () => {
-        const { error } = await supabaseAdmin
-          .from("tracker_tasks")
-          .update({ due_timezone: null })
-          .eq("user_id", userId)
-          .eq("id", task.id);
-        if (error) throw new Error(error.message);
-      })()
+      })(),
     );
   });
 
@@ -120,7 +104,7 @@ const normalizeStoredTaskTimeZones = async (
 export const getTrackerBootstrapForUser = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
-  input?: { browserTimeZone?: unknown }
+  input?: { browserTimeZone?: unknown },
 ) => {
   const browserTimeZone = normalizeBrowserTimeZone(input?.browserTimeZone);
 
@@ -134,13 +118,16 @@ export const getTrackerBootstrapForUser = async (
     supabaseAdmin,
     userId,
     tasks,
-    browserTimeZone
+    browserTimeZone,
   );
   if (changedTimeZones) {
     tasks = await fetchTasksForUser(supabaseAdmin, userId);
   }
 
-  const sortPreferences = await fetchSortPreferencesForUser(supabaseAdmin, userId);
+  const sortPreferences = await fetchSortPreferencesForUser(
+    supabaseAdmin,
+    userId,
+  );
 
   return {
     lists,

@@ -37,8 +37,12 @@ describe("taskCalendarEventUtils", () => {
 
   it("projects the next 3 recurring occurrences only after the task is overdue", () => {
     const task = buildTask();
-    const beforeDue = DateTime.fromISO("2026-04-14T02:30:00.000Z", { zone: "utc" });
-    const afterDue = DateTime.fromISO("2026-04-14T04:00:00.000Z", { zone: "utc" });
+    const beforeDue = DateTime.fromISO("2026-04-14T02:30:00.000Z", {
+      zone: "utc",
+    });
+    const afterDue = DateTime.fromISO("2026-04-14T04:00:00.000Z", {
+      zone: "utc",
+    });
 
     expect(buildRecurringProjectionDueAts(task, 3, beforeDue)).toEqual([]);
     expect(buildRecurringProjectionDueAts(task, 3, afterDue)).toEqual([
@@ -51,21 +55,29 @@ describe("taskCalendarEventUtils", () => {
   it("treats date-only tasks as overdue only after the due day ends", () => {
     const task = buildTask({
       due_at: "2026-04-14T12:00:00.777Z",
-      due_timezone: null,
+      due_timezone: "America/Chicago",
       recurrence_type: "daily",
     });
 
     expect(
-      isTaskOverdue(task, DateTime.fromISO("2026-04-14T23:59:00.000Z", { zone: "utc" }))
+      isTaskOverdue(
+        task,
+        DateTime.fromISO("2026-04-15T04:59:00.000Z", { zone: "utc" }),
+      ),
     ).toBe(false);
     expect(
-      isTaskOverdue(task, DateTime.fromISO("2026-04-15T00:01:00.000Z", { zone: "utc" }))
+      isTaskOverdue(
+        task,
+        DateTime.fromISO("2026-04-15T05:01:00.000Z", { zone: "utc" }),
+      ),
     ).toBe(true);
   });
 
   it("formats calendar titles with explicit done and upcoming markers", () => {
     expect(formatTaskEventTitle("Task A", "default")).toBe("Task A");
     expect(formatTaskEventTitle("Task A", "done")).toBe("[Done] Task A");
-    expect(formatTaskEventTitle("Task A", "upcoming")).toBe("[Upcoming] Task A");
+    expect(formatTaskEventTitle("Task A", "upcoming")).toBe(
+      "[Upcoming] Task A",
+    );
   });
 });

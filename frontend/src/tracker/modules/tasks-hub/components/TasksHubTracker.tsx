@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTasksHubModule } from "../hooks";
@@ -47,7 +46,9 @@ const toLocalDateInput = (isoString: string | null | undefined) => {
 
 const toLocalDueInput = (isoString: string | null | undefined) => {
   if (!isoString) return "";
-  return isDateOnlyIso(isoString) ? toLocalDateInput(isoString) : toLocalDateTimeInput(isoString);
+  return isDateOnlyIso(isoString)
+    ? toLocalDateInput(isoString)
+    : toLocalDateTimeInput(isoString);
 };
 
 const getDueParts = (value: string) => {
@@ -93,7 +94,7 @@ const quickDue = (kind: "today" | "tonight" | "tomorrow" | "sunday") => {
     return toLocalInputFromDate(base).slice(0, 10);
   }
   const dayOfWeek = base.getDay();
-  const daysUntilSunday = (7 - dayOfWeek) || 7;
+  const daysUntilSunday = 7 - dayOfWeek || 7;
   base.setDate(base.getDate() + daysUntilSunday);
   return toLocalInputFromDate(base).slice(0, 10);
 };
@@ -129,7 +130,9 @@ const dueGroupLabel = (isoString: string | null) => {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const target = new Date(due.getFullYear(), due.getMonth(), due.getDate());
-  const dayDiff = Math.round((target.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+  const dayDiff = Math.round(
+    (target.getTime() - today.getTime()) / (24 * 60 * 60 * 1000),
+  );
 
   if (dayDiff === 0) return "Today";
   if (dayDiff === 1) return "Tomorrow";
@@ -145,12 +148,16 @@ const dueGroupLabel = (isoString: string | null) => {
 const setTimeToTenPm = (localDateTimeValue: string) => {
   const trimmed = localDateTimeValue.trim();
   if (!trimmed) return "";
-  const datePart = trimmed.includes("T") ? trimmed.split("T")[0] : trimmed.slice(0, 10);
+  const datePart = trimmed.includes("T")
+    ? trimmed.split("T")[0]
+    : trimmed.slice(0, 10);
   if (!datePart) return "";
   return `${datePart}T22:00`;
 };
 
-const getDueUrgency = (isoString: string | null): "overdue" | "soon" | "future" => {
+const getDueUrgency = (
+  isoString: string | null,
+): "overdue" | "soon" | "future" => {
   if (!isoString) return "future";
   const due = new Date(isoString);
   if (Number.isNaN(due.getTime())) return "future";
@@ -164,8 +171,10 @@ const getDueUrgency = (isoString: string | null): "overdue" | "soon" | "future" 
 
 const dueChipClassName = (isoString: string | null) => {
   const urgency = getDueUrgency(isoString);
-  if (urgency === "overdue") return "tasks-chip tasks-chip-due tasks-chip-due-overdue";
-  if (urgency === "soon") return "tasks-chip tasks-chip-due tasks-chip-due-soon";
+  if (urgency === "overdue")
+    return "tasks-chip tasks-chip-due tasks-chip-due-overdue";
+  if (urgency === "soon")
+    return "tasks-chip tasks-chip-due tasks-chip-due-soon";
   return "tasks-chip tasks-chip-due tasks-chip-due-future";
 };
 
@@ -175,7 +184,11 @@ const getTimestamp = (value: string | null | undefined, fallback: number) => {
   return Number.isNaN(parsed) ? fallback : parsed;
 };
 
-const compareTasksBySortMode = (a: TrackerTask, b: TrackerTask, mode: TaskSortMode) => {
+const compareTasksBySortMode = (
+  a: TrackerTask,
+  b: TrackerTask,
+  mode: TaskSortMode,
+) => {
   if (mode === "title") {
     return a.title.localeCompare(b.title, undefined, { sensitivity: "base" });
   }
@@ -202,7 +215,7 @@ const compareTasksBySortMode = (a: TrackerTask, b: TrackerTask, mode: TaskSortMo
 const sortTasksForList = (
   tasks: TrackerTask[],
   mode: TaskSortMode,
-  direction: SortDirection
+  direction: SortDirection,
 ) => {
   const sorted = [...tasks].sort((a, b) => compareTasksBySortMode(a, b, mode));
   return direction === "asc" ? sorted : sorted.reverse();
@@ -238,23 +251,32 @@ const createTaskEditDraft = (task: TrackerTask): TaskEditDraft => ({
   recurrence_ends_at: toLocalDateTimeInput(task.recurrence_ends_at),
 });
 
-const draftKey = (listId: string, parentTaskId: string | null) => `${listId}:${parentTaskId ?? "root"}`;
+const draftKey = (listId: string, parentTaskId: string | null) =>
+  `${listId}:${parentTaskId ?? "root"}`;
 
 // ============================================================================
 // CONFETTI EXPLOSION
 // ============================================================================
 
-const CONFETTI_COLORS = ["var(--neo-lime)", "var(--neo-pink)", "var(--neo-cyan)", "var(--neo-yellow)"];
+const CONFETTI_COLORS = [
+  "var(--neo-lime)",
+  "var(--neo-pink)",
+  "var(--neo-cyan)",
+  "var(--neo-yellow)",
+];
 
 const Confetti: React.FC<{ trigger: boolean }> = ({ trigger }) => {
-  const [particles, setParticles] = useState<Array<{ id: number; x: number; color: string }>>([]);
+  const [particles, setParticles] = useState<
+    Array<{ id: number; x: number; color: string }>
+  >([]);
 
   useEffect(() => {
     if (trigger) {
       const newParticles = Array.from({ length: 8 }, (_, i) => ({
         id: Date.now() + i,
         x: Math.random() * 60 - 30,
-        color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+        color:
+          CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
       }));
       setParticles(newParticles);
       setTimeout(() => setParticles([]), 800);
@@ -350,7 +372,9 @@ const TaskRecurrenceFields: React.FC<{
               min={1}
               value={value.recurrence_interval}
               onChange={(e) =>
-                onChange({ recurrence_interval: Math.max(Number(e.target.value) || 1, 1) })
+                onChange({
+                  recurrence_interval: Math.max(Number(e.target.value) || 1, 1),
+                })
               }
             />
           </div>
@@ -359,7 +383,9 @@ const TaskRecurrenceFields: React.FC<{
             <select
               className="tasks-select"
               value={value.recurrence_unit}
-              onChange={(e) => onChange({ recurrence_unit: e.target.value as RecurrenceUnit })}
+              onChange={(e) =>
+                onChange({ recurrence_unit: e.target.value as RecurrenceUnit })
+              }
             >
               <option value="day">Day</option>
               <option value="week">Week</option>
@@ -398,22 +424,50 @@ const DueQuickButtons: React.FC<{
         className="tasks-quick-pill"
         onClick={onSetTenPm}
         disabled={!canSetTenPm}
-        title={canSetTenPm ? "Set selected task date to 10:00 PM" : "Pick a date first, then use 10pm"}
+        title={
+          canSetTenPm
+            ? "Set selected task date to 10:00 PM"
+            : "Pick a date first, then use 10pm"
+        }
         whileHover={canSetTenPm ? { scale: 1.08 } : {}}
         whileTap={canSetTenPm ? { scale: 0.92 } : {}}
       >
         10pm
       </motion.button>
-      <motion.button type="button" className="tasks-quick-pill" onClick={() => onPick(quickDue("today"))} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}>
+      <motion.button
+        type="button"
+        className="tasks-quick-pill"
+        onClick={() => onPick(quickDue("today"))}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.92 }}
+      >
         Today
       </motion.button>
-      <motion.button type="button" className="tasks-quick-pill" onClick={() => onPick(quickDue("tonight"))} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}>
+      <motion.button
+        type="button"
+        className="tasks-quick-pill"
+        onClick={() => onPick(quickDue("tonight"))}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.92 }}
+      >
         Tonight
       </motion.button>
-      <motion.button type="button" className="tasks-quick-pill" onClick={() => onPick(quickDue("tomorrow"))} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}>
+      <motion.button
+        type="button"
+        className="tasks-quick-pill"
+        onClick={() => onPick(quickDue("tomorrow"))}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.92 }}
+      >
         Tomorrow
       </motion.button>
-      <motion.button type="button" className="tasks-quick-pill" onClick={() => onPick(quickDue("sunday"))} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}>
+      <motion.button
+        type="button"
+        className="tasks-quick-pill"
+        onClick={() => onPick(quickDue("sunday"))}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.92 }}
+      >
         Sunday
       </motion.button>
     </div>
@@ -452,13 +506,21 @@ const TaskEditExpansion: React.FC<{
           className="tasks-input"
           type="date"
           value={getDueParts(edit.due_at).date}
-          onChange={(e) => onPatch(task.id, { due_at: setDueDatePart(edit.due_at, e.target.value) })}
+          onChange={(e) =>
+            onPatch(task.id, {
+              due_at: setDueDatePart(edit.due_at, e.target.value),
+            })
+          }
         />
         <input
           className="tasks-input"
           type="time"
           value={getDueParts(edit.due_at).time}
-          onChange={(e) => onPatch(task.id, { due_at: setDueTimePart(edit.due_at, e.target.value) })}
+          onChange={(e) =>
+            onPatch(task.id, {
+              due_at: setDueTimePart(edit.due_at, e.target.value),
+            })
+          }
         />
       </div>
     </div>
@@ -545,21 +607,41 @@ const TasksHubTracker: React.FC = () => {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [newListName, setNewListName] = useState("");
-  const [hiddenListIds, setHiddenListIds] = useState<Record<string, boolean>>({});
-  const [listRenameById, setListRenameById] = useState<Record<string, string>>({});
-  const [taskDraftByKey, setTaskDraftByKey] = useState<Record<string, TaskDraft>>({});
-  const [expandedTaskIds, setExpandedTaskIds] = useState<Record<string, boolean>>({});
-  const [taskEditsById, setTaskEditsById] = useState<Record<string, TaskEditDraft>>({});
-  const [completedSectionOpenByList, setCompletedSectionOpenByList] = useState<Record<string, boolean>>({});
-  const [addTaskOpenByList, setAddTaskOpenByList] = useState<Record<string, boolean>>({});
-  const [addSubtaskOpenByParent, setAddSubtaskOpenByParent] = useState<Record<string, boolean>>({});
+  const [hiddenListIds, setHiddenListIds] = useState<Record<string, boolean>>(
+    {},
+  );
+  const [listRenameById, setListRenameById] = useState<Record<string, string>>(
+    {},
+  );
+  const [taskDraftByKey, setTaskDraftByKey] = useState<
+    Record<string, TaskDraft>
+  >({});
+  const [expandedTaskIds, setExpandedTaskIds] = useState<
+    Record<string, boolean>
+  >({});
+  const [taskEditsById, setTaskEditsById] = useState<
+    Record<string, TaskEditDraft>
+  >({});
+  const [completedSectionOpenByList, setCompletedSectionOpenByList] = useState<
+    Record<string, boolean>
+  >({});
+  const [addTaskOpenByList, setAddTaskOpenByList] = useState<
+    Record<string, boolean>
+  >({});
+  const [addSubtaskOpenByParent, setAddSubtaskOpenByParent] = useState<
+    Record<string, boolean>
+  >({});
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
   const [draggingParentId, setDraggingParentId] = useState<string | null>(null);
   const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null);
   const [draggingListId, setDraggingListId] = useState<string | null>(null);
   const [dragOverListId, setDragOverListId] = useState<string | null>(null);
-  const [hideCompletedByList, setHideCompletedByList] = useState<Record<string, boolean>>({});
-  const [justCheckedIds, setJustCheckedIds] = useState<Record<string, boolean>>({});
+  const [hideCompletedByList, setHideCompletedByList] = useState<
+    Record<string, boolean>
+  >({});
+  const [justCheckedIds, setJustCheckedIds] = useState<Record<string, boolean>>(
+    {},
+  );
 
   useEffect(() => {
     try {
@@ -572,7 +654,10 @@ const TasksHubTracker: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem("tasksHubSidebarOpen", isSidebarOpen ? "1" : "0");
+    window.localStorage.setItem(
+      "tasksHubSidebarOpen",
+      isSidebarOpen ? "1" : "0",
+    );
   }, [isSidebarOpen]);
 
   useEffect(() => {
@@ -589,7 +674,10 @@ const TasksHubTracker: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem("tasksHubHiddenLists", JSON.stringify(hiddenListIds));
+    window.localStorage.setItem(
+      "tasksHubHiddenLists",
+      JSON.stringify(hiddenListIds),
+    );
   }, [hiddenListIds]);
 
   useEffect(() => {
@@ -606,12 +694,15 @@ const TasksHubTracker: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem("tasksHubHideCompletedByList", JSON.stringify(hideCompletedByList));
+    window.localStorage.setItem(
+      "tasksHubHideCompletedByList",
+      JSON.stringify(hideCompletedByList),
+    );
   }, [hideCompletedByList]);
 
   const visibleLists = useMemo(
     () => lists.filter((list) => !hiddenListIds[list.id]),
-    [lists, hiddenListIds]
+    [lists, hiddenListIds],
   );
 
   useEffect(() => {
@@ -631,7 +722,11 @@ const TasksHubTracker: React.FC = () => {
     return taskDraftByKey[key] ?? buildTaskDraft(listId, parentTaskId);
   };
 
-  const setDraft = (listId: string, parentTaskId: string | null, patch: Partial<TaskDraft>) => {
+  const setDraft = (
+    listId: string,
+    parentTaskId: string | null,
+    patch: Partial<TaskDraft>,
+  ) => {
     const key = draftKey(listId, parentTaskId);
     setTaskDraftByKey((prev) => {
       const current = prev[key] ?? buildTaskDraft(listId, parentTaskId);
@@ -698,9 +793,14 @@ const TasksHubTracker: React.FC = () => {
       details: edit.details.trim() || null,
       due_at: toIsoOrNull(edit.due_at),
       recurrence_type: recurrenceType,
-      recurrence_interval: recurrenceType === "custom" ? Math.max(edit.recurrence_interval || 1, 1) : null,
-      recurrence_unit: recurrenceType === "custom" ? edit.recurrence_unit : null,
-      recurrence_ends_at: recurrenceType !== "none" ? toIsoOrNull(edit.recurrence_ends_at) : null,
+      recurrence_interval:
+        recurrenceType === "custom"
+          ? Math.max(edit.recurrence_interval || 1, 1)
+          : null,
+      recurrence_unit:
+        recurrenceType === "custom" ? edit.recurrence_unit : null,
+      recurrence_ends_at:
+        recurrenceType !== "none" ? toIsoOrNull(edit.recurrence_ends_at) : null,
     });
 
     if (success) {
@@ -710,7 +810,10 @@ const TasksHubTracker: React.FC = () => {
 
   const cancelTaskEdit = (task: TrackerTask) => {
     setExpandedTaskIds((prev) => ({ ...prev, [task.id]: false }));
-    setTaskEditsById((prev) => ({ ...prev, [task.id]: createTaskEditDraft(task) }));
+    setTaskEditsById((prev) => ({
+      ...prev,
+      [task.id]: createTaskEditDraft(task),
+    }));
   };
 
   const handleToggleCompletion = async (task: TrackerTask) => {
@@ -731,7 +834,7 @@ const TasksHubTracker: React.FC = () => {
     listId: string,
     parentTaskId: string | null,
     currentOrder: string[],
-    targetTaskId: string
+    targetTaskId: string,
   ) => {
     if (!draggingTaskId || draggingParentId !== parentTaskId) return;
 
@@ -780,20 +883,28 @@ const TasksHubTracker: React.FC = () => {
 
   const totalOpenCount = useMemo(
     () => Object.values(countsByList).reduce((sum, item) => sum + item.open, 0),
-    [countsByList]
+    [countsByList],
   );
   const totalCompletedCount = useMemo(
-    () => Object.values(countsByList).reduce((sum, item) => sum + item.completed, 0),
-    [countsByList]
+    () =>
+      Object.values(countsByList).reduce(
+        (sum, item) => sum + item.completed,
+        0,
+      ),
+    [countsByList],
   );
   const totalTaskCount = useMemo(
-    () => Object.values(countsByList).reduce((sum, item) => sum + item.total, 0),
-    [countsByList]
+    () =>
+      Object.values(countsByList).reduce((sum, item) => sum + item.total, 0),
+    [countsByList],
   );
   const totalVisibleOpenCount = useMemo(
     () =>
-      visibleLists.reduce((sum, list) => sum + (countsByList[list.id]?.open ?? 0), 0),
-    [visibleLists, countsByList]
+      visibleLists.reduce(
+        (sum, list) => sum + (countsByList[list.id]?.open ?? 0),
+        0,
+      ),
+    [visibleLists, countsByList],
   );
 
   return (
@@ -802,7 +913,9 @@ const TasksHubTracker: React.FC = () => {
         {/* ================================================================
             SIDEBAR
             ================================================================ */}
-        <aside className={`tasks-sidebar ${isSidebarOpen ? "open" : "collapsed"}`}>
+        <aside
+          className={`tasks-sidebar ${isSidebarOpen ? "open" : "collapsed"}`}
+        >
           <motion.button
             className="tasks-sidebar-toggle"
             onClick={() => setIsSidebarOpen((prev) => !prev)}
@@ -825,8 +938,12 @@ const TasksHubTracker: React.FC = () => {
             >
               <div className="tasks-add-list mb-2">
                 <div className="tasks-card-title-row">
-                  <p className="neo-label" style={{ color: "var(--neo-cyan)" }}>Calendar Sync</p>
-                  <span className="tasks-chip">{calendarState?.connected ? "Connected" : "Not connected"}</span>
+                  <p className="neo-label" style={{ color: "var(--neo-cyan)" }}>
+                    Calendar Sync
+                  </p>
+                  <span className="tasks-chip">
+                    {calendarState?.connected ? "Connected" : "Not connected"}
+                  </span>
                 </div>
                 {calendarState?.connection?.selected_calendar_summary && (
                   <p className="tasks-muted text-xs">
@@ -869,17 +986,28 @@ const TasksHubTracker: React.FC = () => {
                   )}
                 </div>
                 {calendarSyncResult && (
-                  <p className="tasks-muted text-xs mt-1" style={{ fontSize: "0.6rem" }}>
-                    Last run: {calendarSyncResult.processed} processed / {calendarSyncResult.failed} failed
+                  <p
+                    className="tasks-muted text-xs mt-1"
+                    style={{ fontSize: "0.6rem" }}
+                  >
+                    Last run: {calendarSyncResult.processed} processed /{" "}
+                    {calendarSyncResult.failed} failed
                   </p>
                 )}
                 {calendarLiveResult && (
-                  <p className="tasks-muted text-xs mt-1" style={{ fontSize: "0.6rem" }}>
-                    Live: {calendarLiveResult.processed} processed / {calendarLiveResult.failed} failed
+                  <p
+                    className="tasks-muted text-xs mt-1"
+                    style={{ fontSize: "0.6rem" }}
+                  >
+                    Live: {calendarLiveResult.processed} processed /{" "}
+                    {calendarLiveResult.failed} failed
                   </p>
                 )}
                 {calendarSyncResult?.failures?.length ? (
-                  <div className="tasks-muted text-xs mt-1" style={{ color: "var(--neo-red)" }}>
+                  <div
+                    className="tasks-muted text-xs mt-1"
+                    style={{ color: "var(--neo-red)" }}
+                  >
                     {calendarSyncResult.failures.map((failure) => (
                       <p key={failure.id}>
                         Job {failure.id}: {failure.error}
@@ -888,7 +1016,10 @@ const TasksHubTracker: React.FC = () => {
                   </div>
                 ) : null}
                 {calendarLiveResult?.failures?.length ? (
-                  <div className="tasks-muted text-xs mt-1" style={{ color: "var(--neo-red)" }}>
+                  <div
+                    className="tasks-muted text-xs mt-1"
+                    style={{ color: "var(--neo-red)" }}
+                  >
                     {calendarLiveResult.failures.map((failure) => (
                       <p key={`live-${failure.id}`}>
                         Live job {failure.id}: {failure.error}
@@ -897,7 +1028,10 @@ const TasksHubTracker: React.FC = () => {
                   </div>
                 ) : null}
                 {calendarState?.connection?.last_error && (
-                  <p className="tasks-muted text-xs mt-1" style={{ color: "var(--neo-red)" }}>
+                  <p
+                    className="tasks-muted text-xs mt-1"
+                    style={{ color: "var(--neo-red)" }}
+                  >
                     {calendarState.connection.last_error}
                   </p>
                 )}
@@ -905,10 +1039,16 @@ const TasksHubTracker: React.FC = () => {
 
               <div className="mb-2 mt-2 flex items-center justify-between">
                 <h3>Lists</h3>
-                <span className="neo-label" style={{ color: "var(--neo-cyan)" }}>{visibleLists.length}/{lists.length}</span>
+                <span
+                  className="neo-label"
+                  style={{ color: "var(--neo-cyan)" }}
+                >
+                  {visibleLists.length}/{lists.length}
+                </span>
               </div>
               <p className="tasks-muted tasks-sidebar-stats">
-                {totalOpenCount} open &bull; {totalCompletedCount} done &bull; {totalTaskCount} total
+                {totalOpenCount} open &bull; {totalCompletedCount} done &bull;{" "}
+                {totalTaskCount} total
               </p>
 
               <motion.button
@@ -918,7 +1058,10 @@ const TasksHubTracker: React.FC = () => {
                 whileTap={{ scale: 0.98 }}
               >
                 <span className="flex items-center gap-2">
-                  <span className="tasks-list-dot" style={{ background: "var(--neo-lime)" }} />
+                  <span
+                    className="tasks-list-dot"
+                    style={{ background: "var(--neo-lime)" }}
+                  />
                   All tasks
                 </span>
                 <motion.span
@@ -932,8 +1075,15 @@ const TasksHubTracker: React.FC = () => {
               </motion.button>
 
               {lists.map((list, listIndex) => {
-                const counts = countsByList[list.id] || { open: 0, completed: 0, total: 0 };
-                const renameValue = listRenameById[list.id] !== undefined ? listRenameById[list.id] : list.name;
+                const counts = countsByList[list.id] || {
+                  open: 0,
+                  completed: 0,
+                  total: 0,
+                };
+                const renameValue =
+                  listRenameById[list.id] !== undefined
+                    ? listRenameById[list.id]
+                    : list.name;
                 const isVisible = !hiddenListIds[list.id];
 
                 return (
@@ -971,7 +1121,11 @@ const TasksHubTracker: React.FC = () => {
                             type="checkbox"
                             checked={!!syncEnabledByList[list.id]}
                             className="tasks-list-visibility"
-                            title={syncEnabledByList[list.id] ? "Synced to Google Calendar" : "Not synced to Google Calendar"}
+                            title={
+                              syncEnabledByList[list.id]
+                                ? "Synced to Google Calendar"
+                                : "Not synced to Google Calendar"
+                            }
                             onChange={async (e) => {
                               const enabled = e.target.checked;
                               await setListCalendarSync(list.id, enabled);
@@ -983,7 +1137,11 @@ const TasksHubTracker: React.FC = () => {
                           className="tasks-list-dot"
                           style={{ background: list.color_hex }}
                           animate={{ scale: [1, 1.2, 1] }}
-                          transition={{ duration: 2, repeat: Infinity, delay: listIndex * 0.3 }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            delay: listIndex * 0.3,
+                          }}
                         />
                         <span className="truncate">{list.name}</span>
                       </span>
@@ -1000,7 +1158,12 @@ const TasksHubTracker: React.FC = () => {
                     <div className="tasks-list-actions mb-2 mt-1 justify-end">
                       <motion.button
                         className="tasks-icon-btn"
-                        onClick={() => setListRenameById((prev) => ({ ...prev, [list.id]: renameValue }))}
+                        onClick={() =>
+                          setListRenameById((prev) => ({
+                            ...prev,
+                            [list.id]: renameValue,
+                          }))
+                        }
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.9 }}
                       >
@@ -1034,13 +1197,20 @@ const TasksHubTracker: React.FC = () => {
                           <input
                             className="tasks-input"
                             value={renameValue}
-                            onChange={(e) => setListRenameById((prev) => ({ ...prev, [list.id]: e.target.value }))}
+                            onChange={(e) =>
+                              setListRenameById((prev) => ({
+                                ...prev,
+                                [list.id]: e.target.value,
+                              }))
+                            }
                           />
                           <div className="flex items-center gap-2">
                             <motion.button
                               className="neo-btn neo-btn-sm neo-btn-lime"
                               onClick={async () => {
-                                const ok = await saveList(list.id, { name: renameValue });
+                                const ok = await saveList(list.id, {
+                                  name: renameValue,
+                                });
                                 if (ok) {
                                   setListRenameById((prev) => {
                                     const next = { ...prev };
@@ -1075,7 +1245,9 @@ const TasksHubTracker: React.FC = () => {
               })}
 
               <div className="tasks-add-list mt-3 space-y-2">
-                <p className="neo-label" style={{ color: "var(--neo-cyan)" }}>Add list</p>
+                <p className="neo-label" style={{ color: "var(--neo-cyan)" }}>
+                  Add list
+                </p>
                 <input
                   className="tasks-input"
                   placeholder="List name"
@@ -1114,9 +1286,17 @@ const TasksHubTracker: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 className="neo-card mb-2 py-2"
-                style={{ background: "var(--neo-red)", color: "var(--neo-white)" }}
+                style={{
+                  background: "var(--neo-red)",
+                  color: "var(--neo-white)",
+                }}
               >
-                <p className="neo-label" style={{ color: "var(--neo-white)", letterSpacing: "0.08em" }}>{errorMessage}</p>
+                <p
+                  className="neo-label"
+                  style={{ color: "var(--neo-white)", letterSpacing: "0.08em" }}
+                >
+                  {errorMessage}
+                </p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -1126,16 +1306,27 @@ const TasksHubTracker: React.FC = () => {
               {listsToRender.map((list, cardIndex) => {
                 const listSort = getSortForList(list.id);
                 const allRootTasks = rootTasksByList[list.id] ?? [];
-                const sortedRootTasks = sortTasksForList(allRootTasks, listSort.mode, listSort.direction);
-                const activeRootTasks = sortedRootTasks.filter((task) => !task.is_completed);
-                const completedRootTasks = sortedRootTasks.filter((task) => task.is_completed);
+                const sortedRootTasks = sortTasksForList(
+                  allRootTasks,
+                  listSort.mode,
+                  listSort.direction,
+                );
+                const activeRootTasks = sortedRootTasks.filter(
+                  (task) => !task.is_completed,
+                );
+                const completedRootTasks = sortedRootTasks.filter(
+                  (task) => task.is_completed,
+                );
                 const dueHeaderByTaskId = new Map<string, string>();
                 if (listSort.mode === "due_date") {
                   let previousDueKey = "";
                   activeRootTasks.forEach((task) => {
                     const dueKey = toDueDayKey(task.due_at);
                     if (dueKey !== previousDueKey) {
-                      dueHeaderByTaskId.set(task.id, dueGroupLabel(task.due_at));
+                      dueHeaderByTaskId.set(
+                        task.id,
+                        dueGroupLabel(task.due_at),
+                      );
                       previousDueKey = dueKey;
                     }
                   });
@@ -1143,14 +1334,19 @@ const TasksHubTracker: React.FC = () => {
                 const completedSubtasks = sortedRootTasks.flatMap((rootTask) =>
                   (tasksByParent[rootTask.id] || [])
                     .filter((subtask) => subtask.is_completed)
-                    .map((subtask) => ({ task: subtask, parentTitle: rootTask.title }))
+                    .map((subtask) => ({
+                      task: subtask,
+                      parentTitle: rootTask.title,
+                    })),
                 );
-                const completedOpen = completedSectionOpenByList[list.id] ?? false;
+                const completedOpen =
+                  completedSectionOpenByList[list.id] ?? false;
                 const addTaskOpen = addTaskOpenByList[list.id] ?? false;
                 const topDraft = getDraft(list.id, null);
                 const hideCompleted = hideCompletedByList[list.id] ?? false;
 
-                const canDragList = selectedListId === allListsKey && listsToRender.length > 1;
+                const canDragList =
+                  selectedListId === allListsKey && listsToRender.length > 1;
 
                 return (
                   <motion.div
@@ -1158,7 +1354,12 @@ const TasksHubTracker: React.FC = () => {
                     className={`tasks-card ${draggingListId === list.id ? "dragging" : ""} ${dragOverListId === list.id ? "drop-target" : ""}`}
                     initial={{ opacity: 0, y: 16, rotate: -1 }}
                     animate={{ opacity: 1, y: 0, rotate: 0 }}
-                    transition={{ delay: cardIndex * 0.06, type: "spring", stiffness: 300, damping: 25 }}
+                    transition={{
+                      delay: cardIndex * 0.06,
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 25,
+                    }}
                     draggable={canDragList}
                     onDragStart={() => {
                       if (!canDragList) return;
@@ -1193,16 +1394,25 @@ const TasksHubTracker: React.FC = () => {
                           >
                             {countsByList[list.id]?.open ?? 0} open
                           </motion.span>
-                          {calendarState?.connected && syncEnabledByList[list.id] && (
-                            <span className="tasks-chip">Synced</span>
-                          )}
+                          {calendarState?.connected &&
+                            syncEnabledByList[list.id] && (
+                              <span className="tasks-chip">Synced</span>
+                            )}
                           <motion.button
                             className="neo-btn neo-btn-sm neo-btn-lime"
-                            onClick={() => setAddTaskOpenByList((prev) => ({ ...prev, [list.id]: !addTaskOpen }))}
+                            onClick={() =>
+                              setAddTaskOpenByList((prev) => ({
+                                ...prev,
+                                [list.id]: !addTaskOpen,
+                              }))
+                            }
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                           >
-                            <motion.span animate={{ rotate: addTaskOpen ? 45 : 0 }} transition={{ duration: 0.15 }}>
+                            <motion.span
+                              animate={{ rotate: addTaskOpen ? 45 : 0 }}
+                              transition={{ duration: 0.15 }}
+                            >
                               +
                             </motion.span>
                           </motion.button>
@@ -1210,16 +1420,27 @@ const TasksHubTracker: React.FC = () => {
                       </div>
 
                       <div className="tasks-card-controls">
-                        <label className="neo-label" style={{ color: "var(--tasks-muted)" }}>Sort</label>
+                        <label
+                          className="neo-label"
+                          style={{ color: "var(--tasks-muted)" }}
+                        >
+                          Sort
+                        </label>
                         <select
                           className="tasks-select tasks-select-xs"
                           value={listSort.mode}
                           onChange={async (e) => {
-                            await setSortForList(list.id, e.target.value as TaskSortMode, listSort.direction);
+                            await setSortForList(
+                              list.id,
+                              e.target.value as TaskSortMode,
+                              listSort.direction,
+                            );
                           }}
                         >
                           {SORT_OPTIONS.map((option) => (
-                            <option key={option.value} value={option.value}>{option.label}</option>
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
                           ))}
                         </select>
                         <motion.button
@@ -1228,7 +1449,7 @@ const TasksHubTracker: React.FC = () => {
                             await setSortForList(
                               list.id,
                               listSort.mode,
-                              listSort.direction === "asc" ? "desc" : "asc"
+                              listSort.direction === "asc" ? "desc" : "asc",
                             );
                           }}
                           whileHover={{ scale: 1.1 }}
@@ -1240,7 +1461,9 @@ const TasksHubTracker: React.FC = () => {
                             animate={{ rotateX: 0 }}
                             transition={{ duration: 0.15 }}
                           >
-                            {listSort.direction === "asc" ? "A\u2191" : "D\u2193"}
+                            {listSort.direction === "asc"
+                              ? "A\u2191"
+                              : "D\u2193"}
                           </motion.span>
                         </motion.button>
                         <motion.button
@@ -1265,20 +1488,32 @@ const TasksHubTracker: React.FC = () => {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: "auto" }}
                             exit={{ opacity: 0, height: 0 }}
-                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 400,
+                              damping: 30,
+                            }}
                             className="tasks-quick-form mt-2"
                           >
                             <input
                               className="tasks-input"
                               placeholder="Task title"
                               value={topDraft.title}
-                              onChange={(e) => setDraft(list.id, null, { title: e.target.value })}
+                              onChange={(e) =>
+                                setDraft(list.id, null, {
+                                  title: e.target.value,
+                                })
+                              }
                             />
                             <textarea
                               className="tasks-textarea"
                               placeholder="Details (optional)"
                               value={topDraft.details}
-                              onChange={(e) => setDraft(list.id, null, { details: e.target.value })}
+                              onChange={(e) =>
+                                setDraft(list.id, null, {
+                                  details: e.target.value,
+                                })
+                              }
                             />
                             <div className="tasks-recurrence-item tasks-due-field">
                               <label className="neo-label">Due</label>
@@ -1287,47 +1522,75 @@ const TasksHubTracker: React.FC = () => {
                                   className="tasks-input"
                                   type="date"
                                   value={getDueParts(topDraft.due_at).date}
-                                  onChange={(e) => setDraft(list.id, null, { due_at: setDueDatePart(topDraft.due_at, e.target.value) })}
+                                  onChange={(e) =>
+                                    setDraft(list.id, null, {
+                                      due_at: setDueDatePart(
+                                        topDraft.due_at,
+                                        e.target.value,
+                                      ),
+                                    })
+                                  }
                                 />
                                 <input
                                   className="tasks-input"
                                   type="time"
                                   value={getDueParts(topDraft.due_at).time}
-                                  onChange={(e) => setDraft(list.id, null, { due_at: setDueTimePart(topDraft.due_at, e.target.value) })}
+                                  onChange={(e) =>
+                                    setDraft(list.id, null, {
+                                      due_at: setDueTimePart(
+                                        topDraft.due_at,
+                                        e.target.value,
+                                      ),
+                                    })
+                                  }
                                 />
                               </div>
                             </div>
                             <DueQuickButtons
-                              onPick={(value) => setDraft(list.id, null, { due_at: value })}
+                              onPick={(value) =>
+                                setDraft(list.id, null, { due_at: value })
+                              }
                               onSetTenPm={() => {
                                 const next = setTimeToTenPm(topDraft.due_at);
-                                if (next) setDraft(list.id, null, { due_at: next });
+                                if (next)
+                                  setDraft(list.id, null, { due_at: next });
                               }}
                               canSetTenPm={!!setTimeToTenPm(topDraft.due_at)}
                             />
                             <TaskRepeatField
                               value={topDraft.recurrence_type}
-                              onChange={(nextType) => setDraft(list.id, null, { recurrence_type: nextType })}
+                              onChange={(nextType) =>
+                                setDraft(list.id, null, {
+                                  recurrence_type: nextType,
+                                })
+                              }
                             />
 
                             <TaskRecurrenceFields
                               value={{
                                 recurrence_type: topDraft.recurrence_type,
-                                recurrence_interval: topDraft.recurrence_interval,
+                                recurrence_interval:
+                                  topDraft.recurrence_interval,
                                 recurrence_unit: topDraft.recurrence_unit,
                                 recurrence_ends_at: topDraft.recurrence_ends_at,
                               }}
-                              onChange={(patch) => setDraft(list.id, null, patch)}
+                              onChange={(patch) =>
+                                setDraft(list.id, null, patch)
+                              }
                             />
 
                             <div className="flex gap-2">
                               <motion.button
                                 className="neo-btn neo-btn-sm neo-btn-cyan"
                                 onClick={async () => {
-                                  const created = await createTaskFromDraft(topDraft);
+                                  const created =
+                                    await createTaskFromDraft(topDraft);
                                   if (created) {
                                     resetDraft(list.id, null);
-                                    setAddTaskOpenByList((prev) => ({ ...prev, [list.id]: false }));
+                                    setAddTaskOpenByList((prev) => ({
+                                      ...prev,
+                                      [list.id]: false,
+                                    }));
                                   }
                                 }}
                                 whileHover={{ scale: 1.03 }}
@@ -1339,7 +1602,10 @@ const TasksHubTracker: React.FC = () => {
                                 className="neo-btn neo-btn-sm neo-btn-white"
                                 onClick={() => {
                                   resetDraft(list.id, null);
-                                  setAddTaskOpenByList((prev) => ({ ...prev, [list.id]: false }));
+                                  setAddTaskOpenByList((prev) => ({
+                                    ...prev,
+                                    [list.id]: false,
+                                  }));
                                 }}
                                 whileTap={{ scale: 0.93 }}
                               >
@@ -1353,46 +1619,61 @@ const TasksHubTracker: React.FC = () => {
 
                     {/* Card Body */}
                     <div className="tasks-card-body">
-                      {activeRootTasks.length === 0 && completedRootTasks.length === 0 && completedSubtasks.length === 0 && (
-                        <motion.div
-                          className="tasks-empty"
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                        >
-                          <motion.span
-                            animate={{ y: [0, -4, 0] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                            style={{ display: "inline-block", marginRight: 6 }}
+                      {activeRootTasks.length === 0 &&
+                        completedRootTasks.length === 0 &&
+                        completedSubtasks.length === 0 && (
+                          <motion.div
+                            className="tasks-empty"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
                           >
-                            {"  "}
-                          </motion.span>
-                          No tasks in this list yet.
-                        </motion.div>
-                      )}
+                            <motion.span
+                              animate={{ y: [0, -4, 0] }}
+                              transition={{ duration: 1.5, repeat: Infinity }}
+                              style={{
+                                display: "inline-block",
+                                marginRight: 6,
+                              }}
+                            >
+                              {"  "}
+                            </motion.span>
+                            No tasks in this list yet.
+                          </motion.div>
+                        )}
 
                       {/* Active Root Tasks */}
                       {activeRootTasks.map((task, taskIndex) => {
                         const expanded = !!expandedTaskIds[task.id];
-                        const edit = taskEditsById[task.id] ?? createTaskEditDraft(task);
-                        const subtasks = sortTasksForList(tasksByParent[task.id] || [], listSort.mode, listSort.direction);
-                        const activeSubtasks = subtasks.filter((subtask) => !subtask.is_completed);
-                        const doneSubtaskCount = subtasks.length - activeSubtasks.length;
+                        const edit =
+                          taskEditsById[task.id] ?? createTaskEditDraft(task);
+                        const subtasks = sortTasksForList(
+                          tasksByParent[task.id] || [],
+                          listSort.mode,
+                          listSort.direction,
+                        );
+                        const activeSubtasks = subtasks.filter(
+                          (subtask) => !subtask.is_completed,
+                        );
+                        const doneSubtaskCount =
+                          subtasks.length - activeSubtasks.length;
                         const subtaskDraft = getDraft(list.id, task.id);
-                        const addSubtaskOpen = addSubtaskOpenByParent[task.id] ?? false;
+                        const addSubtaskOpen =
+                          addSubtaskOpenByParent[task.id] ?? false;
                         const canDrag = listSort.mode === "custom";
 
                         return (
                           <React.Fragment key={task.id}>
-                            {listSort.mode === "due_date" && dueHeaderByTaskId.get(task.id) && (
-                              <motion.div
-                                className="tasks-due-group-label"
-                                initial={{ opacity: 0, x: -8 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: taskIndex * 0.02 }}
-                              >
-                                {dueHeaderByTaskId.get(task.id)}
-                              </motion.div>
-                            )}
+                            {listSort.mode === "due_date" &&
+                              dueHeaderByTaskId.get(task.id) && (
+                                <motion.div
+                                  className="tasks-due-group-label"
+                                  initial={{ opacity: 0, x: -8 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: taskIndex * 0.02 }}
+                                >
+                                  {dueHeaderByTaskId.get(task.id)}
+                                </motion.div>
+                              )}
                             <motion.div
                               className={`tasks-task-row ${draggingTaskId === task.id ? "dragging" : ""} ${dragOverTaskId === task.id ? "drop-target" : ""}`}
                               initial={{ opacity: 0, x: -12 }}
@@ -1403,15 +1684,24 @@ const TasksHubTracker: React.FC = () => {
                                 setDraggingTaskId(task.id);
                                 setDraggingParentId(null);
                               }}
-                              onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
+                              onDragOver={(
+                                e: React.DragEvent<HTMLDivElement>,
+                              ) => {
                                 if (!canDrag) return;
                                 e.preventDefault();
                                 setDragOverTaskId(task.id);
                               }}
-                              onDrop={async (e: React.DragEvent<HTMLDivElement>) => {
+                              onDrop={async (
+                                e: React.DragEvent<HTMLDivElement>,
+                              ) => {
                                 if (!canDrag) return;
                                 e.preventDefault();
-                                await handleTaskDrop(list.id, null, activeRootTasks.map((item) => item.id), task.id);
+                                await handleTaskDrop(
+                                  list.id,
+                                  null,
+                                  sortedRootTasks.map((item) => item.id),
+                                  task.id,
+                                );
                               }}
                               onDragEnd={() => {
                                 setDraggingTaskId(null);
@@ -1421,10 +1711,14 @@ const TasksHubTracker: React.FC = () => {
                             >
                               <div className="tasks-task-main">
                                 <div style={{ position: "relative" }}>
-                                  <Confetti trigger={!!justCheckedIds[task.id]} />
+                                  <Confetti
+                                    trigger={!!justCheckedIds[task.id]}
+                                  />
                                   <motion.button
                                     className={`tasks-checkbox ${task.is_completed ? "done" : ""}`}
-                                    onClick={async () => { await handleToggleCompletion(task); }}
+                                    onClick={async () => {
+                                      await handleToggleCompletion(task);
+                                    }}
                                     whileHover={{ scale: 1.2 }}
                                     whileTap={{ scale: 0.85 }}
                                   >
@@ -1452,17 +1746,43 @@ const TasksHubTracker: React.FC = () => {
                                     {task.title}
                                   </motion.button>
                                   <div className="tasks-meta">
-                                    {task.due_at && <span className={dueChipClassName(task.due_at)}>{formatDue(task.due_at)}</span>}
-                                    {recurrenceLabel(task) && <span className="tasks-chip">{recurrenceLabel(task)}</span>}
-                                    {subtasks.length > 0 && <span className="tasks-chip">{activeSubtasks.length}/{subtasks.length} subtasks</span>}
-                                    {doneSubtaskCount > 0 && <span className="tasks-chip">{doneSubtaskCount} done</span>}
+                                    {task.due_at && (
+                                      <span
+                                        className={dueChipClassName(
+                                          task.due_at,
+                                        )}
+                                      >
+                                        {formatDue(task.due_at)}
+                                      </span>
+                                    )}
+                                    {recurrenceLabel(task) && (
+                                      <span className="tasks-chip">
+                                        {recurrenceLabel(task)}
+                                      </span>
+                                    )}
+                                    {subtasks.length > 0 && (
+                                      <span className="tasks-chip">
+                                        {activeSubtasks.length}/
+                                        {subtasks.length} subtasks
+                                      </span>
+                                    )}
+                                    {doneSubtaskCount > 0 && (
+                                      <span className="tasks-chip">
+                                        {doneSubtaskCount} done
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
 
                                 <div className="tasks-row-actions">
                                   <motion.button
                                     className="tasks-icon-btn"
-                                    onClick={() => setAddSubtaskOpenByParent((prev) => ({ ...prev, [task.id]: !addSubtaskOpen }))}
+                                    onClick={() =>
+                                      setAddSubtaskOpenByParent((prev) => ({
+                                        ...prev,
+                                        [task.id]: !addSubtaskOpen,
+                                      }))
+                                    }
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.9 }}
                                   >
@@ -1470,7 +1790,9 @@ const TasksHubTracker: React.FC = () => {
                                   </motion.button>
                                   <motion.button
                                     className="tasks-icon-btn tasks-danger"
-                                    onClick={async () => { await removeTask(task.id); }}
+                                    onClick={async () => {
+                                      await removeTask(task.id);
+                                    }}
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.9 }}
                                   >
@@ -1482,98 +1804,151 @@ const TasksHubTracker: React.FC = () => {
                               {/* Subtasks */}
                               {activeSubtasks.length > 0 && (
                                 <div className="tasks-subtasks">
-                                  {activeSubtasks.map((subtask, subtaskIndex) => {
-                                    const subtaskExpanded = !!expandedTaskIds[subtask.id];
-                                    const subtaskEdit = taskEditsById[subtask.id] ?? createTaskEditDraft(subtask);
+                                  {activeSubtasks.map(
+                                    (subtask, subtaskIndex) => {
+                                      const subtaskExpanded =
+                                        !!expandedTaskIds[subtask.id];
+                                      const subtaskEdit =
+                                        taskEditsById[subtask.id] ??
+                                        createTaskEditDraft(subtask);
 
-                                    return (
-                                      <React.Fragment key={subtask.id}>
-                                        <motion.div
-                                          className={`tasks-subtask-row ${draggingTaskId === subtask.id ? "dragging" : ""} ${dragOverTaskId === subtask.id ? "drop-target" : ""}`}
-                                          initial={{ opacity: 0, x: -8 }}
-                                          animate={{ opacity: 1, x: 0 }}
-                                          transition={{ delay: subtaskIndex * 0.02 }}
-                                          draggable={canDrag}
-                                          onDragStart={() => {
-                                            setDraggingTaskId(subtask.id);
-                                            setDraggingParentId(task.id);
-                                          }}
-                                          onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-                                            if (!canDrag) return;
-                                            e.preventDefault();
-                                            setDragOverTaskId(subtask.id);
-                                          }}
-                                          onDrop={async (e: React.DragEvent<HTMLDivElement>) => {
-                                            if (!canDrag) return;
-                                            e.preventDefault();
-                                            await handleTaskDrop(list.id, task.id, activeSubtasks.map((item) => item.id), subtask.id);
-                                          }}
-                                          onDragEnd={() => {
-                                            setDraggingTaskId(null);
-                                            setDraggingParentId(null);
-                                            setDragOverTaskId(null);
-                                          }}
-                                        >
-                                          <div style={{ position: "relative" }}>
-                                            <Confetti trigger={!!justCheckedIds[subtask.id]} />
-                                            <motion.button
-                                              className={`tasks-checkbox ${subtask.is_completed ? "done" : ""}`}
-                                              onClick={async () => { await handleToggleCompletion(subtask); }}
-                                              whileHover={{ scale: 1.2 }}
-                                              whileTap={{ scale: 0.85 }}
+                                      return (
+                                        <React.Fragment key={subtask.id}>
+                                          <motion.div
+                                            className={`tasks-subtask-row ${draggingTaskId === subtask.id ? "dragging" : ""} ${dragOverTaskId === subtask.id ? "drop-target" : ""}`}
+                                            initial={{ opacity: 0, x: -8 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{
+                                              delay: subtaskIndex * 0.02,
+                                            }}
+                                            draggable={canDrag}
+                                            onDragStart={() => {
+                                              setDraggingTaskId(subtask.id);
+                                              setDraggingParentId(task.id);
+                                            }}
+                                            onDragOver={(
+                                              e: React.DragEvent<HTMLDivElement>,
+                                            ) => {
+                                              if (!canDrag) return;
+                                              e.preventDefault();
+                                              setDragOverTaskId(subtask.id);
+                                            }}
+                                            onDrop={async (
+                                              e: React.DragEvent<HTMLDivElement>,
+                                            ) => {
+                                              if (!canDrag) return;
+                                              e.preventDefault();
+                                              await handleTaskDrop(
+                                                list.id,
+                                                task.id,
+                                                subtasks.map((item) => item.id),
+                                                subtask.id,
+                                              );
+                                            }}
+                                            onDragEnd={() => {
+                                              setDraggingTaskId(null);
+                                              setDraggingParentId(null);
+                                              setDragOverTaskId(null);
+                                            }}
+                                          >
+                                            <div
+                                              style={{ position: "relative" }}
                                             >
-                                              <AnimatePresence>
-                                                {subtask.is_completed && (
-                                                  <motion.span
-                                                    initial={{ scale: 0, rotate: -90 }}
-                                                    animate={{ scale: 1, rotate: 0 }}
-                                                    exit={{ scale: 0, rotate: 90 }}
-                                                    transition={{ duration: 0.15 }}
-                                                  >
-                                                    {"\u2713"}
-                                                  </motion.span>
-                                                )}
-                                              </AnimatePresence>
-                                            </motion.button>
-                                          </div>
-                                          <div className="min-w-0">
-                                            <motion.button
-                                              className={`tasks-title-btn ${subtask.is_completed ? "done" : ""}`}
-                                              onClick={() => toggleExpandedTask(subtask)}
-                                              whileHover={{ x: 1 }}
-                                            >
-                                              {subtask.title}
-                                            </motion.button>
-                                            <div className="tasks-meta">
-                                              {subtask.due_at && <span className={dueChipClassName(subtask.due_at)}>{formatDue(subtask.due_at)}</span>}
-                                              {recurrenceLabel(subtask) && <span className="tasks-chip">{recurrenceLabel(subtask)}</span>}
+                                              <Confetti
+                                                trigger={
+                                                  !!justCheckedIds[subtask.id]
+                                                }
+                                              />
+                                              <motion.button
+                                                className={`tasks-checkbox ${subtask.is_completed ? "done" : ""}`}
+                                                onClick={async () => {
+                                                  await handleToggleCompletion(
+                                                    subtask,
+                                                  );
+                                                }}
+                                                whileHover={{ scale: 1.2 }}
+                                                whileTap={{ scale: 0.85 }}
+                                              >
+                                                <AnimatePresence>
+                                                  {subtask.is_completed && (
+                                                    <motion.span
+                                                      initial={{
+                                                        scale: 0,
+                                                        rotate: -90,
+                                                      }}
+                                                      animate={{
+                                                        scale: 1,
+                                                        rotate: 0,
+                                                      }}
+                                                      exit={{
+                                                        scale: 0,
+                                                        rotate: 90,
+                                                      }}
+                                                      transition={{
+                                                        duration: 0.15,
+                                                      }}
+                                                    >
+                                                      {"\u2713"}
+                                                    </motion.span>
+                                                  )}
+                                                </AnimatePresence>
+                                              </motion.button>
                                             </div>
-                                          </div>
-                                          <div className="tasks-row-actions">
-                                            <motion.button
-                                              className="tasks-icon-btn tasks-danger"
-                                              onClick={async () => { await removeTask(subtask.id); }}
-                                              whileHover={{ scale: 1.1 }}
-                                              whileTap={{ scale: 0.9 }}
-                                            >
-                                              Del
-                                            </motion.button>
-                                          </div>
-                                        </motion.div>
-                                        <AnimatePresence>
-                                          {subtaskExpanded && (
-                                            <TaskEditExpansion
-                                              task={subtask}
-                                              edit={subtaskEdit}
-                                              onPatch={updateTaskEdit}
-                                              onSave={saveTaskEdit}
-                                              onCancel={cancelTaskEdit}
-                                            />
-                                          )}
-                                        </AnimatePresence>
-                                      </React.Fragment>
-                                    );
-                                  })}
+                                            <div className="min-w-0">
+                                              <motion.button
+                                                className={`tasks-title-btn ${subtask.is_completed ? "done" : ""}`}
+                                                onClick={() =>
+                                                  toggleExpandedTask(subtask)
+                                                }
+                                                whileHover={{ x: 1 }}
+                                              >
+                                                {subtask.title}
+                                              </motion.button>
+                                              <div className="tasks-meta">
+                                                {subtask.due_at && (
+                                                  <span
+                                                    className={dueChipClassName(
+                                                      subtask.due_at,
+                                                    )}
+                                                  >
+                                                    {formatDue(subtask.due_at)}
+                                                  </span>
+                                                )}
+                                                {recurrenceLabel(subtask) && (
+                                                  <span className="tasks-chip">
+                                                    {recurrenceLabel(subtask)}
+                                                  </span>
+                                                )}
+                                              </div>
+                                            </div>
+                                            <div className="tasks-row-actions">
+                                              <motion.button
+                                                className="tasks-icon-btn tasks-danger"
+                                                onClick={async () => {
+                                                  await removeTask(subtask.id);
+                                                }}
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.9 }}
+                                              >
+                                                Del
+                                              </motion.button>
+                                            </div>
+                                          </motion.div>
+                                          <AnimatePresence>
+                                            {subtaskExpanded && (
+                                              <TaskEditExpansion
+                                                task={subtask}
+                                                edit={subtaskEdit}
+                                                onPatch={updateTaskEdit}
+                                                onSave={saveTaskEdit}
+                                                onCancel={cancelTaskEdit}
+                                              />
+                                            )}
+                                          </AnimatePresence>
+                                        </React.Fragment>
+                                      );
+                                    },
+                                  )}
                                 </div>
                               )}
 
@@ -1584,14 +1959,22 @@ const TasksHubTracker: React.FC = () => {
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: "auto" }}
                                     exit={{ opacity: 0, height: 0 }}
-                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                    transition={{
+                                      type: "spring",
+                                      stiffness: 400,
+                                      damping: 30,
+                                    }}
                                     className="tasks-quick-form mt-2 tasks-subtask-form"
                                   >
                                     <input
                                       className="tasks-input"
                                       placeholder="Subtask title"
                                       value={subtaskDraft.title}
-                                      onChange={(e) => setDraft(list.id, task.id, { title: e.target.value })}
+                                      onChange={(e) =>
+                                        setDraft(list.id, task.id, {
+                                          title: e.target.value,
+                                        })
+                                      }
                                     />
                                     <div className="tasks-recurrence-item tasks-due-field">
                                       <label className="neo-label">Due</label>
@@ -1599,46 +1982,95 @@ const TasksHubTracker: React.FC = () => {
                                         <input
                                           className="tasks-input"
                                           type="date"
-                                          value={getDueParts(subtaskDraft.due_at).date}
-                                          onChange={(e) => setDraft(list.id, task.id, { due_at: setDueDatePart(subtaskDraft.due_at, e.target.value) })}
+                                          value={
+                                            getDueParts(subtaskDraft.due_at)
+                                              .date
+                                          }
+                                          onChange={(e) =>
+                                            setDraft(list.id, task.id, {
+                                              due_at: setDueDatePart(
+                                                subtaskDraft.due_at,
+                                                e.target.value,
+                                              ),
+                                            })
+                                          }
                                         />
                                         <input
                                           className="tasks-input"
                                           type="time"
-                                          value={getDueParts(subtaskDraft.due_at).time}
-                                          onChange={(e) => setDraft(list.id, task.id, { due_at: setDueTimePart(subtaskDraft.due_at, e.target.value) })}
+                                          value={
+                                            getDueParts(subtaskDraft.due_at)
+                                              .time
+                                          }
+                                          onChange={(e) =>
+                                            setDraft(list.id, task.id, {
+                                              due_at: setDueTimePart(
+                                                subtaskDraft.due_at,
+                                                e.target.value,
+                                              ),
+                                            })
+                                          }
                                         />
                                       </div>
                                     </div>
                                     <DueQuickButtons
-                                      onPick={(value) => setDraft(list.id, task.id, { due_at: value })}
+                                      onPick={(value) =>
+                                        setDraft(list.id, task.id, {
+                                          due_at: value,
+                                        })
+                                      }
                                       onSetTenPm={() => {
-                                        const next = setTimeToTenPm(subtaskDraft.due_at);
-                                        if (next) setDraft(list.id, task.id, { due_at: next });
+                                        const next = setTimeToTenPm(
+                                          subtaskDraft.due_at,
+                                        );
+                                        if (next)
+                                          setDraft(list.id, task.id, {
+                                            due_at: next,
+                                          });
                                       }}
-                                      canSetTenPm={!!setTimeToTenPm(subtaskDraft.due_at)}
+                                      canSetTenPm={
+                                        !!setTimeToTenPm(subtaskDraft.due_at)
+                                      }
                                     />
                                     <TaskRepeatField
                                       value={subtaskDraft.recurrence_type}
-                                      onChange={(nextType) => setDraft(list.id, task.id, { recurrence_type: nextType })}
+                                      onChange={(nextType) =>
+                                        setDraft(list.id, task.id, {
+                                          recurrence_type: nextType,
+                                        })
+                                      }
                                     />
                                     <TaskRecurrenceFields
                                       value={{
-                                        recurrence_type: subtaskDraft.recurrence_type,
-                                        recurrence_interval: subtaskDraft.recurrence_interval,
-                                        recurrence_unit: subtaskDraft.recurrence_unit,
-                                        recurrence_ends_at: subtaskDraft.recurrence_ends_at,
+                                        recurrence_type:
+                                          subtaskDraft.recurrence_type,
+                                        recurrence_interval:
+                                          subtaskDraft.recurrence_interval,
+                                        recurrence_unit:
+                                          subtaskDraft.recurrence_unit,
+                                        recurrence_ends_at:
+                                          subtaskDraft.recurrence_ends_at,
                                       }}
-                                      onChange={(patch) => setDraft(list.id, task.id, patch)}
+                                      onChange={(patch) =>
+                                        setDraft(list.id, task.id, patch)
+                                      }
                                     />
                                     <div className="flex gap-2">
                                       <motion.button
                                         className="neo-btn neo-btn-sm neo-btn-cyan"
                                         onClick={async () => {
-                                          const created = await createTaskFromDraft(subtaskDraft);
+                                          const created =
+                                            await createTaskFromDraft(
+                                              subtaskDraft,
+                                            );
                                           if (created) {
                                             resetDraft(list.id, task.id);
-                                            setAddSubtaskOpenByParent((prev) => ({ ...prev, [task.id]: false }));
+                                            setAddSubtaskOpenByParent(
+                                              (prev) => ({
+                                                ...prev,
+                                                [task.id]: false,
+                                              }),
+                                            );
                                           }
                                         }}
                                         whileHover={{ scale: 1.03 }}
@@ -1650,7 +2082,10 @@ const TasksHubTracker: React.FC = () => {
                                         className="neo-btn neo-btn-sm neo-btn-white"
                                         onClick={() => {
                                           resetDraft(list.id, task.id);
-                                          setAddSubtaskOpenByParent((prev) => ({ ...prev, [task.id]: false }));
+                                          setAddSubtaskOpenByParent((prev) => ({
+                                            ...prev,
+                                            [task.id]: false,
+                                          }));
                                         }}
                                         whileTap={{ scale: 0.93 }}
                                       >
@@ -1679,120 +2114,169 @@ const TasksHubTracker: React.FC = () => {
                       })}
 
                       {/* Completed Section */}
-                      {!hideCompleted && (completedRootTasks.length > 0 || completedSubtasks.length > 0) && (
-                        <>
-                          <motion.button
-                            className="tasks-completed-toggle"
-                            onClick={() => setCompletedSectionOpenByList((prev) => ({ ...prev, [list.id]: !completedOpen }))}
-                            whileHover={{ x: 2 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <motion.span
-                              animate={{ rotate: completedOpen ? 90 : 0 }}
-                              transition={{ duration: 0.15 }}
-                              style={{ display: "inline-block", marginRight: 4 }}
+                      {!hideCompleted &&
+                        (completedRootTasks.length > 0 ||
+                          completedSubtasks.length > 0) && (
+                          <>
+                            <motion.button
+                              className="tasks-completed-toggle"
+                              onClick={() =>
+                                setCompletedSectionOpenByList((prev) => ({
+                                  ...prev,
+                                  [list.id]: !completedOpen,
+                                }))
+                              }
+                              whileHover={{ x: 2 }}
+                              whileTap={{ scale: 0.98 }}
                             >
-                              {"\u25B6"}
-                            </motion.span>
-                            Completed ({completedRootTasks.length + completedSubtasks.length})
-                          </motion.button>
-
-                          <AnimatePresence>
-                            {completedOpen && (
-                              <motion.div
-                                className="tasks-completed-list"
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.2 }}
+                              <motion.span
+                                animate={{ rotate: completedOpen ? 90 : 0 }}
+                                transition={{ duration: 0.15 }}
+                                style={{
+                                  display: "inline-block",
+                                  marginRight: 4,
+                                }}
                               >
-                                {completedRootTasks.map((task) => (
-                                  <motion.div
-                                    key={task.id}
-                                    className="tasks-subtask-row"
-                                    initial={{ opacity: 0, x: -6 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                  >
-                                    <div style={{ position: "relative" }}>
-                                      <motion.button
-                                        className="tasks-checkbox done"
-                                        onClick={async () => { await handleToggleCompletion(task); }}
-                                        whileHover={{ scale: 1.15 }}
-                                        whileTap={{ scale: 0.85 }}
-                                      >
-                                        {"\u2713"}
-                                      </motion.button>
-                                    </div>
-                                    <div className="min-w-0">
-                                      <motion.button
-                                        className="tasks-title-btn done"
-                                        onClick={() => toggleExpandedTask(task)}
-                                        whileHover={{ x: 1 }}
-                                      >
-                                        {task.title}
-                                      </motion.button>
-                                      <div className="tasks-meta">{task.due_at && <span className={dueChipClassName(task.due_at)}>{formatDue(task.due_at)}</span>}</div>
-                                    </div>
-                                    <div className="tasks-row-actions">
-                                      <motion.button
-                                        className="tasks-icon-btn tasks-danger"
-                                        onClick={async () => { await removeTask(task.id); }}
-                                        whileHover={{ scale: 1.1 }}
-                                        whileTap={{ scale: 0.9 }}
-                                      >
-                                        Del
-                                      </motion.button>
-                                    </div>
-                                  </motion.div>
-                                ))}
+                                {"\u25B6"}
+                              </motion.span>
+                              Completed (
+                              {completedRootTasks.length +
+                                completedSubtasks.length}
+                              )
+                            </motion.button>
 
-                                {completedSubtasks.map(({ task, parentTitle }) => (
-                                  <motion.div
-                                    key={task.id}
-                                    className="tasks-subtask-row tasks-completed-subtask"
-                                    initial={{ opacity: 0, x: -6 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                  >
-                                    <div style={{ position: "relative" }}>
-                                      <motion.button
-                                        className="tasks-checkbox done"
-                                        onClick={async () => { await handleToggleCompletion(task); }}
-                                        whileHover={{ scale: 1.15 }}
-                                        whileTap={{ scale: 0.85 }}
-                                      >
-                                        {"\u2713"}
-                                      </motion.button>
-                                    </div>
-                                    <div className="min-w-0">
-                                      <motion.button
-                                        className="tasks-title-btn done"
-                                        onClick={() => toggleExpandedTask(task)}
-                                        whileHover={{ x: 1 }}
-                                      >
-                                        {task.title}
-                                      </motion.button>
-                                      <div className="tasks-meta">
-                                        <span className="tasks-chip">Subtask of {parentTitle}</span>
-                                        {task.due_at && <span className={dueChipClassName(task.due_at)}>{formatDue(task.due_at)}</span>}
+                            <AnimatePresence>
+                              {completedOpen && (
+                                <motion.div
+                                  className="tasks-completed-list"
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: "auto" }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  {completedRootTasks.map((task) => (
+                                    <motion.div
+                                      key={task.id}
+                                      className="tasks-subtask-row"
+                                      initial={{ opacity: 0, x: -6 }}
+                                      animate={{ opacity: 1, x: 0 }}
+                                    >
+                                      <div style={{ position: "relative" }}>
+                                        <motion.button
+                                          className="tasks-checkbox done"
+                                          onClick={async () => {
+                                            await handleToggleCompletion(task);
+                                          }}
+                                          whileHover={{ scale: 1.15 }}
+                                          whileTap={{ scale: 0.85 }}
+                                        >
+                                          {"\u2713"}
+                                        </motion.button>
                                       </div>
-                                    </div>
-                                    <div className="tasks-row-actions">
-                                      <motion.button
-                                        className="tasks-icon-btn tasks-danger"
-                                        onClick={async () => { await removeTask(task.id); }}
-                                        whileHover={{ scale: 1.1 }}
-                                        whileTap={{ scale: 0.9 }}
+                                      <div className="min-w-0">
+                                        <motion.button
+                                          className="tasks-title-btn done"
+                                          onClick={() =>
+                                            toggleExpandedTask(task)
+                                          }
+                                          whileHover={{ x: 1 }}
+                                        >
+                                          {task.title}
+                                        </motion.button>
+                                        <div className="tasks-meta">
+                                          {task.due_at && (
+                                            <span
+                                              className={dueChipClassName(
+                                                task.due_at,
+                                              )}
+                                            >
+                                              {formatDue(task.due_at)}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="tasks-row-actions">
+                                        <motion.button
+                                          className="tasks-icon-btn tasks-danger"
+                                          onClick={async () => {
+                                            await removeTask(task.id);
+                                          }}
+                                          whileHover={{ scale: 1.1 }}
+                                          whileTap={{ scale: 0.9 }}
+                                        >
+                                          Del
+                                        </motion.button>
+                                      </div>
+                                    </motion.div>
+                                  ))}
+
+                                  {completedSubtasks.map(
+                                    ({ task, parentTitle }) => (
+                                      <motion.div
+                                        key={task.id}
+                                        className="tasks-subtask-row tasks-completed-subtask"
+                                        initial={{ opacity: 0, x: -6 }}
+                                        animate={{ opacity: 1, x: 0 }}
                                       >
-                                        Del
-                                      </motion.button>
-                                    </div>
-                                  </motion.div>
-                                ))}
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </>
-                      )}
+                                        <div style={{ position: "relative" }}>
+                                          <motion.button
+                                            className="tasks-checkbox done"
+                                            onClick={async () => {
+                                              await handleToggleCompletion(
+                                                task,
+                                              );
+                                            }}
+                                            whileHover={{ scale: 1.15 }}
+                                            whileTap={{ scale: 0.85 }}
+                                          >
+                                            {"\u2713"}
+                                          </motion.button>
+                                        </div>
+                                        <div className="min-w-0">
+                                          <motion.button
+                                            className="tasks-title-btn done"
+                                            onClick={() =>
+                                              toggleExpandedTask(task)
+                                            }
+                                            whileHover={{ x: 1 }}
+                                          >
+                                            {task.title}
+                                          </motion.button>
+                                          <div className="tasks-meta">
+                                            <span className="tasks-chip">
+                                              Subtask of {parentTitle}
+                                            </span>
+                                            {task.due_at && (
+                                              <span
+                                                className={dueChipClassName(
+                                                  task.due_at,
+                                                )}
+                                              >
+                                                {formatDue(task.due_at)}
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                        <div className="tasks-row-actions">
+                                          <motion.button
+                                            className="tasks-icon-btn tasks-danger"
+                                            onClick={async () => {
+                                              await removeTask(task.id);
+                                            }}
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                          >
+                                            Del
+                                          </motion.button>
+                                        </div>
+                                      </motion.div>
+                                    ),
+                                  )}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </>
+                        )}
                     </div>
                   </motion.div>
                 );

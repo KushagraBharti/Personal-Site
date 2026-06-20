@@ -2,7 +2,6 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { TrackerTaskRow } from "../../../types/googleCalendar";
 import {
   computeNextRecurringDueAt,
-  isDateOnlyIso,
   isRecurringTask,
   resolveTaskTimeZone,
 } from "../../calendar/services/taskCalendarEventUtils";
@@ -12,7 +11,7 @@ export const getNextTaskSortOrder = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
   listId: string,
-  parentTaskId: string | null
+  parentTaskId: string | null,
 ) => {
   let query = supabaseAdmin
     .from("tracker_tasks")
@@ -20,19 +19,25 @@ export const getNextTaskSortOrder = async (
     .eq("user_id", userId)
     .eq("list_id", listId);
 
-  query = parentTaskId ? query.eq("parent_task_id", parentTaskId) : query.is("parent_task_id", null);
+  query = parentTaskId
+    ? query.eq("parent_task_id", parentTaskId)
+    : query.is("parent_task_id", null);
 
-  const { data, error } = await query.order("sort_order", { ascending: false }).limit(1);
+  const { data, error } = await query
+    .order("sort_order", { ascending: false })
+    .limit(1);
   if (error) throw new Error(error.message);
 
-  const currentMax = Number((data?.[0] as { sort_order?: unknown } | undefined)?.sort_order);
+  const currentMax = Number(
+    (data?.[0] as { sort_order?: unknown } | undefined)?.sort_order,
+  );
   return Number.isFinite(currentMax) ? currentMax + 1 : 1;
 };
 
 const applyNullableFilter = (
   query: any,
   column: string,
-  value: string | number | boolean | null
+  value: string | number | boolean | null,
 ) => (value === null ? query.is(column, null) : query.eq(column, value));
 
 const findExistingNextRecurringTask = async (
@@ -40,7 +45,7 @@ const findExistingNextRecurringTask = async (
   userId: string,
   sourceTask: TrackerTaskRow,
   nextDueAt: string,
-  nextDueTimezone: string | null
+  nextDueTimezone: string | null,
 ) => {
   let query = supabaseAdmin
     .from("tracker_tasks")
@@ -52,37 +57,55 @@ const findExistingNextRecurringTask = async (
     .eq("is_completed", false)
     .eq("recurrence_type", sourceTask.recurrence_type);
 
-  query = applyNullableFilter(query, "parent_task_id", sourceTask.parent_task_id);
+  query = applyNullableFilter(
+    query,
+    "parent_task_id",
+    sourceTask.parent_task_id,
+  );
   query = applyNullableFilter(query, "details", sourceTask.details);
   query = applyNullableFilter(query, "due_timezone", nextDueTimezone);
-  query = applyNullableFilter(query, "recurrence_interval", sourceTask.recurrence_interval);
-  query = applyNullableFilter(query, "recurrence_unit", sourceTask.recurrence_unit);
-  query = applyNullableFilter(query, "recurrence_ends_at", sourceTask.recurrence_ends_at);
+  query = applyNullableFilter(
+    query,
+    "recurrence_interval",
+    sourceTask.recurrence_interval,
+  );
+  query = applyNullableFilter(
+    query,
+    "recurrence_unit",
+    sourceTask.recurrence_unit,
+  );
+  query = applyNullableFilter(
+    query,
+    "recurrence_ends_at",
+    sourceTask.recurrence_ends_at,
+  );
 
-  const { data, error } = await query.order("sort_order", { ascending: true }).limit(1);
+  const { data, error } = await query
+    .order("sort_order", { ascending: true })
+    .limit(1);
   if (error) throw new Error(error.message);
-  return ((data?.[0] as TrackerTaskRow | undefined) ?? null);
+  return (data?.[0] as TrackerTaskRow | undefined) ?? null;
 };
 
 export const createNextRecurringTaskForCompletion = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
-  sourceTask: TrackerTaskRow
+  sourceTask: TrackerTaskRow,
 ) => {
   if (!isRecurringTask(sourceTask)) return null;
 
   const nextDueAt = computeNextRecurringDueAt(sourceTask);
   if (!nextDueAt) return null;
 
-  const nextDueTimezone = isDateOnlyIso(nextDueAt)
-    ? null
-    : resolveTaskTimeZone(sourceTask.due_timezone);
+  const nextDueTimezone = sourceTask.due_timezone
+    ? resolveTaskTimeZone(sourceTask.due_timezone)
+    : null;
   const existingNextTask = await findExistingNextRecurringTask(
     supabaseAdmin,
     userId,
     sourceTask,
     nextDueAt,
-    nextDueTimezone
+    nextDueTimezone,
   );
   if (existingNextTask) return null;
 
@@ -90,7 +113,7 @@ export const createNextRecurringTaskForCompletion = async (
     supabaseAdmin,
     userId,
     sourceTask.list_id,
-    sourceTask.parent_task_id
+    sourceTask.parent_task_id,
   );
   const { data: nextTaskRow, error: nextTaskError } = await supabaseAdmin
     .from("tracker_tasks")
@@ -120,16 +143,18 @@ export const setTaskCompletionForUser = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
   taskId: string,
-  isCompleted: boolean
+  isCompleted: boolean,
 ) => {
-  const { data: existingTaskRow, error: existingTaskError } = await supabaseAdmin
-    .from("tracker_tasks")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("id", taskId)
-    .maybeSingle();
+  const { data: existingTaskRow, error: existingTaskError } =
+    await supabaseAdmin
+      .from("tracker_tasks")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("id", taskId)
+      .maybeSingle();
   if (existingTaskError) throw new Error(existingTaskError.message);
-  if (!existingTaskRow) return { ok: false as const, code: 404, error: "Task not found" };
+  if (!existingTaskRow)
+    return { ok: false as const, code: 404, error: "Task not found" };
 
   const existingTask = existingTaskRow as TrackerTaskRow;
   const wasCompleted = existingTask.is_completed;
@@ -152,7 +177,7 @@ export const setTaskCompletionForUser = async (
     createdNextTask = await createNextRecurringTaskForCompletion(
       supabaseAdmin,
       userId,
-      existingTask
+      existingTask,
     );
   }
 
@@ -165,7 +190,7 @@ export const setTaskCompletionForUser = async (
 
 export const reconcileCompletedRecurringTasks = async (
   supabaseAdmin: SupabaseClient,
-  input?: { userId?: string; limit?: number }
+  input?: { userId?: string; limit?: number },
 ) => {
   const limit = Math.max(1, Math.min(input?.limit ?? 25, 100));
   let query = supabaseAdmin
@@ -195,7 +220,7 @@ export const reconcileCompletedRecurringTasks = async (
       const createdNextTask = await createNextRecurringTaskForCompletion(
         supabaseAdmin,
         taskRow.user_id,
-        taskRow
+        taskRow,
       );
       results.push({
         task_id: taskRow.id,

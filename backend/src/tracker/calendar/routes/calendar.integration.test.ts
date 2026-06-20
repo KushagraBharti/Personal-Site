@@ -13,6 +13,8 @@ const renewCalendarWatchForUserMock = vi.hoisted(() => vi.fn());
 const queueFullBackfillMock = vi.hoisted(() => vi.fn());
 const disconnectGoogleCalendarForUserMock = vi.hoisted(() => vi.fn());
 const upsertListSyncSettingMock = vi.hoisted(() => vi.fn());
+const taskListBelongsToUserMock = vi.hoisted(() => vi.fn());
+const queueListBackfillRunForUserMock = vi.hoisted(() => vi.fn());
 const queueManualSyncForUserMock = vi.hoisted(() => vi.fn());
 const processCalendarSyncJobsMock = vi.hoisted(() => vi.fn());
 const runLegacyManualSyncForUserMock = vi.hoisted(() => vi.fn());
@@ -47,6 +49,7 @@ vi.mock("../services/taskCalendarSyncService", () => ({
   isCalendarRebuildSchemaUnavailable: isCalendarRebuildSchemaUnavailableMock,
   processCalendarSyncJobs: processCalendarSyncJobsMock,
   queueLivePumpForUser: queueLivePumpForUserMock,
+  queueListBackfillRunForUser: queueListBackfillRunForUserMock,
   queueListSyncCleanupForUser: queueListSyncCleanupForUserMock,
   queueManualSyncForUser: queueManualSyncForUserMock,
   queueRebuildRunForUser: queueRebuildRunForUserMock,
@@ -54,6 +57,7 @@ vi.mock("../services/taskCalendarSyncService", () => ({
   rebuildCalendarLegacyInlineForUser: rebuildCalendarLegacyInlineForUserMock,
   renewCalendarWatchForUser: renewCalendarWatchForUserMock,
   runLegacyManualSyncForUser: runLegacyManualSyncForUserMock,
+  taskListBelongsToUser: taskListBelongsToUserMock,
   upsertGoogleConnectionFromOAuth: upsertGoogleConnectionFromOAuthMock,
   upsertListSyncSetting: upsertListSyncSettingMock,
 }));
@@ -97,6 +101,10 @@ describe("calendar tracker routes", () => {
     queueFullBackfillMock.mockReset();
     disconnectGoogleCalendarForUserMock.mockReset();
     upsertListSyncSettingMock.mockReset();
+    taskListBelongsToUserMock.mockReset();
+    taskListBelongsToUserMock.mockResolvedValue(true);
+    queueListBackfillRunForUserMock.mockReset();
+    queueListBackfillRunForUserMock.mockResolvedValue("run-1");
     queueManualSyncForUserMock.mockReset();
     processCalendarSyncJobsMock.mockReset();
     runLegacyManualSyncForUserMock.mockReset();
@@ -120,7 +128,8 @@ describe("calendar tracker routes", () => {
     });
     process.env.SUPABASE_URL = "https://supabase.test";
     process.env.SUPABASE_SECRET_KEY = "service-key";
-    process.env.TRACKER_FRONTEND_URL = "http://localhost:5173/tracker?module=tasks";
+    process.env.TRACKER_FRONTEND_URL =
+      "http://localhost:5173/tracker?module=tasks";
     process.env.CALENDAR_SYNC_ENABLED = "1";
   });
 
@@ -155,7 +164,9 @@ describe("calendar tracker routes", () => {
 
   it("redirects the Google callback to an error when the code or state is missing", async () => {
     const { default: app } = await import("../../../app");
-    const response = await request(app).get("/api/private/calendar/google/callback");
+    const response = await request(app).get(
+      "/api/private/calendar/google/callback",
+    );
 
     expect(response.status).toBe(302);
     expect(response.headers.location).toContain("calendar=error");
@@ -177,7 +188,9 @@ describe("calendar tracker routes", () => {
   it("returns 500 and logs when sync-now fails", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     queueManualSyncForUserMock.mockRejectedValue(new Error("queue failed"));
-    runLegacyManualSyncForUserMock.mockRejectedValue(new Error("legacy failed"));
+    runLegacyManualSyncForUserMock.mockRejectedValue(
+      new Error("legacy failed"),
+    );
 
     const { default: app } = await import("../../../app");
     const response = await request(app)
@@ -201,11 +214,71 @@ describe("calendar tracker routes", () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       ok: true,
+      run_id: "",
       queued_cleanup: true,
       cleanup_job_count: 3,
     });
-    expect(upsertListSyncSettingMock).toHaveBeenCalledWith(expect.anything(), "user-1", "list-1", false);
-    expect(queueListSyncCleanupForUserMock).toHaveBeenCalledWith(expect.anything(), "user-1", "list-1");
-    expect(queueFullBackfillMock).not.toHaveBeenCalled();
+    expect(upsertListSyncSettingMock).toHaveBeenCalledWith(
+      expect.anything(),
+      "user-1",
+      "list-1",
+      false,
+    );
+    expect(queueListSyncCleanupForUserMock).toHaveBeenCalledWith(
+      expect.anything(),
+      "user-1",
+      "list-1",
+    );
+    expect(queueListBackfillRunForUserMock).not.toHaveBeenCalled();
+  });
+
+  it("queues a list-scoped reconcile run when list calendar sync is enabled", async () => {
+    queueListBackfillRunForUserMock.mockResolvedValue("run-list-1");
+
+    const { default: app } = await import("../../../app");
+    const response = await request(app)
+      .post("/api/private/calendar/list-sync")
+      .set("authorization", "Bearer valid-token")
+      .send({ list_id: "list-1", sync_enabled: true });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      run_id: "run-list-1",
+      queued_cleanup: false,
+      cleanup_job_count: 0,
+    });
+    expect(taskListBelongsToUserMock).toHaveBeenCalledWith(
+      expect.anything(),
+      "user-1",
+      "list-1",
+    );
+    expect(upsertListSyncSettingMock).toHaveBeenCalledWith(
+      expect.anything(),
+      "user-1",
+      "list-1",
+      true,
+    );
+    expect(queueListBackfillRunForUserMock).toHaveBeenCalledWith(
+      expect.anything(),
+      "user-1",
+      "list-1",
+    );
+    expect(queueListSyncCleanupForUserMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects list calendar sync for lists the user does not own", async () => {
+    taskListBelongsToUserMock.mockResolvedValue(false);
+
+    const { default: app } = await import("../../../app");
+    const response = await request(app)
+      .post("/api/private/calendar/list-sync")
+      .set("authorization", "Bearer valid-token")
+      .send({ list_id: "list-other", sync_enabled: true });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ error: "List not found" });
+    expect(upsertListSyncSettingMock).not.toHaveBeenCalled();
+    expect(queueListBackfillRunForUserMock).not.toHaveBeenCalled();
   });
 });

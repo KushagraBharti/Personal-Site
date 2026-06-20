@@ -27,6 +27,22 @@ npm run supabase:stop
 
 This repo intentionally does not keep checked-in SQL snapshots or migrations. The live Supabase project is the source of truth for tracker database objects.
 
+The tracker code expects these live objects to exist:
+
+- `tracker_task_lists`
+- `tracker_tasks`
+- `tracker_task_sort_preferences`
+- `tracker_task_list_sync_settings`
+- `tracker_google_calendar_connections_public`
+- `tracker_google_calendar_connections_secrets`
+- `tracker_google_sync_jobs`
+- `tracker_google_sync_runs`
+- `tracker_task_google_event_links`
+- `tracker_task_google_projection_event_links`
+- RPCs: `claim_sync_jobs`, `complete_sync_job`, `fail_sync_job`
+
+RLS should keep user-owned tracker rows scoped by `user_id`. Backend service-role routes use `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY`; frontend Vite env must only use anon/publishable Supabase credentials.
+
 ## Types
 
 ```bash

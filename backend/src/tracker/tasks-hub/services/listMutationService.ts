@@ -17,7 +17,7 @@ import {
 
 const fetchActiveListsForUser = async (
   supabaseAdmin: SupabaseClient,
-  userId: string
+  userId: string,
 ) => {
   const { data, error } = await supabaseAdmin
     .from("tracker_task_lists")
@@ -38,30 +38,36 @@ const getNextListSortOrder = (lists: TrackerTaskListRow[]) => {
 const findDuplicateList = (
   lists: TrackerTaskListRow[],
   name: string,
-  exceptListId?: string
+  exceptListId?: string,
 ) =>
   lists.find(
     (list) =>
       list.id !== exceptListId &&
-      normalizeListName(list.name) === normalizeListName(name)
+      normalizeListName(list.name) === normalizeListName(name),
   ) ?? null;
 
 export const createTaskListForUser = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
-  input: TaskListCreateInput
+  input: TaskListCreateInput,
 ): Promise<ServiceResult<{ list: TrackerTaskListRow }>> => {
   const cleanedName = cleanOptionalString(input.name);
-  if (!cleanedName) return { ok: false, code: 400, error: "List name is required" };
+  if (!cleanedName)
+    return { ok: false, code: 400, error: "List name is required" };
 
   const lists = await fetchActiveListsForUser(supabaseAdmin, userId);
   const duplicate = findDuplicateList(lists, cleanedName);
   if (duplicate) {
-    return { ok: false, code: 409, error: `List "${duplicate.name}" already exists.` };
+    return {
+      ok: false,
+      code: 409,
+      error: `List "${duplicate.name}" already exists.`,
+    };
   }
 
   const requestedColor = cleanOptionalString(input.color_hex);
-  const colorHex = requestedColor || pickAutoListColor(lists.map((list) => list.color_hex));
+  const colorHex =
+    requestedColor || pickAutoListColor(lists.map((list) => list.color_hex));
   const { data, error } = await supabaseAdmin
     .from("tracker_task_lists")
     .insert({
@@ -82,7 +88,7 @@ export const updateTaskListForUser = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
   listId: string,
-  input: TaskListUpdateInput
+  input: TaskListUpdateInput,
 ): Promise<ServiceResult<{ list: TrackerTaskListRow }>> => {
   const lists = await fetchActiveListsForUser(supabaseAdmin, userId);
   const existing = lists.find((list) => list.id === listId) ?? null;
@@ -91,16 +97,22 @@ export const updateTaskListForUser = async (
   const payload: Record<string, unknown> = {};
   if (Object.prototype.hasOwnProperty.call(input, "name")) {
     const cleanedName = cleanOptionalString(input.name);
-    if (!cleanedName) return { ok: false, code: 400, error: "List name is required" };
+    if (!cleanedName)
+      return { ok: false, code: 400, error: "List name is required" };
     const duplicate = findDuplicateList(lists, cleanedName, listId);
     if (duplicate) {
-      return { ok: false, code: 409, error: `List "${duplicate.name}" already exists.` };
+      return {
+        ok: false,
+        code: 409,
+        error: `List "${duplicate.name}" already exists.`,
+      };
     }
     payload.name = cleanedName;
   }
   if (Object.prototype.hasOwnProperty.call(input, "color_hex")) {
     const cleanedColor = cleanOptionalString(input.color_hex);
-    if (!cleanedColor) return { ok: false, code: 400, error: "color_hex is required" };
+    if (!cleanedColor)
+      return { ok: false, code: 400, error: "color_hex is required" };
     payload.color_hex = cleanedColor;
   }
 
@@ -121,21 +133,44 @@ export const updateTaskListForUser = async (
 export const reorderTaskListsForUser = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
-  orderedListIds: unknown
+  orderedListIds: unknown,
 ): Promise<ServiceResult<{ lists: TrackerTaskListRow[] }>> => {
-  if (!Array.isArray(orderedListIds) || orderedListIds.some((id) => typeof id !== "string")) {
-    return { ok: false, code: 400, error: "ordered_list_ids must be an array of list ids" };
+  if (
+    !Array.isArray(orderedListIds) ||
+    orderedListIds.some((id) => typeof id !== "string")
+  ) {
+    return {
+      ok: false,
+      code: 400,
+      error: "ordered_list_ids must be an array of list ids",
+    };
   }
-  if (orderedListIds.length === 0) return { ok: false, code: 400, error: "ordered_list_ids is required" };
+  if (orderedListIds.length === 0)
+    return { ok: false, code: 400, error: "ordered_list_ids is required" };
 
   const lists = await fetchActiveListsForUser(supabaseAdmin, userId);
   const listById = new Map(lists.map((list) => [list.id, list]));
   const uniqueIds = new Set(orderedListIds);
   if (uniqueIds.size !== orderedListIds.length) {
-    return { ok: false, code: 400, error: "ordered_list_ids must not contain duplicates" };
+    return {
+      ok: false,
+      code: 400,
+      error: "ordered_list_ids must not contain duplicates",
+    };
   }
   if (orderedListIds.some((listId) => !listById.has(listId))) {
-    return { ok: false, code: 400, error: "ordered_list_ids contains an unknown list" };
+    return {
+      ok: false,
+      code: 400,
+      error: "ordered_list_ids contains an unknown list",
+    };
+  }
+  if (orderedListIds.length !== lists.length) {
+    return {
+      ok: false,
+      code: 400,
+      error: "ordered_list_ids must include every active list",
+    };
   }
 
   const updatedLists: TrackerTaskListRow[] = [];
@@ -153,18 +188,21 @@ export const reorderTaskListsForUser = async (
 
   return {
     ok: true,
-    lists: updatedLists.sort((left, right) => left.sort_order - right.sort_order),
+    lists: updatedLists.sort(
+      (left, right) => left.sort_order - right.sort_order,
+    ),
   };
 };
 
 export const deleteTaskListForUser = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
-  listId: string
+  listId: string,
 ) => {
   const activeLists = await fetchActiveListsForUser(supabaseAdmin, userId);
   const listRow = activeLists.find((list) => list.id === listId) ?? null;
-  if (!listRow) return { ok: false as const, code: 404, error: "List not found" };
+  if (!listRow)
+    return { ok: false as const, code: 404, error: "List not found" };
   if (activeLists.length <= 1) {
     return {
       ok: false as const,
@@ -180,7 +218,9 @@ export const deleteTaskListForUser = async (
     .eq("list_id", listId);
   if (taskRowsError) throw new Error(taskRowsError.message);
 
-  const taskIds = (taskRows ?? []).map((row: any) => String(row.id)).filter(Boolean);
+  const taskIds = (taskRows ?? [])
+    .map((row: any) => String(row.id))
+    .filter(Boolean);
 
   for (const taskId of taskIds) {
     await processBestEffortTaskDeleteCleanup(supabaseAdmin, {

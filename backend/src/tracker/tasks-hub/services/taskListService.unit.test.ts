@@ -7,6 +7,7 @@ import {
 
 vi.mock("../../calendar/services/taskCalendarSyncService", () => ({
   processTaskDeleteJob: vi.fn(),
+  queueTaskDeleteForUser: vi.fn(),
 }));
 
 interface MockSupabaseState {
@@ -40,7 +41,9 @@ const buildTask = (overrides?: Partial<TrackerTaskRow>): TrackerTaskRow => ({
   ...overrides,
 });
 
-const buildList = (overrides?: Partial<TrackerTaskListRow>): TrackerTaskListRow => ({
+const buildList = (
+  overrides?: Partial<TrackerTaskListRow>,
+): TrackerTaskListRow => ({
   id: "list-1",
   user_id: "user-1",
   name: "General",
@@ -65,7 +68,7 @@ class MockQueryBuilder {
 
   constructor(
     private readonly table: string,
-    private readonly state: MockSupabaseState
+    private readonly state: MockSupabaseState,
   ) {}
 
   select() {
@@ -144,10 +147,16 @@ class MockQueryBuilder {
   }
 
   private rowsForTable(): Array<Record<string, unknown>> {
-    if (this.table === "tracker_tasks") return this.state.tasks as unknown as Array<Record<string, unknown>>;
-    if (this.table === "tracker_task_lists") return (this.state.lists ?? []) as unknown as Array<Record<string, unknown>>;
+    if (this.table === "tracker_tasks")
+      return this.state.tasks as unknown as Array<Record<string, unknown>>;
+    if (this.table === "tracker_task_lists")
+      return (this.state.lists ?? []) as unknown as Array<
+        Record<string, unknown>
+      >;
     if (this.table === "tracker_task_sort_preferences") {
-      return (this.state.sortPreferences ?? []) as unknown as Array<Record<string, unknown>>;
+      return (this.state.sortPreferences ?? []) as unknown as Array<
+        Record<string, unknown>
+      >;
     }
     return [];
   }
@@ -158,19 +167,20 @@ class MockQueryBuilder {
     } else if (this.table === "tracker_task_lists") {
       this.state.lists = rows as unknown as TrackerTaskListRow[];
     } else if (this.table === "tracker_task_sort_preferences") {
-      this.state.sortPreferences = rows as unknown as TrackerTaskSortPreferenceRow[];
+      this.state.sortPreferences =
+        rows as unknown as TrackerTaskSortPreferenceRow[];
     }
   }
 
   private matchesFilters(row: Record<string, unknown>) {
     const matchesEq = Object.entries(this.filters).every(
-      ([column, value]) => row[column] === value
+      ([column, value]) => row[column] === value,
     );
     const matchesNeq = Object.entries(this.neqFilters).every(
-      ([column, value]) => row[column] !== value
+      ([column, value]) => row[column] !== value,
     );
     const matchesNotNull = Array.from(this.notNullColumns).every(
-      (column) => row[column] !== null
+      (column) => row[column] !== null,
     );
     return matchesEq && matchesNeq && matchesNotNull;
   }
@@ -182,10 +192,13 @@ class MockQueryBuilder {
       rows = [...rows].sort((left, right) => {
         const leftValue = Number(left[column] ?? 0);
         const rightValue = Number(right[column] ?? 0);
-        return this.orderAscending ? leftValue - rightValue : rightValue - leftValue;
+        return this.orderAscending
+          ? leftValue - rightValue
+          : rightValue - leftValue;
       });
     }
-    if (typeof this.limitCount === "number") rows = rows.slice(0, this.limitCount);
+    if (typeof this.limitCount === "number")
+      rows = rows.slice(0, this.limitCount);
     return rows;
   }
 
@@ -217,18 +230,32 @@ class MockQueryBuilder {
 
     if (this.operation === "update") {
       const row = this.rowsForTable().find((item) => this.matchesFilters(item));
-      if (!row) return Promise.resolve({ data: null, error: { message: "Row not found" } });
-      Object.assign(row, this.payload, { updated_at: new Date().toISOString() });
+      if (!row)
+        return Promise.resolve({
+          data: null,
+          error: { message: "Row not found" },
+        });
+      Object.assign(row, this.payload, {
+        updated_at: new Date().toISOString(),
+      });
       if (this.table === "tracker_tasks") {
-        this.state.updatedTasks.push({ taskId: String(row.id), payload: this.payload });
+        this.state.updatedTasks.push({
+          taskId: String(row.id),
+          payload: this.payload,
+        });
       } else if (this.table === "tracker_task_lists") {
-        this.state.updatedLists?.push({ listId: String(row.id), payload: this.payload });
+        this.state.updatedLists?.push({
+          listId: String(row.id),
+          payload: this.payload,
+        });
       }
       return Promise.resolve({ data: row, error: null });
     }
 
     if (this.operation === "delete") {
-      const keptRows = this.rowsForTable().filter((row) => !this.matchesFilters(row));
+      const keptRows = this.rowsForTable().filter(
+        (row) => !this.matchesFilters(row),
+      );
       this.setRowsForTable(keptRows);
       return Promise.resolve({ data: null, error: null });
     }
@@ -277,6 +304,12 @@ describe("taskListService", () => {
           due_timezone: "America/Chicago",
           sort_order: 2,
         }),
+        buildTask({
+          id: "task-3",
+          due_at: "2026-04-17T12:00:00.777Z",
+          due_timezone: null,
+          sort_order: 3,
+        }),
       ],
       lists: [],
       sortPreferences: [],
@@ -286,9 +319,13 @@ describe("taskListService", () => {
       updatedLists: [],
     };
 
-    const result = await getTrackerBootstrapForUser(createSupabaseMock(state), "user-1", {
-      browserTimeZone: "America/New_York",
-    });
+    const result = await getTrackerBootstrapForUser(
+      createSupabaseMock(state),
+      "user-1",
+      {
+        browserTimeZone: "America/New_York",
+      },
+    );
 
     expect(result.lists).toHaveLength(1);
     expect(result.lists[0]).toMatchObject({
@@ -298,8 +335,15 @@ describe("taskListService", () => {
       archived: false,
     });
     expect(state.insertedLists).toHaveLength(1);
-    expect(result.tasks.find((task) => task.id === "task-1")?.due_timezone).toBe("America/New_York");
-    expect(result.tasks.find((task) => task.id === "task-2")?.due_timezone).toBeNull();
+    expect(
+      result.tasks.find((task) => task.id === "task-1")?.due_timezone,
+    ).toBe("America/New_York");
+    expect(
+      result.tasks.find((task) => task.id === "task-2")?.due_timezone,
+    ).toBe("America/Chicago");
+    expect(
+      result.tasks.find((task) => task.id === "task-3")?.due_timezone,
+    ).toBe("America/New_York");
   });
 
   it("creates tasks with backend-owned sibling sort order and timezone normalization", async () => {
@@ -315,19 +359,23 @@ describe("taskListService", () => {
       updatedLists: [],
     };
 
-    const result = await createTaskForUser(createSupabaseMock(state), "user-1", {
-      list_id: "list-1",
-      parent_task_id: null,
-      title: "  New task  ",
-      details: "  Details  ",
-      due_at: "2026-04-16T14:00:00.000Z",
-      due_timezone: null,
-      recurrence_type: "none",
-      recurrence_interval: null,
-      recurrence_unit: null,
-      recurrence_ends_at: null,
-      browser_timezone: "America/Los_Angeles",
-    });
+    const result = await createTaskForUser(
+      createSupabaseMock(state),
+      "user-1",
+      {
+        list_id: "list-1",
+        parent_task_id: null,
+        title: "  New task  ",
+        details: "  Details  ",
+        due_at: "2026-04-16T14:00:00.000Z",
+        due_timezone: null,
+        recurrence_type: "none",
+        recurrence_interval: null,
+        recurrence_unit: null,
+        recurrence_ends_at: null,
+        browser_timezone: "America/Los_Angeles",
+      },
+    );
 
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error("Expected successful result");
@@ -355,14 +403,18 @@ describe("taskListService", () => {
       updatedLists: [],
     };
 
-    const result = await createTaskForUser(createSupabaseMock(state), "user-1", {
-      list_id: "list-1",
-      parent_task_id: null,
-      title: "Recurring",
-      due_at: null,
-      recurrence_type: "daily",
-      browser_timezone: "America/Chicago",
-    });
+    const result = await createTaskForUser(
+      createSupabaseMock(state),
+      "user-1",
+      {
+        list_id: "list-1",
+        parent_task_id: null,
+        title: "Recurring",
+        due_at: null,
+        recurrence_type: "daily",
+        browser_timezone: "America/Chicago",
+      },
+    );
 
     expect(result).toEqual({
       ok: false,
@@ -383,7 +435,11 @@ describe("taskListService", () => {
       updatedLists: [],
     };
 
-    const result = await deleteTaskListForUser(createSupabaseMock(state), "user-1", "list-1");
+    const result = await deleteTaskListForUser(
+      createSupabaseMock(state),
+      "user-1",
+      "list-1",
+    );
 
     expect(result).toEqual({
       ok: false,
@@ -391,6 +447,72 @@ describe("taskListService", () => {
       error: "Create another list before deleting your last remaining list.",
     });
     expect(state.lists).toHaveLength(1);
+  });
+
+  it("rejects task reorder payloads that omit sibling tasks", async () => {
+    const { reorderTasksForUser } = await import("./taskListService");
+    const state: MockSupabaseState = {
+      tasks: [
+        buildTask({ id: "task-1", sort_order: 1 }),
+        buildTask({ id: "task-2", sort_order: 2, recurrence_type: "none" }),
+        buildTask({
+          id: "task-3",
+          sort_order: 3,
+          recurrence_type: "none",
+          is_completed: true,
+        }),
+      ],
+      lists: [buildList()],
+      insertedTasks: [],
+      insertedLists: [],
+      updatedTasks: [],
+      updatedLists: [],
+    };
+
+    const result = await reorderTasksForUser(
+      createSupabaseMock(state),
+      "user-1",
+      {
+        list_id: "list-1",
+        parent_task_id: null,
+        ordered_task_ids: ["task-2", "task-1"],
+      },
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      code: 400,
+      error: "ordered_task_ids must include every sibling task",
+    });
+    expect(state.updatedTasks).toHaveLength(0);
+  });
+
+  it("rejects list reorder payloads that omit active lists", async () => {
+    const { reorderTaskListsForUser } = await import("./taskListService");
+    const state: MockSupabaseState = {
+      tasks: [],
+      lists: [
+        buildList({ id: "list-1" }),
+        buildList({ id: "list-2", sort_order: 2 }),
+      ],
+      insertedTasks: [],
+      insertedLists: [],
+      updatedTasks: [],
+      updatedLists: [],
+    };
+
+    const result = await reorderTaskListsForUser(
+      createSupabaseMock(state),
+      "user-1",
+      ["list-1"],
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      code: 400,
+      error: "ordered_list_ids must include every active list",
+    });
+    expect(state.updatedLists).toHaveLength(0);
   });
 
   it("creates the next recurring task when completing an open recurring task", async () => {
@@ -412,7 +534,7 @@ describe("taskListService", () => {
       createSupabaseMock(state),
       "user-1",
       "task-1",
-      true
+      true,
     );
 
     expect(result.ok).toBe(true);
@@ -453,7 +575,7 @@ describe("taskListService", () => {
       createSupabaseMock(state),
       "user-1",
       "task-1",
-      true
+      true,
     );
 
     expect(result.ok).toBe(true);
@@ -479,7 +601,7 @@ describe("taskListService", () => {
       createSupabaseMock(state),
       "user-1",
       "task-1",
-      false
+      false,
     );
 
     expect(result.ok).toBe(true);
@@ -494,7 +616,8 @@ describe("taskListService", () => {
   });
 
   it("reconciles completed recurring tasks without duplicating existing next tasks", async () => {
-    const { reconcileCompletedRecurringTasks } = await import("./taskListService");
+    const { reconcileCompletedRecurringTasks } =
+      await import("./taskListService");
     const state: MockSupabaseState = {
       tasks: [
         buildTask({
@@ -522,7 +645,9 @@ describe("taskListService", () => {
       updatedTasks: [],
     };
 
-    const result = await reconcileCompletedRecurringTasks(createSupabaseMock(state));
+    const result = await reconcileCompletedRecurringTasks(
+      createSupabaseMock(state),
+    );
 
     expect(result).toMatchObject({
       ok: true,

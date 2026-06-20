@@ -1,4 +1,3 @@
-
 import { randomBytes } from "crypto";
 import { SupabaseClient } from "@supabase/supabase-js";
 import {
@@ -70,31 +69,40 @@ const createRunId = (mode: CalendarSyncRunMode) =>
   `${mode}_run_${Date.now()}_${randomBytes(5).toString("hex")}`;
 
 const getJobStringPayload = (job: TrackerGoogleSyncJob, key: string) => {
-  const raw = (job.payload as Record<string, unknown> | null | undefined)?.[key];
+  const raw = (job.payload as Record<string, unknown> | null | undefined)?.[
+    key
+  ];
   return typeof raw === "string" && raw.trim() ? raw.trim() : null;
 };
 
 const getJobProjectionEventsPayload = (job: TrackerGoogleSyncJob) => {
-  const raw = (job.payload as Record<string, unknown> | null | undefined)?.projection_events;
+  const raw = (job.payload as Record<string, unknown> | null | undefined)
+    ?.projection_events;
   if (!Array.isArray(raw)) return [];
 
   return raw
     .map((item) => {
       if (!item || typeof item !== "object") return null;
       const record = item as Record<string, unknown>;
-      const calendarId = typeof record.calendar_id === "string" ? record.calendar_id.trim() : "";
+      const calendarId =
+        typeof record.calendar_id === "string" ? record.calendar_id.trim() : "";
       const googleEventId =
-        typeof record.google_event_id === "string" ? record.google_event_id.trim() : "";
+        typeof record.google_event_id === "string"
+          ? record.google_event_id.trim()
+          : "";
       if (!calendarId || !googleEventId) return null;
       return {
         calendarId,
         googleEventId,
       };
     })
-    .filter((item): item is { calendarId: string; googleEventId: string } => !!item);
+    .filter(
+      (item): item is { calendarId: string; googleEventId: string } => !!item,
+    );
 };
 
-const getJobRunId = (job: TrackerGoogleSyncJob) => job.run_id || getJobStringPayload(job, "run_id");
+const getJobRunId = (job: TrackerGoogleSyncJob) =>
+  job.run_id || getJobStringPayload(job, "run_id");
 
 const withRunPayload = (base: Record<string, unknown>, runId: string | null) =>
   runId ? { ...base, run_id: runId } : base;
@@ -119,7 +127,8 @@ const getRawErrorMessage = (error: unknown) => {
 
 const isMissingProjectionSchemaError = (error: unknown) => {
   const message = getRawErrorMessage(error).toLowerCase();
-  if (!message.includes("tracker_task_google_projection_event_links")) return false;
+  if (!message.includes("tracker_task_google_projection_event_links"))
+    return false;
   return (
     message.includes("schema cache") ||
     message.includes("does not exist") ||
@@ -201,7 +210,7 @@ const logSyncJobLifecycle = (input: {
       result: input.result,
       error_code: input.errorCode ?? null,
       error_message: input.errorMessage ?? null,
-    })
+    }),
   );
 };
 
@@ -220,9 +229,12 @@ const isAuthFatalSyncError = (error: unknown) => {
   if (
     status === 400 &&
     typeof googleErrorCode === "string" &&
-    ["invalid_grant", "invalid_client", "invalid_request", "unauthorized_client"].includes(
-      googleErrorCode
-    )
+    [
+      "invalid_grant",
+      "invalid_client",
+      "invalid_request",
+      "unauthorized_client",
+    ].includes(googleErrorCode)
   ) {
     return true;
   }
@@ -244,7 +256,10 @@ const isGoogleConflictError = (error: unknown) => {
   return err?.response?.status === 409;
 };
 
-const getScopedSyncEnabledListIds = async (supabaseAdmin: SupabaseClient, userId: string) => {
+const getScopedSyncEnabledListIds = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+) => {
   const { data, error } = await supabaseAdmin
     .from("tracker_task_list_sync_settings")
     .select("list_id")
@@ -254,7 +269,11 @@ const getScopedSyncEnabledListIds = async (supabaseAdmin: SupabaseClient, userId
   return (data ?? []).map((row: any) => String(row.list_id));
 };
 
-const isListSyncEnabled = async (supabaseAdmin: SupabaseClient, userId: string, listId: string) => {
+const isListSyncEnabled = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  listId: string,
+) => {
   const { data } = await supabaseAdmin
     .from("tracker_task_list_sync_settings")
     .select("sync_enabled")
@@ -264,7 +283,11 @@ const isListSyncEnabled = async (supabaseAdmin: SupabaseClient, userId: string, 
   return !!data?.sync_enabled;
 };
 
-const getTaskById = async (supabaseAdmin: SupabaseClient, userId: string, taskId: string) => {
+const getTaskById = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  taskId: string,
+) => {
   const { data } = await supabaseAdmin
     .from("tracker_tasks")
     .select("*")
@@ -274,7 +297,11 @@ const getTaskById = async (supabaseAdmin: SupabaseClient, userId: string, taskId
   return (data as TrackerTaskRow | null) ?? null;
 };
 
-const getLinkByTaskId = async (supabaseAdmin: SupabaseClient, userId: string, taskId: string) => {
+const getLinkByTaskId = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  taskId: string,
+) => {
   const { data } = await supabaseAdmin
     .from("tracker_task_google_event_links")
     .select("*")
@@ -288,7 +315,7 @@ const getLinkByEvent = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
   calendarId: string,
-  googleEventId: string
+  googleEventId: string,
 ) => {
   const { data } = await supabaseAdmin
     .from("tracker_task_google_event_links")
@@ -303,7 +330,7 @@ const getLinkByEvent = async (
 const getProjectionLinksByTaskId = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
-  taskId: string
+  taskId: string,
 ) => {
   try {
     const { data, error } = await supabaseAdmin
@@ -324,7 +351,7 @@ const getProjectionLinkByEvent = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
   calendarId: string,
-  googleEventId: string
+  googleEventId: string,
 ) => {
   try {
     const { data } = await supabaseAdmin
@@ -353,22 +380,24 @@ const upsertLink = async (
     lastSyncedTaskUpdatedAt?: string | null;
     lastSyncSource?: "app" | "google" | "system";
     isDeleted?: boolean;
-  }
+  },
 ) => {
-  const { error } = await supabaseAdmin.from("tracker_task_google_event_links").upsert(
-    {
-      user_id: input.userId,
-      task_id: input.taskId,
-      calendar_id: input.calendarId,
-      google_event_id: input.googleEventId,
-      google_event_etag: input.etag ?? null,
-      google_event_updated_at: input.googleUpdatedAt ?? null,
-      last_synced_task_updated_at: input.lastSyncedTaskUpdatedAt ?? null,
-      last_sync_source: input.lastSyncSource ?? "system",
-      is_deleted: input.isDeleted ?? false,
-    },
-    { onConflict: "task_id" }
-  );
+  const { error } = await supabaseAdmin
+    .from("tracker_task_google_event_links")
+    .upsert(
+      {
+        user_id: input.userId,
+        task_id: input.taskId,
+        calendar_id: input.calendarId,
+        google_event_id: input.googleEventId,
+        google_event_etag: input.etag ?? null,
+        google_event_updated_at: input.googleUpdatedAt ?? null,
+        last_synced_task_updated_at: input.lastSyncedTaskUpdatedAt ?? null,
+        last_sync_source: input.lastSyncSource ?? "system",
+        is_deleted: input.isDeleted ?? false,
+      },
+      { onConflict: "task_id" },
+    );
   if (error) throw new Error(error.message);
 };
 
@@ -386,7 +415,7 @@ const upsertProjectionLink = async (
     lastSyncedTaskUpdatedAt?: string | null;
     lastSyncSource?: "app" | "google" | "system";
     isDeleted?: boolean;
-  }
+  },
 ) => {
   try {
     const { error } = await supabaseAdmin
@@ -405,7 +434,7 @@ const upsertProjectionLink = async (
           last_sync_source: input.lastSyncSource ?? "system",
           is_deleted: input.isDeleted ?? false,
         },
-        { onConflict: "user_id,task_id,projection_index" }
+        { onConflict: "user_id,task_id,projection_index" },
       );
     if (error) throw new Error(error.message);
   } catch (error) {
@@ -418,7 +447,7 @@ const markProjectionLinkDeleted = async (
   supabaseAdmin: SupabaseClient,
   linkId: number,
   lastSyncSource: "app" | "google" | "system",
-  lastSyncedTaskUpdatedAt?: string | null
+  lastSyncedTaskUpdatedAt?: string | null,
 ) => {
   try {
     const { error } = await supabaseAdmin
@@ -440,7 +469,12 @@ const markProjectionLinkDeleted = async (
 const setConnectionHealth = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
-  values: Partial<Pick<CalendarConnectionPublic, "status" | "last_error" | "last_full_sync_at" | "last_incremental_sync_at">>
+  values: Partial<
+    Pick<
+      CalendarConnectionPublic,
+      "status" | "last_error" | "last_full_sync_at" | "last_incremental_sync_at"
+    >
+  >,
 ) => {
   const { error } = await supabaseAdmin
     .from("tracker_google_calendar_connections_public")
@@ -449,31 +483,49 @@ const setConnectionHealth = async (
   if (error) throw new Error(error.message);
 };
 
-const shouldRetainPrimaryCalendarEvent = (task: TrackerTaskRow, listEnabled: boolean) =>
-  listEnabled && !!task.due_at && (!task.is_completed || !isRecurringTask(task));
+const shouldRetainPrimaryCalendarEvent = (
+  task: TrackerTaskRow,
+  listEnabled: boolean,
+) =>
+  listEnabled &&
+  !!task.due_at &&
+  (!task.is_completed || !isRecurringTask(task));
 
-const shouldRetainProjectedCalendarEvents = (task: TrackerTaskRow, listEnabled: boolean) =>
+const shouldRetainProjectedCalendarEvents = (
+  task: TrackerTaskRow,
+  listEnabled: boolean,
+) =>
   listEnabled && !!task.due_at && !task.is_completed && isRecurringTask(task);
 
 const shouldMarkCompletedNonRecurringTask = (task: TrackerTaskRow) =>
   task.is_completed && !isRecurringTask(task);
-const createSyncRun = async (supabaseAdmin: SupabaseClient, userId: string, mode: CalendarSyncRunMode) => {
+const createSyncRun = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  mode: CalendarSyncRunMode,
+) => {
   const runId = createRunId(mode);
-  const { error } = await supabaseAdmin.from("tracker_google_sync_runs").insert({
-    id: runId,
-    user_id: userId,
-    mode,
-    status: "queued",
-    started_at: nowIso(),
-    queued_jobs: 0,
-    processed_jobs: 0,
-    failed_jobs: 0,
-  });
+  const { error } = await supabaseAdmin
+    .from("tracker_google_sync_runs")
+    .insert({
+      id: runId,
+      user_id: userId,
+      mode,
+      status: "queued",
+      started_at: nowIso(),
+      queued_jobs: 0,
+      processed_jobs: 0,
+      failed_jobs: 0,
+    });
   if (error) throw new Error(error.message);
   return runId;
 };
 
-const getSyncRunById = async (supabaseAdmin: SupabaseClient, userId: string, runId: string) => {
+const getSyncRunById = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  runId: string,
+) => {
   const { data, error } = await supabaseAdmin
     .from("tracker_google_sync_runs")
     .select("*")
@@ -487,7 +539,7 @@ const getSyncRunById = async (supabaseAdmin: SupabaseClient, userId: string, run
 const countRunJobs = async (
   supabaseAdmin: SupabaseClient,
   runId: string,
-  statuses?: Array<"pending" | "running" | "done" | "failed" | "dead">
+  statuses?: Array<"pending" | "running" | "done" | "failed" | "dead">,
 ) => {
   let query = supabaseAdmin
     .from("tracker_google_sync_jobs")
@@ -499,7 +551,10 @@ const countRunJobs = async (
   return count ?? 0;
 };
 
-const refreshSyncRunState = async (supabaseAdmin: SupabaseClient, runId: string) => {
+const refreshSyncRunState = async (
+  supabaseAdmin: SupabaseClient,
+  runId: string,
+) => {
   const [total, pending, running, doneCount, failedCount] = await Promise.all([
     countRunJobs(supabaseAdmin, runId),
     countRunJobs(supabaseAdmin, runId, ["pending"]),
@@ -550,6 +605,24 @@ const enqueueTaskUpsert = async (input: {
   });
 };
 
+export const queueTaskUpsertForUser = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  task: Pick<TrackerTaskRow, "id" | "list_id" | "updated_at">,
+  source = "api_task_change",
+) => {
+  await enqueueTaskUpsert({
+    supabaseAdmin,
+    userId,
+    taskId: task.id,
+    listId: task.list_id,
+    lane: "live",
+    priority: PRIORITY_LIVE,
+    source,
+    dedupeKey: `live:${source}:${task.id}:${task.updated_at || nowIso()}`,
+  });
+};
+
 const enqueueTaskDelete = async (input: {
   supabaseAdmin: SupabaseClient;
   userId: string;
@@ -579,10 +652,60 @@ const enqueueTaskDelete = async (input: {
         google_event_id: input.googleEventId,
         calendar_id: input.calendarId ?? null,
       },
-      input.runId ?? null
+      input.runId ?? null,
     ),
     dedupeKey: input.dedupeKey,
   });
+};
+
+export const queueTaskDeleteForUser = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  input: {
+    taskId: string;
+    listId: string;
+    source?: string;
+  },
+) => {
+  const [primaryLink, projectionLinks] = await Promise.all([
+    getLinkByTaskId(supabaseAdmin, userId, input.taskId),
+    getProjectionLinksByTaskId(supabaseAdmin, userId, input.taskId),
+  ]);
+  const activeProjectionEvents = projectionLinks
+    .filter((link) => !link.is_deleted)
+    .map((link) => ({
+      calendar_id: link.calendar_id,
+      google_event_id: link.google_event_id,
+    }));
+  const activePrimaryLink =
+    primaryLink && !primaryLink.is_deleted ? primaryLink : null;
+  const googleEventId = activePrimaryLink?.google_event_id ?? null;
+  const calendarId =
+    activePrimaryLink?.calendar_id ??
+    activeProjectionEvents[0]?.calendar_id ??
+    null;
+
+  if (!googleEventId && activeProjectionEvents.length === 0) return false;
+
+  await enqueueSyncJob(supabaseAdmin, {
+    userId,
+    lane: "live",
+    taskId: input.taskId,
+    listId: input.listId,
+    googleEventId,
+    jobType: "task_delete",
+    source: input.source ?? "api_task_delete",
+    priority: PRIORITY_LIVE,
+    payload: {
+      source: input.source ?? "api_task_delete",
+      google_event_id: googleEventId,
+      calendar_id: calendarId,
+      projection_events: activeProjectionEvents,
+    },
+    dedupeKey: `live:${input.source ?? "api_task_delete"}:${input.taskId}:${nowIso()}`,
+  });
+
+  return true;
 };
 
 const deletePrimaryEventLink = async (input: {
@@ -596,7 +719,7 @@ const deletePrimaryEventLink = async (input: {
     await deleteGoogleEvent(
       input.accessToken,
       input.link.calendar_id,
-      input.link.google_event_id
+      input.link.google_event_id,
     );
   } catch (error) {
     if (!isGoogleNotFoundError(error)) throw error;
@@ -626,7 +749,7 @@ const deleteProjectionEventLink = async (input: {
     await deleteGoogleEvent(
       input.accessToken,
       input.link.calendar_id,
-      input.link.google_event_id
+      input.link.google_event_id,
     );
   } catch (error) {
     if (!isGoogleNotFoundError(error)) throw error;
@@ -636,7 +759,7 @@ const deleteProjectionEventLink = async (input: {
     input.supabaseAdmin,
     input.link.id,
     "app",
-    input.task.updated_at
+    input.task.updated_at,
   );
 };
 
@@ -647,7 +770,9 @@ const syncPrimaryEventForTask = async (input: {
   task: TrackerTaskRow;
   existingLink: any | null;
 }) => {
-  const titleMode = shouldMarkCompletedNonRecurringTask(input.task) ? "done" : "default";
+  const titleMode = shouldMarkCompletedNonRecurringTask(input.task)
+    ? "done"
+    : "default";
   const eventPayload = taskToGoogleEventPayload(input.task, {
     titleMode,
     eventKind: "primary",
@@ -660,7 +785,7 @@ const syncPrimaryEventForTask = async (input: {
         input.accessToken,
         input.existingLink.calendar_id,
         input.existingLink.google_event_id,
-        eventPayload
+        eventPayload,
       );
       await upsertLink(input.supabaseAdmin, {
         userId: input.task.user_id,
@@ -679,12 +804,18 @@ const syncPrimaryEventForTask = async (input: {
     }
   }
 
-  const deterministicEventId = taskIdToDeterministicGoogleEventId(input.task.id);
+  const deterministicEventId = taskIdToDeterministicGoogleEventId(
+    input.task.id,
+  );
   try {
-    const inserted = await insertGoogleEvent(input.accessToken, input.calendarId, {
-      ...eventPayload,
-      id: deterministicEventId,
-    });
+    const inserted = await insertGoogleEvent(
+      input.accessToken,
+      input.calendarId,
+      {
+        ...eventPayload,
+        id: deterministicEventId,
+      },
+    );
     await upsertLink(input.supabaseAdmin, {
       userId: input.task.user_id,
       taskId: input.task.id,
@@ -705,7 +836,7 @@ const syncPrimaryEventForTask = async (input: {
     input.accessToken,
     input.calendarId,
     deterministicEventId,
-    eventPayload
+    eventPayload,
   );
   await upsertLink(input.supabaseAdmin, {
     userId: input.task.user_id,
@@ -728,12 +859,15 @@ const syncProjectedEventsForTask = async (input: {
 }) => {
   const desiredProjections = buildRecurringProjectionDueAts(input.task);
   const desiredByIndex = new Map(
-    desiredProjections.map((projection) => [projection.projectionIndex, projection])
+    desiredProjections.map((projection) => [
+      projection.projectionIndex,
+      projection,
+    ]),
   );
   const existingLinks = await getProjectionLinksByTaskId(
     input.supabaseAdmin,
     input.task.user_id,
-    input.task.id
+    input.task.id,
   );
 
   for (const existingLink of existingLinks) {
@@ -757,7 +891,9 @@ const syncProjectedEventsForTask = async (input: {
     if (!eventPayload.start) continue;
 
     const existingLink =
-      existingLinks.find((item) => item.projection_index === projection.projectionIndex) ?? null;
+      existingLinks.find(
+        (item) => item.projection_index === projection.projectionIndex,
+      ) ?? null;
 
     if (existingLink && !existingLink.is_deleted) {
       try {
@@ -765,7 +901,7 @@ const syncProjectedEventsForTask = async (input: {
           input.accessToken,
           existingLink.calendar_id,
           existingLink.google_event_id,
-          eventPayload
+          eventPayload,
         );
         await upsertProjectionLink(input.supabaseAdmin, {
           userId: input.task.user_id,
@@ -788,13 +924,17 @@ const syncProjectedEventsForTask = async (input: {
 
     const deterministicEventId = taskProjectionToDeterministicGoogleEventId(
       input.task.id,
-      projection.projectionIndex
+      projection.projectionIndex,
     );
     try {
-      const inserted = await insertGoogleEvent(input.accessToken, input.calendarId, {
-        ...eventPayload,
-        id: deterministicEventId,
-      });
+      const inserted = await insertGoogleEvent(
+        input.accessToken,
+        input.calendarId,
+        {
+          ...eventPayload,
+          id: deterministicEventId,
+        },
+      );
       await upsertProjectionLink(input.supabaseAdmin, {
         userId: input.task.user_id,
         taskId: input.task.id,
@@ -817,7 +957,7 @@ const syncProjectedEventsForTask = async (input: {
       input.accessToken,
       input.calendarId,
       deterministicEventId,
-      eventPayload
+      eventPayload,
     );
     await upsertProjectionLink(input.supabaseAdmin, {
       userId: input.task.user_id,
@@ -837,18 +977,29 @@ const syncProjectedEventsForTask = async (input: {
 
 export const processTaskUpsertJob = async (
   supabaseAdmin: SupabaseClient,
-  job: TrackerGoogleSyncJob
+  job: TrackerGoogleSyncJob,
 ) => {
   if (!job.task_id) return;
   const task = await getTaskById(supabaseAdmin, job.user_id, job.task_id);
   if (!task) return;
 
-  const listEnabled = await isListSyncEnabled(supabaseAdmin, job.user_id, task.list_id);
-  const { accessToken, publicRow } = await getValidGoogleAccessToken(supabaseAdmin, job.user_id);
+  const listEnabled = await isListSyncEnabled(
+    supabaseAdmin,
+    job.user_id,
+    task.list_id,
+  );
+  const { accessToken, publicRow } = await getValidGoogleAccessToken(
+    supabaseAdmin,
+    job.user_id,
+  );
   const calendarId = publicRow.selected_calendar_id;
   if (!calendarId) return;
 
-  const existingLink = await getLinkByTaskId(supabaseAdmin, job.user_id, task.id);
+  const existingLink = await getLinkByTaskId(
+    supabaseAdmin,
+    job.user_id,
+    task.id,
+  );
 
   if (shouldRetainPrimaryCalendarEvent(task, listEnabled)) {
     await syncPrimaryEventForTask({
@@ -877,7 +1028,11 @@ export const processTaskUpsertJob = async (
     return;
   }
 
-  const projectionLinks = await getProjectionLinksByTaskId(supabaseAdmin, job.user_id, task.id);
+  const projectionLinks = await getProjectionLinksByTaskId(
+    supabaseAdmin,
+    job.user_id,
+    task.id,
+  );
   for (const projectionLink of projectionLinks) {
     await deleteProjectionEventLink({
       supabaseAdmin,
@@ -890,7 +1045,7 @@ export const processTaskUpsertJob = async (
 
 export const processTaskDeleteJob = async (
   supabaseAdmin: SupabaseClient,
-  job: TrackerGoogleSyncJob
+  job: TrackerGoogleSyncJob,
 ) => {
   const payloadEventId = getJobStringPayload(job, "google_event_id");
   const payloadCalendarId = getJobStringPayload(job, "calendar_id");
@@ -903,11 +1058,18 @@ export const processTaskDeleteJob = async (
 
   if (job.task_id) {
     link = await getLinkByTaskId(supabaseAdmin, job.user_id, job.task_id);
-    if (!googleEventId && link?.google_event_id) googleEventId = String(link.google_event_id);
+    if (!googleEventId && link?.google_event_id)
+      googleEventId = String(link.google_event_id);
     if (!calendarId && link?.calendar_id) calendarId = String(link.calendar_id);
-    projectionLinks = await getProjectionLinksByTaskId(supabaseAdmin, job.user_id, job.task_id);
+    projectionLinks = await getProjectionLinksByTaskId(
+      supabaseAdmin,
+      job.user_id,
+      job.task_id,
+    );
     if (!calendarId) {
-      const firstProjectionCalendarId = projectionLinks.find((item) => !item.is_deleted)?.calendar_id;
+      const firstProjectionCalendarId = projectionLinks.find(
+        (item) => !item.is_deleted,
+      )?.calendar_id;
       if (firstProjectionCalendarId) {
         calendarId = firstProjectionCalendarId;
       } else if (payloadProjectionEvents[0]?.calendarId) {
@@ -918,7 +1080,10 @@ export const processTaskDeleteJob = async (
     calendarId = payloadProjectionEvents[0].calendarId;
   }
 
-  const { accessToken, publicRow } = await getValidGoogleAccessToken(supabaseAdmin, job.user_id);
+  const { accessToken, publicRow } = await getValidGoogleAccessToken(
+    supabaseAdmin,
+    job.user_id,
+  );
   if (!calendarId) calendarId = publicRow.selected_calendar_id;
   if (!calendarId) return;
 
@@ -934,14 +1099,19 @@ export const processTaskDeleteJob = async (
     link = await getLinkByTaskId(supabaseAdmin, job.user_id, job.task_id);
   }
   if (!link && googleEventId) {
-    link = await getLinkByEvent(supabaseAdmin, job.user_id, calendarId, googleEventId);
+    link = await getLinkByEvent(
+      supabaseAdmin,
+      job.user_id,
+      calendarId,
+      googleEventId,
+    );
   }
   if (!projectionLink && googleEventId) {
     projectionLink = await getProjectionLinkByEvent(
       supabaseAdmin,
       job.user_id,
       calendarId,
-      googleEventId
+      googleEventId,
     );
   }
 
@@ -967,16 +1137,22 @@ export const processTaskDeleteJob = async (
       await deleteGoogleEvent(
         accessToken,
         currentProjectionLink.calendar_id,
-        currentProjectionLink.google_event_id
+        currentProjectionLink.google_event_id,
       );
     } catch (error) {
       if (!isGoogleNotFoundError(error)) throw error;
     }
-    await markProjectionLinkDeleted(supabaseAdmin, currentProjectionLink.id, "app");
+    await markProjectionLinkDeleted(
+      supabaseAdmin,
+      currentProjectionLink.id,
+      "app",
+    );
   }
 
   const handledProjectionEventIds = new Set(
-    projectionLinks.map((currentProjectionLink) => currentProjectionLink.google_event_id)
+    projectionLinks.map(
+      (currentProjectionLink) => currentProjectionLink.google_event_id,
+    ),
   );
   if (googleEventId) handledProjectionEventIds.add(googleEventId);
 
@@ -986,7 +1162,7 @@ export const processTaskDeleteJob = async (
       await deleteGoogleEvent(
         accessToken,
         projectionEvent.calendarId,
-        projectionEvent.googleEventId
+        projectionEvent.googleEventId,
       );
     } catch (error) {
       if (!isGoogleNotFoundError(error)) throw error;
@@ -994,13 +1170,19 @@ export const processTaskDeleteJob = async (
     handledProjectionEventIds.add(projectionEvent.googleEventId);
   }
 };
-const processReconcileAppPageJob = async (supabaseAdmin: SupabaseClient, job: TrackerGoogleSyncJob) => {
+const processReconcileAppPageJob = async (
+  supabaseAdmin: SupabaseClient,
+  job: TrackerGoogleSyncJob,
+) => {
   const runId = getJobRunId(job);
   const cursorAfter = getJobStringPayload(job, "cursor_after");
   const listIdFromPayload = getJobStringPayload(job, "list_id");
   const listId = job.list_id || listIdFromPayload || null;
 
-  const enabledListIds = await getScopedSyncEnabledListIds(supabaseAdmin, job.user_id);
+  const enabledListIds = await getScopedSyncEnabledListIds(
+    supabaseAdmin,
+    job.user_id,
+  );
   if (enabledListIds.length === 0) return;
 
   let query = supabaseAdmin
@@ -1022,7 +1204,12 @@ const processReconcileAppPageJob = async (supabaseAdmin: SupabaseClient, job: Tr
   for (const row of page) {
     const typedRow = row as Pick<
       TrackerTaskRow,
-      "id" | "list_id" | "updated_at" | "due_at" | "is_completed" | "recurrence_type"
+      | "id"
+      | "list_id"
+      | "updated_at"
+      | "due_at"
+      | "is_completed"
+      | "recurrence_type"
     >;
     if (
       !typedRow.due_at ||
@@ -1059,18 +1246,24 @@ const processReconcileAppPageJob = async (supabaseAdmin: SupabaseClient, job: Tr
           cursor_after: lastTaskId,
           list_id: listId,
         },
-        runId
+        runId,
       ),
       dedupeKey: `reconcile:app-page:${runId || "system"}:${listId || "all"}:${lastTaskId}`,
     });
   }
 };
 
-const processReconcileGooglePageJob = async (supabaseAdmin: SupabaseClient, job: TrackerGoogleSyncJob) => {
+const processReconcileGooglePageJob = async (
+  supabaseAdmin: SupabaseClient,
+  job: TrackerGoogleSyncJob,
+) => {
   const runId = getJobRunId(job);
   const pageToken = getJobStringPayload(job, "page_token");
 
-  const { accessToken, publicRow } = await getValidGoogleAccessToken(supabaseAdmin, job.user_id);
+  const { accessToken, publicRow } = await getValidGoogleAccessToken(
+    supabaseAdmin,
+    job.user_id,
+  );
   const calendarId = publicRow.selected_calendar_id;
   if (!calendarId) return;
 
@@ -1086,11 +1279,13 @@ const processReconcileGooglePageJob = async (supabaseAdmin: SupabaseClient, job:
     new Set(
       events
         .map((event) => event?.extendedProperties?.private?.tracker_task_id)
-        .filter((id) => typeof id === "string" && id.trim()) as string[]
-    )
+        .filter((id) => typeof id === "string" && id.trim()) as string[],
+    ),
   );
 
-  const enabledListIds = new Set(await getScopedSyncEnabledListIds(supabaseAdmin, job.user_id));
+  const enabledListIds = new Set(
+    await getScopedSyncEnabledListIds(supabaseAdmin, job.user_id),
+  );
   const scopedTasksById = new Map<string, TrackerTaskRow>();
 
   if (referencedTaskIds.length > 0) {
@@ -1114,7 +1309,10 @@ const processReconcileGooglePageJob = async (supabaseAdmin: SupabaseClient, job:
     const eventKind = googleEventToTrackerEventKind(event);
     const projectionIndex = googleEventToTrackerProjectionIndex(event);
     const taskIdRaw = event?.extendedProperties?.private?.tracker_task_id;
-    const trackerTaskId = typeof taskIdRaw === "string" && taskIdRaw.trim() ? taskIdRaw.trim() : null;
+    const trackerTaskId =
+      typeof taskIdRaw === "string" && taskIdRaw.trim()
+        ? taskIdRaw.trim()
+        : null;
 
     if (!trackerTaskId) {
       await enqueueTaskDelete({
@@ -1172,7 +1370,9 @@ const processReconcileGooglePageJob = async (supabaseAdmin: SupabaseClient, job:
         googleEventId,
         projectionIndex: projectionIndex as number,
         projectedDueAt:
-          normalizeDueAtForSync(googleEventToTaskDueAtIso(event)) ?? scopedTask.due_at ?? nowIso(),
+          normalizeDueAtForSync(googleEventToTaskDueAtIso(event)) ??
+          scopedTask.due_at ??
+          nowIso(),
         etag: event.etag ?? null,
         googleUpdatedAt: event.updated ?? null,
         lastSyncedTaskUpdatedAt: scopedTask.updated_at,
@@ -1219,18 +1419,24 @@ const processReconcileGooglePageJob = async (supabaseAdmin: SupabaseClient, job:
           source: "reconcile_google_page_cont",
           page_token: page.nextPageToken,
         },
-        runId
+        runId,
       ),
       dedupeKey: `reconcile:google-page:${runId || "system"}:${page.nextPageToken}`,
     });
   }
 };
 
-const processHardResetClearPageJob = async (supabaseAdmin: SupabaseClient, job: TrackerGoogleSyncJob) => {
+const processHardResetClearPageJob = async (
+  supabaseAdmin: SupabaseClient,
+  job: TrackerGoogleSyncJob,
+) => {
   const runId = getJobRunId(job);
   if (!runId) throw new Error("Hard reset clear job missing run_id");
 
-  const { accessToken, publicRow } = await getValidGoogleAccessToken(supabaseAdmin, job.user_id);
+  const { accessToken, publicRow } = await getValidGoogleAccessToken(
+    supabaseAdmin,
+    job.user_id,
+  );
   const calendarId = publicRow.selected_calendar_id;
   if (!calendarId) return;
 
@@ -1299,8 +1505,12 @@ const processHardResetClearPageJob = async (supabaseAdmin: SupabaseClient, job: 
   });
 };
 
-const processInboundDeltaJob = async (supabaseAdmin: SupabaseClient, job: TrackerGoogleSyncJob) => {
-  const { accessToken, publicRow, secretsRow } = await getValidGoogleAccessToken(supabaseAdmin, job.user_id);
+const processInboundDeltaJob = async (
+  supabaseAdmin: SupabaseClient,
+  job: TrackerGoogleSyncJob,
+) => {
+  const { accessToken, publicRow, secretsRow } =
+    await getValidGoogleAccessToken(supabaseAdmin, job.user_id);
   const calendarId = publicRow.selected_calendar_id;
   if (!calendarId) return;
 
@@ -1316,7 +1526,9 @@ const processInboundDeltaJob = async (supabaseAdmin: SupabaseClient, job: Tracke
       syncToken,
       pageToken,
       maxResults: INBOUND_DELTA_PAGE_SIZE,
-      timeMin: syncToken ? undefined : new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
+      timeMin: syncToken
+        ? undefined
+        : new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
     });
   } catch (err: any) {
     const status = err?.response?.status;
@@ -1331,12 +1543,17 @@ const processInboundDeltaJob = async (supabaseAdmin: SupabaseClient, job: Tracke
     throw err;
   }
 
-  const enabledListIds = new Set(await getScopedSyncEnabledListIds(supabaseAdmin, job.user_id));
+  const enabledListIds = new Set(
+    await getScopedSyncEnabledListIds(supabaseAdmin, job.user_id),
+  );
 
   for (const event of delta.items ?? []) {
     if (!event?.id || event.status !== "cancelled") continue;
     const taskIdRaw = event?.extendedProperties?.private?.tracker_task_id;
-    const taskId = typeof taskIdRaw === "string" && taskIdRaw.trim() ? taskIdRaw.trim() : null;
+    const taskId =
+      typeof taskIdRaw === "string" && taskIdRaw.trim()
+        ? taskIdRaw.trim()
+        : null;
     if (!taskId) continue;
 
     const task = await getTaskById(supabaseAdmin, job.user_id, taskId);
@@ -1388,14 +1605,22 @@ const processInboundDeltaJob = async (supabaseAdmin: SupabaseClient, job: Tracke
   });
 };
 
-const renewWatchForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
-  const { accessToken, publicRow, secretsRow } = await getValidGoogleAccessToken(supabaseAdmin, userId);
+const renewWatchForUser = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+) => {
+  const { accessToken, publicRow, secretsRow } =
+    await getValidGoogleAccessToken(supabaseAdmin, userId);
   const calendarId = publicRow.selected_calendar_id;
   if (!calendarId) return;
 
   if (secretsRow.channel_id && secretsRow.channel_resource_id) {
     try {
-      await stopGoogleCalendarWatch(accessToken, secretsRow.channel_id, secretsRow.channel_resource_id);
+      await stopGoogleCalendarWatch(
+        accessToken,
+        secretsRow.channel_id,
+        secretsRow.channel_resource_id,
+      );
     } catch {
       // best effort
     }
@@ -1420,27 +1645,44 @@ const renewWatchForUser = async (supabaseAdmin: SupabaseClient, userId: string) 
     .eq("id", secretsRow.id);
   if (error) throw new Error(error.message);
 };
-export const renewCalendarWatchForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
+export const renewCalendarWatchForUser = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+) => {
   await renewWatchForUser(supabaseAdmin, userId);
 };
 
-const processRenewWatchJob = async (supabaseAdmin: SupabaseClient, job: TrackerGoogleSyncJob) => {
+const processRenewWatchJob = async (
+  supabaseAdmin: SupabaseClient,
+  job: TrackerGoogleSyncJob,
+) => {
   await renewWatchForUser(supabaseAdmin, job.user_id);
 };
 
-const processOneJob = async (supabaseAdmin: SupabaseClient, job: TrackerGoogleSyncJob) => {
+const processOneJob = async (
+  supabaseAdmin: SupabaseClient,
+  job: TrackerGoogleSyncJob,
+) => {
   if (isLegacyTaskTriggerSyncJob(job)) return;
-  if (job.job_type === "task_upsert") return processTaskUpsertJob(supabaseAdmin, job);
-  if (job.job_type === "task_delete") return processTaskDeleteJob(supabaseAdmin, job);
-  if (job.job_type === "reconcile_app_page") return processReconcileAppPageJob(supabaseAdmin, job);
-  if (job.job_type === "reconcile_google_page") return processReconcileGooglePageJob(supabaseAdmin, job);
-  if (job.job_type === "hard_reset_clear_page") return processHardResetClearPageJob(supabaseAdmin, job);
+  if (job.job_type === "task_upsert")
+    return processTaskUpsertJob(supabaseAdmin, job);
+  if (job.job_type === "task_delete")
+    return processTaskDeleteJob(supabaseAdmin, job);
+  if (job.job_type === "reconcile_app_page")
+    return processReconcileAppPageJob(supabaseAdmin, job);
+  if (job.job_type === "reconcile_google_page")
+    return processReconcileGooglePageJob(supabaseAdmin, job);
+  if (job.job_type === "hard_reset_clear_page")
+    return processHardResetClearPageJob(supabaseAdmin, job);
 
   // Legacy compatibility while old jobs drain.
-  if (job.job_type === "full_backfill") return processReconcileAppPageJob(supabaseAdmin, job);
-  if (job.job_type === "inbound_delta") return processInboundDeltaJob(supabaseAdmin, job);
+  if (job.job_type === "full_backfill")
+    return processReconcileAppPageJob(supabaseAdmin, job);
+  if (job.job_type === "inbound_delta")
+    return processInboundDeltaJob(supabaseAdmin, job);
 
-  if (job.job_type === "renew_watch") return processRenewWatchJob(supabaseAdmin, job);
+  if (job.job_type === "renew_watch")
+    return processRenewWatchJob(supabaseAdmin, job);
 };
 
 export const processCalendarSyncJobs = async (input?: {
@@ -1453,11 +1695,16 @@ export const processCalendarSyncJobs = async (input?: {
     supabaseAdmin,
     input?.batchSize ?? 25,
     input?.userId,
-    input?.lanes
+    input?.lanes,
   );
 
   const touchedRunIds = new Set<string>();
-  const results: Array<{ id: number; ok: boolean; error?: string; lane: CalendarSyncLane }> = [];
+  const results: Array<{
+    id: number;
+    ok: boolean;
+    error?: string;
+    lane: CalendarSyncLane;
+  }> = [];
 
   for (const job of jobs) {
     const runId = getJobRunId(job);
@@ -1495,7 +1742,9 @@ export const processCalendarSyncJobs = async (input?: {
       await setConnectionHealth(
         supabaseAdmin,
         job.user_id,
-        authFatal ? { status: "error", last_error: message } : { last_error: message }
+        authFatal
+          ? { status: "error", last_error: message }
+          : { last_error: message },
       ).catch(() => {});
       if (runId) {
         touchedRunIds.add(runId);
@@ -1536,7 +1785,7 @@ export const queueFullBackfill = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
   listId?: string,
-  options?: { runId?: string | null; source?: string }
+  options?: { runId?: string | null; source?: string },
 ) => {
   const runId = options?.runId?.trim() || null;
   const source = options?.source || "manual_or_connect";
@@ -1555,10 +1804,24 @@ export const queueFullBackfill = async (
   });
 };
 
+export const queueListBackfillRunForUser = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  listId: string,
+) => {
+  const runId = await createSyncRun(supabaseAdmin, userId, "reconcile");
+  await queueFullBackfill(supabaseAdmin, userId, listId, {
+    runId,
+    source: "list_sync_enabled",
+  });
+  await refreshSyncRunState(supabaseAdmin, runId).catch(() => {});
+  return runId;
+};
+
 export const queueListSyncCleanupForUser = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
-  listId: string
+  listId: string,
 ) => {
   const pageSize = 100;
   let from = 0;
@@ -1598,7 +1861,10 @@ export const queueListSyncCleanupForUser = async (
   return queued;
 };
 
-export const queueReconcileRunForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
+export const queueReconcileRunForUser = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+) => {
   const runId = await createSyncRun(supabaseAdmin, userId, "reconcile");
 
   await enqueueSyncJob(supabaseAdmin, {
@@ -1627,7 +1893,10 @@ export const queueReconcileRunForUser = async (supabaseAdmin: SupabaseClient, us
   return runId;
 };
 
-export const queueRebuildRunForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
+export const queueRebuildRunForUser = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+) => {
   const runId = await createSyncRun(supabaseAdmin, userId, "rebuild");
 
   await enqueueSyncJob(supabaseAdmin, {
@@ -1645,12 +1914,20 @@ export const queueRebuildRunForUser = async (supabaseAdmin: SupabaseClient, user
   return runId;
 };
 
-export const queueManualSyncForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
+export const queueManualSyncForUser = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+) => {
   return queueReconcileRunForUser(supabaseAdmin, userId);
 };
 
-export const runLegacyManualSyncForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
-  await queueFullBackfill(supabaseAdmin, userId, undefined, { source: "legacy_manual_sync_now" });
+export const runLegacyManualSyncForUser = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+) => {
+  await queueFullBackfill(supabaseAdmin, userId, undefined, {
+    source: "legacy_manual_sync_now",
+  });
 
   const failures: Array<{ id: number; error: string }> = [];
   let processed = 0;
@@ -1662,7 +1939,10 @@ export const runLegacyManualSyncForUser = async (supabaseAdmin: SupabaseClient, 
     failures.push(
       ...results
         .filter((item) => !item.ok)
-        .map((item) => ({ id: item.id, error: item.error || "Unknown sync error" }))
+        .map((item) => ({
+          id: item.id,
+          error: item.error || "Unknown sync error",
+        })),
     );
   }
 
@@ -1673,7 +1953,10 @@ export const runLegacyManualSyncForUser = async (supabaseAdmin: SupabaseClient, 
   };
 };
 
-export const queueLivePumpForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
+export const queueLivePumpForUser = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+) => {
   const results = await processCalendarSyncJobs({
     userId,
     batchSize: LIVE_PUMP_BATCH_SIZE,
@@ -1685,7 +1968,10 @@ export const queueLivePumpForUser = async (supabaseAdmin: SupabaseClient, userId
     failures: results
       .filter((item) => !item.ok)
       .slice(0, 5)
-      .map((item) => ({ id: item.id, error: item.error || "Unknown sync error" })),
+      .map((item) => ({
+        id: item.id,
+        error: item.error || "Unknown sync error",
+      })),
   };
 };
 export const upsertGoogleConnectionFromOAuth = async (params: {
@@ -1703,15 +1989,20 @@ export const upsertGoogleConnectionFromOAuth = async (params: {
   });
   const googleEmail = await fetchGoogleUserEmail(params.accessToken);
 
-  const existingRefreshEncrypted = existing.secretsRow?.refresh_token_encrypted || null;
+  const existingRefreshEncrypted =
+    existing.secretsRow?.refresh_token_encrypted || null;
   const refreshTokenEncrypted = params.refreshToken
     ? encryptToBase64(params.refreshToken)
     : existingRefreshEncrypted;
   if (!refreshTokenEncrypted) {
-    throw new Error("No Google refresh token available. Reconnect with consent.");
+    throw new Error(
+      "No Google refresh token available. Reconnect with consent.",
+    );
   }
 
-  const expiresAtIso = new Date(Date.now() + params.expiresInSeconds * 1000).toISOString();
+  const expiresAtIso = new Date(
+    Date.now() + params.expiresInSeconds * 1000,
+  ).toISOString();
 
   const { data: connectionPublic, error: publicErr } = await supabaseAdmin
     .from("tracker_google_calendar_connections_public")
@@ -1724,12 +2015,14 @@ export const upsertGoogleConnectionFromOAuth = async (params: {
         selected_calendar_summary: tasksCalendar.summary,
         last_error: null,
       },
-      { onConflict: "user_id" }
+      { onConflict: "user_id" },
     )
     .select("*")
     .single();
   if (publicErr || !connectionPublic) {
-    throw new Error(publicErr?.message || "Failed to persist Google connection");
+    throw new Error(
+      publicErr?.message || "Failed to persist Google connection",
+    );
   }
 
   const { data: secrets, error: secErr } = await supabaseAdmin
@@ -1742,16 +2035,20 @@ export const upsertGoogleConnectionFromOAuth = async (params: {
         access_token_encrypted: encryptToBase64(params.accessToken),
         access_token_expires_at: expiresAtIso,
       },
-      { onConflict: "user_id" }
+      { onConflict: "user_id" },
     )
     .select("*")
     .single();
   if (secErr || !secrets) {
-    throw new Error(secErr?.message || "Failed to persist Google connection secrets");
+    throw new Error(
+      secErr?.message || "Failed to persist Google connection secrets",
+    );
   }
 
   await renewWatchForUser(supabaseAdmin, userId);
-  await queueFullBackfill(supabaseAdmin, userId, undefined, { source: "oauth_connect_seed" });
+  await queueFullBackfill(supabaseAdmin, userId, undefined, {
+    source: "oauth_connect_seed",
+  });
 
   return {
     connectionPublic: connectionPublic as CalendarConnectionPublic,
@@ -1761,9 +2058,12 @@ export const upsertGoogleConnectionFromOAuth = async (params: {
 
 export const rebuildCalendarLegacyInlineForUser = async (
   supabaseAdmin: SupabaseClient,
-  userId: string
+  userId: string,
 ) => {
-  const { accessToken, publicRow } = await getValidGoogleAccessToken(supabaseAdmin, userId);
+  const { accessToken, publicRow } = await getValidGoogleAccessToken(
+    supabaseAdmin,
+    userId,
+  );
   const calendarId = publicRow.selected_calendar_id;
   if (!calendarId) {
     throw new Error("No selected Google calendar found.");
@@ -1823,14 +2123,27 @@ export const rebuildCalendarLegacyInlineForUser = async (
 export const isCalendarRebuildSchemaUnavailable = (error: unknown) =>
   isMissingRebuildSchemaError(error);
 
-export const disconnectGoogleCalendarForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
-  const { publicRow, secretsRow } = await loadCalendarConnection(supabaseAdmin, userId);
+export const disconnectGoogleCalendarForUser = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+) => {
+  const { publicRow, secretsRow } = await loadCalendarConnection(
+    supabaseAdmin,
+    userId,
+  );
   if (!publicRow || !secretsRow) return;
 
   try {
     if (secretsRow.channel_id && secretsRow.channel_resource_id) {
-      const { accessToken } = await getValidGoogleAccessToken(supabaseAdmin, userId);
-      await stopGoogleCalendarWatch(accessToken, secretsRow.channel_id, secretsRow.channel_resource_id);
+      const { accessToken } = await getValidGoogleAccessToken(
+        supabaseAdmin,
+        userId,
+      );
+      await stopGoogleCalendarWatch(
+        accessToken,
+        secretsRow.channel_id,
+        secretsRow.channel_resource_id,
+      );
     }
   } catch {
     // best effort
@@ -1851,7 +2164,10 @@ export const disconnectGoogleCalendarForUser = async (supabaseAdmin: SupabaseCli
     .delete()
     .eq("user_id", userId);
 
-  await supabaseAdmin.from("tracker_task_google_event_links").delete().eq("user_id", userId);
+  await supabaseAdmin
+    .from("tracker_task_google_event_links")
+    .delete()
+    .eq("user_id", userId);
   try {
     await supabaseAdmin
       .from("tracker_task_google_projection_event_links")
@@ -1862,7 +2178,9 @@ export const disconnectGoogleCalendarForUser = async (supabaseAdmin: SupabaseCli
   }
 };
 
-export const renewExpiringCalendarWatches = async (input?: { userId?: string }) => {
+export const renewExpiringCalendarWatches = async (input?: {
+  userId?: string;
+}) => {
   const supabaseAdmin = getSupabaseAdmin();
   let query = supabaseAdmin
     .from("tracker_google_calendar_connections_secrets")
@@ -1874,7 +2192,11 @@ export const renewExpiringCalendarWatches = async (input?: { userId?: string }) 
 
   const horizon = Date.now() + 24 * 60 * 60 * 1000;
   const usersToRenew = (data ?? [])
-    .filter((row: any) => !row.channel_expiration || new Date(row.channel_expiration).getTime() < horizon)
+    .filter(
+      (row: any) =>
+        !row.channel_expiration ||
+        new Date(row.channel_expiration).getTime() < horizon,
+    )
     .map((row: any) => row.user_id as string);
 
   const results: Array<{ userId: string; ok: boolean; error?: string }> = [];
@@ -1892,7 +2214,9 @@ export const renewExpiringCalendarWatches = async (input?: { userId?: string }) 
       await setConnectionHealth(
         supabaseAdmin,
         userId,
-        authFatal ? { status: "error", last_error: message } : { last_error: message }
+        authFatal
+          ? { status: "error", last_error: message }
+          : { last_error: message },
       ).catch(() => {});
       results.push({ userId, ok: false, error: message });
     }
@@ -1900,7 +2224,10 @@ export const renewExpiringCalendarWatches = async (input?: { userId?: string }) 
   return results;
 };
 
-export const listUserSyncEnabledLists = async (supabaseAdmin: SupabaseClient, userId: string) => {
+export const listUserSyncEnabledLists = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+) => {
   const { data, error } = await supabaseAdmin
     .from("tracker_task_list_sync_settings")
     .select("list_id, sync_enabled")
@@ -1909,11 +2236,27 @@ export const listUserSyncEnabledLists = async (supabaseAdmin: SupabaseClient, us
   return (data ?? []) as Array<{ list_id: string; sync_enabled: boolean }>;
 };
 
+export const taskListBelongsToUser = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  listId: string,
+) => {
+  const { data, error } = await supabaseAdmin
+    .from("tracker_task_lists")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("id", listId)
+    .eq("archived", false)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return !!data;
+};
+
 export const upsertListSyncSetting = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
   listId: string,
-  syncEnabled: boolean
+  syncEnabled: boolean,
 ) => {
   const { error } = await supabaseAdmin
     .from("tracker_task_list_sync_settings")
@@ -1923,22 +2266,36 @@ export const upsertListSyncSetting = async (
         list_id: listId,
         sync_enabled: syncEnabled,
       },
-      { onConflict: "user_id,list_id" }
+      { onConflict: "user_id,list_id" },
     );
   if (error) throw new Error(error.message);
 };
 
-export const getCalendarStatusForUser = async (supabaseAdmin: SupabaseClient, userId: string) => {
-  const { publicRow, secretsRow } = await loadCalendarConnection(supabaseAdmin, userId);
-  const listSettings = await listUserSyncEnabledLists(supabaseAdmin, userId).catch(() => []);
+export const getCalendarStatusForUser = async (
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+) => {
+  const { publicRow, secretsRow } = await loadCalendarConnection(
+    supabaseAdmin,
+    userId,
+  );
+  const listSettings = await listUserSyncEnabledLists(
+    supabaseAdmin,
+    userId,
+  ).catch(() => []);
 
   let connectionRow = publicRow;
   const canAutoRepairBinding =
-    !!connectionRow && !connectionRow.selected_calendar_id && !!secretsRow?.refresh_token_encrypted;
+    !!connectionRow &&
+    !connectionRow.selected_calendar_id &&
+    !!secretsRow?.refresh_token_encrypted;
 
   if (canAutoRepairBinding) {
     try {
-      const { accessToken } = await getValidGoogleAccessToken(supabaseAdmin, userId);
+      const { accessToken } = await getValidGoogleAccessToken(
+        supabaseAdmin,
+        userId,
+      );
       const repairedCalendar = await ensureTasksCalendar({
         accessToken,
         preferredCalendarId: null,
@@ -1960,16 +2317,23 @@ export const getCalendarStatusForUser = async (supabaseAdmin: SupabaseClient, us
       }
     } catch (error) {
       const message = formatSyncErrorMessage(error);
-      await setConnectionHealth(supabaseAdmin, userId, { last_error: message }).catch(() => {});
+      await setConnectionHealth(supabaseAdmin, userId, {
+        last_error: message,
+      }).catch(() => {});
     }
   }
 
-  if (connectionRow?.last_error && isMissingProjectionSchemaError(connectionRow.last_error)) {
+  if (
+    connectionRow?.last_error &&
+    isMissingProjectionSchemaError(connectionRow.last_error)
+  ) {
     connectionRow = {
       ...connectionRow,
       last_error: null,
     };
-    await setConnectionHealth(supabaseAdmin, userId, { last_error: null }).catch(() => {});
+    await setConnectionHealth(supabaseAdmin, userId, {
+      last_error: null,
+    }).catch(() => {});
   }
 
   return {
@@ -1983,7 +2347,7 @@ export const getCalendarStatusForUser = async (supabaseAdmin: SupabaseClient, us
 export const getSyncProgressForRun = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
-  runId: string
+  runId: string,
 ) => {
   const normalizedRunId = runId.trim();
   if (!normalizedRunId) {
@@ -2032,7 +2396,10 @@ export const getSyncProgressForRun = async (
     getSyncRunById(supabaseAdmin, userId, normalizedRunId),
   ]);
 
-  const failedRows = (failuresRes.data ?? []) as Array<{ id: number; last_error: string | null }>;
+  const failedRows = (failuresRes.data ?? []) as Array<{
+    id: number;
+    last_error: string | null;
+  }>;
   const processed = updatedRun?.processed_jobs ?? run.processed_jobs;
   const failed = updatedRun?.failed_jobs ?? run.failed_jobs;
 
@@ -2056,7 +2423,7 @@ export const getSyncProgressForRun = async (
 export const getSyncRunDebug = async (
   supabaseAdmin: SupabaseClient,
   userId: string,
-  runId: string
+  runId: string,
 ) => {
   const normalizedRunId = runId.trim();
   const run = await getSyncRunById(supabaseAdmin, userId, normalizedRunId);
@@ -2078,10 +2445,20 @@ export const getSyncRunDebug = async (
       .limit(20),
   ]);
 
-  const counts: Record<string, { total: number; failed: number; done: number; pending: number; running: number }> = {};
+  const counts: Record<
+    string,
+    {
+      total: number;
+      failed: number;
+      done: number;
+      pending: number;
+      running: number;
+    }
+  > = {};
   for (const row of rows ?? []) {
     const key = String((row as any).job_type || "unknown");
-    if (!counts[key]) counts[key] = { total: 0, failed: 0, done: 0, pending: 0, running: 0 };
+    if (!counts[key])
+      counts[key] = { total: 0, failed: 0, done: 0, pending: 0, running: 0 };
     counts[key].total += 1;
     const status = String((row as any).status || "");
     if (status === "failed" || status === "dead") counts[key].failed += 1;
@@ -2097,7 +2474,9 @@ export const getSyncRunDebug = async (
   };
 };
 
-export const inferLanesForRunMode = (mode: string | null | undefined): CalendarSyncLane[] => {
+export const inferLanesForRunMode = (
+  mode: string | null | undefined,
+): CalendarSyncLane[] => {
   if (mode === "reconcile") return ["reconcile"];
   if (mode === "rebuild") return ["rebuild"];
   if (mode === "live") return ["live"];
