@@ -40,6 +40,7 @@ const handleMcpRequest = async (req: Request, res: Response) => {
   });
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
+    enableJsonResponse: true,
   });
 
   res.on("close", () => {
@@ -49,7 +50,11 @@ const handleMcpRequest = async (req: Request, res: Response) => {
 
   try {
     await server.connect(transport);
-    await transport.handleRequest(req, res, req.method === "POST" ? req.body : undefined);
+    await transport.handleRequest(
+      req,
+      res,
+      req.method === "POST" ? req.body : undefined,
+    );
   } catch (error) {
     console.error("Failed to handle tracker MCP request", error);
     if (!res.headersSent) {
