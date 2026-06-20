@@ -58,10 +58,18 @@ describe("tracker MCP routes", () => {
     expect(response.body).toEqual({ error: "Origin not allowed" });
   });
 
+  it("requires MCP auth for GET stream requests", async () => {
+    const { default: app } = await import("../../app");
+    const response = await request(app).get("/api/mcp");
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: "Unauthorized" });
+  });
+
   it("returns an MCP-shaped 405 for unsupported authenticated methods", async () => {
     const { default: app } = await import("../../app");
     const response = await request(app)
-      .get("/api/mcp")
+      .delete("/api/mcp")
       .set("authorization", "Bearer test-mcp-key");
 
     expect(response.status).toBe(405);

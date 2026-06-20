@@ -30,7 +30,7 @@ router.get("/health", (_req, res) => {
         configured: (0, mcpAuth_1.isTrackerMcpConfigured)(),
     });
 });
-const handleMcpPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const handleMcpRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const authResult = (0, mcpAuth_1.authenticateTrackerMcpRequest)(req);
     if (!authResult.ok) {
         return (0, mcpAuth_1.sendTrackerMcpAuthFailure)(res, authResult);
@@ -48,7 +48,7 @@ const handleMcpPost = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     });
     try {
         yield server.connect(transport);
-        yield transport.handleRequest(req, res, req.body);
+        yield transport.handleRequest(req, res, req.method === "POST" ? req.body : undefined);
     }
     catch (error) {
         console.error("Failed to handle tracker MCP request", error);
@@ -71,7 +71,7 @@ const handleUnsupportedMcpMethod = (req, res) => {
     }
     return methodNotAllowed(res);
 };
-router.post("/", handleMcpPost);
-router.get("/", handleUnsupportedMcpMethod);
+router.post("/", handleMcpRequest);
+router.get("/", handleMcpRequest);
 router.delete("/", handleUnsupportedMcpMethod);
 exports.default = router;

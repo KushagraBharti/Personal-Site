@@ -28,7 +28,7 @@ router.get("/health", (_req, res) => {
   });
 });
 
-const handleMcpPost = async (req: Request, res: Response) => {
+const handleMcpRequest = async (req: Request, res: Response) => {
   const authResult = authenticateTrackerMcpRequest(req);
   if (!authResult.ok) {
     return sendTrackerMcpAuthFailure(res, authResult);
@@ -49,7 +49,7 @@ const handleMcpPost = async (req: Request, res: Response) => {
 
   try {
     await server.connect(transport);
-    await transport.handleRequest(req, res, req.body);
+    await transport.handleRequest(req, res, req.method === "POST" ? req.body : undefined);
   } catch (error) {
     console.error("Failed to handle tracker MCP request", error);
     if (!res.headersSent) {
@@ -73,8 +73,8 @@ const handleUnsupportedMcpMethod = (req: Request, res: Response) => {
   return methodNotAllowed(res);
 };
 
-router.post("/", handleMcpPost);
-router.get("/", handleUnsupportedMcpMethod);
+router.post("/", handleMcpRequest);
+router.get("/", handleMcpRequest);
 router.delete("/", handleUnsupportedMcpMethod);
 
 export default router;
