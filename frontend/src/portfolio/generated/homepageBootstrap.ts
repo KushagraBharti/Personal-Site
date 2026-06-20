@@ -214,7 +214,7 @@ export const homepageBootstrap: HomePageBootstrap = {
     "socialLinks": [
       {
         "label": "Email",
-        "href": "mailto:kushagrabharti@gmail.com"
+        "href": "mailto:kbharti.work@gmail.com"
       },
       {
         "label": "LinkedIn",

@@ -255,7 +255,7 @@ const LoginScreen: React.FC<{
             transition={{ delay: 0.55 }}
             className="neo-label mt-4 text-[10px] leading-relaxed"
           >
-            if you want access to this; please contact kushagra directly @ kushagrabharti@gmail.com
+            if you want access to this; please contact kushagra directly @ kbharti.work@gmail.com
           </motion.p>
 
           {/* Decorative corner */}

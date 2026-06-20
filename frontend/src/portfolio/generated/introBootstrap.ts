@@ -4,11 +4,11 @@ export const introBootstrap: PortfolioIntroResponse = {
   "profile": {
     "name": "Kushagra Bharti",
     "headline": "Student | Software Engineer | ML Enthusiast",
-    "primaryEmail": "kushagrabharti@gmail.com",
+    "primaryEmail": "kbharti.work@gmail.com",
     "socialLinks": [
       {
         "label": "Email",
-        "href": "mailto:kushagrabharti@gmail.com"
+        "href": "mailto:kbharti.work@gmail.com"
       },
       {
         "label": "LinkedIn",

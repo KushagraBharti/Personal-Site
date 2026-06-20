@@ -11,7 +11,7 @@ export const portfolioSnapshotFixture: PortfolioSnapshot = {
     name: "Kushagra Bharti",
     headline: "Student | Software Engineer | ML Enthusiast",
     personalSummary: "I am a student and software builder who enjoys learning and expanding my skillset.",
-    primaryEmail: "kushagrabharti@gmail.com",
+    primaryEmail: "kbharti.work@gmail.com",
     socialLinks: [
       { label: "GitHub", href: "https://github.com/kushagrabharti" },
       { label: "LinkedIn", href: "https://www.linkedin.com/in/kushagra-bharti/" },
