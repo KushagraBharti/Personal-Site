@@ -37,6 +37,8 @@ The private tracker lives at `/tracker`. It is lazy-loaded, Supabase-authenticat
 
 The frontend uses Supabase for auth/session handling. Task/list CRUD, custom ordering, sort preferences, task completion, recurrence repair, cron, and Google Calendar sync go through backend private APIs under `/api/private`.
 
+The backend also exposes a personal tracker MCP endpoint at `/api/mcp` for Poke. It uses a separate bearer token, is scoped to one configured tracker owner, and only sees task lists where Google Calendar sync is enabled.
+
 ## Repository Layout
 
 ```text
@@ -81,6 +83,7 @@ Backend:
 - `/api/private/cron`
 - `/api/private/lists`
 - `/api/private/tasks`
+- `/api/mcp`
 
 ## Tech Stack
 
@@ -138,11 +141,38 @@ GITHUB_TOKEN=
 OPENWEATHER_API_KEY=
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
+TRACKER_MCP_API_KEY=
+TRACKER_MCP_OWNER_USER_ID=
 ```
 
 Backend tracker routes prefer a Supabase service-role JWT in `SUPABASE_SERVICE_ROLE_KEY`, with `SUPABASE_SECRET_KEY` as a fallback server key. Do not use the anon key for backend private APIs.
 
 Production CORS is restricted to known frontend aliases by default. Set `ALLOW_VERCEL_PREVIEW_ORIGINS=1` only when arbitrary `*.vercel.app` preview origins should be accepted.
+
+Tracker MCP env:
+
+```bash
+TRACKER_MCP_ENABLED=1
+TRACKER_MCP_API_KEY=
+TRACKER_MCP_OWNER_USER_ID=
+TRACKER_MCP_ALLOWED_ORIGINS=https://poke.com,https://www.poke.com
+TRACKER_MCP_ALLOWED_POKE_USER_IDS=
+TRACKER_MCP_DEFAULT_TIMEZONE=America/Chicago
+```
+
+`TRACKER_MCP_OWNER_USER_ID` is the Supabase auth user ID whose tracker Poke may control. `TRACKER_MCP_API_KEY` is the bearer token configured in Poke. Leave `TRACKER_MCP_ALLOWED_POKE_USER_IDS` empty until you know the Poke user ID; if set, requests must include a matching `X-Poke-User-Id` header.
+
+For local Poke testing, start the backend and then expose the MCP endpoint:
+
+```bash
+npx poke@latest tunnel http://localhost:5000/api/mcp -n "Tracker MCP"
+```
+
+For production Poke setup, add the deployed backend MCP URL with the MCP API key:
+
+```bash
+npx poke@latest mcp add https://<backend-domain>/api/mcp -n "Tracker MCP" -k "<TRACKER_MCP_API_KEY>"
+```
 
 ### Supabase CLI
 

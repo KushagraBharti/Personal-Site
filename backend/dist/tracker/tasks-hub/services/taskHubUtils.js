@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pickAutoListColor = exports.normalizeSortDirection = exports.normalizeSortMode = exports.normalizeRecurrenceUnit = exports.normalizeRecurrenceType = exports.cleanNullableString = exports.cleanOptionalString = exports.normalizeTaskDueTimeZone = exports.normalizeBrowserTimeZone = exports.isValidIanaTimeZone = exports.normalizeListName = exports.getRawErrorMessage = exports.nowIso = exports.LIST_COLOR_POOL = exports.DEFAULT_LIST_NAME = void 0;
-const taskCalendarEventUtils_1 = require("../../calendar/services/taskCalendarEventUtils");
 exports.DEFAULT_LIST_NAME = "General";
 exports.LIST_COLOR_POOL = [
     "#00FFFF",
@@ -38,10 +37,12 @@ const isValidIanaTimeZone = (timeZone) => {
     }
 };
 exports.isValidIanaTimeZone = isValidIanaTimeZone;
-const normalizeBrowserTimeZone = (timeZone) => typeof timeZone === "string" && (0, exports.isValidIanaTimeZone)(timeZone) ? timeZone : "UTC";
+const normalizeBrowserTimeZone = (timeZone) => typeof timeZone === "string" && (0, exports.isValidIanaTimeZone)(timeZone)
+    ? timeZone
+    : "UTC";
 exports.normalizeBrowserTimeZone = normalizeBrowserTimeZone;
 const normalizeTaskDueTimeZone = (dueAt, dueTimeZone, browserTimeZone, currentTimeZone) => {
-    if (!dueAt || (0, taskCalendarEventUtils_1.isDateOnlyIso)(dueAt))
+    if (!dueAt)
         return null;
     if (typeof dueTimeZone === "string" && (0, exports.isValidIanaTimeZone)(dueTimeZone))
         return dueTimeZone;
@@ -86,7 +87,10 @@ const normalizeRecurrenceUnit = (value) => {
 };
 exports.normalizeRecurrenceUnit = normalizeRecurrenceUnit;
 const normalizeSortMode = (value) => {
-    if (value === "due_date" || value === "date_created" || value === "title" || value === "custom") {
+    if (value === "due_date" ||
+        value === "date_created" ||
+        value === "title" ||
+        value === "custom") {
         return value;
     }
     return null;

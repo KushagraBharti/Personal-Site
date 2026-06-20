@@ -19,17 +19,20 @@ const allowedOrigins = [
     "https://personal-site-orpin-chi-99.vercel.app", // Current API host (self)
     "https://www.kushagrabharti.com",
     "https://kushagrabharti.com",
+    "https://poke.com",
+    "https://www.poke.com",
 ];
 const vercelRegex = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i;
 const localLanRegex = /^http:\/\/(?:10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[0-1])\.)[0-9.]+:5173$/i;
 const isDev = process.env.NODE_ENV !== "production";
+const allowVercelPreviewOrigins = process.env.ALLOW_VERCEL_PREVIEW_ORIGINS === "1";
 app.use((0, cors_1.default)({
     origin: (origin, callback) => {
         if (isDev ||
             !origin ||
             allowedOrigins.includes(origin) ||
-            vercelRegex.test(origin) ||
-            localLanRegex.test(origin)) {
+            (allowVercelPreviewOrigins && vercelRegex.test(origin)) ||
+            (isDev && localLanRegex.test(origin))) {
             callback(null, true);
         }
         else {

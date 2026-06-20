@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.reorderTasksForUser = exports.deleteTaskForUser = exports.updateTaskForUser = exports.createTaskForUser = void 0;
 const taskHubUtils_1 = require("./taskHubUtils");
 const taskCalendarCleanupService_1 = require("./taskCalendarCleanupService");
+const taskCalendarSyncService_1 = require("../../calendar/services/taskCalendarSyncService");
 const taskRecurrenceService_1 = require("./taskRecurrenceService");
 const hasOwn = (input, key) => Object.prototype.hasOwnProperty.call(input, key);
 const normalizePositiveInteger = (value, fallback) => {
@@ -47,7 +48,9 @@ const normalizeRecurrenceCreateFields = (input) => {
         };
     }
     const recurrenceEndsAt = (0, taskHubUtils_1.cleanNullableString)(input.recurrence_ends_at);
-    if (recurrenceEndsAt === undefined || recurrenceEndsAt === null || typeof recurrenceEndsAt === "string") {
+    if (recurrenceEndsAt === undefined ||
+        recurrenceEndsAt === null ||
+        typeof recurrenceEndsAt === "string") {
         if (recurrenceType !== "custom") {
             return {
                 ok: true,
@@ -112,7 +115,11 @@ const assertParentBelongsToList = (supabaseAdmin, userId, listId, parentTaskId, 
     if (!parentTask)
         return { ok: false, code: 404, error: "Parent task not found" };
     if (parentTask.list_id !== listId) {
-        return { ok: false, code: 400, error: "Parent task must be in the same list" };
+        return {
+            ok: false,
+            code: 400,
+            error: "Parent task must be in the same list",
+        };
     }
     return null;
 });
@@ -126,8 +133,12 @@ const createTaskForUser = (supabaseAdmin, userId, input) => __awaiter(void 0, vo
     const listFailure = yield assertListBelongsToUser(supabaseAdmin, userId, listId);
     if (listFailure)
         return listFailure;
-    const parentTaskId = (0, taskHubUtils_1.cleanNullableString)(input.parent_task_id, { trim: true });
-    if (parentTaskId === undefined || typeof parentTaskId === "string" || parentTaskId === null) {
+    const parentTaskId = (0, taskHubUtils_1.cleanNullableString)(input.parent_task_id, {
+        trim: true,
+    });
+    if (parentTaskId === undefined ||
+        typeof parentTaskId === "string" ||
+        parentTaskId === null) {
         const parentFailure = yield assertParentBelongsToList(supabaseAdmin, userId, listId, parentTaskId !== null && parentTaskId !== void 0 ? parentTaskId : null);
         if (parentFailure)
             return parentFailure;
@@ -146,7 +157,11 @@ const createTaskForUser = (supabaseAdmin, userId, input) => __awaiter(void 0, vo
     if (!recurrenceFields.ok)
         return recurrenceFields;
     if (recurrenceFields.recurrenceType !== "none" && !dueAt) {
-        return { ok: false, code: 400, error: "Recurring tasks require a due date." };
+        return {
+            ok: false,
+            code: 400,
+            error: "Recurring tasks require a due date.",
+        };
     }
     const detailsInput = (0, taskHubUtils_1.cleanNullableString)(input.details, { trim: true });
     const details = detailsInput ? detailsInput : null;
@@ -196,8 +211,12 @@ const updateTaskForUser = (supabaseAdmin, userId, taskId, input) => __awaiter(vo
     }
     let nextParentTaskId = currentTask.parent_task_id;
     if (hasOwn(input, "parent_task_id")) {
-        const parentTaskId = (0, taskHubUtils_1.cleanNullableString)(input.parent_task_id, { trim: true });
-        if (!(parentTaskId === undefined || typeof parentTaskId === "string" || parentTaskId === null)) {
+        const parentTaskId = (0, taskHubUtils_1.cleanNullableString)(input.parent_task_id, {
+            trim: true,
+        });
+        if (!(parentTaskId === undefined ||
+            typeof parentTaskId === "string" ||
+            parentTaskId === null)) {
             return { ok: false, code: 400, error: "Invalid parent_task_id" };
         }
         nextParentTaskId = parentTaskId !== null && parentTaskId !== void 0 ? parentTaskId : null;
@@ -216,7 +235,9 @@ const updateTaskForUser = (supabaseAdmin, userId, taskId, input) => __awaiter(vo
     }
     if (hasOwn(input, "details")) {
         const details = (0, taskHubUtils_1.cleanNullableString)(input.details, { trim: true });
-        if (!(details === undefined || details === null || typeof details === "string")) {
+        if (!(details === undefined ||
+            details === null ||
+            typeof details === "string")) {
             return { ok: false, code: 400, error: "Invalid details" };
         }
         payload.details = details ? details : null;
@@ -245,7 +266,11 @@ const updateTaskForUser = (supabaseAdmin, userId, taskId, input) => __awaiter(vo
     }
     if (recurrenceTouched) {
         if (nextRecurrenceType !== "none" && !nextDueAt) {
-            return { ok: false, code: 400, error: "Recurring tasks require a due date." };
+            return {
+                ok: false,
+                code: 400,
+                error: "Recurring tasks require a due date.",
+            };
         }
         if (nextRecurrenceType === "none") {
             payload.recurrence_interval = null;
@@ -255,20 +280,22 @@ const updateTaskForUser = (supabaseAdmin, userId, taskId, input) => __awaiter(vo
         else if (nextRecurrenceType === "custom") {
             const recurrenceInterval = hasOwn(input, "recurrence_interval")
                 ? normalizePositiveInteger(input.recurrence_interval, (_a = currentTask.recurrence_interval) !== null && _a !== void 0 ? _a : 1)
-                : (_b = currentTask.recurrence_interval) !== null && _b !== void 0 ? _b : 1;
+                : ((_b = currentTask.recurrence_interval) !== null && _b !== void 0 ? _b : 1);
             if (!recurrenceInterval) {
                 return { ok: false, code: 400, error: "Invalid recurrence_interval" };
             }
             const recurrenceUnit = hasOwn(input, "recurrence_unit")
                 ? (0, taskHubUtils_1.normalizeRecurrenceUnit)(input.recurrence_unit)
-                : (_c = currentTask.recurrence_unit) !== null && _c !== void 0 ? _c : "day";
+                : ((_c = currentTask.recurrence_unit) !== null && _c !== void 0 ? _c : "day");
             if (!recurrenceUnit)
                 return { ok: false, code: 400, error: "Invalid recurrence_unit" };
             payload.recurrence_interval = recurrenceInterval;
             payload.recurrence_unit = recurrenceUnit;
             if (hasOwn(input, "recurrence_ends_at")) {
                 const recurrenceEndsAt = (0, taskHubUtils_1.cleanNullableString)(input.recurrence_ends_at);
-                if (!(recurrenceEndsAt === undefined || recurrenceEndsAt === null || typeof recurrenceEndsAt === "string")) {
+                if (!(recurrenceEndsAt === undefined ||
+                    recurrenceEndsAt === null ||
+                    typeof recurrenceEndsAt === "string")) {
                     return { ok: false, code: 400, error: "Invalid recurrence_ends_at" };
                 }
                 payload.recurrence_ends_at = recurrenceEndsAt !== null && recurrenceEndsAt !== void 0 ? recurrenceEndsAt : null;
@@ -279,14 +306,18 @@ const updateTaskForUser = (supabaseAdmin, userId, taskId, input) => __awaiter(vo
             payload.recurrence_unit = null;
             if (hasOwn(input, "recurrence_ends_at")) {
                 const recurrenceEndsAt = (0, taskHubUtils_1.cleanNullableString)(input.recurrence_ends_at);
-                if (!(recurrenceEndsAt === undefined || recurrenceEndsAt === null || typeof recurrenceEndsAt === "string")) {
+                if (!(recurrenceEndsAt === undefined ||
+                    recurrenceEndsAt === null ||
+                    typeof recurrenceEndsAt === "string")) {
                     return { ok: false, code: 400, error: "Invalid recurrence_ends_at" };
                 }
                 payload.recurrence_ends_at = recurrenceEndsAt !== null && recurrenceEndsAt !== void 0 ? recurrenceEndsAt : null;
             }
         }
     }
-    if (hasOwn(input, "due_at") || hasOwn(input, "due_timezone") || recurrenceTouched) {
+    if (hasOwn(input, "due_at") ||
+        hasOwn(input, "due_timezone") ||
+        recurrenceTouched) {
         payload.due_timezone = (0, taskHubUtils_1.normalizeTaskDueTimeZone)(nextDueAt, input.due_timezone, input.browser_timezone, currentTask.due_timezone);
     }
     if (Object.keys(payload).length === 0)
@@ -318,7 +349,9 @@ const collectTaskTreeForDelete = (supabaseAdmin, userId, taskId) => __awaiter(vo
     rowsById.set(String(rootTask.id), {
         id: String(rootTask.id),
         list_id: String(rootTask.list_id),
-        parent_task_id: rootTask.parent_task_id ? String(rootTask.parent_task_id) : null,
+        parent_task_id: rootTask.parent_task_id
+            ? String(rootTask.parent_task_id)
+            : null,
     });
     let frontier = [String(rootTask.id)];
     while (frontier.length > 0) {
@@ -351,6 +384,13 @@ const deleteTaskForUser = (supabaseAdmin, userId, taskId) => __awaiter(void 0, v
         return { ok: false, code: 404, error: "Task not found" };
     const taskIds = taskRows.map((row) => row.id);
     for (const row of taskRows) {
+        yield (0, taskCalendarSyncService_1.queueTaskDeleteForUser)(supabaseAdmin, userId, {
+            listId: row.list_id,
+            taskId: row.id,
+            source: "api_task_delete",
+        }).catch(() => { });
+    }
+    for (const row of taskRows) {
         yield (0, taskCalendarCleanupService_1.processBestEffortTaskDeleteCleanup)(supabaseAdmin, {
             userId,
             listId: row.list_id,
@@ -373,19 +413,32 @@ const reorderTasksForUser = (supabaseAdmin, userId, input) => __awaiter(void 0, 
     const listId = (0, taskHubUtils_1.cleanOptionalString)(input.list_id);
     if (!listId)
         return { ok: false, code: 400, error: "list_id is required" };
-    const parentTaskId = (0, taskHubUtils_1.cleanNullableString)(input.parent_task_id, { trim: true });
-    if (!(parentTaskId === undefined || parentTaskId === null || typeof parentTaskId === "string")) {
+    const parentTaskId = (0, taskHubUtils_1.cleanNullableString)(input.parent_task_id, {
+        trim: true,
+    });
+    if (!(parentTaskId === undefined ||
+        parentTaskId === null ||
+        typeof parentTaskId === "string")) {
         return { ok: false, code: 400, error: "Invalid parent_task_id" };
     }
     const orderedTaskIds = input.ordered_task_ids;
-    if (!Array.isArray(orderedTaskIds) || orderedTaskIds.some((id) => typeof id !== "string")) {
-        return { ok: false, code: 400, error: "ordered_task_ids must be an array of task ids" };
+    if (!Array.isArray(orderedTaskIds) ||
+        orderedTaskIds.some((id) => typeof id !== "string")) {
+        return {
+            ok: false,
+            code: 400,
+            error: "ordered_task_ids must be an array of task ids",
+        };
     }
     if (orderedTaskIds.length === 0)
         return { ok: false, code: 400, error: "ordered_task_ids is required" };
     const uniqueIds = new Set(orderedTaskIds);
     if (uniqueIds.size !== orderedTaskIds.length) {
-        return { ok: false, code: 400, error: "ordered_task_ids must not contain duplicates" };
+        return {
+            ok: false,
+            code: 400,
+            error: "ordered_task_ids must not contain duplicates",
+        };
     }
     let siblingQuery = supabaseAdmin
         .from("tracker_tasks")
@@ -400,7 +453,18 @@ const reorderTasksForUser = (supabaseAdmin, userId, input) => __awaiter(void 0, 
         throw new Error(siblingError.message);
     const siblingById = new Map((siblingRows !== null && siblingRows !== void 0 ? siblingRows : []).map((task) => [task.id, task]));
     if (orderedTaskIds.some((taskId) => !siblingById.has(taskId))) {
-        return { ok: false, code: 400, error: "ordered_task_ids contains an unknown task" };
+        return {
+            ok: false,
+            code: 400,
+            error: "ordered_task_ids contains an unknown task",
+        };
+    }
+    if (orderedTaskIds.length !== siblingById.size) {
+        return {
+            ok: false,
+            code: 400,
+            error: "ordered_task_ids must include every sibling task",
+        };
     }
     const updatedTasks = [];
     for (const [index, taskId] of orderedTaskIds.entries()) {

@@ -34,6 +34,7 @@ Routes:
 - `/tracker` -> private tracker
 - `/api` -> public portfolio APIs
 - `/api/private` -> tracker APIs
+- `/api/mcp` -> tracker MCP endpoint for Poke
 
 ## Non-Negotiable Decisions
 
@@ -79,6 +80,7 @@ Current tracker modules:
 
 - `AboutSection` renders backend-owned about copy and featured writings, while `FeaturedSection` still hardcodes some public project selections in the frontend. Prefer moving future public content changes to backend content rather than adding more frontend content sources.
 - Tracker frontend uses Supabase for auth/session. Task/list CRUD, custom ordering, sort preferences, task completion, recurrence repair, cron, and Google Calendar sync go through backend private APIs.
+- Tracker MCP uses a separate bearer token, scopes to `TRACKER_MCP_OWNER_USER_ID`, and only sees non-archived task lists with Google Calendar sync enabled.
 - Calendar sync uses the live queue path; do not add legacy task-change trigger paths back.
 - Supabase CLI config lives in `backend/supabase/config.toml`; this repo intentionally does not keep checked-in SQL snapshots or migrations.
 - The old `docs/` tree has been removed. Do not point new onboarding instructions at `docs/active/*`.
@@ -96,6 +98,7 @@ Backend env:
 - use `backend/.env.example`
 - key portfolio vars: `GITHUB_USERNAME`, `GITHUB_TOKEN`, `OPENWEATHER_API_KEY`
 - tracker/calendar vars: prefer `SUPABASE_SERVICE_ROLE_KEY` with a service-role JWT; `SUPABASE_SECRET_KEY` is a fallback server key
+- tracker MCP vars: `TRACKER_MCP_ENABLED`, `TRACKER_MCP_API_KEY`, `TRACKER_MCP_OWNER_USER_ID`, optional `TRACKER_MCP_ALLOWED_ORIGINS`, `TRACKER_MCP_ALLOWED_POKE_USER_IDS`, `TRACKER_MCP_DEFAULT_TIMEZONE`
 - production CORS only accepts known frontend aliases unless `ALLOW_VERCEL_PREVIEW_ORIGINS=1` is set
 - frontend tracker env must use only Supabase anon/publishable values; never expose service-role or `sb_secret_*` keys to Vite env
 

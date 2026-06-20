@@ -16,7 +16,8 @@ const taskCalendarSyncService_1 = require("../services/taskCalendarSyncService")
 const calendarSyncQueueService_1 = require("../services/calendarSyncQueueService");
 const calendarWebhookService_1 = require("../services/calendarWebhookService");
 const router = (0, express_1.Router)();
-const getFrontendTrackerUrl = () => process.env.TRACKER_FRONTEND_URL || "http://localhost:5173/tracker?module=tasks";
+const getFrontendTrackerUrl = () => process.env.TRACKER_FRONTEND_URL ||
+    "http://localhost:5173/tracker?module=tasks";
 const isCalendarSyncEnabled = () => process.env.CALENDAR_SYNC_ENABLED !== "0";
 router.post("/google/webhook", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (!isCalendarSyncEnabled())
@@ -24,7 +25,11 @@ router.post("/google/webhook", (req, res) => __awaiter(void 0, void 0, void 0, f
     try {
         const supabaseAdmin = (0, calendarSyncQueueService_1.getSupabaseAdmin)();
         const webhookMeta = yield (0, calendarWebhookService_1.handleGoogleWebhook)(supabaseAdmin, req.headers);
-        yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ userId: webhookMeta.userId, batchSize: 1, lanes: ["system"] });
+        yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({
+            userId: webhookMeta.userId,
+            batchSize: 1,
+            lanes: ["system"],
+        });
         return res.status(200).json({ ok: true });
     }
     catch (error) {
@@ -42,7 +47,9 @@ router.post("/google/connect-url", requireUser_1.requireUser, (req, res) => __aw
     }
     catch (error) {
         console.error("Failed to generate Google connect URL", error);
-        return res.status(500).json({ error: "Failed to generate Google connect URL" });
+        return res
+            .status(500)
+            .json({ error: "Failed to generate Google connect URL" });
     }
 }));
 router.get("/google/callback", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -82,7 +89,12 @@ router.get("/google/callback", (req, res) => __awaiter(void 0, void 0, void 0, f
 }));
 router.get("/status", requireUser_1.requireUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (!isCalendarSyncEnabled())
-        return res.json({ connected: false, connection: null, watch_expires_at: null, list_sync_settings: [] });
+        return res.json({
+            connected: false,
+            connection: null,
+            watch_expires_at: null,
+            list_sync_settings: [],
+        });
     try {
         const supabaseAdmin = (0, calendarSyncQueueService_1.getSupabaseAdmin)();
         const status = yield (0, taskCalendarSyncService_1.getCalendarStatusForUser)(supabaseAdmin, req.user.id);
@@ -103,7 +115,9 @@ router.post("/disconnect", requireUser_1.requireUser, (req, res) => __awaiter(vo
     }
     catch (error) {
         console.error("Failed to disconnect Google Calendar", error);
-        return res.status(500).json({ error: "Failed to disconnect Google Calendar" });
+        return res
+            .status(500)
+            .json({ error: "Failed to disconnect Google Calendar" });
     }
 }));
 router.post("/list-sync", requireUser_1.requireUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -118,23 +132,30 @@ router.post("/list-sync", requireUser_1.requireUser, (req, res) => __awaiter(voi
     try {
         const supabaseAdmin = (0, calendarSyncQueueService_1.getSupabaseAdmin)();
         const userId = req.user.id;
+        const listExists = yield (0, taskCalendarSyncService_1.taskListBelongsToUser)(supabaseAdmin, userId, listId);
+        if (!listExists)
+            return res.status(404).json({ error: "List not found" });
         yield (0, taskCalendarSyncService_1.upsertListSyncSetting)(supabaseAdmin, userId, listId, syncEnabled);
         let cleanupJobCount = 0;
+        let runId = "";
         if (syncEnabled) {
-            yield (0, taskCalendarSyncService_1.queueFullBackfill)(supabaseAdmin, userId, listId);
+            runId = yield (0, taskCalendarSyncService_1.queueListBackfillRunForUser)(supabaseAdmin, userId, listId);
         }
         else {
             cleanupJobCount = yield (0, taskCalendarSyncService_1.queueListSyncCleanupForUser)(supabaseAdmin, userId, listId);
         }
         return res.json({
             ok: true,
+            run_id: runId,
             queued_cleanup: !syncEnabled && cleanupJobCount > 0,
             cleanup_job_count: cleanupJobCount,
         });
     }
     catch (error) {
         console.error("Failed to update list sync setting", error);
-        return res.status(500).json({ error: "Failed to update list sync setting" });
+        return res
+            .status(500)
+            .json({ error: "Failed to update list sync setting" });
     }
 }));
 router.post("/sync-now", requireUser_1.requireUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -145,7 +166,11 @@ router.post("/sync-now", requireUser_1.requireUser, (req, res) => __awaiter(void
         let runId = null;
         try {
             runId = yield (0, taskCalendarSyncService_1.queueManualSyncForUser)(supabaseAdmin, req.user.id);
-            yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ userId: req.user.id, batchSize: 1, lanes: ["reconcile"] }).catch(() => { });
+            yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({
+                userId: req.user.id,
+                batchSize: 1,
+                lanes: ["reconcile"],
+            }).catch(() => { });
         }
         catch (error) {
             const fallback = yield (0, taskCalendarSyncService_1.runLegacyManualSyncForUser)(supabaseAdmin, req.user.id);
@@ -190,7 +215,11 @@ router.post("/rebuild", requireUser_1.requireUser, (req, res) => __awaiter(void 
         const supabaseAdmin = (0, calendarSyncQueueService_1.getSupabaseAdmin)();
         try {
             const runId = yield (0, taskCalendarSyncService_1.queueRebuildRunForUser)(supabaseAdmin, req.user.id);
-            yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ userId: req.user.id, batchSize: 1, lanes: ["rebuild"] }).catch(() => { });
+            yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({
+                userId: req.user.id,
+                batchSize: 1,
+                lanes: ["rebuild"],
+            }).catch(() => { });
             return res.json({ ok: true, run_id: runId, queued: true });
         }
         catch (error) {
@@ -210,7 +239,9 @@ router.post("/rebuild", requireUser_1.requireUser, (req, res) => __awaiter(void 
     }
     catch (error) {
         console.error("Failed to start calendar rebuild", error);
-        const message = error instanceof Error ? error.message : "Failed to start calendar rebuild";
+        const message = error instanceof Error
+            ? error.message
+            : "Failed to start calendar rebuild";
         return res.status(500).json({ error: message });
     }
 }));
@@ -227,7 +258,11 @@ router.get("/sync-progress", requireUser_1.requireUser, (req, res) => __awaiter(
             return res.json(Object.assign({ ok: true }, snapshot));
         }
         const lanes = (0, taskCalendarSyncService_1.inferLanesForRunMode)(snapshot.mode);
-        yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({ userId: req.user.id, batchSize: 1, lanes }).catch(() => { });
+        yield (0, taskCalendarSyncService_1.processCalendarSyncJobs)({
+            userId: req.user.id,
+            batchSize: 1,
+            lanes,
+        }).catch(() => { });
         const progress = yield (0, taskCalendarSyncService_1.getSyncProgressForRun)(supabaseAdmin, req.user.id, runId);
         return res.json(Object.assign({ ok: true }, progress));
     }

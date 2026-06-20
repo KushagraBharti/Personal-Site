@@ -12,8 +12,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const requireUser_1 = require("../../../middleware/requireUser");
 const calendarSyncQueueService_1 = require("../../calendar/services/calendarSyncQueueService");
+const taskCalendarSyncService_1 = require("../../calendar/services/taskCalendarSyncService");
 const taskListService_1 = require("../services/taskListService");
 const router = (0, express_1.Router)();
+const queueTaskUpsertBestEffort = (supabaseAdmin, userId, task, source) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield (0, taskCalendarSyncService_1.queueTaskUpsertForUser)(supabaseAdmin, userId, task, source);
+    }
+    catch (error) {
+        console.error("Failed to enqueue live calendar task sync", error);
+    }
+});
 router.post("/", requireUser_1.requireUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -22,6 +31,7 @@ router.post("/", requireUser_1.requireUser, (req, res) => __awaiter(void 0, void
         if (!result.ok) {
             return res.status(result.code).json({ error: result.error });
         }
+        yield queueTaskUpsertBestEffort(supabaseAdmin, req.user.id, result.task, "api_task_create");
         return res.status(201).json({ ok: true, task: result.task });
     }
     catch (error) {
@@ -60,6 +70,10 @@ router.patch("/:taskId/completion", requireUser_1.requireUser, (req, res) => __a
         if (!result.ok) {
             return res.status(result.code).json({ error: result.error });
         }
+        yield queueTaskUpsertBestEffort(supabaseAdmin, req.user.id, result.task, "api_task_completion");
+        if (result.createdNextTask) {
+            yield queueTaskUpsertBestEffort(supabaseAdmin, req.user.id, result.createdNextTask, "api_task_completion_next");
+        }
         return res.json({
             ok: true,
             task: result.task,
@@ -68,7 +82,9 @@ router.patch("/:taskId/completion", requireUser_1.requireUser, (req, res) => __a
     }
     catch (error) {
         console.error("Failed to update task completion", error);
-        const message = error instanceof Error ? error.message : "Failed to update task completion";
+        const message = error instanceof Error
+            ? error.message
+            : "Failed to update task completion";
         return res.status(500).json({ error: message });
     }
 }));
@@ -83,6 +99,7 @@ router.patch("/:taskId", requireUser_1.requireUser, (req, res) => __awaiter(void
         if (!result.ok) {
             return res.status(result.code).json({ error: result.error });
         }
+        yield queueTaskUpsertBestEffort(supabaseAdmin, req.user.id, result.task, "api_task_update");
         return res.json({ ok: true, task: result.task });
     }
     catch (error) {

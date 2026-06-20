@@ -16,6 +16,8 @@ const allowedOrigins = [
   "https://personal-site-orpin-chi-99.vercel.app", // Current API host (self)
   "https://www.kushagrabharti.com",
   "https://kushagrabharti.com",
+  "https://poke.com",
+  "https://www.poke.com",
 ];
 
 const vercelRegex = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i;

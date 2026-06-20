@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getTrackerBootstrapForUser = exports.fetchSortPreferencesForUser = exports.fetchTasksForUser = exports.fetchTaskListsForUser = void 0;
-const taskCalendarEventUtils_1 = require("../../calendar/services/taskCalendarEventUtils");
 const taskHubUtils_1 = require("./taskHubUtils");
 const fetchTaskListsForUser = (supabaseAdmin, userId) => __awaiter(void 0, void 0, void 0, function* () {
     const { data, error } = yield supabaseAdmin
@@ -66,25 +65,13 @@ const seedDefaultTaskListForUser = (supabaseAdmin, userId) => __awaiter(void 0, 
     return data;
 });
 const normalizeStoredTaskTimeZones = (supabaseAdmin, userId, tasks, browserTimeZone) => __awaiter(void 0, void 0, void 0, function* () {
-    const missingTimedTimeZone = tasks.filter((task) => !!task.due_at && !task.due_timezone && !(0, taskCalendarEventUtils_1.isDateOnlyIso)(task.due_at));
-    const dateOnlyWithTimeZone = tasks.filter((task) => !!task.due_at && !!task.due_timezone && (0, taskCalendarEventUtils_1.isDateOnlyIso)(task.due_at));
+    const missingDueTimeZone = tasks.filter((task) => !!task.due_at && !task.due_timezone);
     const updates = [];
-    missingTimedTimeZone.forEach((task) => {
+    missingDueTimeZone.forEach((task) => {
         updates.push((() => __awaiter(void 0, void 0, void 0, function* () {
             const { error } = yield supabaseAdmin
                 .from("tracker_tasks")
                 .update({ due_timezone: browserTimeZone })
-                .eq("user_id", userId)
-                .eq("id", task.id);
-            if (error)
-                throw new Error(error.message);
-        }))());
-    });
-    dateOnlyWithTimeZone.forEach((task) => {
-        updates.push((() => __awaiter(void 0, void 0, void 0, function* () {
-            const { error } = yield supabaseAdmin
-                .from("tracker_tasks")
-                .update({ due_timezone: null })
                 .eq("user_id", userId)
                 .eq("id", task.id);
             if (error)

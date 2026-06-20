@@ -41,7 +41,11 @@ const createTaskListForUser = (supabaseAdmin, userId, input) => __awaiter(void 0
     const lists = yield fetchActiveListsForUser(supabaseAdmin, userId);
     const duplicate = findDuplicateList(lists, cleanedName);
     if (duplicate) {
-        return { ok: false, code: 409, error: `List "${duplicate.name}" already exists.` };
+        return {
+            ok: false,
+            code: 409,
+            error: `List "${duplicate.name}" already exists.`,
+        };
     }
     const requestedColor = (0, taskHubUtils_1.cleanOptionalString)(input.color_hex);
     const colorHex = requestedColor || (0, taskHubUtils_1.pickAutoListColor)(lists.map((list) => list.color_hex));
@@ -74,7 +78,11 @@ const updateTaskListForUser = (supabaseAdmin, userId, listId, input) => __awaite
             return { ok: false, code: 400, error: "List name is required" };
         const duplicate = findDuplicateList(lists, cleanedName, listId);
         if (duplicate) {
-            return { ok: false, code: 409, error: `List "${duplicate.name}" already exists.` };
+            return {
+                ok: false,
+                code: 409,
+                error: `List "${duplicate.name}" already exists.`,
+            };
         }
         payload.name = cleanedName;
     }
@@ -99,8 +107,13 @@ const updateTaskListForUser = (supabaseAdmin, userId, listId, input) => __awaite
 });
 exports.updateTaskListForUser = updateTaskListForUser;
 const reorderTaskListsForUser = (supabaseAdmin, userId, orderedListIds) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!Array.isArray(orderedListIds) || orderedListIds.some((id) => typeof id !== "string")) {
-        return { ok: false, code: 400, error: "ordered_list_ids must be an array of list ids" };
+    if (!Array.isArray(orderedListIds) ||
+        orderedListIds.some((id) => typeof id !== "string")) {
+        return {
+            ok: false,
+            code: 400,
+            error: "ordered_list_ids must be an array of list ids",
+        };
     }
     if (orderedListIds.length === 0)
         return { ok: false, code: 400, error: "ordered_list_ids is required" };
@@ -108,10 +121,25 @@ const reorderTaskListsForUser = (supabaseAdmin, userId, orderedListIds) => __awa
     const listById = new Map(lists.map((list) => [list.id, list]));
     const uniqueIds = new Set(orderedListIds);
     if (uniqueIds.size !== orderedListIds.length) {
-        return { ok: false, code: 400, error: "ordered_list_ids must not contain duplicates" };
+        return {
+            ok: false,
+            code: 400,
+            error: "ordered_list_ids must not contain duplicates",
+        };
     }
     if (orderedListIds.some((listId) => !listById.has(listId))) {
-        return { ok: false, code: 400, error: "ordered_list_ids contains an unknown list" };
+        return {
+            ok: false,
+            code: 400,
+            error: "ordered_list_ids contains an unknown list",
+        };
+    }
+    if (orderedListIds.length !== lists.length) {
+        return {
+            ok: false,
+            code: 400,
+            error: "ordered_list_ids must include every active list",
+        };
     }
     const updatedLists = [];
     for (const [index, listId] of orderedListIds.entries()) {
@@ -152,7 +180,9 @@ const deleteTaskListForUser = (supabaseAdmin, userId, listId) => __awaiter(void 
         .eq("list_id", listId);
     if (taskRowsError)
         throw new Error(taskRowsError.message);
-    const taskIds = (taskRows !== null && taskRows !== void 0 ? taskRows : []).map((row) => String(row.id)).filter(Boolean);
+    const taskIds = (taskRows !== null && taskRows !== void 0 ? taskRows : [])
+        .map((row) => String(row.id))
+        .filter(Boolean);
     for (const taskId of taskIds) {
         yield (0, taskCalendarCleanupService_1.processBestEffortTaskDeleteCleanup)(supabaseAdmin, {
             userId,

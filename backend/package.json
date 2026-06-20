@@ -5,6 +5,7 @@
   "main": "src/server.ts",
   "license": "MIT",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@supabase/supabase-js": "2.104.0",
     "axios": "1.17.0",
     "cors": "2.8.6",
@@ -15,7 +16,8 @@
     "mime": "4.1.0",
     "mime-types": "^3.0.2",
     "proxy-from-env": "^2.1.0",
-    "whatwg-url": "^16.0.1"
+    "whatwg-url": "^16.0.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/connect": "3.4.38",

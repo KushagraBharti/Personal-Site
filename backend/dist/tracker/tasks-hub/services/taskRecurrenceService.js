@@ -19,8 +19,12 @@ const getNextTaskSortOrder = (supabaseAdmin, userId, listId, parentTaskId) => __
         .select("sort_order")
         .eq("user_id", userId)
         .eq("list_id", listId);
-    query = parentTaskId ? query.eq("parent_task_id", parentTaskId) : query.is("parent_task_id", null);
-    const { data, error } = yield query.order("sort_order", { ascending: false }).limit(1);
+    query = parentTaskId
+        ? query.eq("parent_task_id", parentTaskId)
+        : query.is("parent_task_id", null);
+    const { data, error } = yield query
+        .order("sort_order", { ascending: false })
+        .limit(1);
     if (error)
         throw new Error(error.message);
     const currentMax = Number((_a = data === null || data === void 0 ? void 0 : data[0]) === null || _a === void 0 ? void 0 : _a.sort_order);
@@ -45,10 +49,12 @@ const findExistingNextRecurringTask = (supabaseAdmin, userId, sourceTask, nextDu
     query = applyNullableFilter(query, "recurrence_interval", sourceTask.recurrence_interval);
     query = applyNullableFilter(query, "recurrence_unit", sourceTask.recurrence_unit);
     query = applyNullableFilter(query, "recurrence_ends_at", sourceTask.recurrence_ends_at);
-    const { data, error } = yield query.order("sort_order", { ascending: true }).limit(1);
+    const { data, error } = yield query
+        .order("sort_order", { ascending: true })
+        .limit(1);
     if (error)
         throw new Error(error.message);
-    return ((_a = data === null || data === void 0 ? void 0 : data[0]) !== null && _a !== void 0 ? _a : null);
+    return (_a = data === null || data === void 0 ? void 0 : data[0]) !== null && _a !== void 0 ? _a : null;
 });
 const createNextRecurringTaskForCompletion = (supabaseAdmin, userId, sourceTask) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -57,9 +63,9 @@ const createNextRecurringTaskForCompletion = (supabaseAdmin, userId, sourceTask)
     const nextDueAt = (0, taskCalendarEventUtils_1.computeNextRecurringDueAt)(sourceTask);
     if (!nextDueAt)
         return null;
-    const nextDueTimezone = (0, taskCalendarEventUtils_1.isDateOnlyIso)(nextDueAt)
-        ? null
-        : (0, taskCalendarEventUtils_1.resolveTaskTimeZone)(sourceTask.due_timezone);
+    const nextDueTimezone = sourceTask.due_timezone
+        ? (0, taskCalendarEventUtils_1.resolveTaskTimeZone)(sourceTask.due_timezone)
+        : null;
     const existingNextTask = yield findExistingNextRecurringTask(supabaseAdmin, userId, sourceTask, nextDueAt, nextDueTimezone);
     if (existingNextTask)
         return null;
