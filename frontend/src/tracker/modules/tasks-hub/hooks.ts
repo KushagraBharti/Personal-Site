@@ -5,12 +5,12 @@ import {
   deleteTaskViaApi,
   deleteTaskListViaApi,
   disconnectCalendar,
-  fetchSortPreferences,
-  fetchTaskLists,
-  fetchTasks,
+  fetchTrackerBootstrap,
   getCalendarStatus,
   getCalendarSyncProgress,
   getGoogleConnectUrl,
+  reorderTaskLists,
+  reorderTasksViaApi,
   setTaskCompletionViaApi,
   setListSync,
   triggerCalendarLivePump,
@@ -31,21 +31,11 @@ import {
   TaskUpdateInput,
 } from "./types";
 import { useTrackerContext } from "../../shared/hooks/useTrackerContext";
-import { isDateOnlyIso, toIsoOrNull } from "./dueDateTime";
+import { toIsoOrNull } from "./dueDateTime";
 
 const ALL_LISTS_KEY = "all";
-const DEFAULT_LIST_NAME = "General";
 const DEFAULT_SORT_MODE: TaskSortMode = "custom";
 const DEFAULT_SORT_DIRECTION: SortDirection = "asc";
-const LIST_COLOR_POOL = [
-  "#00FFFF",
-  "#BFFF00",
-  "#FF6B9D",
-  "#FFE600",
-  "#B388FF",
-  "#FF9500",
-  "#0066FF",
-];
 
 const isValidIanaTimeZone = (timeZone: string | null | undefined) => {
   if (!timeZone) return false;
@@ -62,9 +52,6 @@ const getBrowserTimeZone = () => {
   return isValidIanaTimeZone(resolved) ? resolved : "UTC";
 };
 
-const normalizeTaskTimeZone = (timeZone: string | null | undefined) =>
-  isValidIanaTimeZone(timeZone) ? timeZone : null;
-
 const buildTaskDraft = (listId: string, parentTaskId: string | null = null): TaskDraft => ({
   list_id: listId,
   parent_task_id: parentTaskId,
@@ -78,16 +65,8 @@ const buildTaskDraft = (listId: string, parentTaskId: string | null = null): Tas
   recurrence_ends_at: "",
 });
 
-const normalizeListName = (name: string) => name.trim().replace(/\s+/g, " ").toLocaleLowerCase();
-const pickAutoListColor = (existingColors: string[]) => {
-  const existing = new Set(existingColors.map((color) => color.toLocaleLowerCase()));
-  const available = LIST_COLOR_POOL.filter((color) => !existing.has(color.toLocaleLowerCase()));
-  const palette = available.length > 0 ? available : LIST_COLOR_POOL;
-  return palette[Math.floor(Math.random() * palette.length)];
-};
-
 export const useTasksHubModule = () => {
-  const { supabase, userId, session, startLoading, stopLoading } = useTrackerContext();
+  const { session, startLoading, stopLoading } = useTrackerContext();
 
   const [lists, setLists] = useState<TaskList[]>([]);
   const [tasks, setTasks] = useState<TrackerTask[]>([]);
@@ -109,8 +88,6 @@ export const useTasksHubModule = () => {
     failures: Array<{ id: number; error: string }>;
   } | null>(null);
   const livePumpTimerRef = useRef<number | null>(null);
-  const seededDueTimezoneByUserRef = useRef<Record<string, boolean>>({});
-  const clearedDateOnlyTimezoneByUserRef = useRef<Record<string, boolean>>({});
 
   const runWithLoading = useCallback(
     async <T>(fn: () => Promise<T>) => {
@@ -125,111 +102,26 @@ export const useTasksHubModule = () => {
   );
 
   const fetchAll = useCallback(async () => {
-    if (!userId) return;
+    if (!session?.access_token) return;
 
     await runWithLoading(async () => {
-      const [listResult, taskResult, prefResult] = await Promise.all([
-        fetchTaskLists(supabase, userId),
-        fetchTasks(supabase, userId),
-        fetchSortPreferences(supabase, userId),
-      ]);
-
-      if (listResult.error || taskResult.error || prefResult.error) {
-        const firstError = listResult.error || taskResult.error || prefResult.error;
-        setErrorMessage(firstError?.message || "Failed to load tasks.");
-        return;
+      try {
+        const bootstrap = await fetchTrackerBootstrap(session.access_token, getBrowserTimeZone());
+        setLists(bootstrap.lists);
+        setTasks(bootstrap.tasks);
+        setSortPreferences(bootstrap.sort_preferences);
+        setErrorMessage("");
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to load tasks.";
+        setErrorMessage(message);
       }
-
-      let nextLists = listResult.data;
-      if (nextLists.length === 0) {
-        const seeded = await createTaskList(supabase, {
-          user_id: userId,
-          name: DEFAULT_LIST_NAME,
-          color_hex: pickAutoListColor([]),
-          sort_order: 1,
-          archived: false,
-        });
-
-        if (seeded.error || !seeded.data) {
-          setErrorMessage(seeded.error?.message || "Failed to initialize your first task list.");
-          return;
-        }
-
-        nextLists = [seeded.data];
-      }
-
-      setLists(nextLists);
-      setTasks(taskResult.data);
-      setSortPreferences(prefResult.data);
-      setErrorMessage("");
     });
-  }, [runWithLoading, supabase, userId]);
+  }, [runWithLoading, session?.access_token]);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!session?.access_token) return;
     fetchAll();
-  }, [userId, fetchAll]);
-
-  useEffect(() => {
-    if (!userId) return;
-    if (seededDueTimezoneByUserRef.current[userId]) return;
-    if (tasks.length === 0) return;
-
-    const missingTimezoneTasks = tasks.filter(
-      (task) => !!task.due_at && !task.due_timezone && !isDateOnlyIso(task.due_at)
-    );
-    seededDueTimezoneByUserRef.current[userId] = true;
-    if (missingTimezoneTasks.length === 0) return;
-
-    const currentZone = getBrowserTimeZone();
-    void (async () => {
-      const results = await Promise.all(
-        missingTimezoneTasks.map((task) =>
-          updateTask(supabase, userId, task.id, { due_timezone: currentZone })
-        )
-      );
-      const successfulById = new Map<string, TrackerTask>();
-      results.forEach((result) => {
-        if (!result.error && result.data) {
-          successfulById.set(result.data.id, result.data as TrackerTask);
-        }
-      });
-      if (successfulById.size > 0) {
-        setTasks((prev) =>
-          prev.map((task) => successfulById.get(task.id) || task)
-        );
-      }
-    })();
-  }, [supabase, tasks, userId]);
-
-  useEffect(() => {
-    if (!userId) return;
-    if (clearedDateOnlyTimezoneByUserRef.current[userId]) return;
-    if (tasks.length === 0) return;
-
-    const dateOnlyTasksWithTimezone = tasks.filter(
-      (task) => !!task.due_at && isDateOnlyIso(task.due_at) && !!task.due_timezone
-    );
-    clearedDateOnlyTimezoneByUserRef.current[userId] = true;
-    if (dateOnlyTasksWithTimezone.length === 0) return;
-
-    void (async () => {
-      const results = await Promise.all(
-        dateOnlyTasksWithTimezone.map((task) =>
-          updateTask(supabase, userId, task.id, { due_timezone: null })
-        )
-      );
-      const successfulById = new Map<string, TrackerTask>();
-      results.forEach((result) => {
-        if (!result.error && result.data) {
-          successfulById.set(result.data.id, result.data as TrackerTask);
-        }
-      });
-      if (successfulById.size > 0) {
-        setTasks((prev) => prev.map((task) => successfulById.get(task.id) || task));
-      }
-    })();
-  }, [supabase, tasks, userId]);
+  }, [session?.access_token, fetchAll]);
 
   const loadCalendarStatus = useCallback(async () => {
     if (!session?.access_token) {
@@ -325,61 +217,34 @@ export const useTasksHubModule = () => {
     [countsByList]
   );
 
-  const getNextListSortOrder = useCallback(() => {
-    if (lists.length === 0) return 1;
-    return Math.max(...lists.map((list) => list.sort_order)) + 1;
-  }, [lists]);
-
-  const getNextTaskSortOrder = useCallback(
-    (listId: string, parentTaskId: string | null) => {
-      const siblings = tasksForKnownLists.filter(
-        (task) => task.list_id === listId && task.parent_task_id === parentTaskId
-      );
-      if (siblings.length === 0) return 1;
-      return Math.max(...siblings.map((task) => task.sort_order)) + 1;
-    },
-    [tasksForKnownLists]
-  );
-
   const createList = useCallback(
     async (name: string, colorHex?: string) => {
       const cleanedName = name.trim();
       if (!cleanedName) return null;
-
-      const existingListName = lists.find(
-        (list) => normalizeListName(list.name) === normalizeListName(cleanedName)
-      );
-      if (existingListName) {
-        setErrorMessage(`List "${existingListName.name}" already exists.`);
+      if (!session?.access_token) {
+        setErrorMessage("Missing session token.");
         return null;
       }
 
       setIsSaving(true);
-      const assignedColor = colorHex || pickAutoListColor(lists.map((list) => list.color_hex));
-      const result = await createTaskList(supabase, {
-        user_id: userId,
-        name: cleanedName,
-        color_hex: assignedColor,
-        sort_order: getNextListSortOrder(),
-        archived: false,
-      });
-      setIsSaving(false);
-
-      if (result.error || !result.data) {
-        if (result.error?.code === "23505") {
-          setErrorMessage(`List "${cleanedName}" already exists.`);
-        } else {
-          setErrorMessage(result.error?.message || "Failed to create list.");
-        }
+      try {
+        const result = await createTaskList(session.access_token, {
+          name: cleanedName,
+          color_hex: colorHex,
+        });
+        setLists((prev) => [...prev, result]);
+        setSelectedListId(result.id);
+        setErrorMessage("");
+        return result;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to create list.";
+        setErrorMessage(message);
         return null;
+      } finally {
+        setIsSaving(false);
       }
-
-      setLists((prev) => [...prev, result.data as TaskList]);
-      setSelectedListId(result.data.id);
-      setErrorMessage("");
-      return result.data;
     },
-    [getNextListSortOrder, lists, supabase, userId]
+    [session?.access_token]
   );
 
   const saveList = useCallback(
@@ -388,17 +253,6 @@ export const useTasksHubModule = () => {
       if (typeof updates.name === "string") {
         const cleanedName = updates.name.trim();
         if (!cleanedName) return false;
-
-        const duplicate = lists.find(
-          (list) =>
-            list.id !== listId &&
-            normalizeListName(list.name) === normalizeListName(cleanedName)
-        );
-        if (duplicate) {
-          setErrorMessage(`List "${duplicate.name}" already exists.`);
-          return false;
-        }
-
         payload.name = cleanedName;
       }
       if (typeof updates.color_hex === "string") {
@@ -406,30 +260,27 @@ export const useTasksHubModule = () => {
       }
 
       if (Object.keys(payload).length === 0) return true;
-
-      const result = await updateTaskList(supabase, userId, listId, payload);
-      if (result.error || !result.data) {
-        if (result.error?.code === "23505") {
-          setErrorMessage("Another list already has that name.");
-        } else {
-          setErrorMessage(result.error?.message || "Failed to update list.");
-        }
+      if (!session?.access_token) {
+        setErrorMessage("Missing session token.");
         return false;
       }
 
-      setLists((prev) => prev.map((list) => (list.id === listId ? result.data as TaskList : list)));
-      setErrorMessage("");
-      return true;
+      try {
+        const result = await updateTaskList(session.access_token, listId, payload);
+        setLists((prev) => prev.map((list) => (list.id === listId ? result : list)));
+        setErrorMessage("");
+        return true;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to update list.";
+        setErrorMessage(message);
+        return false;
+      }
     },
-    [lists, supabase, userId]
+    [session?.access_token]
   );
 
   const removeList = useCallback(
     async (listId: string) => {
-      if (lists.length <= 1) {
-        setErrorMessage("Create another list before deleting your last remaining list.");
-        return false;
-      }
       if (!session?.access_token) {
         setErrorMessage("Missing session token.");
         return false;
@@ -450,7 +301,7 @@ export const useTasksHubModule = () => {
       setErrorMessage("");
       return true;
     },
-    [lists.length, selectedListId, session?.access_token]
+    [selectedListId, session?.access_token]
   );
 
   const pollSyncRun = useCallback(
@@ -528,38 +379,36 @@ export const useTasksHubModule = () => {
         setErrorMessage("Recurring tasks require a due date.");
         return null;
       }
-
-      const result = await createTask(supabase, {
-        user_id: userId,
-        list_id: draft.list_id,
-        parent_task_id: draft.parent_task_id,
-        title: cleanedTitle,
-        details: draft.details.trim() || null,
-        due_at: dueAtIso,
-        due_timezone:
-          dueAtIso && !isDateOnlyIso(dueAtIso)
-            ? normalizeTaskTimeZone(draft.due_timezone) || getBrowserTimeZone()
-            : null,
-        is_completed: false,
-        completed_at: null,
-        recurrence_type: recurrenceType,
-        recurrence_interval: interval,
-        recurrence_unit: unit,
-        recurrence_ends_at: toIsoOrNull(draft.recurrence_ends_at),
-        sort_order: getNextTaskSortOrder(draft.list_id, draft.parent_task_id),
-      });
-
-      if (result.error || !result.data) {
-        setErrorMessage(result.error?.message || "Failed to create task.");
+      if (!session?.access_token) {
+        setErrorMessage("Missing session token.");
         return null;
       }
 
-      setTasks((prev) => [...prev, result.data as TrackerTask]);
-      setErrorMessage("");
-      scheduleLiveSyncPump();
-      return result.data;
+      try {
+        const result = await createTask(session.access_token, {
+          list_id: draft.list_id,
+          parent_task_id: draft.parent_task_id,
+          title: cleanedTitle,
+          details: draft.details.trim() || null,
+          due_at: dueAtIso,
+          due_timezone: draft.due_timezone,
+          recurrence_type: recurrenceType,
+          recurrence_interval: interval,
+          recurrence_unit: unit,
+          recurrence_ends_at: recurrenceType === "none" ? null : toIsoOrNull(draft.recurrence_ends_at),
+          browser_timezone: getBrowserTimeZone(),
+        });
+        setTasks((prev) => [...prev, result]);
+        setErrorMessage("");
+        scheduleLiveSyncPump();
+        return result;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to create task.";
+        setErrorMessage(message);
+        return null;
+      }
     },
-    [getNextTaskSortOrder, scheduleLiveSyncPump, supabase, userId]
+    [scheduleLiveSyncPump, session?.access_token]
   );
 
   const saveTask = useCallback(
@@ -582,40 +431,34 @@ export const useTasksHubModule = () => {
       if (touchesRecurrence) {
         const nextDueAt =
           payload.due_at !== undefined ? payload.due_at : (currentTask?.due_at ?? null);
-        if (nextDueAt && !isDateOnlyIso(nextDueAt)) {
-          const nextTimeZone =
-            payload.due_timezone !== undefined
-              ? normalizeTaskTimeZone(payload.due_timezone) || getBrowserTimeZone()
-              : normalizeTaskTimeZone(currentTask?.due_timezone) || getBrowserTimeZone();
-          payload.due_timezone = nextTimeZone;
-        } else if (nextDueAt && isDateOnlyIso(nextDueAt)) {
-          payload.due_timezone = null;
-        } else if (touchesDueAt || payload.due_timezone !== undefined) {
-          payload.due_timezone = null;
-        }
-      }
-      if (touchesRecurrence) {
         const nextRecurrenceType = payload.recurrence_type ?? currentTask?.recurrence_type ?? "none";
-        const nextDueAt =
-          payload.due_at !== undefined ? payload.due_at : (currentTask?.due_at ?? null);
         if (nextRecurrenceType !== "none" && !nextDueAt) {
           setErrorMessage("Recurring tasks require a due date.");
           return false;
         }
       }
 
-      const result = await updateTask(supabase, userId, taskId, payload);
-      if (result.error || !result.data) {
-        setErrorMessage(result.error?.message || "Failed to save task.");
+      if (!session?.access_token) {
+        setErrorMessage("Missing session token.");
         return false;
       }
 
-      setTasks((prev) => prev.map((task) => (task.id === taskId ? (result.data as TrackerTask) : task)));
-      setErrorMessage("");
-      scheduleLiveSyncPump();
-      return true;
+      try {
+        const result = await updateTask(session.access_token, taskId, {
+          ...payload,
+          browser_timezone: getBrowserTimeZone(),
+        });
+        setTasks((prev) => prev.map((task) => (task.id === taskId ? result : task)));
+        setErrorMessage("");
+        scheduleLiveSyncPump();
+        return true;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to save task.";
+        setErrorMessage(message);
+        return false;
+      }
     },
-    [scheduleLiveSyncPump, supabase, tasks, userId]
+    [scheduleLiveSyncPump, session?.access_token, tasks]
   );
 
   const removeTask = useCallback(
@@ -678,23 +521,32 @@ export const useTasksHubModule = () => {
         })
       );
 
-      const updates = orderedTaskIds.map((taskId, index) =>
-        updateTask(supabase, userId, taskId, { sort_order: index + 1 })
-      );
-
-      const results = await Promise.all(updates);
-      const failed = results.find((result) => result.error);
-      if (failed?.error) {
+      if (!session?.access_token) {
         setTasks(previous);
-        setErrorMessage(failed.error.message || "Failed to persist custom order.");
+        setErrorMessage("Missing session token.");
         return false;
       }
 
-      setErrorMessage("");
-      scheduleLiveSyncPump();
-      return true;
+      try {
+        const updatedTasks = await reorderTasksViaApi(
+          session.access_token,
+          listId,
+          parentTaskId,
+          orderedTaskIds
+        );
+        const updatedById = new Map(updatedTasks.map((task) => [task.id, task]));
+        setTasks((prev) => prev.map((task) => updatedById.get(task.id) || task));
+        setErrorMessage("");
+        scheduleLiveSyncPump();
+        return true;
+      } catch (error) {
+        setTasks(previous);
+        const message = error instanceof Error ? error.message : "Failed to persist custom order.";
+        setErrorMessage(message);
+        return false;
+      }
     },
-    [scheduleLiveSyncPump, supabase, tasks, userId]
+    [scheduleLiveSyncPump, session?.access_token, tasks]
   );
 
   const reorderLists = useCallback(
@@ -711,22 +563,26 @@ export const useTasksHubModule = () => {
         })
       );
 
-      const updates = orderedListIds.map((listId, index) =>
-        updateTaskList(supabase, userId, listId, { sort_order: index + 1 })
-      );
-
-      const results = await Promise.all(updates);
-      const failed = results.find((result) => result.error);
-      if (failed?.error) {
+      if (!session?.access_token) {
         setLists(previous);
-        setErrorMessage(failed.error.message || "Failed to persist list order.");
+        setErrorMessage("Missing session token.");
         return false;
       }
 
-      setErrorMessage("");
-      return true;
+      try {
+        const updatedLists = await reorderTaskLists(session.access_token, orderedListIds);
+        const updatedById = new Map(updatedLists.map((list) => [list.id, list]));
+        setLists((prev) => prev.map((list) => updatedById.get(list.id) || list));
+        setErrorMessage("");
+        return true;
+      } catch (error) {
+        setLists(previous);
+        const message = error instanceof Error ? error.message : "Failed to persist list order.";
+        setErrorMessage(message);
+        return false;
+      }
     },
-    [lists, supabase, userId]
+    [lists, session?.access_token]
   );
 
   const getSortForList = useCallback(
@@ -742,33 +598,38 @@ export const useTasksHubModule = () => {
 
   const setSortForList = useCallback(
     async (listId: string, mode: TaskSortMode, direction: SortDirection) => {
-      const result = await upsertSortPreference(
-        supabase,
-        userId,
-        listId,
-        mode,
-        direction
-      );
-
-      if (result.error || !result.data) {
-        setErrorMessage(result.error?.message || "Failed to save sort preference.");
+      if (!session?.access_token) {
+        setErrorMessage("Missing session token.");
         return false;
       }
 
-      setSortPreferences((prev) => {
-        const existingIndex = prev.findIndex((item) => item.list_id === listId);
-        if (existingIndex < 0) {
-          return [...prev, result.data as TaskSortPreference];
-        }
+      try {
+        const result = await upsertSortPreference(
+          session.access_token,
+          listId,
+          mode,
+          direction
+        );
 
-        const copy = [...prev];
-        copy[existingIndex] = result.data as TaskSortPreference;
-        return copy;
-      });
-      setErrorMessage("");
-      return true;
+        setSortPreferences((prev) => {
+          const existingIndex = prev.findIndex((item) => item.list_id === listId);
+          if (existingIndex < 0) {
+            return [...prev, result];
+          }
+
+          const copy = [...prev];
+          copy[existingIndex] = result;
+          return copy;
+        });
+        setErrorMessage("");
+        return true;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to save sort preference.";
+        setErrorMessage(message);
+        return false;
+      }
     },
-    [supabase, userId]
+    [session?.access_token]
   );
 
   const setSortForCurrentView = useCallback(

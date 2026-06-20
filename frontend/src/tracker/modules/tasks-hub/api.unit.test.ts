@@ -1,12 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  createTask,
+  createTaskList,
   deleteTaskListViaApi,
+  fetchTrackerBootstrap,
   getCalendarStatus,
   getGoogleConnectUrl,
   getCalendarSyncProgress,
+  reorderTaskLists,
+  reorderTasksViaApi,
   setTaskCompletionViaApi,
   triggerCalendarSyncNow,
   setListSync,
+  updateTask,
+  updateTaskList,
+  upsertSortPreference,
 } from "./api";
 
 describe("tasks-hub API", () => {
@@ -80,6 +88,178 @@ describe("tasks-hub API", () => {
         headers: expect.objectContaining({
           Authorization: "Bearer token",
         }),
+      })
+    );
+  });
+
+  it("fetches tracker bootstrap data from the backend", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        lists: [{ id: "list-1" }],
+        tasks: [{ id: "task-1" }],
+        sort_preferences: [{ id: "pref-1" }],
+      }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await fetchTrackerBootstrap("token", "America/Chicago");
+
+    expect(result).toEqual({
+      ok: true,
+      lists: [{ id: "list-1" }],
+      tasks: [{ id: "task-1" }],
+      sort_preferences: [{ id: "pref-1" }],
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/api/private/tracker/bootstrap"),
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          Authorization: "Bearer token",
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({
+          browser_timezone: "America/Chicago",
+        }),
+      })
+    );
+  });
+
+  it("uses backend list CRUD and reorder endpoints", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ok: true, list: { id: "list-1", name: "Work" } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ok: true, list: { id: "list-1", name: "Personal" } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ok: true, lists: [{ id: "list-2" }, { id: "list-1" }] }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(createTaskList("token", { name: "Work" })).resolves.toEqual({
+      id: "list-1",
+      name: "Work",
+    });
+    await expect(updateTaskList("token", "list-1", { name: "Personal" })).resolves.toEqual({
+      id: "list-1",
+      name: "Personal",
+    });
+    await expect(reorderTaskLists("token", ["list-2", "list-1"])).resolves.toEqual([
+      { id: "list-2" },
+      { id: "list-1" },
+    ]);
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining("/api/private/lists"),
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ name: "Work" }),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining("/api/private/lists/list-1"),
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ name: "Personal" }),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      expect.stringContaining("/api/private/lists/reorder"),
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ ordered_list_ids: ["list-2", "list-1"] }),
+      })
+    );
+  });
+
+  it("uses backend task CRUD, reorder, and sort preference endpoints", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ok: true, task: { id: "task-1", title: "Write" } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ok: true, task: { id: "task-1", title: "Ship" } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ok: true, tasks: [{ id: "task-2" }, { id: "task-1" }] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          sort_preference: { id: "pref-1", sort_mode: "title", sort_direction: "asc" },
+        }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(createTask("token", {
+      list_id: "list-1",
+      parent_task_id: null,
+      title: "Write",
+      details: null,
+      due_at: null,
+      due_timezone: null,
+      recurrence_type: "none",
+      recurrence_interval: null,
+      recurrence_unit: null,
+      recurrence_ends_at: null,
+      browser_timezone: "America/Chicago",
+    })).resolves.toEqual({ id: "task-1", title: "Write" });
+    await expect(updateTask("token", "task-1", { title: "Ship" })).resolves.toEqual({
+      id: "task-1",
+      title: "Ship",
+    });
+    await expect(reorderTasksViaApi("token", "list-1", null, ["task-2", "task-1"]))
+      .resolves.toEqual([{ id: "task-2" }, { id: "task-1" }]);
+    await expect(upsertSortPreference("token", "list-1", "title", "asc")).resolves.toEqual({
+      id: "pref-1",
+      sort_mode: "title",
+      sort_direction: "asc",
+    });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining("/api/private/tasks"),
+      expect.objectContaining({ method: "POST" })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining("/api/private/tasks/task-1"),
+      expect.objectContaining({ method: "PATCH", body: JSON.stringify({ title: "Ship" }) })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      expect.stringContaining("/api/private/tasks/reorder"),
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({
+          list_id: "list-1",
+          parent_task_id: null,
+          ordered_task_ids: ["task-2", "task-1"],
+        }),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      expect.stringContaining("/api/private/task-sort-preferences/list-1"),
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({ sort_mode: "title", sort_direction: "asc" }),
       })
     );
   });

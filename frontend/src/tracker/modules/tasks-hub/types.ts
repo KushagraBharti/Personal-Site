@@ -65,13 +65,10 @@ export interface TaskUpdateInput {
   details?: string | null;
   due_at?: string | null;
   due_timezone?: string | null;
-  is_completed?: boolean;
-  completed_at?: string | null;
   recurrence_type?: RecurrenceType;
   recurrence_interval?: number | null;
   recurrence_unit?: RecurrenceUnit | null;
   recurrence_ends_at?: string | null;
-  sort_order?: number;
   list_id?: string;
   parent_task_id?: string | null;
 }
@@ -85,8 +82,6 @@ export interface TaskCompletionResult {
 export interface ListUpdateInput {
   name?: string;
   color_hex?: string;
-  sort_order?: number;
-  archived?: boolean;
 }
 
 export interface TaskListSyncSetting {

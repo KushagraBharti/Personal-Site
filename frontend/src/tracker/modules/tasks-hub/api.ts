@@ -1,4 +1,3 @@
-import { SupabaseClient } from "@supabase/supabase-js";
 import {
   CalendarConnectionState,
   LivePumpResult,
@@ -6,39 +5,65 @@ import {
   SyncNowResult,
   SyncProgressResult,
   SortDirection,
-  TaskList,
   TaskCompletionResult,
+  TaskList,
   TaskSortMode,
   TaskSortPreference,
-  TrackerTask,
   TaskUpdateInput,
+  TrackerTask,
 } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
+interface TrackerBootstrapResult {
+  ok: boolean;
+  lists: TaskList[];
+  tasks: TrackerTask[];
+  sort_preferences: TaskSortPreference[];
+}
+
 interface TaskListCreateInput {
-  user_id: string;
   name: string;
-  color_hex: string;
-  sort_order: number;
-  archived: boolean;
+  color_hex?: string;
 }
 
 interface TaskCreateInput {
-  user_id: string;
   list_id: string;
   parent_task_id: string | null;
   title: string;
   details: string | null;
   due_at: string | null;
   due_timezone: string | null;
-  is_completed: boolean;
-  completed_at: string | null;
   recurrence_type: TrackerTask["recurrence_type"];
   recurrence_interval: number | null;
   recurrence_unit: TrackerTask["recurrence_unit"];
   recurrence_ends_at: string | null;
-  sort_order: number;
+  browser_timezone: string;
+}
+
+interface TaskResult {
+  ok: boolean;
+  task: TrackerTask;
+}
+
+interface TaskListResult {
+  ok: boolean;
+  list: TaskList;
+}
+
+interface TaskReorderResult {
+  ok: boolean;
+  tasks: TrackerTask[];
+}
+
+interface TaskListReorderResult {
+  ok: boolean;
+  lists: TaskList[];
+}
+
+interface SortPreferenceResult {
+  ok: boolean;
+  sort_preference: TaskSortPreference;
 }
 
 const getAuthHeaders = (accessToken: string) => ({
@@ -46,83 +71,72 @@ const getAuthHeaders = (accessToken: string) => ({
   Authorization: `Bearer ${accessToken}`,
 });
 
-const isMissingDueTimezoneColumnError = (error: unknown) => {
-  const message =
-    typeof error === "object" && error !== null && "message" in error
-      ? String((error as { message?: unknown }).message ?? "").toLowerCase()
-      : "";
-  return message.includes("due_timezone") && message.includes("column");
+const readJson = async <T>(res: Response, fallbackError: string): Promise<T> => {
+  const body = await res.json().catch(() => ({} as { error?: string }));
+  if (!res.ok) {
+    const errorMessage =
+      typeof body === "object" && body !== null && "error" in body
+        ? String((body as { error?: unknown }).error || fallbackError)
+        : fallbackError;
+    throw new Error(errorMessage);
+  }
+  return body as T;
 };
 
-export const fetchTaskLists = async (client: SupabaseClient, userId: string) => {
-  const { data, error } = await client
-    .from("tracker_task_lists")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("archived", false)
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
-
-  return { data: (data ?? []) as TaskList[], error };
+export const fetchTrackerBootstrap = async (
+  accessToken: string,
+  browserTimeZone: string
+): Promise<TrackerBootstrapResult> => {
+  const res = await fetch(`${API_BASE}/api/private/tracker/bootstrap`, {
+    method: "POST",
+    headers: getAuthHeaders(accessToken),
+    body: JSON.stringify({
+      browser_timezone: browserTimeZone,
+    }),
+  });
+  return readJson<TrackerBootstrapResult>(res, "Failed to load tasks.");
 };
 
-export const fetchTasks = async (client: SupabaseClient, userId: string) => {
-  const { data, error } = await client
-    .from("tracker_tasks")
-    .select("*")
-    .eq("user_id", userId)
-    .order("list_id", { ascending: true })
-    .order("parent_task_id", { ascending: true, nullsFirst: true })
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
-
-  return { data: (data ?? []) as TrackerTask[], error };
-};
-
-export const fetchSortPreferences = async (client: SupabaseClient, userId: string) => {
-  const { data, error } = await client
-    .from("tracker_task_sort_preferences")
-    .select("*")
-    .eq("user_id", userId);
-
-  return { data: (data ?? []) as TaskSortPreference[], error };
-};
-
-export const createTaskList = async (client: SupabaseClient, payload: TaskListCreateInput) => {
-  const { data, error } = await client
-    .from("tracker_task_lists")
-    .insert(payload)
-    .select("*")
-    .single();
-
-  return { data: data as TaskList | null, error };
+export const createTaskList = async (
+  accessToken: string,
+  payload: TaskListCreateInput
+): Promise<TaskList> => {
+  const res = await fetch(`${API_BASE}/api/private/lists`, {
+    method: "POST",
+    headers: getAuthHeaders(accessToken),
+    body: JSON.stringify(payload),
+  });
+  const result = await readJson<TaskListResult>(res, "Failed to create list.");
+  return result.list;
 };
 
 export const updateTaskList = async (
-  client: SupabaseClient,
-  userId: string,
+  accessToken: string,
   listId: string,
   updates: ListUpdateInput
-) => {
-  const { data, error } = await client
-    .from("tracker_task_lists")
-    .update(updates)
-    .eq("user_id", userId)
-    .eq("id", listId)
-    .select("*")
-    .single();
-
-  return { data: data as TaskList | null, error };
+): Promise<TaskList> => {
+  const res = await fetch(`${API_BASE}/api/private/lists/${encodeURIComponent(listId)}`, {
+    method: "PATCH",
+    headers: getAuthHeaders(accessToken),
+    body: JSON.stringify(updates),
+  });
+  const result = await readJson<TaskListResult>(res, "Failed to update list.");
+  return result.list;
 };
 
-export const deleteTaskList = async (client: SupabaseClient, userId: string, listId: string) => {
-  const { error } = await client
-    .from("tracker_task_lists")
-    .delete()
-    .eq("user_id", userId)
-    .eq("id", listId);
-
-  return { error };
+export const reorderTaskLists = async (
+  accessToken: string,
+  orderedListIds: string[]
+): Promise<TaskList[]> => {
+  const res = await fetch(`${API_BASE}/api/private/lists/reorder`, {
+    method: "PATCH",
+    headers: getAuthHeaders(accessToken),
+    body: JSON.stringify({
+      ordered_list_ids: orderedListIds,
+    }),
+  });
+  const result = await readJson<TaskListReorderResult>(res, "Failed to persist list order.");
+  return result.lists;
 };
 
 export const deleteTaskListViaApi = async (
@@ -133,70 +147,53 @@ export const deleteTaskListViaApi = async (
     method: "DELETE",
     headers: getAuthHeaders(accessToken),
   });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || "Failed to delete list");
-  }
-  return res.json();
+  return readJson<{ ok: boolean }>(res, "Failed to delete list");
 };
 
-export const createTask = async (client: SupabaseClient, payload: TaskCreateInput) => {
-  let { data, error } = await client
-    .from("tracker_tasks")
-    .insert(payload)
-    .select("*")
-    .single();
-
-  // Backward compatibility while due_timezone migration rolls out.
-  if (error && isMissingDueTimezoneColumnError(error)) {
-    const { due_timezone, ...fallbackPayload } = payload;
-    void due_timezone;
-    const retried = await client
-      .from("tracker_tasks")
-      .insert(fallbackPayload)
-      .select("*")
-      .single();
-    data = retried.data;
-    error = retried.error;
-  }
-
-  return { data: (data as TrackerTask | null) ?? null, error };
+export const createTask = async (
+  accessToken: string,
+  payload: TaskCreateInput
+): Promise<TrackerTask> => {
+  const res = await fetch(`${API_BASE}/api/private/tasks`, {
+    method: "POST",
+    headers: getAuthHeaders(accessToken),
+    body: JSON.stringify(payload),
+  });
+  const result = await readJson<TaskResult>(res, "Failed to create task.");
+  return result.task;
 };
 
 export const updateTask = async (
-  client: SupabaseClient,
-  userId: string,
+  accessToken: string,
   taskId: string,
-  updates: TaskUpdateInput
-) => {
-  let { data, error } = await client
-    .from("tracker_tasks")
-    .update(updates)
-    .eq("user_id", userId)
-    .eq("id", taskId)
-    .select("*")
-    .single();
+  updates: TaskUpdateInput & { browser_timezone?: string }
+): Promise<TrackerTask> => {
+  const res = await fetch(`${API_BASE}/api/private/tasks/${encodeURIComponent(taskId)}`, {
+    method: "PATCH",
+    headers: getAuthHeaders(accessToken),
+    body: JSON.stringify(updates),
+  });
+  const result = await readJson<TaskResult>(res, "Failed to save task.");
+  return result.task;
+};
 
-  // Backward compatibility while due_timezone migration rolls out.
-  if (
-    error &&
-    isMissingDueTimezoneColumnError(error) &&
-    Object.prototype.hasOwnProperty.call(updates, "due_timezone")
-  ) {
-    const { due_timezone, ...fallbackUpdates } = updates;
-    void due_timezone;
-    const retried = await client
-      .from("tracker_tasks")
-      .update(fallbackUpdates)
-      .eq("user_id", userId)
-      .eq("id", taskId)
-      .select("*")
-      .single();
-    data = retried.data;
-    error = retried.error;
-  }
-
-  return { data: (data as TrackerTask | null) ?? null, error };
+export const reorderTasksViaApi = async (
+  accessToken: string,
+  listId: string,
+  parentTaskId: string | null,
+  orderedTaskIds: string[]
+): Promise<TrackerTask[]> => {
+  const res = await fetch(`${API_BASE}/api/private/tasks/reorder`, {
+    method: "PATCH",
+    headers: getAuthHeaders(accessToken),
+    body: JSON.stringify({
+      list_id: listId,
+      parent_task_id: parentTaskId,
+      ordered_task_ids: orderedTaskIds,
+    }),
+  });
+  const result = await readJson<TaskReorderResult>(res, "Failed to persist custom order.");
+  return result.tasks;
 };
 
 export const deleteTaskViaApi = async (
@@ -207,11 +204,7 @@ export const deleteTaskViaApi = async (
     method: "DELETE",
     headers: getAuthHeaders(accessToken),
   });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || "Failed to delete task");
-  }
-  return res.json();
+  return readJson<{ ok: boolean }>(res, "Failed to delete task");
 };
 
 export const setTaskCompletionViaApi = async (
@@ -229,35 +222,25 @@ export const setTaskCompletionViaApi = async (
       }),
     }
   );
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || "Failed to update task status");
-  }
-  return res.json();
+  return readJson<TaskCompletionResult>(res, "Failed to update task status");
 };
 
 export const upsertSortPreference = async (
-  client: SupabaseClient,
-  userId: string,
+  accessToken: string,
   listId: string,
   sortMode: TaskSortMode,
   sortDirection: SortDirection
-) => {
-  const { data, error } = await client
-    .from("tracker_task_sort_preferences")
-    .upsert(
-      {
-        user_id: userId,
-        list_id: listId,
-        sort_mode: sortMode,
-        sort_direction: sortDirection,
-      },
-      { onConflict: "user_id,list_id" }
-    )
-    .select("*")
-    .single();
-
-  return { data: data as TaskSortPreference | null, error };
+): Promise<TaskSortPreference> => {
+  const res = await fetch(`${API_BASE}/api/private/task-sort-preferences/${encodeURIComponent(listId)}`, {
+    method: "PUT",
+    headers: getAuthHeaders(accessToken),
+    body: JSON.stringify({
+      sort_mode: sortMode,
+      sort_direction: sortDirection,
+    }),
+  });
+  const result = await readJson<SortPreferenceResult>(res, "Failed to save sort preference.");
+  return result.sort_preference;
 };
 
 export const getCalendarStatus = async (accessToken: string): Promise<CalendarConnectionState> => {
@@ -265,11 +248,7 @@ export const getCalendarStatus = async (accessToken: string): Promise<CalendarCo
     method: "GET",
     headers: getAuthHeaders(accessToken),
   });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || "Failed to fetch calendar status");
-  }
-  return res.json();
+  return readJson<CalendarConnectionState>(res, "Failed to fetch calendar status");
 };
 
 export const getGoogleConnectUrl = async (accessToken: string): Promise<{ url: string }> => {
@@ -277,11 +256,7 @@ export const getGoogleConnectUrl = async (accessToken: string): Promise<{ url: s
     method: "POST",
     headers: getAuthHeaders(accessToken),
   });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || "Failed to generate Google connect URL");
-  }
-  return res.json();
+  return readJson<{ url: string }>(res, "Failed to generate Google connect URL");
 };
 
 export const disconnectCalendar = async (accessToken: string): Promise<{ ok: boolean }> => {
@@ -289,11 +264,7 @@ export const disconnectCalendar = async (accessToken: string): Promise<{ ok: boo
     method: "POST",
     headers: getAuthHeaders(accessToken),
   });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || "Failed to disconnect calendar");
-  }
-  return res.json();
+  return readJson<{ ok: boolean }>(res, "Failed to disconnect calendar");
 };
 
 export const setListSync = async (
@@ -309,11 +280,10 @@ export const setListSync = async (
       sync_enabled: syncEnabled,
     }),
   });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || "Failed to update list sync setting");
-  }
-  return res.json();
+  return readJson<{ ok: boolean; queued_cleanup?: boolean; cleanup_job_count?: number }>(
+    res,
+    "Failed to update list sync setting"
+  );
 };
 
 export const triggerCalendarSyncNow = async (accessToken: string): Promise<SyncNowResult> => {
@@ -321,11 +291,7 @@ export const triggerCalendarSyncNow = async (accessToken: string): Promise<SyncN
     method: "POST",
     headers: getAuthHeaders(accessToken),
   });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || "Failed to sync calendar");
-  }
-  return res.json();
+  return readJson<SyncNowResult>(res, "Failed to sync calendar");
 };
 
 export const triggerCalendarLivePump = async (accessToken: string): Promise<LivePumpResult> => {
@@ -333,11 +299,7 @@ export const triggerCalendarLivePump = async (accessToken: string): Promise<Live
     method: "POST",
     headers: getAuthHeaders(accessToken),
   });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || "Failed to process live sync");
-  }
-  return res.json();
+  return readJson<LivePumpResult>(res, "Failed to process live sync");
 };
 
 export const triggerCalendarRebuild = async (accessToken: string): Promise<SyncNowResult> => {
@@ -345,11 +307,7 @@ export const triggerCalendarRebuild = async (accessToken: string): Promise<SyncN
     method: "POST",
     headers: getAuthHeaders(accessToken),
   });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || "Failed to start rebuild");
-  }
-  return res.json();
+  return readJson<SyncNowResult>(res, "Failed to start rebuild");
 };
 
 export const getCalendarSyncProgress = async (
@@ -363,9 +321,5 @@ export const getCalendarSyncProgress = async (
       headers: getAuthHeaders(accessToken),
     }
   );
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || "Failed to fetch sync progress");
-  }
-  return res.json();
+  return readJson<SyncProgressResult>(res, "Failed to fetch sync progress");
 };
