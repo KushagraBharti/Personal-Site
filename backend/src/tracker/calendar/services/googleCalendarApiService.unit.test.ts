@@ -45,6 +45,7 @@ describe("googleCalendarApiService", () => {
     });
 
     expect(payload.summary).toBe("[Upcoming] Task A");
+    expect(payload.status).toBe("confirmed");
     expect(payload).not.toHaveProperty("recurrence");
     expect(payload.extendedProperties).toEqual({
       private: expect.objectContaining({

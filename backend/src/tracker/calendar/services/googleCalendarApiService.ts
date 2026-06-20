@@ -106,6 +106,7 @@ export const taskToGoogleEventPayload = (
   const titleMode = options?.titleMode ?? "default";
   const eventKind = options?.eventKind ?? "primary";
   const payload: Record<string, unknown> = {
+    status: "confirmed",
     summary: formatTaskEventTitle(task.title, titleMode),
     description: task.details || "",
     extendedProperties: {

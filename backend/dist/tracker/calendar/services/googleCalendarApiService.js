@@ -100,6 +100,7 @@ const taskToGoogleEventPayload = (task, options) => {
     const titleMode = (_b = options === null || options === void 0 ? void 0 : options.titleMode) !== null && _b !== void 0 ? _b : "default";
     const eventKind = (_c = options === null || options === void 0 ? void 0 : options.eventKind) !== null && _c !== void 0 ? _c : "primary";
     const payload = {
+        status: "confirmed",
         summary: (0, taskCalendarEventUtils_1.formatTaskEventTitle)(task.title, titleMode),
         description: task.details || "",
         extendedProperties: {
