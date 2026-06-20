@@ -37,13 +37,14 @@ const toolDefinitions = [
   {
     name: "get_tracker_snapshot",
     description:
-      "Counts for MCP-visible tracker lists. No task bodies.",
+      "Summarize calendar-synced tracker lists with active/completed/today/tomorrow/overdue counts. Does not list task bodies.",
     inputSchema: {
       type: "object",
       properties: {
         timezone: {
           type: "string",
-          description: "IANA timezone for today/tomorrow counts.",
+          description:
+            "IANA timezone for today/tomorrow counts. Defaults to tracker MCP timezone.",
         },
       },
     },
@@ -51,17 +52,18 @@ const toolDefinitions = [
   {
     name: "list_tasks",
     description:
-      "Active tasks from all visible lists or one exact list.",
+      "List active incomplete tasks from all calendar-synced tracker lists, or from one exact list ID/name.",
     inputSchema: {
       type: "object",
       properties: {
         list_id: {
           type: "string",
-          description: "Visible list ID.",
+          description: "Exact task list ID. Provide either list_id or list_name, not both.",
         },
         list_name: {
           type: "string",
-          description: "Exact visible list name.",
+          description:
+            "Exact normalized task list name. Provide either list_id or list_name, not both.",
         },
       },
     },
@@ -69,24 +71,25 @@ const toolDefinitions = [
   {
     name: "list_completed_tasks",
     description:
-      "Recent completed tasks from visible lists.",
+      "List the most recently completed tasks from calendar-synced tracker lists. Defaults to 10 per list.",
     inputSchema: {
       type: "object",
       properties: {
         list_id: {
           type: "string",
-          description: "Visible list ID.",
+          description: "Exact task list ID. Provide either list_id or list_name, not both.",
         },
         list_name: {
           type: "string",
-          description: "Exact visible list name.",
+          description:
+            "Exact normalized task list name. Provide either list_id or list_name, not both.",
         },
         limit_per_list: {
           type: "integer",
           minimum: 1,
           maximum: 75,
           default: 10,
-          description: "Completed tasks per list. Max 75.",
+          description: "Most recent completed tasks to return per list. Max 75.",
         },
       },
     },
@@ -94,21 +97,22 @@ const toolDefinitions = [
   {
     name: "create_task",
     description:
-      "Create a task in a visible list.",
+      "Create a task in a calendar-synced tracker list. Requires exact list_id or exact list_name.",
     inputSchema: {
       type: "object",
       properties: {
         list_id: {
           type: "string",
-          description: "Visible list ID.",
+          description: "Exact task list ID. Provide either list_id or list_name, not both.",
         },
         list_name: {
           type: "string",
-          description: "Exact visible list name.",
+          description:
+            "Exact normalized task list name. Provide either list_id or list_name, not both.",
         },
         parent_task_id: {
           type: ["string", "null"],
-          description: "Parent task ID.",
+          description: "Optional parent task ID for creating a subtask.",
         },
         title: {
           type: "string",
@@ -116,35 +120,37 @@ const toolDefinitions = [
         },
         details: {
           type: ["string", "null"],
-          description: "Task details.",
+          description: "Optional task details. Null clears details.",
         },
         due_at: {
           type: ["string", "null"],
-          description: "ISO date/time, YYYY-MM-DD, or null.",
+          description:
+            "Due date/time as ISO 8601, YYYY-MM-DD for date-only, or null for no due date.",
         },
         due_timezone: {
           type: ["string", "null"],
-          description: "IANA timezone.",
+          description: "IANA timezone for the due date/time, such as America/Chicago.",
         },
         recurrence_type: {
           type: "string",
           enum: ["none", "daily", "weekly", "biweekly", "custom"],
           default: "none",
-          description: "Recurrence type.",
+          description: "Task recurrence type.",
         },
         recurrence_interval: {
           type: ["integer", "null"],
           minimum: 1,
-          description: "Custom recurrence interval.",
+          description:
+            "Custom recurrence interval. Only used when recurrence_type is custom.",
         },
         recurrence_unit: {
           type: ["string", "null"],
           enum: ["day", "week", "month", null],
-          description: "Custom recurrence unit.",
+          description: "Custom recurrence unit. Only used when recurrence_type is custom.",
         },
         recurrence_ends_at: {
           type: ["string", "null"],
-          description: "ISO timestamp when recurrence ends.",
+          description: "Optional ISO 8601 timestamp when recurrence ends.",
         },
       },
       required: ["title"],
@@ -153,25 +159,26 @@ const toolDefinitions = [
   {
     name: "update_task",
     description:
-      "Update one visible task.",
+      "Update fields on one MCP-visible tracker task. Moving a task is allowed only into another calendar-synced list.",
     inputSchema: {
       type: "object",
       properties: {
         task_id: {
           type: "string",
-          description: "Task ID.",
+          description: "Task ID from a prior tool result.",
         },
         list_id: {
           type: "string",
-          description: "Visible list ID.",
+          description: "Exact task list ID. Provide either list_id or list_name, not both.",
         },
         list_name: {
           type: "string",
-          description: "Exact visible list name.",
+          description:
+            "Exact normalized task list name. Provide either list_id or list_name, not both.",
         },
         parent_task_id: {
           type: ["string", "null"],
-          description: "Parent task ID, or null.",
+          description: "Set a parent task ID, or null to make this a root task.",
         },
         title: {
           type: "string",
@@ -183,30 +190,32 @@ const toolDefinitions = [
         },
         due_at: {
           type: ["string", "null"],
-          description: "ISO date/time, YYYY-MM-DD, or null.",
+          description:
+            "Due date/time as ISO 8601, YYYY-MM-DD for date-only, or null for no due date.",
         },
         due_timezone: {
           type: ["string", "null"],
-          description: "IANA timezone.",
+          description: "IANA timezone for the due date/time, such as America/Chicago.",
         },
         recurrence_type: {
           type: "string",
           enum: ["none", "daily", "weekly", "biweekly", "custom"],
-          description: "Recurrence type.",
+          description: "Task recurrence type.",
         },
         recurrence_interval: {
           type: ["integer", "null"],
           minimum: 1,
-          description: "Custom recurrence interval.",
+          description:
+            "Custom recurrence interval. Only used when recurrence_type is custom.",
         },
         recurrence_unit: {
           type: ["string", "null"],
           enum: ["day", "week", "month", null],
-          description: "Custom recurrence unit.",
+          description: "Custom recurrence unit. Only used when recurrence_type is custom.",
         },
         recurrence_ends_at: {
           type: ["string", "null"],
-          description: "ISO timestamp when recurrence ends.",
+          description: "Optional ISO 8601 timestamp when recurrence ends. Null clears it.",
         },
       },
       required: ["task_id"],
@@ -214,13 +223,14 @@ const toolDefinitions = [
   },
   {
     name: "complete_task",
-    description: "Mark one visible task complete.",
+    description:
+      "Mark one MCP-visible tracker task complete. Recurring tasks may create the next occurrence.",
     inputSchema: {
       type: "object",
       properties: {
         task_id: {
           type: "string",
-          description: "Task ID.",
+          description: "Task ID from a prior tool result.",
         },
       },
       required: ["task_id"],
@@ -228,13 +238,14 @@ const toolDefinitions = [
   },
   {
     name: "uncomplete_task",
-    description: "Mark one visible task incomplete.",
+    description:
+      "Mark one MCP-visible tracker task incomplete again. Does not remove any recurrence task already created earlier.",
     inputSchema: {
       type: "object",
       properties: {
         task_id: {
           type: "string",
-          description: "Task ID.",
+          description: "Task ID from a prior tool result.",
         },
       },
       required: ["task_id"],
@@ -243,25 +254,26 @@ const toolDefinitions = [
   {
     name: "delete_task",
     description:
-      "Delete one visible task. Confirm first.",
+      "Delete one MCP-visible tracker task. Requires confirm_delete and may require confirm_delete_children for subtasks.",
     inputSchema: {
       type: "object",
       properties: {
         task_id: {
           type: "string",
-          description: "Task ID.",
+          description: "Task ID from a prior tool result.",
         },
         expected_title: {
           type: "string",
-          description: "Optional title safety check.",
+          description:
+            "Optional safety check. Delete is refused if this does not match the current title.",
         },
         confirm_delete: {
           type: "boolean",
-          description: "Must be true.",
+          description: "Must be true to delete the task.",
         },
         confirm_delete_children: {
           type: "boolean",
-          description: "Required for subtasks.",
+          description: "Must be true when deleting a task that has subtasks.",
         },
       },
       required: ["task_id", "confirm_delete"],
@@ -270,7 +282,7 @@ const toolDefinitions = [
   {
     name: "sync_calendar_now",
     description:
-      "Run tracker Google Calendar sync.",
+      "Queue and start a manual Google Calendar reconciliation for the configured tracker owner.",
     inputSchema: {
       type: "object",
       properties: {},
