@@ -223,24 +223,37 @@ export const useTasksHubModule = () => {
     if (!session?.access_token || !userId) return;
 
     let active = true;
-    supabase.realtime.setAuth(session.access_token);
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
-    const channel = supabase
-      .channel(`tracker:user:${userId}`, { config: { private: true } })
-      .on("broadcast", { event: "tracker_change" }, () => {
+    void (async () => {
+      try {
+        await supabase.realtime.setAuth(session.access_token);
         if (!active) return;
-        scheduleRealtimeRefresh();
-      })
-      .subscribe((status, error) => {
-        if (!active) return;
-        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-          console.error("Tracker realtime subscription failed", error);
+
+        channel = supabase
+          .channel(`tracker:user:${userId}`, { config: { private: true } })
+          .on("broadcast", { event: "tracker_change" }, () => {
+            if (!active) return;
+            scheduleRealtimeRefresh();
+          })
+          .subscribe((status, error) => {
+            if (!active) return;
+            if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+              console.error("Tracker realtime subscription failed", error);
+            }
+          });
+      } catch (error) {
+        if (active) {
+          console.error("Tracker realtime auth failed", error);
         }
-      });
+      }
+    })();
 
     return () => {
       active = false;
-      void supabase.removeChannel(channel);
+      if (channel) {
+        void supabase.removeChannel(channel);
+      }
     };
   }, [scheduleRealtimeRefresh, session?.access_token, supabase, userId]);
 

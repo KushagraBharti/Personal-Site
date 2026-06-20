@@ -60,7 +60,7 @@ describe("useTasksHubModule realtime refresh", () => {
       subscribe: vi.fn(() => channel),
     };
     supabase = {
-      realtime: { setAuth: vi.fn() },
+      realtime: { setAuth: vi.fn().mockResolvedValue(undefined) },
       channel: vi.fn(() => channel),
       removeChannel: vi.fn(),
     };
@@ -92,8 +92,10 @@ describe("useTasksHubModule realtime refresh", () => {
       expect(apiMocks.getCalendarStatus).toHaveBeenCalledTimes(1);
     });
     expect(supabase.realtime.setAuth).toHaveBeenCalledWith("session-token");
-    expect(supabase.channel).toHaveBeenCalledWith("tracker:user:user-1", {
-      config: { private: true },
+    await waitFor(() => {
+      expect(supabase.channel).toHaveBeenCalledWith("tracker:user:user-1", {
+        config: { private: true },
+      });
     });
     expect(channel.on).toHaveBeenCalledWith(
       "broadcast",
@@ -116,5 +118,30 @@ describe("useTasksHubModule realtime refresh", () => {
 
     unmount();
     expect(supabase.removeChannel).toHaveBeenCalledWith(channel);
+  });
+
+  it("waits for realtime auth before joining the private topic", async () => {
+    let resolveAuth: (() => void) | null = null;
+    supabase.realtime.setAuth.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveAuth = resolve;
+        }),
+    );
+
+    renderHook(() => useTasksHubModule());
+
+    await waitFor(() => {
+      expect(supabase.realtime.setAuth).toHaveBeenCalledWith("session-token");
+    });
+    expect(supabase.channel).not.toHaveBeenCalled();
+
+    resolveAuth?.();
+
+    await waitFor(() => {
+      expect(supabase.channel).toHaveBeenCalledWith("tracker:user:user-1", {
+        config: { private: true },
+      });
+    });
   });
 });
