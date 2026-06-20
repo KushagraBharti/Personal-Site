@@ -43,28 +43,48 @@ const parseJwtRole = (jwt: string): string | null => {
 
 export const getSupabaseAdmin = (): SupabaseClient => {
   const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
+  const candidates = [
+    ["SUPABASE_SERVICE_ROLE_KEY", process.env.SUPABASE_SERVICE_ROLE_KEY],
+    ["SUPABASE_SECRET_KEY", process.env.SUPABASE_SECRET_KEY],
+  ].filter((entry): entry is [string, string] => !!entry[1]);
+
+  if (!url || candidates.length === 0) {
     throw new Error("SUPABASE_URL and (SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY) must be set");
   }
-  // Supabase supports both newer sb_secret_* keys and legacy JWT service_role keys.
-  // Reject clearly invalid frontend keys and JWT anon keys to avoid silent RLS failures.
-  const looksLikePublishable = key.startsWith("sb_publishable_");
-  if (looksLikePublishable) {
-    throw new Error(
-      "Supabase server key is misconfigured. Use SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY), not a publishable/anon key."
-    );
-  }
-  if (key.startsWith("eyJ")) {
+
+  // Prefer service-role JWTs for supabase-js, but tolerate newer sb_secret_* keys.
+  // Vercel/Supabase integrations can leave stale anon keys beside newer variables.
+  let selectedKey: string | null = null;
+  let firstInvalidMessage = "";
+  for (const [name, key] of candidates) {
+    if (key.startsWith("sb_publishable_")) {
+      firstInvalidMessage ||= `${name} is publishable/anon, expected a server key.`;
+      continue;
+    }
+
+    if (!key.startsWith("eyJ")) {
+      selectedKey = key;
+      break;
+    }
+
     const role = parseJwtRole(key);
     if (role && role !== "service_role") {
-      throw new Error(
-        `Supabase JWT key role is '${role}', expected 'service_role'. Set SUPABASE_SERVICE_ROLE_KEY to the service role key.`
-      );
+      firstInvalidMessage ||= `${name} JWT role is '${role}', expected 'service_role'.`;
+      continue;
     }
+
+    selectedKey = key;
+    break;
   }
 
-  return createClient(url, key, {
+  if (!selectedKey) {
+    throw new Error(
+      firstInvalidMessage ||
+        "Supabase server key is misconfigured. Use SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SECRET_KEY, not a frontend key."
+    );
+  }
+
+  return createClient(url, selectedKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,

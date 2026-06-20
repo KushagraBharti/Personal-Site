@@ -140,6 +140,48 @@ describe("requireUser", () => {
     expect(createClientMock).not.toHaveBeenCalled();
   });
 
+  it("prefers a service-role JWT when an old secret env is an anon JWT", async () => {
+    const serviceRoleJwt = createJwt("service_role");
+    createClientMock.mockReturnValue({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: {
+            user: {
+              id: "user-1",
+              email: "user@example.com",
+            },
+          },
+          error: null,
+        }),
+      },
+    });
+
+    const { requireUser } = await importFresh<typeof import("./requireUser")>(
+      () => import("./requireUser"),
+      {
+        SUPABASE_URL: "https://supabase.test",
+        SUPABASE_SECRET_KEY: createJwt("anon"),
+        SUPABASE_SERVICE_ROLE_KEY: serviceRoleJwt,
+      },
+    );
+
+    await requireUser(
+      {
+        header: vi.fn().mockImplementation((name: string) =>
+          name === "authorization" ? "Bearer valid-token" : undefined
+        ),
+      } as unknown as Request,
+      makeResponse(),
+      vi.fn() as NextFunction
+    );
+
+    expect(createClientMock).toHaveBeenCalledWith(
+      "https://supabase.test",
+      serviceRoleJwt,
+      expect.any(Object)
+    );
+  });
+
   it("injects req.user and calls next on success", async () => {
     createClientMock.mockReturnValue({
       auth: {

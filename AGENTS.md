@@ -97,7 +97,7 @@ Backend env:
 
 - use `backend/.env.example`
 - key portfolio vars: `GITHUB_USERNAME`, `GITHUB_TOKEN`, `OPENWEATHER_API_KEY`
-- tracker/calendar vars: Supabase service-role or `sb_secret_*` server values and Google Calendar OAuth/webhook URL values from the example file
+- tracker/calendar vars: prefer `SUPABASE_SERVICE_ROLE_KEY` with a service-role JWT; `SUPABASE_SECRET_KEY` is a fallback server key
 - frontend tracker env must use only Supabase anon/publishable values; never expose service-role or `sb_secret_*` keys to Vite env
 
 ## Workflow

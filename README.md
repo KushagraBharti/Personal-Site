@@ -140,7 +140,7 @@ SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 ```
 
-Backend tracker routes require a Supabase service-role JWT or newer `sb_secret_*` server key via `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY`. Do not use the anon key for backend private APIs.
+Backend tracker routes prefer a Supabase service-role JWT in `SUPABASE_SERVICE_ROLE_KEY`, with `SUPABASE_SECRET_KEY` as a fallback server key. Do not use the anon key for backend private APIs.
 
 ### Supabase CLI
 
