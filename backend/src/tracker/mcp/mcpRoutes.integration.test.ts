@@ -83,6 +83,27 @@ describe("tracker MCP routes", () => {
     ]);
   });
 
+  it("returns concise tracker behavior instructions during initialize", async () => {
+    const { default: app } = await import("../../app");
+    const response = await request(app)
+      .post("/api/mcp")
+      .set("authorization", "Bearer test-mcp-key")
+      .send({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "initialize",
+        params: {},
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.instructions).toContain(
+      "keep titles short",
+    );
+    expect(response.body.result.instructions).toContain(
+      "set due_at to 10:00 PM",
+    );
+  });
+
   it("requires MCP auth for GET stream probes", async () => {
     const { default: app } = await import("../../app");
     const response = await request(app).get("/api/mcp");

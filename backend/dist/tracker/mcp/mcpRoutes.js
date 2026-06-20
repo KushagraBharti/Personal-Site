@@ -339,7 +339,7 @@ const handleJsonRpc = (message, context) => __awaiter(void 0, void 0, void 0, fu
                     },
                 },
                 serverInfo: SERVER_INFO,
-                instructions: "Private tracker MCP server. Only non-archived task lists with Google Calendar sync enabled are visible. Use get_tracker_snapshot first, list_tasks for active work, list_completed_tasks only for recent completed work, and confirm with the user before deleting tasks.",
+                instructions: "Private tracker MCP server. Only non-archived task lists with Google Calendar sync enabled are visible. Use get_tracker_snapshot first, list_tasks for active work, list_completed_tasks only for recent completed work, and confirm with the user before deleting tasks. For create_task, keep titles short; put links/context in details; if the user gives a date without a time, set due_at to 10:00 PM in the tracker timezone.",
             });
         case "notifications/initialized":
         case "notifications/cancelled":
