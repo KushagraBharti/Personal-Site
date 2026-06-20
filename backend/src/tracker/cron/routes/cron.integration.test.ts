@@ -3,17 +3,41 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const processCalendarSyncJobsMock = vi.hoisted(() => vi.fn());
 const renewExpiringCalendarWatchesMock = vi.hoisted(() => vi.fn());
+const getSupabaseAdminMock = vi.hoisted(() => vi.fn());
+const reconcileCompletedRecurringTasksMock = vi.hoisted(() => vi.fn());
+const deleteTaskForUserMock = vi.hoisted(() => vi.fn());
+const deleteTaskListForUserMock = vi.hoisted(() => vi.fn());
+const setTaskCompletionForUserMock = vi.hoisted(() => vi.fn());
 
 vi.mock("../../calendar/services/taskCalendarSyncService", () => ({
   processCalendarSyncJobs: processCalendarSyncJobsMock,
   renewExpiringCalendarWatches: renewExpiringCalendarWatchesMock,
 }));
 
+vi.mock("../../calendar/services/calendarSyncQueueService", () => ({
+  getSupabaseAdmin: getSupabaseAdminMock,
+}));
+
+vi.mock("../../tasks-hub/services/taskListService", () => ({
+  deleteTaskForUser: deleteTaskForUserMock,
+  deleteTaskListForUser: deleteTaskListForUserMock,
+  reconcileCompletedRecurringTasks: reconcileCompletedRecurringTasksMock,
+  setTaskCompletionForUser: setTaskCompletionForUserMock,
+}));
+
+const adminClient = {};
+
 describe("cron routes", () => {
   beforeEach(() => {
     vi.resetModules();
     processCalendarSyncJobsMock.mockReset();
     renewExpiringCalendarWatchesMock.mockReset();
+    getSupabaseAdminMock.mockReset();
+    reconcileCompletedRecurringTasksMock.mockReset();
+    deleteTaskForUserMock.mockReset();
+    deleteTaskListForUserMock.mockReset();
+    setTaskCompletionForUserMock.mockReset();
+    getSupabaseAdminMock.mockReturnValue(adminClient);
     process.env.CRON_SECRET = "cron-secret";
     process.env.CALENDAR_SYNC_ENABLED = "1";
   });
@@ -69,6 +93,30 @@ describe("cron routes", () => {
       processed: 2,
       failed: 1,
     });
+  });
+
+  it("runs recurring task reconciliation through the cron route", async () => {
+    reconcileCompletedRecurringTasksMock.mockResolvedValue({
+      ok: true,
+      checked: 2,
+      created: 1,
+      failed: 0,
+      results: [],
+    });
+
+    const { default: app } = await import("../../../app");
+    const response = await request(app)
+      .post("/api/private/cron/recurring-tasks")
+      .set("authorization", "Bearer cron-secret");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      ok: true,
+      checked: 2,
+      created: 1,
+      failed: 0,
+    });
+    expect(reconcileCompletedRecurringTasksMock).toHaveBeenCalledWith(adminClient, { limit: 25 });
   });
 
   it("logs and returns 500 when watch renewal fails", async () => {

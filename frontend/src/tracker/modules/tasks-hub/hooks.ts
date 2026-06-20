@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { DateTime } from "luxon";
 import {
   createTask,
   createTaskList,
@@ -12,6 +11,7 @@ import {
   getCalendarStatus,
   getCalendarSyncProgress,
   getGoogleConnectUrl,
+  setTaskCompletionViaApi,
   setListSync,
   triggerCalendarLivePump,
   triggerCalendarRebuild,
@@ -22,7 +22,6 @@ import {
 } from "./api";
 import {
   CalendarConnectionState,
-  RecurrenceType,
   SortDirection,
   TaskDraft,
   TaskList,
@@ -65,49 +64,6 @@ const getBrowserTimeZone = () => {
 
 const normalizeTaskTimeZone = (timeZone: string | null | undefined) =>
   isValidIanaTimeZone(timeZone) ? timeZone : null;
-
-const computeNextDueAt = (task: TrackerTask): string | null => {
-  if (!task.due_at) return null;
-  const baseUtc = DateTime.fromISO(task.due_at, { zone: "utc" });
-  if (!baseUtc.isValid) return null;
-
-  const recurrence = task.recurrence_type;
-  if (recurrence === "none") return null;
-
-  const hasDateOnlyDueAt = isDateOnlyIso(task.due_at);
-  const zone = normalizeTaskTimeZone(task.due_timezone) || getBrowserTimeZone();
-  let next = hasDateOnlyDueAt ? baseUtc : baseUtc.setZone(zone);
-
-  if (recurrence === "daily") {
-    next = next.plus({ days: 1 });
-  } else if (recurrence === "weekly") {
-    next = next.plus({ weeks: 1 });
-  } else if (recurrence === "biweekly") {
-    next = next.plus({ weeks: 2 });
-  } else {
-    const interval = Math.max(task.recurrence_interval ?? 1, 1);
-    const unit = task.recurrence_unit ?? "day";
-    if (unit === "month") {
-      next = next.plus({ months: interval });
-    } else if (unit === "week") {
-      next = next.plus({ weeks: interval });
-    } else {
-      next = next.plus({ days: interval });
-    }
-  }
-
-  const nextUtc = hasDateOnlyDueAt ? next : next.toUTC();
-  if (task.recurrence_ends_at) {
-    const endUtc = DateTime.fromISO(task.recurrence_ends_at, { zone: "utc" });
-    if (endUtc.isValid && nextUtc.toMillis() > endUtc.toMillis()) {
-      return null;
-    }
-  }
-
-  return nextUtc.toISO() ?? null;
-};
-
-const isRecurring = (recurrenceType: RecurrenceType) => recurrenceType !== "none";
 
 const buildTaskDraft = (listId: string, parentTaskId: string | null = null): TaskDraft => ({
   list_id: listId,
@@ -683,54 +639,28 @@ export const useTasksHubModule = () => {
   const toggleTaskCompletion = useCallback(
     async (task: TrackerTask) => {
       const nextCompleted = !task.is_completed;
-      const completionTimestamp = nextCompleted ? new Date().toISOString() : null;
 
-      const result = await updateTask(supabase, userId, task.id, {
-        is_completed: nextCompleted,
-        completed_at: completionTimestamp,
-      });
-
-      if (result.error || !result.data) {
-        setErrorMessage(result.error?.message || "Failed to update task status.");
+      let result: Awaited<ReturnType<typeof setTaskCompletionViaApi>>;
+      try {
+        result = await setTaskCompletionViaApi(session.access_token, task.id, nextCompleted);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to update task status.";
+        setErrorMessage(message);
         return false;
       }
 
-      const updatedTask = result.data as TrackerTask;
+      const updatedTask = result.task;
       setTasks((prev) => prev.map((current) => (current.id === task.id ? updatedTask : current)));
-
-      if (nextCompleted && isRecurring(task.recurrence_type)) {
-        const nextDueAt = computeNextDueAt(task);
-        if (nextDueAt) {
-          const nextResult = await createTask(supabase, {
-            user_id: userId,
-            list_id: task.list_id,
-            parent_task_id: task.parent_task_id,
-            title: task.title,
-            details: task.details,
-            due_at: nextDueAt,
-            due_timezone: isDateOnlyIso(nextDueAt)
-              ? null
-              : normalizeTaskTimeZone(task.due_timezone) || getBrowserTimeZone(),
-            is_completed: false,
-            completed_at: null,
-            recurrence_type: task.recurrence_type,
-            recurrence_interval: task.recurrence_interval,
-            recurrence_unit: task.recurrence_unit,
-            recurrence_ends_at: task.recurrence_ends_at,
-            sort_order: getNextTaskSortOrder(task.list_id, task.parent_task_id),
-          });
-
-          if (!nextResult.error && nextResult.data) {
-            setTasks((prev) => [...prev, nextResult.data as TrackerTask]);
-          }
-        }
+      const createdNextTask = result.created_next_task;
+      if (createdNextTask) {
+        setTasks((prev) => [...prev, createdNextTask]);
       }
 
       setErrorMessage("");
       scheduleLiveSyncPump();
       return true;
     },
-    [getNextTaskSortOrder, scheduleLiveSyncPump, supabase, userId]
+    [scheduleLiveSyncPump, session.access_token]
   );
 
   const reorderTasks = useCallback(

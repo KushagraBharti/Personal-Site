@@ -12,6 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const cronAuth_1 = require("../../../middleware/cronAuth");
 const taskCalendarSyncService_1 = require("../../calendar/services/taskCalendarSyncService");
+const calendarSyncQueueService_1 = require("../../calendar/services/calendarSyncQueueService");
+const taskListService_1 = require("../../tasks-hub/services/taskListService");
 const router = (0, express_1.Router)();
 const isCalendarSyncEnabled = () => process.env.CALENDAR_SYNC_ENABLED !== "0";
 router.use(cronAuth_1.cronAuth);
@@ -53,8 +55,20 @@ const runCalendarWatchRenew = (req, res) => __awaiter(void 0, void 0, void 0, fu
         return res.status(500).json({ error: "Failed to renew calendar watches" });
     }
 });
+const runRecurringTaskReconcile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = yield (0, taskListService_1.reconcileCompletedRecurringTasks)((0, calendarSyncQueueService_1.getSupabaseAdmin)(), { limit: 25 });
+        return res.json(result);
+    }
+    catch (error) {
+        console.error("Failed to reconcile recurring tasks", error);
+        return res.status(500).json({ error: "Failed to reconcile recurring tasks" });
+    }
+});
 router.post("/calendar-sync", runCalendarSync);
 router.get("/calendar-sync", runCalendarSync);
 router.post("/calendar-watch-renew", runCalendarWatchRenew);
 router.get("/calendar-watch-renew", runCalendarWatchRenew);
+router.post("/recurring-tasks", runRecurringTaskReconcile);
+router.get("/recurring-tasks", runRecurringTaskReconcile);
 exports.default = router;

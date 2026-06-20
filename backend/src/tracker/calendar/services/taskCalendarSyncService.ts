@@ -99,6 +99,16 @@ const getJobRunId = (job: TrackerGoogleSyncJob) => job.run_id || getJobStringPay
 const withRunPayload = (base: Record<string, unknown>, runId: string | null) =>
   runId ? { ...base, run_id: runId } : base;
 
+export const isLegacyTaskTriggerSyncJob = (job: TrackerGoogleSyncJob) => {
+  const payloadSource = getJobStringPayload(job, "source");
+  const source = job.source || payloadSource;
+  return (
+    source === "trigger" &&
+    payloadSource === "trigger" &&
+    (job.job_type === "task_upsert" || job.job_type === "task_delete")
+  );
+};
+
 const getRawErrorMessage = (error: unknown) => {
   if (error instanceof Error) return error.message;
   if (typeof error === "object" && error !== null && "message" in error) {
@@ -1419,6 +1429,7 @@ const processRenewWatchJob = async (supabaseAdmin: SupabaseClient, job: TrackerG
 };
 
 const processOneJob = async (supabaseAdmin: SupabaseClient, job: TrackerGoogleSyncJob) => {
+  if (isLegacyTaskTriggerSyncJob(job)) return;
   if (job.job_type === "task_upsert") return processTaskUpsertJob(supabaseAdmin, job);
   if (job.job_type === "task_delete") return processTaskDeleteJob(supabaseAdmin, job);
   if (job.job_type === "reconcile_app_page") return processReconcileAppPageJob(supabaseAdmin, job);

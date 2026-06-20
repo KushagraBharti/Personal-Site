@@ -76,6 +76,12 @@ export interface TaskUpdateInput {
   parent_task_id?: string | null;
 }
 
+export interface TaskCompletionResult {
+  ok: boolean;
+  task: TrackerTask;
+  created_next_task: TrackerTask | null;
+}
+
 export interface ListUpdateInput {
   name?: string;
   color_hex?: string;

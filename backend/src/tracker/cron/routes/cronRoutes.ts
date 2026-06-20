@@ -5,6 +5,8 @@ import {
   processCalendarSyncJobs,
   renewExpiringCalendarWatches,
 } from "../../calendar/services/taskCalendarSyncService";
+import { getSupabaseAdmin } from "../../calendar/services/calendarSyncQueueService";
+import { reconcileCompletedRecurringTasks } from "../../tasks-hub/services/taskListService";
 
 
 const router = Router();
@@ -48,10 +50,23 @@ const runCalendarWatchRenew = async (req: Request, res: Response) => {
   }
 };
 
+const runRecurringTaskReconcile = async (req: Request, res: Response) => {
+  try {
+    const result = await reconcileCompletedRecurringTasks(getSupabaseAdmin(), { limit: 25 });
+    return res.json(result);
+  } catch (error) {
+    console.error("Failed to reconcile recurring tasks", error);
+    return res.status(500).json({ error: "Failed to reconcile recurring tasks" });
+  }
+};
+
 router.post("/calendar-sync", runCalendarSync);
 router.get("/calendar-sync", runCalendarSync);
 
 router.post("/calendar-watch-renew", runCalendarWatchRenew);
 router.get("/calendar-watch-renew", runCalendarWatchRenew);
+
+router.post("/recurring-tasks", runRecurringTaskReconcile);
+router.get("/recurring-tasks", runRecurringTaskReconcile);
 
 export default router;

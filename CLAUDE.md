@@ -25,8 +25,7 @@ Backend:
 
 Database tooling:
 
-- `supabase/config.toml`
-- `supabase/migrations`
+- `backend/supabase/config.toml`
 
 Routes:
 
@@ -70,8 +69,7 @@ Tracker:
 
 Supabase:
 
-- executable migrations -> `supabase/migrations`
-- schema snapshots/advisor cleanup context -> `backend/sql`
+- CLI config -> `backend/supabase`
 
 Current tracker modules:
 
@@ -80,9 +78,9 @@ Current tracker modules:
 ## Known Codebase Notes
 
 - `AboutSection` renders backend-owned about copy and featured writings, while `FeaturedSection` still hardcodes some public project selections in the frontend. Prefer moving future public content changes to backend content rather than adding more frontend content sources.
-- Tracker CRUD mostly uses Supabase from the browser. Backend private APIs are for service-role work, Google Calendar sync, cron, and task-list deletion.
-- Calendar sync has queue-based and legacy fallback paths; preserve compatibility unless the migration state is explicitly being cleaned up.
-- Supabase CLI config lives in `supabase/config.toml`; new runnable DB changes should be CLI migrations, not ad hoc SQL snapshots.
+- Tracker CRUD mostly uses Supabase from the browser. Backend private APIs are for service-role work, Google Calendar sync, cron, task/list deletion, and task completion recurrence.
+- Calendar sync uses the live queue path; do not add legacy task-change trigger paths back.
+- Supabase CLI config lives in `backend/supabase/config.toml`; this repo intentionally does not keep checked-in SQL snapshots or migrations.
 - The old `docs/` tree has been removed. Do not point new onboarding instructions at `docs/active/*`.
 
 ## Environment
@@ -142,9 +140,9 @@ Supabase:
 ```bash
 npm install
 npm run supabase:start
-npm run supabase:migration:new -- migration_name
-npm run supabase:db:reset
-npm run supabase:db:push
+npm run supabase:status
+npm run supabase:types:local
+npm run supabase:types:linked
 ```
 
 Verification tiers:

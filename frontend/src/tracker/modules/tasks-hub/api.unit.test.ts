@@ -4,6 +4,7 @@ import {
   getCalendarStatus,
   getGoogleConnectUrl,
   getCalendarSyncProgress,
+  setTaskCompletionViaApi,
   triggerCalendarSyncNow,
   setListSync,
 } from "./api";
@@ -78,6 +79,39 @@ describe("tasks-hub API", () => {
         method: "DELETE",
         headers: expect.objectContaining({
           Authorization: "Bearer token",
+        }),
+      })
+    );
+  });
+
+  it("calls the backend task-completion endpoint with auth and payload", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        task: { id: "task-1", is_completed: true },
+        created_next_task: null,
+      }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await setTaskCompletionViaApi("token", "task-1", true);
+
+    expect(result).toEqual({
+      ok: true,
+      task: { id: "task-1", is_completed: true },
+      created_next_task: null,
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/api/private/tasks/task-1/completion"),
+      expect.objectContaining({
+        method: "PATCH",
+        headers: expect.objectContaining({
+          Authorization: "Bearer token",
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({
+          is_completed: true,
         }),
       })
     );

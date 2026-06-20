@@ -7,6 +7,7 @@ import {
   SyncProgressResult,
   SortDirection,
   TaskList,
+  TaskCompletionResult,
   TaskSortMode,
   TaskSortPreference,
   TrackerTask,
@@ -209,6 +210,28 @@ export const deleteTaskViaApi = async (
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || "Failed to delete task");
+  }
+  return res.json();
+};
+
+export const setTaskCompletionViaApi = async (
+  accessToken: string,
+  taskId: string,
+  isCompleted: boolean
+): Promise<TaskCompletionResult> => {
+  const res = await fetch(
+    `${API_BASE}/api/private/tasks/${encodeURIComponent(taskId)}/completion`,
+    {
+      method: "PATCH",
+      headers: getAuthHeaders(accessToken),
+      body: JSON.stringify({
+        is_completed: isCompleted,
+      }),
+    }
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Failed to update task status");
   }
   return res.json();
 };

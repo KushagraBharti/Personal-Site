@@ -35,7 +35,7 @@ The private tracker lives at `/tracker`. It is lazy-loaded, Supabase-authenticat
 
 - `tasks`: the current tasks-hub interface
 
-Most tracker CRUD talks directly to Supabase from the frontend. Backend private APIs handle service-role operations, task-list deletion, cron, and Google Calendar sync.
+Most tracker CRUD talks directly to Supabase from the frontend. Backend private APIs handle service-role operations, task/list deletion, task completion recurrence, cron, and Google Calendar sync.
 
 ## Repository Layout
 
@@ -55,9 +55,8 @@ backend/
 scripts/
   verify.mjs       repo-level verification runner
 
-supabase/
+backend/supabase/
   config.toml      Supabase CLI local project config
-  migrations/      executable database migrations
 ```
 
 ## Routes
@@ -81,6 +80,7 @@ Backend:
 - `/api/private/calendar`
 - `/api/private/cron`
 - `/api/private/lists`
+- `/api/private/tasks`
 
 ## Tech Stack
 
@@ -144,7 +144,7 @@ Backend tracker routes prefer a Supabase service-role JWT in `SUPABASE_SERVICE_R
 
 ### Supabase CLI
 
-The repo uses the official Supabase CLI for database migrations, local Supabase, schema diffs, remote pushes, and generated types. Supabase MCP is useful for AI-tool access to a Supabase project, but the CLI is the project-level source of truth because it creates checked-in, reproducible migrations.
+The repo uses the official Supabase CLI for local Supabase, remote linking, and generated types. The CLI project config lives under `backend/supabase`; root scripts pass the correct `--workdir`.
 
 ```bash
 npm install
@@ -152,7 +152,7 @@ npm run supabase:link -- --project-ref <your-project-ref>
 npm run supabase:start
 ```
 
-New runnable database changes should go in `supabase/migrations`. The existing `backend/sql` files are schema snapshots and advisor cleanup context unless a file is explicitly written as a migration.
+This repo intentionally does not keep checked-in SQL snapshots or migrations. The live Supabase project is the source of truth for tracker database objects.
 
 ## Common Commands
 
@@ -189,10 +189,6 @@ Supabase:
 
 ```bash
 npm run supabase:status
-npm run supabase:migration:new -- migration_name
-npm run supabase:db:diff -- --file migration_name
-npm run supabase:db:reset
-npm run supabase:db:push
 npm run supabase:types:local
 npm run supabase:types:linked
 ```

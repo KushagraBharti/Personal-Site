@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.normalizeDueAtForSync = exports.inferLanesForRunMode = exports.getSyncRunDebug = exports.getSyncProgressForRun = exports.getCalendarStatusForUser = exports.upsertListSyncSetting = exports.listUserSyncEnabledLists = exports.renewExpiringCalendarWatches = exports.disconnectGoogleCalendarForUser = exports.isCalendarRebuildSchemaUnavailable = exports.rebuildCalendarLegacyInlineForUser = exports.upsertGoogleConnectionFromOAuth = exports.queueLivePumpForUser = exports.runLegacyManualSyncForUser = exports.queueManualSyncForUser = exports.queueRebuildRunForUser = exports.queueReconcileRunForUser = exports.queueListSyncCleanupForUser = exports.queueFullBackfill = exports.processCalendarSyncJobs = exports.renewCalendarWatchForUser = exports.processTaskDeleteJob = exports.processTaskUpsertJob = void 0;
+exports.normalizeDueAtForSync = exports.inferLanesForRunMode = exports.getSyncRunDebug = exports.getSyncProgressForRun = exports.getCalendarStatusForUser = exports.upsertListSyncSetting = exports.listUserSyncEnabledLists = exports.renewExpiringCalendarWatches = exports.disconnectGoogleCalendarForUser = exports.isCalendarRebuildSchemaUnavailable = exports.rebuildCalendarLegacyInlineForUser = exports.upsertGoogleConnectionFromOAuth = exports.queueLivePumpForUser = exports.runLegacyManualSyncForUser = exports.queueManualSyncForUser = exports.queueRebuildRunForUser = exports.queueReconcileRunForUser = exports.queueListSyncCleanupForUser = exports.queueFullBackfill = exports.processCalendarSyncJobs = exports.renewCalendarWatchForUser = exports.processTaskDeleteJob = exports.processTaskUpsertJob = exports.isLegacyTaskTriggerSyncJob = void 0;
 const crypto_1 = require("crypto");
 const calendarSyncQueueService_1 = require("./calendarSyncQueueService");
 const googleCalendarApiService_1 = require("./googleCalendarApiService");
@@ -62,6 +62,14 @@ const getJobProjectionEventsPayload = (job) => {
 };
 const getJobRunId = (job) => job.run_id || getJobStringPayload(job, "run_id");
 const withRunPayload = (base, runId) => runId ? Object.assign(Object.assign({}, base), { run_id: runId }) : base;
+const isLegacyTaskTriggerSyncJob = (job) => {
+    const payloadSource = getJobStringPayload(job, "source");
+    const source = job.source || payloadSource;
+    return (source === "trigger" &&
+        payloadSource === "trigger" &&
+        (job.job_type === "task_upsert" || job.job_type === "task_delete"));
+};
+exports.isLegacyTaskTriggerSyncJob = isLegacyTaskTriggerSyncJob;
 const getRawErrorMessage = (error) => {
     var _a;
     if (error instanceof Error)
@@ -1165,6 +1173,8 @@ const processRenewWatchJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, v
     yield renewWatchForUser(supabaseAdmin, job.user_id);
 });
 const processOneJob = (supabaseAdmin, job) => __awaiter(void 0, void 0, void 0, function* () {
+    if ((0, exports.isLegacyTaskTriggerSyncJob)(job))
+        return;
     if (job.job_type === "task_upsert")
         return (0, exports.processTaskUpsertJob)(supabaseAdmin, job);
     if (job.job_type === "task_delete")
