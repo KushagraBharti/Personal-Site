@@ -56,6 +56,8 @@ Realtime tracker UI refreshes use Supabase Realtime Broadcast from the database.
 
 Do not broadcast from Google token secret tables, sync job/run tables, or Google event link tables. The frontend treats broadcasts as invalidation signals and refetches backend private APIs rather than trusting row payloads.
 
+The Realtime policy should authorize against `(select realtime.topic())`, not the row `topic` column on `realtime.messages`. During private Channel join authorization, Supabase evaluates a rolled-back policy probe, so tying access to the table row topic can reject otherwise valid authenticated users. Keep the policy scoped to Broadcast and to the user topic, e.g. normalize an optional `realtime:` prefix from `realtime.topic()` and compare it with `tracker:user:` plus `(select auth.uid())`.
+
 RLS should keep user-owned tracker rows scoped by `user_id`. Backend service-role routes use `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY`; frontend Vite env must only use anon/publishable Supabase credentials.
 
 ## Types

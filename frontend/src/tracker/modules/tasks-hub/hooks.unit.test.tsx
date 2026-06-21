@@ -185,7 +185,7 @@ describe("useTasksHubModule realtime refresh", () => {
     expect(supabase.channel).not.toHaveBeenCalled();
   });
 
-  it("clears auth and removes the channel when realtime rejects the private topic", async () => {
+  it("does not clear auth when realtime rejects the private topic", async () => {
     renderHook(() => useTasksHubModule());
 
     await waitFor(() => {
@@ -200,8 +200,8 @@ describe("useTasksHubModule realtime refresh", () => {
       ),
     );
 
-    expect(clearAuthSession).toHaveBeenCalled();
-    expect(supabase.removeChannel).toHaveBeenCalledWith(channel);
+    expect(clearAuthSession).not.toHaveBeenCalled();
+    expect(supabase.removeChannel).not.toHaveBeenCalled();
   });
 
   it("clears auth when a private API call returns Unauthorized", async () => {

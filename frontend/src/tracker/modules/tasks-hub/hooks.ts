@@ -280,17 +280,6 @@ export const useTasksHubModule = () => {
             if (!active) return;
             if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
               console.error("Tracker realtime subscription failed", error);
-              if (
-                status === "CHANNEL_ERROR" &&
-                error instanceof Error &&
-                error.message.includes("Unauthorized")
-              ) {
-                void clearAuthSession();
-                if (channel) {
-                  void supabase.removeChannel(channel);
-                  channel = null;
-                }
-              }
             }
           });
       } catch (error) {
