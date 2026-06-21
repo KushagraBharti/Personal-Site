@@ -9,6 +9,7 @@ import {
   getCalendarStatus,
   getCalendarSyncProgress,
   getGoogleConnectUrl,
+  isUnauthorizedTrackerApiError,
   reorderTaskLists,
   reorderTasksViaApi,
   setTaskCompletionViaApi,
@@ -69,8 +70,14 @@ const buildTaskDraft = (
 });
 
 export const useTasksHubModule = () => {
-  const { session, supabase, userId, startLoading, stopLoading } =
-    useTrackerContext();
+  const {
+    supabase,
+    userId,
+    getFreshAccessToken,
+    clearAuthSession,
+    startLoading,
+    stopLoading,
+  } = useTrackerContext();
 
   const [lists, setLists] = useState<TaskList[]>([]);
   const [tasks, setTasks] = useState<TrackerTask[]>([]);
@@ -110,14 +117,40 @@ export const useTasksHubModule = () => {
     [startLoading, stopLoading],
   );
 
+  const getErrorMessage = useCallback(
+    (error: unknown, fallback: string) => {
+      if (isUnauthorizedTrackerApiError(error)) {
+        void clearAuthSession();
+        return "Session expired. Please sign in again.";
+      }
+      return error instanceof Error ? error.message : fallback;
+    },
+    [clearAuthSession],
+  );
+
+  const requireAccessToken = useCallback(
+    async (message = "Missing session token.") => {
+      const accessToken = await getFreshAccessToken();
+      if (!accessToken) {
+        setErrorMessage(message);
+        return null;
+      }
+      return accessToken;
+    },
+    [getFreshAccessToken],
+  );
+
   const fetchAll = useCallback(
     async (options?: { showLoading?: boolean }) => {
-      if (!session?.access_token) return;
+      if (!userId) return;
 
       const load = async () => {
+        const accessToken = await requireAccessToken();
+        if (!accessToken) return;
+
         try {
           const bootstrap = await fetchTrackerBootstrap(
-            session.access_token,
+            accessToken,
             getBrowserTimeZone(),
           );
           setLists(bootstrap.lists);
@@ -125,9 +158,7 @@ export const useTasksHubModule = () => {
           setSortPreferences(bootstrap.sort_preferences);
           setErrorMessage("");
         } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "Failed to load tasks.";
-          setErrorMessage(message);
+          setErrorMessage(getErrorMessage(error, "Failed to load tasks."));
         }
       };
 
@@ -138,43 +169,50 @@ export const useTasksHubModule = () => {
 
       await runWithLoading(load);
     },
-    [runWithLoading, session?.access_token],
+    [getErrorMessage, requireAccessToken, runWithLoading, userId],
   );
 
   useEffect(() => {
-    if (!session?.access_token) return;
+    if (!userId) return;
     fetchAll();
-  }, [session?.access_token, fetchAll]);
+  }, [fetchAll, userId]);
 
   const loadCalendarStatus = useCallback(
     async (options?: { reportErrors?: boolean }) => {
-      if (!session?.access_token) {
+      if (!userId) {
+        setCalendarState(null);
+        return null;
+      }
+      const accessToken = await requireAccessToken();
+      if (!accessToken) {
         setCalendarState(null);
         return null;
       }
       try {
-        const status = await getCalendarStatus(session.access_token);
+        const status = await getCalendarStatus(accessToken);
         setCalendarState(status);
         return status;
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Failed to load calendar status";
+        const message = getErrorMessage(
+          err,
+          "Failed to load calendar status",
+        );
         if (options?.reportErrors !== false) {
           setErrorMessage(message);
         }
         return null;
       }
     },
-    [session?.access_token],
+    [getErrorMessage, requireAccessToken, userId],
   );
 
   useEffect(() => {
-    if (!session?.access_token) return;
+    if (!userId) return;
     loadCalendarStatus();
-  }, [session?.access_token, loadCalendarStatus]);
+  }, [loadCalendarStatus, userId]);
 
   const refreshFromRealtime = useCallback(async () => {
-    if (!session?.access_token) return;
+    if (!userId) return;
     if (realtimeRefreshInFlightRef.current) {
       realtimeRefreshPendingRef.current = true;
       return;
@@ -197,11 +235,11 @@ export const useTasksHubModule = () => {
         }, 250);
       }
     }
-  }, [fetchAll, loadCalendarStatus, session?.access_token]);
+  }, [fetchAll, loadCalendarStatus, userId]);
 
   const scheduleRealtimeRefresh = useCallback(
     (delayMs = 500) => {
-      if (!session?.access_token) return;
+      if (!userId) return;
       if (document.visibilityState === "hidden") {
         realtimeRefreshPendingRef.current = true;
         return;
@@ -216,18 +254,20 @@ export const useTasksHubModule = () => {
         void refreshFromRealtime();
       }, delayMs);
     },
-    [refreshFromRealtime, session?.access_token],
+    [refreshFromRealtime, userId],
   );
 
   useEffect(() => {
-    if (!session?.access_token || !userId) return;
+    if (!userId) return;
 
     let active = true;
     let channel: ReturnType<typeof supabase.channel> | null = null;
 
     void (async () => {
       try {
-        await supabase.realtime.setAuth(session.access_token);
+        const accessToken = await requireAccessToken();
+        if (!accessToken) return;
+        await supabase.realtime.setAuth(accessToken);
         if (!active) return;
 
         channel = supabase
@@ -240,6 +280,17 @@ export const useTasksHubModule = () => {
             if (!active) return;
             if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
               console.error("Tracker realtime subscription failed", error);
+              if (
+                status === "CHANNEL_ERROR" &&
+                error instanceof Error &&
+                error.message.includes("Unauthorized")
+              ) {
+                void clearAuthSession();
+                if (channel) {
+                  void supabase.removeChannel(channel);
+                  channel = null;
+                }
+              }
             }
           });
       } catch (error) {
@@ -255,7 +306,13 @@ export const useTasksHubModule = () => {
         void supabase.removeChannel(channel);
       }
     };
-  }, [scheduleRealtimeRefresh, session?.access_token, supabase, userId]);
+  }, [
+    clearAuthSession,
+    requireAccessToken,
+    scheduleRealtimeRefresh,
+    supabase,
+    userId,
+  ]);
 
   useEffect(() => {
     const refreshIfVisible = () => {
@@ -366,14 +423,13 @@ export const useTasksHubModule = () => {
     async (name: string, colorHex?: string) => {
       const cleanedName = name.trim();
       if (!cleanedName) return null;
-      if (!session?.access_token) {
-        setErrorMessage("Missing session token.");
-        return null;
-      }
 
       setIsSaving(true);
       try {
-        const result = await createTaskList(session.access_token, {
+        const accessToken = await requireAccessToken();
+        if (!accessToken) return null;
+
+        const result = await createTaskList(accessToken, {
           name: cleanedName,
           color_hex: colorHex,
         });
@@ -382,15 +438,13 @@ export const useTasksHubModule = () => {
         setErrorMessage("");
         return result;
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to create list.";
-        setErrorMessage(message);
+        setErrorMessage(getErrorMessage(error, "Failed to create list."));
         return null;
       } finally {
         setIsSaving(false);
       }
     },
-    [session?.access_token],
+    [getErrorMessage, requireAccessToken],
   );
 
   const saveList = useCallback(
@@ -406,44 +460,34 @@ export const useTasksHubModule = () => {
       }
 
       if (Object.keys(payload).length === 0) return true;
-      if (!session?.access_token) {
-        setErrorMessage("Missing session token.");
-        return false;
-      }
 
       try {
-        const result = await updateTaskList(
-          session.access_token,
-          listId,
-          payload,
-        );
+        const accessToken = await requireAccessToken();
+        if (!accessToken) return false;
+
+        const result = await updateTaskList(accessToken, listId, payload);
         setLists((prev) =>
           prev.map((list) => (list.id === listId ? result : list)),
         );
         setErrorMessage("");
         return true;
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to update list.";
-        setErrorMessage(message);
+        setErrorMessage(getErrorMessage(error, "Failed to update list."));
         return false;
       }
     },
-    [session?.access_token],
+    [getErrorMessage, requireAccessToken],
   );
 
   const removeList = useCallback(
     async (listId: string) => {
-      if (!session?.access_token) {
-        setErrorMessage("Missing session token.");
-        return false;
-      }
       try {
-        await deleteTaskListViaApi(session.access_token, listId);
+        const accessToken = await requireAccessToken();
+        if (!accessToken) return false;
+
+        await deleteTaskListViaApi(accessToken, listId);
       } catch (error) {
-        setErrorMessage(
-          error instanceof Error ? error.message : "Failed to delete list.",
-        );
+        setErrorMessage(getErrorMessage(error, "Failed to delete list."));
         return false;
       }
 
@@ -458,7 +502,7 @@ export const useTasksHubModule = () => {
       setErrorMessage("");
       return true;
     },
-    [selectedListId, session?.access_token],
+    [getErrorMessage, requireAccessToken, selectedListId],
   );
 
   const pollSyncRun = useCallback(
@@ -466,7 +510,6 @@ export const useTasksHubModule = () => {
       runId: string,
       options?: { timeoutMs?: number; pollEveryMs?: number },
     ) => {
-      if (!session?.access_token) return;
       const timeoutMs = Math.max(options?.timeoutMs ?? 25_000, 2_000);
       const pollEveryMs = Math.max(options?.pollEveryMs ?? 1_000, 300);
       const startedAt = Date.now();
@@ -481,10 +524,10 @@ export const useTasksHubModule = () => {
       };
 
       while (Date.now() - startedAt < timeoutMs) {
-        const progress = await getCalendarSyncProgress(
-          session.access_token,
-          runId,
-        );
+        const accessToken = await requireAccessToken();
+        if (!accessToken) return;
+
+        const progress = await getCalendarSyncProgress(accessToken, runId);
         latestSnapshot = {
           processed: progress.processed,
           failed: progress.failed,
@@ -501,19 +544,22 @@ export const useTasksHubModule = () => {
       setCalendarSyncResult(latestSnapshot);
       await loadCalendarStatus();
     },
-    [loadCalendarStatus, session?.access_token],
+    [loadCalendarStatus, requireAccessToken],
   );
 
   const scheduleLiveSyncPump = useCallback(
     (immediate = false) => {
-      if (!session?.access_token || !calendarState?.connected) return;
+      if (!calendarState?.connected) return;
       if (livePumpTimerRef.current) {
         window.clearTimeout(livePumpTimerRef.current);
       }
       const delayMs = immediate ? 0 : 450;
       livePumpTimerRef.current = window.setTimeout(async () => {
         try {
-          const result = await triggerCalendarLivePump(session.access_token);
+          const accessToken = await requireAccessToken();
+          if (!accessToken) return;
+
+          const result = await triggerCalendarLivePump(accessToken);
           setCalendarLiveResult({
             processed: result.processed,
             failed: result.failed,
@@ -523,15 +569,18 @@ export const useTasksHubModule = () => {
             await loadCalendarStatus();
           }
         } catch (err) {
-          const message =
-            err instanceof Error ? err.message : "Live calendar sync failed";
-          setErrorMessage(message);
+          setErrorMessage(getErrorMessage(err, "Live calendar sync failed"));
         } finally {
           livePumpTimerRef.current = null;
         }
       }, delayMs);
     },
-    [calendarState?.connected, loadCalendarStatus, session?.access_token],
+    [
+      calendarState?.connected,
+      getErrorMessage,
+      loadCalendarStatus,
+      requireAccessToken,
+    ],
   );
 
   const createTaskFromDraft = useCallback(
@@ -550,13 +599,12 @@ export const useTasksHubModule = () => {
         setErrorMessage("Recurring tasks require a due date.");
         return null;
       }
-      if (!session?.access_token) {
-        setErrorMessage("Missing session token.");
-        return null;
-      }
 
       try {
-        const result = await createTask(session.access_token, {
+        const accessToken = await requireAccessToken();
+        if (!accessToken) return null;
+
+        const result = await createTask(accessToken, {
           list_id: draft.list_id,
           parent_task_id: draft.parent_task_id,
           title: cleanedTitle,
@@ -577,13 +625,11 @@ export const useTasksHubModule = () => {
         scheduleLiveSyncPump();
         return result;
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to create task.";
-        setErrorMessage(message);
+        setErrorMessage(getErrorMessage(error, "Failed to create task."));
         return null;
       }
     },
-    [scheduleLiveSyncPump, session?.access_token],
+    [getErrorMessage, requireAccessToken, scheduleLiveSyncPump],
   );
 
   const saveTask = useCallback(
@@ -619,13 +665,11 @@ export const useTasksHubModule = () => {
         }
       }
 
-      if (!session?.access_token) {
-        setErrorMessage("Missing session token.");
-        return false;
-      }
-
       try {
-        const result = await updateTask(session.access_token, taskId, {
+        const accessToken = await requireAccessToken();
+        if (!accessToken) return false;
+
+        const result = await updateTask(accessToken, taskId, {
           ...payload,
           browser_timezone: getBrowserTimeZone(),
         });
@@ -636,23 +680,22 @@ export const useTasksHubModule = () => {
         scheduleLiveSyncPump();
         return true;
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to save task.";
-        setErrorMessage(message);
+        setErrorMessage(getErrorMessage(error, "Failed to save task."));
         return false;
       }
     },
-    [scheduleLiveSyncPump, session?.access_token, tasks],
+    [getErrorMessage, requireAccessToken, scheduleLiveSyncPump, tasks],
   );
 
   const removeTask = useCallback(
     async (taskId: string) => {
       try {
-        await deleteTaskViaApi(session.access_token, taskId);
+        const accessToken = await requireAccessToken();
+        if (!accessToken) return false;
+
+        await deleteTaskViaApi(accessToken, taskId);
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to delete task.";
-        setErrorMessage(message);
+        setErrorMessage(getErrorMessage(error, "Failed to delete task."));
         return false;
       }
 
@@ -665,7 +708,7 @@ export const useTasksHubModule = () => {
       scheduleLiveSyncPump();
       return true;
     },
-    [scheduleLiveSyncPump, session.access_token],
+    [getErrorMessage, requireAccessToken, scheduleLiveSyncPump],
   );
 
   const toggleTaskCompletion = useCallback(
@@ -674,17 +717,18 @@ export const useTasksHubModule = () => {
 
       let result: Awaited<ReturnType<typeof setTaskCompletionViaApi>>;
       try {
+        const accessToken = await requireAccessToken();
+        if (!accessToken) return false;
+
         result = await setTaskCompletionViaApi(
-          session.access_token,
+          accessToken,
           task.id,
           nextCompleted,
         );
       } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Failed to update task status.";
-        setErrorMessage(message);
+        setErrorMessage(
+          getErrorMessage(error, "Failed to update task status."),
+        );
         return false;
       }
 
@@ -701,7 +745,7 @@ export const useTasksHubModule = () => {
       scheduleLiveSyncPump();
       return true;
     },
-    [scheduleLiveSyncPump, session.access_token],
+    [getErrorMessage, requireAccessToken, scheduleLiveSyncPump],
   );
 
   const reorderTasks = useCallback(
@@ -728,15 +772,15 @@ export const useTasksHubModule = () => {
         }),
       );
 
-      if (!session?.access_token) {
-        setTasks(previous);
-        setErrorMessage("Missing session token.");
-        return false;
-      }
-
       try {
+        const accessToken = await requireAccessToken();
+        if (!accessToken) {
+          setTasks(previous);
+          return false;
+        }
+
         const updatedTasks = await reorderTasksViaApi(
-          session.access_token,
+          accessToken,
           listId,
           parentTaskId,
           orderedTaskIds,
@@ -752,15 +796,13 @@ export const useTasksHubModule = () => {
         return true;
       } catch (error) {
         setTasks(previous);
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Failed to persist custom order.";
-        setErrorMessage(message);
+        setErrorMessage(
+          getErrorMessage(error, "Failed to persist custom order."),
+        );
         return false;
       }
     },
-    [scheduleLiveSyncPump, session?.access_token, tasks],
+    [getErrorMessage, requireAccessToken, scheduleLiveSyncPump, tasks],
   );
 
   const reorderLists = useCallback(
@@ -781,17 +823,14 @@ export const useTasksHubModule = () => {
         }),
       );
 
-      if (!session?.access_token) {
-        setLists(previous);
-        setErrorMessage("Missing session token.");
-        return false;
-      }
-
       try {
-        const updatedLists = await reorderTaskLists(
-          session.access_token,
-          orderedListIds,
-        );
+        const accessToken = await requireAccessToken();
+        if (!accessToken) {
+          setLists(previous);
+          return false;
+        }
+
+        const updatedLists = await reorderTaskLists(accessToken, orderedListIds);
         const updatedById = new Map(
           updatedLists.map((list) => [list.id, list]),
         );
@@ -802,15 +841,13 @@ export const useTasksHubModule = () => {
         return true;
       } catch (error) {
         setLists(previous);
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Failed to persist list order.";
-        setErrorMessage(message);
+        setErrorMessage(
+          getErrorMessage(error, "Failed to persist list order."),
+        );
         return false;
       }
     },
-    [lists, session?.access_token],
+    [getErrorMessage, lists, requireAccessToken],
   );
 
   const getSortForList = useCallback(
@@ -826,14 +863,12 @@ export const useTasksHubModule = () => {
 
   const setSortForList = useCallback(
     async (listId: string, mode: TaskSortMode, direction: SortDirection) => {
-      if (!session?.access_token) {
-        setErrorMessage("Missing session token.");
-        return false;
-      }
-
       try {
+        const accessToken = await requireAccessToken();
+        if (!accessToken) return false;
+
         const result = await upsertSortPreference(
-          session.access_token,
+          accessToken,
           listId,
           mode,
           direction,
@@ -854,15 +889,13 @@ export const useTasksHubModule = () => {
         setErrorMessage("");
         return true;
       } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Failed to save sort preference.";
-        setErrorMessage(message);
+        setErrorMessage(
+          getErrorMessage(error, "Failed to save sort preference."),
+        );
         return false;
       }
     },
-    [session?.access_token],
+    [getErrorMessage, requireAccessToken],
   );
 
   const setSortForCurrentView = useCallback(
@@ -899,47 +932,48 @@ export const useTasksHubModule = () => {
   }, [calendarState?.list_sync_settings]);
 
   const connectGoogleCalendar = useCallback(async () => {
-    if (!session?.access_token) {
-      setErrorMessage("No active session for Google connect.");
-      return;
-    }
     setCalendarBusy(true);
     try {
-      const { url } = await getGoogleConnectUrl(session.access_token);
+      const accessToken = await requireAccessToken(
+        "No active session for Google connect.",
+      );
+      if (!accessToken) return;
+
+      const { url } = await getGoogleConnectUrl(accessToken);
       window.location.href = url;
     } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Failed to connect Google Calendar";
-      setErrorMessage(message);
+      setErrorMessage(
+        getErrorMessage(err, "Failed to connect Google Calendar"),
+      );
     } finally {
       setCalendarBusy(false);
     }
-  }, [session?.access_token]);
+  }, [getErrorMessage, requireAccessToken]);
 
   const disconnectGoogleCalendar = useCallback(async () => {
-    if (!session?.access_token) return;
     setCalendarBusy(true);
     try {
-      await disconnectCalendar(session.access_token);
+      const accessToken = await requireAccessToken();
+      if (!accessToken) return;
+
+      await disconnectCalendar(accessToken);
       await loadCalendarStatus();
     } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Failed to disconnect Google Calendar";
-      setErrorMessage(message);
+      setErrorMessage(
+        getErrorMessage(err, "Failed to disconnect Google Calendar"),
+      );
     } finally {
       setCalendarBusy(false);
     }
-  }, [loadCalendarStatus, session?.access_token]);
+  }, [getErrorMessage, loadCalendarStatus, requireAccessToken]);
 
   const setListCalendarSync = useCallback(
     async (listId: string, enabled: boolean) => {
-      if (!session?.access_token) return false;
       try {
-        const result = await setListSync(session.access_token, listId, enabled);
+        const accessToken = await requireAccessToken();
+        if (!accessToken) return false;
+
+        const result = await setListSync(accessToken, listId, enabled);
         await loadCalendarStatus();
         if (enabled && result.run_id) {
           setCalendarSyncResult({ processed: 0, failed: 0, failures: [] });
@@ -952,25 +986,26 @@ export const useTasksHubModule = () => {
         }
         return true;
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Failed to update list sync";
-        setErrorMessage(message);
+        setErrorMessage(getErrorMessage(err, "Failed to update list sync"));
         return false;
       }
     },
     [
+      getErrorMessage,
       loadCalendarStatus,
       pollSyncRun,
+      requireAccessToken,
       scheduleLiveSyncPump,
-      session?.access_token,
     ],
   );
 
   const syncCalendarNow = useCallback(async () => {
-    if (!session?.access_token) return false;
     setCalendarBusy(true);
     try {
-      const result = await triggerCalendarSyncNow(session.access_token);
+      const accessToken = await requireAccessToken();
+      if (!accessToken) return false;
+
+      const result = await triggerCalendarSyncNow(accessToken);
       setCalendarSyncResult({ processed: 0, failed: 0, failures: [] });
       if (result.run_id) {
         await pollSyncRun(result.run_id, {
@@ -987,17 +1022,14 @@ export const useTasksHubModule = () => {
       }
       return true;
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to sync calendar now";
-      setErrorMessage(message);
+      setErrorMessage(getErrorMessage(err, "Failed to sync calendar now"));
       return false;
     } finally {
       setCalendarBusy(false);
     }
-  }, [loadCalendarStatus, pollSyncRun, session?.access_token]);
+  }, [getErrorMessage, loadCalendarStatus, pollSyncRun, requireAccessToken]);
 
   const rebuildCalendarNow = useCallback(async () => {
-    if (!session?.access_token) return false;
     const confirmed = window.confirm(
       "Rebuild Tracker Tasks calendar? This will delete all events in that calendar and rebuild from the tracker tasks that should currently appear there.",
     );
@@ -1005,7 +1037,10 @@ export const useTasksHubModule = () => {
 
     setCalendarBusy(true);
     try {
-      const result = await triggerCalendarRebuild(session.access_token);
+      const accessToken = await requireAccessToken();
+      if (!accessToken) return false;
+
+      const result = await triggerCalendarRebuild(accessToken);
       setCalendarSyncResult({ processed: 0, failed: 0, failures: [] });
       if (result.run_id) {
         await pollSyncRun(result.run_id, {
@@ -1022,14 +1057,12 @@ export const useTasksHubModule = () => {
       }
       return true;
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to rebuild calendar";
-      setErrorMessage(message);
+      setErrorMessage(getErrorMessage(err, "Failed to rebuild calendar"));
       return false;
     } finally {
       setCalendarBusy(false);
     }
-  }, [loadCalendarStatus, pollSyncRun, session?.access_token]);
+  }, [getErrorMessage, loadCalendarStatus, pollSyncRun, requireAccessToken]);
 
   return {
     allListsKey: ALL_LISTS_KEY,

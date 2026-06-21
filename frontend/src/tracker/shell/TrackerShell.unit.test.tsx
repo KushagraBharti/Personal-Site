@@ -44,6 +44,8 @@ describe("TrackerShell", () => {
       authError: "",
       signIn: vi.fn(),
       signOut: vi.fn(),
+      getFreshAccessToken: vi.fn(),
+      clearAuthSession: vi.fn(),
       isSupabaseConfigured: false,
       supabase: null,
     });
@@ -60,6 +62,8 @@ describe("TrackerShell", () => {
       authError: "",
       signIn: vi.fn(),
       signOut: vi.fn(),
+      getFreshAccessToken: vi.fn(),
+      clearAuthSession: vi.fn(),
       isSupabaseConfigured: true,
       supabase: {},
     });
@@ -76,6 +80,8 @@ describe("TrackerShell", () => {
       authError: "Invalid credentials",
       signIn: vi.fn(),
       signOut: vi.fn(),
+      getFreshAccessToken: vi.fn(),
+      clearAuthSession: vi.fn(),
       isSupabaseConfigured: true,
       supabase: {},
     });
@@ -95,6 +101,8 @@ describe("TrackerShell", () => {
       authError: "",
       signIn: vi.fn(),
       signOut: vi.fn(),
+      getFreshAccessToken: vi.fn(),
+      clearAuthSession: vi.fn(),
       isSupabaseConfigured: true,
       supabase: {},
     });

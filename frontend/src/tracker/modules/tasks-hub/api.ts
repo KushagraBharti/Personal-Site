@@ -72,6 +72,19 @@ const getAuthHeaders = (accessToken: string) => ({
   Authorization: `Bearer ${accessToken}`,
 });
 
+export class TrackerApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+    this.name = "TrackerApiError";
+  }
+}
+
+export const isUnauthorizedTrackerApiError = (error: unknown) =>
+  error instanceof TrackerApiError && error.status === 401;
+
 const readJson = async <T>(
   res: Response,
   fallbackError: string,
@@ -82,7 +95,7 @@ const readJson = async <T>(
       typeof body === "object" && body !== null && "error" in body
         ? String((body as { error?: unknown }).error || fallbackError)
         : fallbackError;
-    throw new Error(errorMessage);
+    throw new TrackerApiError(errorMessage, res.status);
   }
   return body as T;
 };

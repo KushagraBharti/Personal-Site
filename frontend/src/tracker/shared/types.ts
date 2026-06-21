@@ -14,6 +14,8 @@ export interface TrackerContextValue {
   session: Session;
   userId: string;
   supabase: SupabaseClient;
+  getFreshAccessToken: () => Promise<string | null>;
+  clearAuthSession: () => Promise<void>;
   startLoading: () => void;
   stopLoading: () => void;
 }

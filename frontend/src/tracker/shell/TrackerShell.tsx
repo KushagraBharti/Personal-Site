@@ -322,6 +322,8 @@ const TrackerLayout: React.FC<{
   session: Session;
   supabase: SupabaseClient;
   signOut: () => void;
+  getFreshAccessToken: () => Promise<string | null>;
+  clearAuthSession: () => Promise<void>;
   children: React.ReactNode;
   activeModuleId: TrackerModuleId;
   setActiveModuleId: (id: TrackerModuleId) => void;
@@ -334,6 +336,8 @@ const TrackerLayout: React.FC<{
   session,
   supabase,
   signOut,
+  getFreshAccessToken,
+  clearAuthSession,
   children,
   activeModuleId,
   setActiveModuleId,
@@ -357,7 +361,17 @@ const TrackerLayout: React.FC<{
   };
 
   return (
-    <TrackerProvider value={{ session, userId: session.user.id, supabase, startLoading, stopLoading }}>
+    <TrackerProvider
+      value={{
+        session,
+        userId: session.user.id,
+        supabase,
+        getFreshAccessToken,
+        clearAuthSession,
+        startLoading,
+        stopLoading,
+      }}
+    >
       <div className="neo-tracker min-h-screen">
         {/* Header */}
         <motion.header
@@ -513,7 +527,17 @@ const TrackerLayout: React.FC<{
 // ============================================================================
 
 const TrackerShell: React.FC = () => {
-  const { session, authLoading, authError, signIn, signOut, isSupabaseConfigured, supabase } = useTrackerAuth();
+  const {
+    session,
+    authLoading,
+    authError,
+    signIn,
+    signOut,
+    getFreshAccessToken,
+    clearAuthSession,
+    isSupabaseConfigured,
+    supabase,
+  } = useTrackerAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const moduleParam = searchParams.get("module");
   const availableModuleIds = useMemo(() => trackerModules.map((module) => module.id), []);
@@ -560,6 +584,8 @@ const TrackerShell: React.FC = () => {
       session={session}
       supabase={supabase}
       signOut={signOut}
+      getFreshAccessToken={getFreshAccessToken}
+      clearAuthSession={clearAuthSession}
       activeModuleId={activeModuleId}
       setActiveModuleId={setActiveModuleId}
       loadingCount={loadingCount}

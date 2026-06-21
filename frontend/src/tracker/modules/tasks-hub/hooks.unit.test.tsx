@@ -12,6 +12,7 @@ const apiMocks = vi.hoisted(() => ({
   getCalendarStatus: vi.fn(),
   getCalendarSyncProgress: vi.fn(),
   getGoogleConnectUrl: vi.fn(),
+  isUnauthorizedTrackerApiError: vi.fn(),
   reorderTaskLists: vi.fn(),
   reorderTasksViaApi: vi.fn(),
   setTaskCompletionViaApi: vi.fn(),
@@ -49,21 +50,33 @@ describe("useTasksHubModule realtime refresh", () => {
     channel: ReturnType<typeof vi.fn>;
     removeChannel: ReturnType<typeof vi.fn>;
   };
+  let getFreshAccessToken: ReturnType<typeof vi.fn>;
+  let clearAuthSession: ReturnType<typeof vi.fn>;
+  let subscribeCallback:
+    | ((status: "CHANNEL_ERROR" | "CLOSED" | "SUBSCRIBED" | "TIMED_OUT", error?: Error) => void)
+    | null;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     broadcastHandler = null;
+    subscribeCallback = null;
     channel = {
       on: vi.fn((_type, _filter, handler) => {
         broadcastHandler = handler;
         return channel;
       }),
-      subscribe: vi.fn(() => channel),
+      subscribe: vi.fn((callback) => {
+        subscribeCallback = callback;
+        return channel;
+      }),
     };
     supabase = {
       realtime: { setAuth: vi.fn().mockResolvedValue(undefined) },
       channel: vi.fn(() => channel),
       removeChannel: vi.fn(),
     };
+    getFreshAccessToken = vi.fn().mockResolvedValue("fresh-token");
+    clearAuthSession = vi.fn().mockResolvedValue(undefined);
 
     apiMocks.fetchTrackerBootstrap.mockResolvedValue({
       ok: true,
@@ -72,26 +85,35 @@ describe("useTasksHubModule realtime refresh", () => {
       sort_preferences: [],
     });
     apiMocks.getCalendarStatus.mockResolvedValue(buildCalendarStatus());
+    apiMocks.isUnauthorizedTrackerApiError.mockImplementation(
+      (error: unknown) =>
+        error instanceof Error && error.message === "Unauthorized",
+    );
     trackerContextMock.mockReturnValue({
       session: {
-        access_token: "session-token",
+        access_token: "stale-session-token",
         user: { id: "user-1" },
       },
       userId: "user-1",
       supabase,
+      getFreshAccessToken,
+      clearAuthSession,
       startLoading: vi.fn(),
       stopLoading: vi.fn(),
     });
   });
 
-  it("subscribes to the user's private tracker topic and refreshes on broadcast", async () => {
+  it("uses fresh tokens for bootstrap, status, and the private tracker topic", async () => {
     const { unmount } = renderHook(() => useTasksHubModule());
 
     await waitFor(() => {
-      expect(apiMocks.fetchTrackerBootstrap).toHaveBeenCalledTimes(1);
-      expect(apiMocks.getCalendarStatus).toHaveBeenCalledTimes(1);
+      expect(apiMocks.fetchTrackerBootstrap).toHaveBeenCalledWith(
+        "fresh-token",
+        expect.any(String),
+      );
+      expect(apiMocks.getCalendarStatus).toHaveBeenCalledWith("fresh-token");
     });
-    expect(supabase.realtime.setAuth).toHaveBeenCalledWith("session-token");
+    expect(supabase.realtime.setAuth).toHaveBeenCalledWith("fresh-token");
     await waitFor(() => {
       expect(supabase.channel).toHaveBeenCalledWith("tracker:user:user-1", {
         config: { private: true },
@@ -115,6 +137,11 @@ describe("useTasksHubModule realtime refresh", () => {
       },
       { timeout: 1500 },
     );
+    expect(apiMocks.fetchTrackerBootstrap).toHaveBeenLastCalledWith(
+      "fresh-token",
+      expect.any(String),
+    );
+    expect(apiMocks.getCalendarStatus).toHaveBeenLastCalledWith("fresh-token");
 
     unmount();
     expect(supabase.removeChannel).toHaveBeenCalledWith(channel);
@@ -132,7 +159,8 @@ describe("useTasksHubModule realtime refresh", () => {
     renderHook(() => useTasksHubModule());
 
     await waitFor(() => {
-      expect(supabase.realtime.setAuth).toHaveBeenCalledWith("session-token");
+      expect(getFreshAccessToken).toHaveBeenCalled();
+      expect(supabase.realtime.setAuth).toHaveBeenCalledWith("fresh-token");
     });
     expect(supabase.channel).not.toHaveBeenCalled();
 
@@ -142,6 +170,49 @@ describe("useTasksHubModule realtime refresh", () => {
       expect(supabase.channel).toHaveBeenCalledWith("tracker:user:user-1", {
         config: { private: true },
       });
+    });
+  });
+
+  it("does not subscribe when a fresh access token is unavailable", async () => {
+    getFreshAccessToken.mockResolvedValue(null);
+
+    renderHook(() => useTasksHubModule());
+
+    await waitFor(() => {
+      expect(getFreshAccessToken).toHaveBeenCalled();
+    });
+    expect(supabase.realtime.setAuth).not.toHaveBeenCalled();
+    expect(supabase.channel).not.toHaveBeenCalled();
+  });
+
+  it("clears auth and removes the channel when realtime rejects the private topic", async () => {
+    renderHook(() => useTasksHubModule());
+
+    await waitFor(() => {
+      expect(supabase.channel).toHaveBeenCalled();
+      expect(subscribeCallback).toBeTruthy();
+    });
+
+    subscribeCallback?.(
+      "CHANNEL_ERROR",
+      new Error(
+        "Unauthorized: You do not have permissions to read from this Channel topic",
+      ),
+    );
+
+    expect(clearAuthSession).toHaveBeenCalled();
+    expect(supabase.removeChannel).toHaveBeenCalledWith(channel);
+  });
+
+  it("clears auth when a private API call returns Unauthorized", async () => {
+    apiMocks.fetchTrackerBootstrap.mockRejectedValue(
+      new Error("Unauthorized"),
+    );
+
+    renderHook(() => useTasksHubModule());
+
+    await waitFor(() => {
+      expect(clearAuthSession).toHaveBeenCalled();
     });
   });
 });

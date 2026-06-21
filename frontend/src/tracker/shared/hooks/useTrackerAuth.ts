@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import supabase, { isSupabaseConfigured } from "../supabase/client";
 
@@ -6,6 +6,16 @@ export const useTrackerAuth = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState("");
+
+  const clearAuthSession = useCallback(async () => {
+    setSession(null);
+    if (!supabase) return;
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch (error) {
+      console.error("Failed to clear Supabase session", error);
+    }
+  }, []);
 
   useEffect(() => {
     if (!supabase) {
@@ -29,17 +39,43 @@ export const useTrackerAuth = () => {
 
     init();
 
-    const { data: listener } = client.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-      setAuthLoading(false);
-    });
+    const { data: listener } = client.auth.onAuthStateChange(
+      (_event, newSession) => {
+        setSession(newSession);
+        setAuthLoading(false);
+      },
+    );
 
     return () => listener?.subscription?.unsubscribe();
   }, []);
 
+  const getFreshAccessToken = useCallback(async () => {
+    if (!supabase) return null;
+
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error || !data.session?.access_token) {
+        if (error) {
+          console.error("Failed to refresh Supabase session", error);
+        }
+        await clearAuthSession();
+        return null;
+      }
+
+      setSession(data.session);
+      return data.session.access_token;
+    } catch (error) {
+      console.error("Failed to refresh Supabase session", error);
+      await clearAuthSession();
+      return null;
+    }
+  }, [clearAuthSession]);
+
   const signIn = async (email: string, password: string) => {
     if (!supabase) {
-      setAuthError("Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.");
+      setAuthError(
+        "Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.",
+      );
       return;
     }
     setAuthError("");
@@ -59,6 +95,8 @@ export const useTrackerAuth = () => {
     authError,
     signIn,
     signOut,
+    getFreshAccessToken,
+    clearAuthSession,
     isSupabaseConfigured,
     supabase,
   };
