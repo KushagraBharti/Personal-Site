@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { Session } from "@supabase/supabase-js";
-import supabase, { isSupabaseConfigured } from "../supabase/client";
+import type { Session } from "@supabase/supabase-js";
+import { isSupabaseConfigured, supabase } from "../supabase/supabaseClient";
 
 export const useTrackerAuth = () => {
   const [session, setSession] = useState<Session | null>(null);

@@ -1,4 +1,4 @@
-export const DATE_ONLY_MARKER_MS = 777;
+const DATE_ONLY_MARKER_MS = 777;
 
 const DATE_ONLY_INPUT_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 

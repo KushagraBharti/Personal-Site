@@ -1,5 +1,3 @@
-// frontend/src/lib/supabaseClient.ts
-
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
@@ -14,5 +12,3 @@ if (!isSupabaseConfigured) {
 export const supabase: SupabaseClient | null = isSupabaseConfigured
   ? createClient(supabaseUrl!, supabaseAnonKey!)
   : null;
-
-export default supabase;

@@ -10,7 +10,7 @@ export type CalendarSyncJobType =
 export type CalendarSyncLane = "live" | "reconcile" | "rebuild" | "system";
 
 export type CalendarSyncRunMode = "live" | "reconcile" | "rebuild";
-export type CalendarSyncRunStatus = "queued" | "running" | "done" | "failed" | "cancelled";
+type CalendarSyncRunStatus = "queued" | "running" | "done" | "failed" | "cancelled";
 
 export interface TrackerGoogleSyncRun {
   id: string;

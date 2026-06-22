@@ -5,13 +5,11 @@
   "main": "src/server.ts",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
     "@supabase/supabase-js": "2.108.2",
     "axios": "1.18.0",
     "cors": "2.8.6",
     "express": "5.2.1",
-    "luxon": "3.7.2",
-    "zod": "^4.4.3"
+    "luxon": "3.7.2"
   },
   "devDependencies": {
     "@types/cors": "2.8.19",
