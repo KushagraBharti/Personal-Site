@@ -378,11 +378,11 @@ const handleMcpRequest = (req, res) => __awaiter(void 0, void 0, void 0, functio
     if (!authResult.ok) {
         return (0, mcpAuth_1.sendTrackerMcpAuthFailure)(res, authResult);
     }
-    const context = {
-        supabaseAdmin: (0, calendarSyncQueueService_1.getSupabaseAdmin)(),
-        userId: authResult.ownerUserId,
-    };
     try {
+        const context = {
+            supabaseAdmin: (0, calendarSyncQueueService_1.getSupabaseAdmin)(),
+            userId: authResult.ownerUserId,
+        };
         const payload = req.body;
         if (Array.isArray(payload)) {
             const responses = (yield Promise.all(payload.map((message) => handleJsonRpc(message, context)))).filter((response) => response !== null);

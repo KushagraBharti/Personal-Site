@@ -83,6 +83,7 @@ Current tracker modules:
 - Tracker MCP uses a separate bearer token, scopes to `TRACKER_MCP_OWNER_USER_ID`, and only sees non-archived task lists with Google Calendar sync enabled.
 - Tracker UI realtime refresh uses Supabase Realtime Broadcast from DB on private `tracker:user:<user_id>` topics. Broadcast payloads are invalidation signals only; the frontend refetches backend private APIs.
 - Calendar sync uses the live queue path; do not add legacy task-change trigger paths back.
+- Backend production is pinned to Vercel Node `24.x` in `backend/package.json` so Supabase Realtime uses the native WebSocket client.
 - Supabase CLI config lives in `backend/supabase/config.toml`; this repo intentionally does not keep checked-in SQL snapshots or migrations.
 - The old `docs/` tree has been removed. Do not point new onboarding instructions at `docs/active/*`.
 

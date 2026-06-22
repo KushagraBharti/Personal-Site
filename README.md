@@ -96,6 +96,8 @@ Backend:
 - Testing: Vitest, Testing Library, Supertest
 - Deployment/Tooling: Vercel, npm, Supabase CLI
 
+The backend production runtime is pinned to Vercel Node `24.x` through `backend/package.json` so Supabase Realtime uses the native WebSocket client.
+
 ## Getting Started
 
 ### Prerequisites

@@ -454,12 +454,12 @@ const handleMcpRequest = async (req: Request, res: Response) => {
     return sendTrackerMcpAuthFailure(res, authResult);
   }
 
-  const context = {
-    supabaseAdmin: getSupabaseAdmin(),
-    userId: authResult.ownerUserId,
-  };
-
   try {
+    const context = {
+      supabaseAdmin: getSupabaseAdmin(),
+      userId: authResult.ownerUserId,
+    };
+
     const payload = req.body as JsonRpcRequest | JsonRpcRequest[];
     if (Array.isArray(payload)) {
       const responses = (
