@@ -389,7 +389,7 @@ const getDueDay = (
 const summarizeTasksForList = (
   list: TrackerTaskListRow,
   tasks: TrackerTaskRow[],
-  now: DateTime,
+  now: DateTime<true>,
   fallbackTimeZone: string,
 ) => {
   const listTasks = tasks.filter((task) => task.list_id === list.id);

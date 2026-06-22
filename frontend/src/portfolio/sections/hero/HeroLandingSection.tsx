@@ -13,7 +13,7 @@ type SculptureSceneComponent = React.ComponentType<{
 type SculptureStatus = "loading" | "ready" | "unavailable";
 
 const DEFAULT_SITE_URL = "https://www.kushagrabharti.com";
-const HERO_MODEL_PATH = "/portfolio/models/best.glb";
+const HERO_MODEL_PATH = "/portfolio/models/3d-model.glb";
 const HERO_MEDIA_KICKED_EVENT = "portfolio:hero-media-kicked";
 let cachedCanCreateWebGLContext: boolean | null = null;
 

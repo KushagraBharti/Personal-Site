@@ -13,18 +13,24 @@ import {
   OrbitControls,
   useGLTF,
 } from "@react-three/drei";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   LinearFilter,
   LinearMipmapLinearFilter,
   PCFShadowMap,
+  Spherical,
   SRGBColorSpace,
+  Vector3,
 } from "three";
 import type { Group, Mesh, MeshStandardMaterial, Texture } from "three";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
-const HERO_MODEL_PATH = "/portfolio/models/best.glb";
+const HERO_MODEL_PATH = "/portfolio/models/3d-model.glb";
 const WEBGL_RETRY_DELAY_MS = 1800;
 const WEBGL_MAX_RECOVERY_ATTEMPTS = 2;
+const HERO_MIN_AZIMUTH_ANGLE = -4.8;
+const HERO_MAX_AZIMUTH_ANGLE = -3.24;
+const HERO_IDLE_ROTATE_SPEED = 0.2;
 
 class SculptureSceneErrorBoundary extends Component<
   { children: ReactNode; onError: () => void },
@@ -119,6 +125,118 @@ function HeroModel({ onReady }: { onReady: () => void }) {
 }
 
 useGLTF.preload(HERO_MODEL_PATH);
+
+function BoundedHeroControls() {
+  const controlsRef = useRef<OrbitControlsImpl | null>(null);
+  const idleDirectionRef = useRef(1);
+  const isDraggingRef = useRef(false);
+  const azimuthRef = useRef(HERO_MIN_AZIMUTH_ANGLE);
+  const { camera } = useThree();
+  const offsetRef = useRef(new Vector3());
+  const sphericalRef = useRef(new Spherical());
+
+  const normalizeAzimuthToBounds = useCallback((azimuth: number) => {
+    let normalizedAzimuth = azimuth;
+    const fullTurn = Math.PI * 2;
+
+    while (normalizedAzimuth < HERO_MIN_AZIMUTH_ANGLE) {
+      normalizedAzimuth += fullTurn;
+    }
+
+    while (normalizedAzimuth > HERO_MAX_AZIMUTH_ANGLE) {
+      normalizedAzimuth -= fullTurn;
+    }
+
+    return Math.min(
+      HERO_MAX_AZIMUTH_ANGLE,
+      Math.max(HERO_MIN_AZIMUTH_ANGLE, normalizedAzimuth),
+    );
+  }, []);
+
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+
+    const offset = offsetRef.current.copy(camera.position).sub(controls.target);
+    const spherical = sphericalRef.current.setFromVector3(offset);
+    spherical.theta = HERO_MIN_AZIMUTH_ANGLE;
+    camera.position.copy(controls.target).add(offset.setFromSpherical(spherical));
+    azimuthRef.current = HERO_MIN_AZIMUTH_ANGLE;
+    idleDirectionRef.current = 1;
+    controls.update();
+  }, [camera]);
+
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+
+    const handleDragStart = () => {
+      isDraggingRef.current = true;
+    };
+
+    const handleDragEnd = () => {
+      azimuthRef.current = normalizeAzimuthToBounds(
+        controls.getAzimuthalAngle(),
+      );
+      isDraggingRef.current = false;
+    };
+
+    controls.addEventListener("start", handleDragStart);
+    controls.addEventListener("end", handleDragEnd);
+    return () => {
+      controls.removeEventListener("start", handleDragStart);
+      controls.removeEventListener("end", handleDragEnd);
+    };
+  }, [normalizeAzimuthToBounds]);
+
+  useFrame((_, delta) => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+
+    if (isDraggingRef.current) {
+      azimuthRef.current = normalizeAzimuthToBounds(
+        controls.getAzimuthalAngle(),
+      );
+      return;
+    }
+
+    let nextAzimuth =
+      azimuthRef.current + HERO_IDLE_ROTATE_SPEED * idleDirectionRef.current * delta;
+
+    if (nextAzimuth >= HERO_MAX_AZIMUTH_ANGLE) {
+      nextAzimuth = HERO_MAX_AZIMUTH_ANGLE;
+      idleDirectionRef.current = -1;
+    } else if (nextAzimuth <= HERO_MIN_AZIMUTH_ANGLE) {
+      nextAzimuth = HERO_MIN_AZIMUTH_ANGLE;
+      idleDirectionRef.current = 1;
+    }
+
+    const offset = offsetRef.current.copy(camera.position).sub(controls.target);
+    const spherical = sphericalRef.current.setFromVector3(offset);
+    spherical.theta = nextAzimuth;
+    camera.position.copy(controls.target).add(offset.setFromSpherical(spherical));
+    azimuthRef.current = nextAzimuth;
+    controls.update();
+  });
+
+  return (
+    <OrbitControls
+      ref={controlsRef}
+      makeDefault
+      enablePan={false}
+      enableZoom={false}
+      enableDamping
+      dampingFactor={0.08}
+      autoRotate={false}
+      minDistance={2.8}
+      maxDistance={9.2}
+      minAzimuthAngle={HERO_MIN_AZIMUTH_ANGLE}
+      maxAzimuthAngle={HERO_MAX_AZIMUTH_ANGLE}
+      minPolarAngle={Math.PI / 3.2}
+      maxPolarAngle={Math.PI / 1.78}
+    />
+  );
+}
 
 export default function SculptureScene({
   onModelReady,
@@ -219,19 +337,7 @@ export default function SculptureScene({
               />
             </Suspense>
 
-            <OrbitControls
-              makeDefault
-              enablePan={false}
-              enableZoom={false}
-              enableDamping
-              dampingFactor={0.08}
-              autoRotate
-              autoRotateSpeed={0.28}
-              minDistance={2.8}
-              maxDistance={9.2}
-              minPolarAngle={Math.PI / 3.2}
-              maxPolarAngle={Math.PI / 1.78}
-            />
+            <BoundedHeroControls />
           </Canvas>
         </SculptureSceneErrorBoundary>
       )}

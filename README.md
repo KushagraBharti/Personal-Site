@@ -94,13 +94,13 @@ Backend:
 - Data/Auth: Supabase
 - Integrations: GitHub API, OpenWeather, Google Calendar
 - Testing: Vitest, Testing Library, Supertest
-- Deployment/Tooling: Vercel, Bun, Supabase CLI
+- Deployment/Tooling: Vercel, npm, Supabase CLI
 
 ## Getting Started
 
 ### Prerequisites
 
-- Bun
+- npm
 - GitHub token for the public GitHub stats API
 - OpenWeather API key for the public weather API
 - Supabase credentials for tracker auth/data
@@ -111,9 +111,9 @@ Backend:
 
 ```bash
 cd frontend
-bun install
+npm install
 cp .env.local.example .env.local
-bun run dev
+npm run dev
 ```
 
 Common frontend env:
@@ -130,9 +130,9 @@ Only anon/publishable Supabase keys belong in frontend env.
 
 ```bash
 cd backend
-bun install
+npm install
 cp .env.example .env
-bun run dev
+npm run dev
 ```
 
 Key backend env:
@@ -196,31 +196,31 @@ Frontend:
 
 ```bash
 cd frontend
-bun run dev
-bun run build
-bun run lint
-bun run test:unit
-bun run test:integration
-bun run test:smoke
-bun run test:e2e
+npm run dev
+npm run build
+npm run lint
+npm run test:unit
+npm run test:integration
+npm run test:smoke
+npm run test:e2e
 ```
 
 Backend:
 
 ```bash
 cd backend
-bun run dev
-bun run build
-bun run lint
-bun run test:unit
-bun run test:integration
+npm run dev
+npm run build
+npm run lint
+npm run test:unit
+npm run test:integration
 ```
 
 Repo-level verification:
 
 ```bash
-bun install
-bun run verify
+npm install
+npm run verify
 ```
 
 Supabase:
@@ -233,10 +233,10 @@ npm run supabase:types:linked
 
 Verification tiers:
 
-- `bun run verify` -> npm-backed installs, then build, lint, unit, integration
-- `bun run verify:live` -> `verify` plus live backend checks
+- `npm run verify` -> npm-backed installs, then build, lint, unit, integration
+- `npm run verify:live` -> `verify` plus live backend checks
 
-The repo is Bun-first for normal app work. The root `verify` scripts intentionally use npm internally because the test toolchain has been more reliable that way in the Windows + OneDrive environment.
+The repo uses npm for installs, dev servers, builds, linting, tests, verification, and Supabase CLI commands.
 
 ## Development Notes
 

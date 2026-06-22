@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 @font-face {
   font-family: "Cormorant Garamond";
   font-style: normal;
@@ -71,10 +73,6 @@
   descent-override: 22%;
   line-gap-override: 0%;
 }
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 :root {
   --portfolio-paper: #f4efe7;
@@ -1797,7 +1795,13 @@ html {
 
 /* 3. Glass Card Component */
 .card {
-  @apply p-6 rounded-glass shadow-glass transition-all duration-300 transform;
+  padding: 1.5rem;
+  border-radius: 20px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  transition:
+    box-shadow 300ms ease,
+    transform 300ms ease;
+  transform: translateZ(0);
 
   &:hover {
     transform: scale(1.015);
@@ -1814,7 +1818,15 @@ html {
 
 /* 4. Glass Button Component */
 .btn-glass {
-  @apply px-6 py-2.5 rounded-full text-white font-semibold transition-all duration-200;
+  padding: 0.625rem 1.5rem;
+  border-radius: 9999px;
+  color: #ffffff;
+  font-weight: 600;
+  transition:
+    background 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease;
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -1827,7 +1839,7 @@ html {
   box-shadow: 0 4px 20px rgba(15, 23, 42, 0.12);
 }
 .btn-glass:active {
-  @apply scale-95;
+  transform: scale(0.95);
 }
 
 /* 5. Floating Animation for elements (optional) */
@@ -1846,33 +1858,41 @@ html {
 
 /* 7. Full Screen Background Utility */
 .full-screen-bg {
-  @apply min-h-screen flex items-center justify-center;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 8. Icon Hover Effects */
 .icon-hover {
-  @apply transition-transform duration-300;
+  transition:
+    color 300ms ease,
+    transform 300ms ease;
 }
 .icon-hover:hover {
-  @apply scale-110 text-primary; /* Scale up and change color to primary */
+  color: #3b82f6;
+  transform: scale(1.1);
 }
 
 /* 9. Responsive Tweaks for .card */
-@layer base {
-  @screen sm {
-    .card {
-      @apply max-w-sm mx-auto;
-    }
+@media (min-width: 640px) {
+  .card {
+    max-width: 24rem;
+    margin-right: auto;
+    margin-left: auto;
   }
-  @screen md {
-    .card {
-      @apply max-w-md mx-auto;
-    }
+}
+
+@media (min-width: 768px) {
+  .card {
+    max-width: 28rem;
   }
-  @screen lg {
-    .card {
-      @apply max-w-lg mx-auto;
-    }
+}
+
+@media (min-width: 1024px) {
+  .card {
+    max-width: 32rem;
   }
 }
 

@@ -105,39 +105,38 @@ Backend env:
 
 ## Workflow
 
-This repo is Bun-first, with repo-level npm exceptions:
+This repo is npm-first:
 
-- use Bun for normal app work, installs, dev servers, builds, and linting
+- use npm for normal app work, installs, dev servers, builds, and linting
 - use repo-level `verify` commands for broad testing
 - use repo-level `supabase:*` commands for Supabase CLI work
-- `verify` uses npm internally because it is more reliable for the test toolchain in this Windows + OneDrive environment
 
 Frontend:
 
 ```bash
 cd frontend
-bun install
-bun run dev
-bun run build
-bun run lint
+npm install
+npm run dev
+npm run build
+npm run lint
 ```
 
 Backend:
 
 ```bash
 cd backend
-bun install
-bun run dev
-bun run build
-bun run lint
-bun run start
+npm install
+npm run dev
+npm run build
+npm run lint
+npm run start
 ```
 
 Repo checks:
 
 ```bash
-bun install
-bun run verify
+npm install
+npm run verify
 ```
 
 Supabase:
@@ -152,8 +151,8 @@ npm run supabase:types:linked
 
 Verification tiers:
 
-- `bun run verify` -> npm-backed installs, then build, lint, unit, integration
-- `bun run verify:live` -> `verify` plus live backend checks
+- `npm run verify` -> npm-backed installs, then build, lint, unit, integration
+- `npm run verify:live` -> `verify` plus live backend checks
 
 ## Editing Rules
 

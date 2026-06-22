@@ -1,11 +1,9 @@
 # Logs
 logs
 *.log
-bun-debug.log*
 lerna-debug.log*
 
 node_modules
-package-lock.json
 dist
 dist-ssr
 coverage
@@ -16,7 +14,6 @@ test-results
 !backend/dist/**
 backend/dist/test/
 *.local
-**/.yarnrc.yml
 
 # Editor directories and files
 .vscode/*
