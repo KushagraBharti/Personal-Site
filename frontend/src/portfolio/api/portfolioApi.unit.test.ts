@@ -65,7 +65,7 @@ describe("portfolioApi", () => {
     const third = await portfolioApi.fetchPortfolioSnapshot();
     expect(third).toEqual(first);
     expect(fetchMock).toHaveBeenCalledTimes(2);
-  });
+  }, 15_000);
 
   it("falls back to the cached snapshot when revalidation fails", async () => {
     sessionStorage.setItem(

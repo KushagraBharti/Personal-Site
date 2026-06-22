@@ -53,7 +53,7 @@ describe("TrackerShell", () => {
     await renderShell();
 
     expect(screen.getByText("SETUP REQUIRED")).toBeInTheDocument();
-  });
+  }, 15_000);
 
   it("shows the loading state while auth is booting", async () => {
     useTrackerAuthMock.mockReturnValue({

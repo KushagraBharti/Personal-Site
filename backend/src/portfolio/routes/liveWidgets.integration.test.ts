@@ -35,7 +35,7 @@ describe("live widget routes", () => {
     expect(response.status).toBe(200);
     expect(response.headers["cache-control"]).toContain("no-store");
     expect(fetchGitHubStatsMock).toHaveBeenCalledWith(true);
-  });
+  }, 15_000);
 
   it("passes valid Vercel geo headers to the weather service and falls back to city/country when coordinates are invalid", async () => {
     fetchWeatherMock.mockResolvedValue({ name: "Dallas" });

@@ -17,10 +17,7 @@ import {
   normalizeRecurrenceUnit,
   normalizeTaskDueTimeZone,
 } from "./taskHubUtils";
-import {
-  deleteCalendarLinksForTasks,
-  processBestEffortTaskDeleteCleanup,
-} from "./taskCalendarCleanupService";
+import { deleteCalendarLinksForTasks } from "./taskCalendarCleanupService";
 import { queueTaskDeleteForUser } from "../../calendar/services/taskCalendarSyncService";
 import { getNextTaskSortOrder } from "./taskRecurrenceService";
 
@@ -613,21 +610,17 @@ export const deleteTaskForUser = async (
     return { ok: false as const, code: 404, error: "Task not found" };
 
   const taskIds = taskRows.map((row) => row.id);
+  let calendarSyncWarning: string | null = null;
 
   for (const row of taskRows) {
     await queueTaskDeleteForUser(supabaseAdmin, userId, {
       listId: row.list_id,
       taskId: row.id,
       source: "api_task_delete",
-    }).catch(() => {});
-  }
-
-  for (const row of taskRows) {
-    await processBestEffortTaskDeleteCleanup(supabaseAdmin, {
-      userId,
-      listId: row.list_id,
-      taskId: row.id,
-      source: "delete_task",
+    }).catch((error) => {
+      calendarSyncWarning =
+        "Task deleted, but calendar sync could not be queued.";
+      console.error("Failed to enqueue live calendar task delete", error);
     });
   }
 
@@ -640,7 +633,7 @@ export const deleteTaskForUser = async (
     .in("id", taskIds);
   if (taskDeleteError) throw new Error(taskDeleteError.message);
 
-  return { ok: true as const };
+  return { ok: true as const, calendarSyncWarning };
 };
 
 export const reorderTasksForUser = async (

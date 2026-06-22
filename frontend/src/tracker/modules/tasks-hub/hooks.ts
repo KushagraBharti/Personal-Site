@@ -69,6 +69,76 @@ const buildTaskDraft = (
   recurrence_ends_at: "",
 });
 
+const makeTempTaskId = () => {
+  const id = globalThis.crypto?.randomUUID?.() || Math.random().toString(36);
+  return `temp:${id}`;
+};
+
+const getNextLocalSortOrder = (
+  tasks: TrackerTask[],
+  listId: string,
+  parentTaskId: string | null,
+) =>
+  tasks
+    .filter(
+      (task) =>
+        task.list_id === listId && task.parent_task_id === parentTaskId,
+    )
+    .reduce((max, task) => Math.max(max, task.sort_order || 0), 0) + 1;
+
+const applyTaskPatch = (
+  task: TrackerTask,
+  updates: TaskUpdateInput,
+): TrackerTask => ({
+  ...task,
+  ...(updates.title !== undefined ? { title: updates.title } : {}),
+  ...(updates.details !== undefined ? { details: updates.details } : {}),
+  ...(updates.due_at !== undefined ? { due_at: updates.due_at } : {}),
+  ...(updates.due_timezone !== undefined
+    ? { due_timezone: updates.due_timezone }
+    : {}),
+  ...(updates.recurrence_type !== undefined
+    ? { recurrence_type: updates.recurrence_type }
+    : {}),
+  ...(updates.recurrence_interval !== undefined
+    ? { recurrence_interval: updates.recurrence_interval }
+    : {}),
+  ...(updates.recurrence_unit !== undefined
+    ? { recurrence_unit: updates.recurrence_unit }
+    : {}),
+  ...(updates.recurrence_ends_at !== undefined
+    ? { recurrence_ends_at: updates.recurrence_ends_at }
+    : {}),
+  ...(updates.list_id !== undefined ? { list_id: updates.list_id } : {}),
+  ...(updates.parent_task_id !== undefined
+    ? { parent_task_id: updates.parent_task_id }
+    : {}),
+  updated_at: new Date().toISOString(),
+});
+
+const collectTaskSubtree = (tasks: TrackerTask[], rootTaskId: string) => {
+  const ids = new Set([rootTaskId]);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    tasks.forEach((task) => {
+      if (task.parent_task_id && ids.has(task.parent_task_id) && !ids.has(task.id)) {
+        ids.add(task.id);
+        changed = true;
+      }
+    });
+  }
+  return tasks.filter((task) => ids.has(task.id));
+};
+
+const restoreMissingTasks = (
+  current: TrackerTask[],
+  restored: TrackerTask[],
+) => {
+  const currentIds = new Set(current.map((task) => task.id));
+  return [...current, ...restored.filter((task) => !currentIds.has(task.id))];
+};
+
 export const useTasksHubModule = () => {
   const {
     supabase,
@@ -86,6 +156,7 @@ export const useTasksHubModule = () => {
   );
   const [selectedListId, setSelectedListId] = useState<string>(ALL_LISTS_KEY);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [calendarWarning, setCalendarWarning] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const [calendarState, setCalendarState] =
     useState<CalendarConnectionState | null>(null);
@@ -127,6 +198,10 @@ export const useTasksHubModule = () => {
     },
     [clearAuthSession],
   );
+
+  const applyCalendarWarning = useCallback((warning?: string | null) => {
+    setCalendarWarning(warning || "");
+  }, []);
 
   const requireAccessToken = useCallback(
     async (message = "Missing session token.") => {
@@ -555,10 +630,15 @@ export const useTasksHubModule = () => {
             failures: result.failures || [],
           });
           if (result.failed > 0) {
+            setCalendarWarning("Task saved, but Google Calendar sync failed.");
             await loadCalendarStatus();
+          } else {
+            setCalendarWarning("");
           }
         } catch (err) {
-          setErrorMessage(getErrorMessage(err, "Live calendar sync failed"));
+          setCalendarWarning(
+            getErrorMessage(err, "Task saved, but Google Calendar sync failed."),
+          );
         } finally {
           livePumpTimerRef.current = null;
         }
@@ -569,11 +649,12 @@ export const useTasksHubModule = () => {
       getErrorMessage,
       loadCalendarStatus,
       requireAccessToken,
+      setCalendarWarning,
     ],
   );
 
   const createTaskFromDraft = useCallback(
-    async (draft: TaskDraft) => {
+    (draft: TaskDraft) => {
       const cleanedTitle = draft.title.trim();
       if (!cleanedTitle) return null;
 
@@ -589,40 +670,82 @@ export const useTasksHubModule = () => {
         return null;
       }
 
-      try {
-        const accessToken = await requireAccessToken();
-        if (!accessToken) return null;
+      const now = new Date().toISOString();
+      const tempTask: TrackerTask = {
+        id: makeTempTaskId(),
+        user_id: userId || "",
+        list_id: draft.list_id,
+        parent_task_id: draft.parent_task_id,
+        title: cleanedTitle,
+        details: draft.details.trim() || null,
+        due_at: dueAtIso,
+        due_timezone: dueAtIso ? draft.due_timezone : null,
+        is_completed: false,
+        completed_at: null,
+        recurrence_type: recurrenceType,
+        recurrence_interval: interval,
+        recurrence_unit: unit,
+        recurrence_ends_at:
+          recurrenceType === "none" ? null : toIsoOrNull(draft.recurrence_ends_at),
+        sort_order: getNextLocalSortOrder(
+          tasks,
+          draft.list_id,
+          draft.parent_task_id,
+        ),
+        created_at: now,
+        updated_at: now,
+      };
 
-        const result = await createTask(accessToken, {
-          list_id: draft.list_id,
-          parent_task_id: draft.parent_task_id,
-          title: cleanedTitle,
-          details: draft.details.trim() || null,
-          due_at: dueAtIso,
-          due_timezone: draft.due_timezone,
-          recurrence_type: recurrenceType,
-          recurrence_interval: interval,
-          recurrence_unit: unit,
-          recurrence_ends_at:
-            recurrenceType === "none"
-              ? null
-              : toIsoOrNull(draft.recurrence_ends_at),
-          browser_timezone: getBrowserTimeZone(),
-        });
-        setTasks((prev) => [...prev, result]);
-        setErrorMessage("");
-        scheduleLiveSyncPump();
-        return result;
-      } catch (error) {
-        setErrorMessage(getErrorMessage(error, "Failed to create task."));
-        return null;
-      }
+      setTasks((prev) => [...prev, tempTask]);
+      setErrorMessage("");
+
+      void (async () => {
+        try {
+          const accessToken = await requireAccessToken();
+          if (!accessToken) {
+            setTasks((prev) => prev.filter((task) => task.id !== tempTask.id));
+            return;
+          }
+
+          const result = await createTask(accessToken, {
+            list_id: draft.list_id,
+            parent_task_id: draft.parent_task_id,
+            title: cleanedTitle,
+            details: draft.details.trim() || null,
+            due_at: dueAtIso,
+            due_timezone: draft.due_timezone,
+            recurrence_type: recurrenceType,
+            recurrence_interval: interval,
+            recurrence_unit: unit,
+            recurrence_ends_at: tempTask.recurrence_ends_at,
+            browser_timezone: getBrowserTimeZone(),
+          });
+          setTasks((prev) =>
+            prev.map((task) => (task.id === tempTask.id ? result.task : task)),
+          );
+          setErrorMessage("");
+          applyCalendarWarning(result.calendar_sync_warning);
+          if (!result.calendar_sync_warning) scheduleLiveSyncPump();
+        } catch (error) {
+          setTasks((prev) => prev.filter((task) => task.id !== tempTask.id));
+          setErrorMessage(getErrorMessage(error, "Failed to create task."));
+        }
+      })();
+
+      return tempTask;
     },
-    [getErrorMessage, requireAccessToken, scheduleLiveSyncPump],
+    [
+      applyCalendarWarning,
+      getErrorMessage,
+      requireAccessToken,
+      scheduleLiveSyncPump,
+      tasks,
+      userId,
+    ],
   );
 
   const saveTask = useCallback(
-    async (taskId: string, updates: TaskUpdateInput) => {
+    (taskId: string, updates: TaskUpdateInput) => {
       const payload: TaskUpdateInput = { ...updates };
       if (typeof payload.title === "string") {
         const cleaned = payload.title.trim();
@@ -654,50 +777,91 @@ export const useTasksHubModule = () => {
         }
       }
 
-      try {
-        const accessToken = await requireAccessToken();
-        if (!accessToken) return false;
-
-        const result = await updateTask(accessToken, taskId, {
-          ...payload,
-          browser_timezone: getBrowserTimeZone(),
-        });
-        setTasks((prev) =>
-          prev.map((task) => (task.id === taskId ? result : task)),
-        );
-        setErrorMessage("");
-        scheduleLiveSyncPump();
-        return true;
-      } catch (error) {
-        setErrorMessage(getErrorMessage(error, "Failed to save task."));
-        return false;
-      }
-    },
-    [getErrorMessage, requireAccessToken, scheduleLiveSyncPump, tasks],
-  );
-
-  const removeTask = useCallback(
-    async (taskId: string) => {
-      try {
-        const accessToken = await requireAccessToken();
-        if (!accessToken) return false;
-
-        await deleteTaskViaApi(accessToken, taskId);
-      } catch (error) {
-        setErrorMessage(getErrorMessage(error, "Failed to delete task."));
-        return false;
-      }
+      if (!currentTask) return false;
 
       setTasks((prev) =>
-        prev.filter(
-          (task) => task.id !== taskId && task.parent_task_id !== taskId,
+        prev.map((task) =>
+          task.id === taskId ? applyTaskPatch(task, payload) : task,
         ),
       );
       setErrorMessage("");
-      scheduleLiveSyncPump();
+
+      void (async () => {
+        try {
+          const accessToken = await requireAccessToken();
+          if (!accessToken) {
+            setTasks((prev) =>
+              prev.map((task) => (task.id === taskId ? currentTask : task)),
+            );
+            return;
+          }
+
+          const result = await updateTask(accessToken, taskId, {
+            ...payload,
+            browser_timezone: getBrowserTimeZone(),
+          });
+          setTasks((prev) =>
+            prev.map((task) => (task.id === taskId ? result.task : task)),
+          );
+          setErrorMessage("");
+          applyCalendarWarning(result.calendar_sync_warning);
+          if (!result.calendar_sync_warning) scheduleLiveSyncPump();
+        } catch (error) {
+          setTasks((prev) =>
+            prev.map((task) => (task.id === taskId ? currentTask : task)),
+          );
+          setErrorMessage(getErrorMessage(error, "Failed to save task."));
+        }
+      })();
+
       return true;
     },
-    [getErrorMessage, requireAccessToken, scheduleLiveSyncPump],
+    [
+      applyCalendarWarning,
+      getErrorMessage,
+      requireAccessToken,
+      scheduleLiveSyncPump,
+      tasks,
+    ],
+  );
+
+  const removeTask = useCallback(
+    (taskId: string) => {
+      const removedTasks = collectTaskSubtree(tasks, taskId);
+      if (removedTasks.length === 0) return false;
+      const removedTaskIds = new Set(removedTasks.map((task) => task.id));
+      setTasks((prev) =>
+        prev.filter((task) => !removedTaskIds.has(task.id)),
+      );
+      setErrorMessage("");
+
+      void (async () => {
+        try {
+          const accessToken = await requireAccessToken();
+          if (!accessToken) {
+            setTasks((prev) => restoreMissingTasks(prev, removedTasks));
+            return;
+          }
+
+          const result = await deleteTaskViaApi(accessToken, taskId);
+          setErrorMessage("");
+          applyCalendarWarning(result.calendar_sync_warning);
+          if (!result.calendar_sync_warning) scheduleLiveSyncPump();
+        } catch (error) {
+          setTasks((prev) => restoreMissingTasks(prev, removedTasks));
+          setErrorMessage(getErrorMessage(error, "Failed to delete task."));
+        }
+      })();
+
+      return true;
+    },
+    [
+      applyCalendarWarning,
+      getErrorMessage,
+      requireAccessToken,
+      scheduleLiveSyncPump,
+      tasks,
+    ],
   );
 
   const toggleTaskCompletion = useCallback(
@@ -731,10 +895,16 @@ export const useTasksHubModule = () => {
       }
 
       setErrorMessage("");
-      scheduleLiveSyncPump();
+      applyCalendarWarning(result.calendar_sync_warning);
+      if (!result.calendar_sync_warning) scheduleLiveSyncPump();
       return true;
     },
-    [getErrorMessage, requireAccessToken, scheduleLiveSyncPump],
+    [
+      applyCalendarWarning,
+      getErrorMessage,
+      requireAccessToken,
+      scheduleLiveSyncPump,
+    ],
   );
 
   const reorderTasks = useCallback(
@@ -1075,6 +1245,7 @@ export const useTasksHubModule = () => {
     calendarBusy,
     calendarSyncResult,
     calendarLiveResult,
+    calendarWarning,
     syncEnabledByList,
     errorMessage,
     fetchAll,

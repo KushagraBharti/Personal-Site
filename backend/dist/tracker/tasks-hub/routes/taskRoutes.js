@@ -18,25 +18,18 @@ const router = (0, express_1.Router)();
 const queueTaskUpsertBestEffort = (supabaseAdmin, userId, task, source) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield (0, taskCalendarSyncService_1.queueTaskUpsertForUser)(supabaseAdmin, userId, task, source);
+        return null;
     }
     catch (error) {
         console.error("Failed to enqueue live calendar task sync", error);
+        return "Task saved, but calendar sync could not be queued.";
     }
 });
-const drainLiveSyncBestEffort = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield (0, taskCalendarSyncService_1.drainCalendarSyncJobs)({
-            userId,
-            lanes: ["live"],
-            batchSize: 10,
-            maxJobs: 50,
-            maxMs: 20000,
-        });
-    }
-    catch (error) {
-        console.error("Failed to drain live calendar sync", error);
-    }
-});
+const taskResponse = (payload, calendarSyncWarning) => {
+    if (!calendarSyncWarning)
+        return payload;
+    return Object.assign(Object.assign({}, payload), { calendar_sync_warning: calendarSyncWarning });
+};
 router.post("/", requireUser_1.requireUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -45,9 +38,10 @@ router.post("/", requireUser_1.requireUser, (req, res) => __awaiter(void 0, void
         if (!result.ok) {
             return res.status(result.code).json({ error: result.error });
         }
-        yield queueTaskUpsertBestEffort(supabaseAdmin, req.user.id, result.task, "api_task_create");
-        yield drainLiveSyncBestEffort(req.user.id);
-        return res.status(201).json({ ok: true, task: result.task });
+        const calendarSyncWarning = yield queueTaskUpsertBestEffort(supabaseAdmin, req.user.id, result.task, "api_task_create");
+        return res
+            .status(201)
+            .json(taskResponse({ ok: true, task: result.task }, calendarSyncWarning));
     }
     catch (error) {
         console.error("Failed to create task", error);
@@ -85,16 +79,17 @@ router.patch("/:taskId/completion", requireUser_1.requireUser, (req, res) => __a
         if (!result.ok) {
             return res.status(result.code).json({ error: result.error });
         }
-        yield queueTaskUpsertBestEffort(supabaseAdmin, req.user.id, result.task, "api_task_completion");
+        let calendarSyncWarning = yield queueTaskUpsertBestEffort(supabaseAdmin, req.user.id, result.task, "api_task_completion");
         if (result.createdNextTask) {
-            yield queueTaskUpsertBestEffort(supabaseAdmin, req.user.id, result.createdNextTask, "api_task_completion_next");
+            const nextTaskWarning = yield queueTaskUpsertBestEffort(supabaseAdmin, req.user.id, result.createdNextTask, "api_task_completion_next");
+            if (nextTaskWarning)
+                calendarSyncWarning = nextTaskWarning;
         }
-        yield drainLiveSyncBestEffort(req.user.id);
-        return res.json({
+        return res.json(taskResponse({
             ok: true,
             task: result.task,
             created_next_task: result.createdNextTask,
-        });
+        }, calendarSyncWarning));
     }
     catch (error) {
         console.error("Failed to update task completion", error);
@@ -115,9 +110,8 @@ router.patch("/:taskId", requireUser_1.requireUser, (req, res) => __awaiter(void
         if (!result.ok) {
             return res.status(result.code).json({ error: result.error });
         }
-        yield queueTaskUpsertBestEffort(supabaseAdmin, req.user.id, result.task, "api_task_update");
-        yield drainLiveSyncBestEffort(req.user.id);
-        return res.json({ ok: true, task: result.task });
+        const calendarSyncWarning = yield queueTaskUpsertBestEffort(supabaseAdmin, req.user.id, result.task, "api_task_update");
+        return res.json(taskResponse({ ok: true, task: result.task }, calendarSyncWarning));
     }
     catch (error) {
         console.error("Failed to update task", error);
@@ -126,6 +120,7 @@ router.patch("/:taskId", requireUser_1.requireUser, (req, res) => __awaiter(void
     }
 }));
 router.delete("/:taskId", requireUser_1.requireUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const taskId = typeof req.params.taskId === "string" ? req.params.taskId.trim() : "";
     if (!taskId)
         return res.status(400).json({ error: "task_id is required" });
@@ -135,8 +130,7 @@ router.delete("/:taskId", requireUser_1.requireUser, (req, res) => __awaiter(voi
         if (!result.ok) {
             return res.status(result.code).json({ error: result.error });
         }
-        yield drainLiveSyncBestEffort(req.user.id);
-        return res.json({ ok: true });
+        return res.json(taskResponse({ ok: true }, (_a = result.calendarSyncWarning) !== null && _a !== void 0 ? _a : null));
     }
     catch (error) {
         console.error("Failed to delete task", error);

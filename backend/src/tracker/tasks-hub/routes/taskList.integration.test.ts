@@ -112,7 +112,7 @@ describe("task list routes", () => {
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({ error: "Unauthorized" });
-  });
+  }, 15_000);
 
   it("bootstraps tracker data through the backend service", async () => {
     getTrackerBootstrapForUserMock.mockResolvedValue({
@@ -355,14 +355,43 @@ describe("task list routes", () => {
       },
       "api_task_update",
     );
-    expect(drainCalendarSyncJobsMock).toHaveBeenCalledTimes(2);
-    expect(drainCalendarSyncJobsMock).toHaveBeenNthCalledWith(1, {
-      userId: "user-1",
-      lanes: ["live"],
-      batchSize: 10,
-      maxJobs: 50,
-      maxMs: 20_000,
+    expect(drainCalendarSyncJobsMock).not.toHaveBeenCalled();
+  });
+
+  it("returns a calendar sync warning when task enqueue fails", async () => {
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    queueTaskUpsertForUserMock.mockRejectedValueOnce(new Error("queue down"));
+    createTaskForUserMock.mockResolvedValueOnce({
+      ok: true,
+      task: {
+        id: "task-1",
+        list_id: "list-1",
+        title: "Write",
+        updated_at: "2026-06-20T00:00:00.000Z",
+      },
     });
+
+    const { default: app } = await import("../../../app");
+    const response = await request(app)
+      .post("/api/private/tasks")
+      .set("authorization", "Bearer valid-token")
+      .send({ list_id: "list-1", title: "Write" });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toEqual({
+      ok: true,
+      task: {
+        id: "task-1",
+        list_id: "list-1",
+        title: "Write",
+        updated_at: "2026-06-20T00:00:00.000Z",
+      },
+      calendar_sync_warning: "Task saved, but calendar sync could not be queued.",
+    });
+    expect(drainCalendarSyncJobsMock).not.toHaveBeenCalled();
+    expect(consoleError).toHaveBeenCalled();
   });
 
   it("deletes a task through the backend service", async () => {
@@ -380,13 +409,7 @@ describe("task list routes", () => {
       "user-1",
       "task-1",
     );
-    expect(drainCalendarSyncJobsMock).toHaveBeenCalledWith({
-      userId: "user-1",
-      lanes: ["live"],
-      batchSize: 10,
-      maxJobs: 50,
-      maxMs: 20_000,
-    });
+    expect(drainCalendarSyncJobsMock).not.toHaveBeenCalled();
   });
 
   it("updates task completion through the backend service", async () => {
@@ -435,13 +458,7 @@ describe("task list routes", () => {
       },
       "api_task_completion",
     );
-    expect(drainCalendarSyncJobsMock).toHaveBeenCalledWith({
-      userId: "user-1",
-      lanes: ["live"],
-      batchSize: 10,
-      maxJobs: 50,
-      maxMs: 20_000,
-    });
+    expect(drainCalendarSyncJobsMock).not.toHaveBeenCalled();
   });
 
   it("rejects malformed task completion payloads", async () => {

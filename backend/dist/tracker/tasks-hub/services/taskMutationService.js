@@ -428,19 +428,16 @@ const deleteTaskForUser = (supabaseAdmin, userId, taskId) => __awaiter(void 0, v
     if (!taskRows)
         return { ok: false, code: 404, error: "Task not found" };
     const taskIds = taskRows.map((row) => row.id);
+    let calendarSyncWarning = null;
     for (const row of taskRows) {
         yield (0, taskCalendarSyncService_1.queueTaskDeleteForUser)(supabaseAdmin, userId, {
             listId: row.list_id,
             taskId: row.id,
             source: "api_task_delete",
-        }).catch(() => { });
-    }
-    for (const row of taskRows) {
-        yield (0, taskCalendarCleanupService_1.processBestEffortTaskDeleteCleanup)(supabaseAdmin, {
-            userId,
-            listId: row.list_id,
-            taskId: row.id,
-            source: "delete_task",
+        }).catch((error) => {
+            calendarSyncWarning =
+                "Task deleted, but calendar sync could not be queued.";
+            console.error("Failed to enqueue live calendar task delete", error);
         });
     }
     yield (0, taskCalendarCleanupService_1.deleteCalendarLinksForTasks)(supabaseAdmin, userId, taskIds);
@@ -451,7 +448,7 @@ const deleteTaskForUser = (supabaseAdmin, userId, taskId) => __awaiter(void 0, v
         .in("id", taskIds);
     if (taskDeleteError)
         throw new Error(taskDeleteError.message);
-    return { ok: true };
+    return { ok: true, calendarSyncWarning };
 });
 exports.deleteTaskForUser = deleteTaskForUser;
 const reorderTasksForUser = (supabaseAdmin, userId, input) => __awaiter(void 0, void 0, void 0, function* () {

@@ -1,6 +1,7 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useTasksHubModule } from "./hooks";
+import { TrackerTask } from "./types";
 
 const apiMocks = vi.hoisted(() => ({
   createTask: vi.fn(),
@@ -37,6 +38,27 @@ const buildCalendarStatus = () => ({
   connection: null,
   watch_expires_at: null,
   list_sync_settings: [],
+});
+
+const buildTask = (overrides?: Partial<TrackerTask>): TrackerTask => ({
+  id: "task-1",
+  user_id: "user-1",
+  list_id: "list-1",
+  parent_task_id: null,
+  title: "Before",
+  details: null,
+  due_at: null,
+  due_timezone: null,
+  is_completed: false,
+  completed_at: null,
+  recurrence_type: "none",
+  recurrence_interval: null,
+  recurrence_unit: null,
+  recurrence_ends_at: null,
+  sort_order: 1,
+  created_at: "2026-06-20T00:00:00.000Z",
+  updated_at: "2026-06-20T00:00:00.000Z",
+  ...overrides,
 });
 
 describe("useTasksHubModule realtime refresh", () => {
@@ -213,6 +235,139 @@ describe("useTasksHubModule realtime refresh", () => {
 
     await waitFor(() => {
       expect(clearAuthSession).toHaveBeenCalled();
+    });
+  });
+
+  it("optimistically inserts a created task and replaces it with the server task", async () => {
+    let resolveCreate:
+      | ((value: {
+          ok: boolean;
+          task: TrackerTask;
+          calendar_sync_warning?: string;
+        }) => void)
+      | null = null;
+    apiMocks.fetchTrackerBootstrap.mockResolvedValue({
+      ok: true,
+      lists: [{ id: "list-1" }],
+      tasks: [],
+      sort_preferences: [],
+    });
+    apiMocks.createTask.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveCreate = resolve;
+        }),
+    );
+
+    const { result } = renderHook(() => useTasksHubModule());
+
+    await waitFor(() => {
+      expect(result.current.lists).toHaveLength(1);
+    });
+
+    let optimisticTask: TrackerTask | null = null;
+    act(() => {
+      optimisticTask = result.current.createTaskFromDraft({
+        list_id: "list-1",
+        parent_task_id: null,
+        title: " New task ",
+        details: "",
+        due_at: "",
+        due_timezone: "America/Chicago",
+        recurrence_type: "none",
+        recurrence_interval: 1,
+        recurrence_unit: "week",
+        recurrence_ends_at: "",
+      });
+    });
+
+    expect(optimisticTask?.id).toMatch(/^temp:/);
+    expect(result.current.tasks).toEqual([
+      expect.objectContaining({ id: optimisticTask?.id, title: "New task" }),
+    ]);
+
+    await waitFor(() => {
+      expect(apiMocks.createTask).toHaveBeenCalled();
+    });
+
+    act(() => {
+      resolveCreate?.({
+        ok: true,
+        task: buildTask({ id: "task-server", title: "New task" }),
+        calendar_sync_warning:
+          "Task saved, but calendar sync could not be queued.",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.tasks).toEqual([
+        expect.objectContaining({ id: "task-server", title: "New task" }),
+      ]);
+      expect(result.current.calendarWarning).toBe(
+        "Task saved, but calendar sync could not be queued.",
+      );
+    });
+  });
+
+  it("optimistically saves a task and rolls back on failure", async () => {
+    apiMocks.fetchTrackerBootstrap.mockResolvedValue({
+      ok: true,
+      lists: [{ id: "list-1" }],
+      tasks: [buildTask()],
+      sort_preferences: [],
+    });
+    apiMocks.updateTask.mockRejectedValue(new Error("save failed"));
+
+    const { result } = renderHook(() => useTasksHubModule());
+
+    await waitFor(() => {
+      expect(result.current.tasks[0]?.title).toBe("Before");
+    });
+
+    act(() => {
+      expect(result.current.saveTask("task-1", { title: "After" })).toBe(true);
+    });
+
+    expect(result.current.tasks[0]?.title).toBe("After");
+    await waitFor(() => {
+      expect(result.current.tasks[0]?.title).toBe("Before");
+      expect(result.current.errorMessage).toBe("save failed");
+    });
+  });
+
+  it("optimistically deletes a task subtree and restores it on failure", async () => {
+    const parent = buildTask();
+    const child = buildTask({
+      id: "task-2",
+      parent_task_id: "task-1",
+      title: "Child",
+      sort_order: 1,
+    });
+    apiMocks.fetchTrackerBootstrap.mockResolvedValue({
+      ok: true,
+      lists: [{ id: "list-1" }],
+      tasks: [parent, child],
+      sort_preferences: [],
+    });
+    apiMocks.deleteTaskViaApi.mockRejectedValue(new Error("delete failed"));
+
+    const { result } = renderHook(() => useTasksHubModule());
+
+    await waitFor(() => {
+      expect(result.current.tasks).toHaveLength(2);
+    });
+
+    act(() => {
+      expect(result.current.removeTask("task-1")).toBe(true);
+    });
+
+    expect(result.current.tasks).toHaveLength(0);
+    await waitFor(() => {
+      expect(result.current.tasks.map((task) => task.id).sort()).toEqual([
+        "task-1",
+        "task-2",
+      ]);
+      expect(result.current.errorMessage).toBe("delete failed");
     });
   });
 });

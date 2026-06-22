@@ -77,6 +77,18 @@ export interface TaskCompletionResult {
   ok: boolean;
   task: TrackerTask;
   created_next_task: TrackerTask | null;
+  calendar_sync_warning?: string | null;
+}
+
+export interface TaskMutationResult {
+  ok: boolean;
+  task: TrackerTask;
+  calendar_sync_warning?: string | null;
+}
+
+export interface TaskDeleteResult {
+  ok: boolean;
+  calendar_sync_warning?: string | null;
 }
 
 export interface ListUpdateInput {

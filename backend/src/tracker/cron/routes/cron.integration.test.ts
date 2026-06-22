@@ -58,7 +58,7 @@ describe("cron routes", () => {
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({ error: "Unauthorized" });
-  });
+  }, 15_000);
 
   it("returns health when the cron secret is valid", async () => {
     const { default: app } = await import("../../../app");

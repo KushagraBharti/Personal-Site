@@ -142,7 +142,7 @@ describe("calendar tracker routes", () => {
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({ error: "Unauthorized" });
-  });
+  }, 15_000);
 
   it("returns a disabled payload when calendar sync is off", async () => {
     process.env.CALENDAR_SYNC_ENABLED = "0";

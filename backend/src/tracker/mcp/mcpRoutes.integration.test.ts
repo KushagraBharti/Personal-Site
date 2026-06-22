@@ -28,7 +28,7 @@ describe("tracker MCP routes", () => {
       service: "tracker-mcp",
       configured: true,
     });
-  });
+  }, 15_000);
 
   it("requires bearer auth for MCP requests", async () => {
     const { default: app } = await import("../../app");

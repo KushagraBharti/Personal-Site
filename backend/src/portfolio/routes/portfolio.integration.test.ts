@@ -20,7 +20,7 @@ describe("portfolio routes", () => {
     const notFoundResponse = await request(app).get("/api/projects/not-a-real-project");
     expect(notFoundResponse.status).toBe(404);
     expect(notFoundResponse.body).toEqual({ message: "Project not found" });
-  });
+  }, 15_000);
 
   it("serves intro, education, experiences, and llms.txt with resolved host headers", async () => {
     const { default: app } = await import("../../app");

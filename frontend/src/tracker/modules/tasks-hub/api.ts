@@ -5,8 +5,10 @@ import {
   SyncNowResult,
   SyncProgressResult,
   SortDirection,
+  TaskDeleteResult,
   TaskCompletionResult,
   TaskList,
+  TaskMutationResult,
   TaskSortMode,
   TaskSortPreference,
   TaskUpdateInput,
@@ -40,11 +42,6 @@ interface TaskCreateInput {
   recurrence_unit: TrackerTask["recurrence_unit"];
   recurrence_ends_at: string | null;
   browser_timezone: string;
-}
-
-interface TaskResult {
-  ok: boolean;
-  task: TrackerTask;
 }
 
 interface TaskListResult {
@@ -179,21 +176,20 @@ export const deleteTaskListViaApi = async (
 export const createTask = async (
   accessToken: string,
   payload: TaskCreateInput,
-): Promise<TrackerTask> => {
+): Promise<TaskMutationResult> => {
   const res = await fetch(`${API_BASE}/api/private/tasks`, {
     method: "POST",
     headers: getAuthHeaders(accessToken),
     body: JSON.stringify(payload),
   });
-  const result = await readJson<TaskResult>(res, "Failed to create task.");
-  return result.task;
+  return readJson<TaskMutationResult>(res, "Failed to create task.");
 };
 
 export const updateTask = async (
   accessToken: string,
   taskId: string,
   updates: TaskUpdateInput & { browser_timezone?: string },
-): Promise<TrackerTask> => {
+): Promise<TaskMutationResult> => {
   const res = await fetch(
     `${API_BASE}/api/private/tasks/${encodeURIComponent(taskId)}`,
     {
@@ -202,8 +198,7 @@ export const updateTask = async (
       body: JSON.stringify(updates),
     },
   );
-  const result = await readJson<TaskResult>(res, "Failed to save task.");
-  return result.task;
+  return readJson<TaskMutationResult>(res, "Failed to save task.");
 };
 
 export const reorderTasksViaApi = async (
@@ -231,7 +226,7 @@ export const reorderTasksViaApi = async (
 export const deleteTaskViaApi = async (
   accessToken: string,
   taskId: string,
-): Promise<{ ok: boolean }> => {
+): Promise<TaskDeleteResult> => {
   const res = await fetch(
     `${API_BASE}/api/private/tasks/${encodeURIComponent(taskId)}`,
     {
@@ -239,7 +234,7 @@ export const deleteTaskViaApi = async (
       headers: getAuthHeaders(accessToken),
     },
   );
-  return readJson<{ ok: boolean }>(res, "Failed to delete task");
+  return readJson<TaskDeleteResult>(res, "Failed to delete task");
 };
 
 export const setTaskCompletionViaApi = async (

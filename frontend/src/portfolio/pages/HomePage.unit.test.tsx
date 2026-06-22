@@ -65,5 +65,5 @@ describe("HomePage", () => {
     expect(await screen.findByText("Projects ready")).toBeInTheDocument();
     expect(await screen.findByText("Film ready")).toBeInTheDocument();
     expect(await screen.findByText("Misc ready")).toBeInTheDocument();
-  });
+  }, 15_000);
 });

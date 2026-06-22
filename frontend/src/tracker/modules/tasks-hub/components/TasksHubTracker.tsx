@@ -481,7 +481,7 @@ const TaskEditExpansion: React.FC<{
   task: TrackerTask;
   edit: TaskEditDraft;
   onPatch: (taskId: string, patch: Partial<TaskEditDraft>) => void;
-  onSave: (task: TrackerTask) => Promise<void>;
+  onSave: (task: TrackerTask) => void;
   onCancel: (task: TrackerTask) => void;
 }> = ({ task, edit, onPatch, onSave, onCancel }) => (
   <motion.div
@@ -551,9 +551,7 @@ const TaskEditExpansion: React.FC<{
     <div className="flex gap-2">
       <motion.button
         className="neo-btn neo-btn-sm neo-btn-lime"
-        onClick={async () => {
-          await onSave(task);
-        }}
+        onClick={() => onSave(task)}
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.93 }}
       >
@@ -600,6 +598,7 @@ const TasksHubTracker: React.FC = () => {
     calendarBusy,
     calendarSyncResult,
     calendarLiveResult,
+    calendarWarning,
     syncEnabledByList,
     connectGoogleCalendar,
     disconnectGoogleCalendar,
@@ -786,12 +785,12 @@ const TasksHubTracker: React.FC = () => {
     }));
   };
 
-  const saveTaskEdit = async (task: TrackerTask) => {
+  const saveTaskEdit = (task: TrackerTask) => {
     const edit = taskEditsById[task.id];
     if (!edit) return;
 
     const recurrenceType = edit.recurrence_type;
-    const success = await saveTask(task.id, {
+    const success = saveTask(task.id, {
       title: edit.title,
       details: edit.details.trim() || null,
       due_at: toIsoOrNull(edit.due_at),
@@ -1303,6 +1302,24 @@ const TasksHubTracker: React.FC = () => {
               </motion.div>
             )}
           </AnimatePresence>
+          <AnimatePresence>
+            {calendarWarning && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="neo-card mb-2 py-2"
+                style={{
+                  background: "var(--neo-yellow)",
+                  color: "var(--neo-black)",
+                }}
+              >
+                <p className="neo-label" style={{ letterSpacing: "0.08em" }}>
+                  {calendarWarning}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="tasks-cards-scroller">
             <div className="tasks-cards">
@@ -1585,9 +1602,8 @@ const TasksHubTracker: React.FC = () => {
                             <div className="flex gap-2">
                               <motion.button
                                 className="neo-btn neo-btn-sm neo-btn-cyan"
-                                onClick={async () => {
-                                  const created =
-                                    await createTaskFromDraft(topDraft);
+                                onClick={() => {
+                                  const created = createTaskFromDraft(topDraft);
                                   if (created) {
                                     resetDraft(list.id, null);
                                     setAddTaskOpenByList((prev) => ({
@@ -1793,9 +1809,7 @@ const TasksHubTracker: React.FC = () => {
                                   </motion.button>
                                   <motion.button
                                     className="tasks-icon-btn tasks-danger"
-                                    onClick={async () => {
-                                      await removeTask(task.id);
-                                    }}
+                                    onClick={() => removeTask(task.id)}
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.9 }}
                                   >
@@ -1927,9 +1941,9 @@ const TasksHubTracker: React.FC = () => {
                                             <div className="tasks-row-actions">
                                               <motion.button
                                                 className="tasks-icon-btn tasks-danger"
-                                                onClick={async () => {
-                                                  await removeTask(subtask.id);
-                                                }}
+                                                onClick={() =>
+                                                  removeTask(subtask.id)
+                                                }
                                                 whileHover={{ scale: 1.1 }}
                                                 whileTap={{ scale: 0.9 }}
                                               >
@@ -2061,11 +2075,10 @@ const TasksHubTracker: React.FC = () => {
                                     <div className="flex gap-2">
                                       <motion.button
                                         className="neo-btn neo-btn-sm neo-btn-cyan"
-                                        onClick={async () => {
-                                          const created =
-                                            await createTaskFromDraft(
-                                              subtaskDraft,
-                                            );
+                                        onClick={() => {
+                                          const created = createTaskFromDraft(
+                                            subtaskDraft,
+                                          );
                                           if (created) {
                                             resetDraft(list.id, task.id);
                                             setAddSubtaskOpenByParent(
@@ -2201,9 +2214,7 @@ const TasksHubTracker: React.FC = () => {
                                       <div className="tasks-row-actions">
                                         <motion.button
                                           className="tasks-icon-btn tasks-danger"
-                                          onClick={async () => {
-                                            await removeTask(task.id);
-                                          }}
+                                          onClick={() => removeTask(task.id)}
                                           whileHover={{ scale: 1.1 }}
                                           whileTap={{ scale: 0.9 }}
                                         >
@@ -2263,9 +2274,7 @@ const TasksHubTracker: React.FC = () => {
                                         <div className="tasks-row-actions">
                                           <motion.button
                                             className="tasks-icon-btn tasks-danger"
-                                            onClick={async () => {
-                                              await removeTask(task.id);
-                                            }}
+                                            onClick={() => removeTask(task.id)}
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.9 }}
                                           >

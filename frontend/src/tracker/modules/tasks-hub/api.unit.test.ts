@@ -206,6 +206,7 @@ describe("tasks-hub API", () => {
         json: async () => ({
           ok: true,
           task: { id: "task-1", title: "Write" },
+          calendar_sync_warning: "Task saved, but calendar sync could not be queued.",
         }),
       })
       .mockResolvedValueOnce({
@@ -246,13 +247,14 @@ describe("tasks-hub API", () => {
         recurrence_ends_at: null,
         browser_timezone: "America/Chicago",
       }),
-    ).resolves.toEqual({ id: "task-1", title: "Write" });
+    ).resolves.toEqual({
+      ok: true,
+      task: { id: "task-1", title: "Write" },
+      calendar_sync_warning: "Task saved, but calendar sync could not be queued.",
+    });
     await expect(
       updateTask("token", "task-1", { title: "Ship" }),
-    ).resolves.toEqual({
-      id: "task-1",
-      title: "Ship",
-    });
+    ).resolves.toEqual({ ok: true, task: { id: "task-1", title: "Ship" } });
     await expect(
       reorderTasksViaApi("token", "list-1", null, ["task-2", "task-1"]),
     ).resolves.toEqual([{ id: "task-2" }, { id: "task-1" }]);

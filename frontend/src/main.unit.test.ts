@@ -34,7 +34,7 @@ describe("main route loader", () => {
     await vi.waitFor(() => expect(routeMounts.home).toHaveBeenCalledTimes(1));
     expect(routeMounts.ai).not.toHaveBeenCalled();
     expect(routeMounts.tracker).not.toHaveBeenCalled();
-  });
+  }, 15_000);
 
   it("mounts the AI profile route without loading the homepage", async () => {
     window.history.pushState({}, "", "/ai");

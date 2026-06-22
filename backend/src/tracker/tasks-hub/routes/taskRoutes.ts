@@ -1,10 +1,7 @@
 import { Router } from "express";
 import { requireUser } from "../../../middleware/requireUser";
 import { getSupabaseAdmin } from "../../calendar/services/calendarSyncQueueService";
-import {
-  drainCalendarSyncJobs,
-  queueTaskUpsertForUser,
-} from "../../calendar/services/taskCalendarSyncService";
+import { queueTaskUpsertForUser } from "../../calendar/services/taskCalendarSyncService";
 import {
   createTaskForUser,
   deleteTaskForUser,
@@ -23,23 +20,19 @@ const queueTaskUpsertBestEffort = async (
 ) => {
   try {
     await queueTaskUpsertForUser(supabaseAdmin, userId, task, source);
+    return null;
   } catch (error) {
     console.error("Failed to enqueue live calendar task sync", error);
+    return "Task saved, but calendar sync could not be queued.";
   }
 };
 
-const drainLiveSyncBestEffort = async (userId: string) => {
-  try {
-    await drainCalendarSyncJobs({
-      userId,
-      lanes: ["live"],
-      batchSize: 10,
-      maxJobs: 50,
-      maxMs: 20_000,
-    });
-  } catch (error) {
-    console.error("Failed to drain live calendar sync", error);
-  }
+const taskResponse = <T extends object>(
+  payload: T,
+  calendarSyncWarning?: string | null,
+) => {
+  if (!calendarSyncWarning) return payload;
+  return { ...payload, calendar_sync_warning: calendarSyncWarning };
 };
 
 router.post("/", requireUser, async (req, res) => {
@@ -53,14 +46,15 @@ router.post("/", requireUser, async (req, res) => {
     if (!result.ok) {
       return res.status(result.code).json({ error: result.error });
     }
-    await queueTaskUpsertBestEffort(
+    const calendarSyncWarning = await queueTaskUpsertBestEffort(
       supabaseAdmin,
       req.user!.id,
       result.task,
       "api_task_create",
     );
-    await drainLiveSyncBestEffort(req.user!.id);
-    return res.status(201).json({ ok: true, task: result.task });
+    return res
+      .status(201)
+      .json(taskResponse({ ok: true, task: result.task }, calendarSyncWarning));
   } catch (error) {
     console.error("Failed to create task", error);
     const message =
@@ -109,26 +103,31 @@ router.patch("/:taskId/completion", requireUser, async (req, res) => {
     if (!result.ok) {
       return res.status(result.code).json({ error: result.error });
     }
-    await queueTaskUpsertBestEffort(
+    let calendarSyncWarning = await queueTaskUpsertBestEffort(
       supabaseAdmin,
       req.user!.id,
       result.task,
       "api_task_completion",
     );
     if (result.createdNextTask) {
-      await queueTaskUpsertBestEffort(
+      const nextTaskWarning = await queueTaskUpsertBestEffort(
         supabaseAdmin,
         req.user!.id,
         result.createdNextTask,
         "api_task_completion_next",
       );
+      if (nextTaskWarning) calendarSyncWarning = nextTaskWarning;
     }
-    await drainLiveSyncBestEffort(req.user!.id);
-    return res.json({
-      ok: true,
-      task: result.task,
-      created_next_task: result.createdNextTask,
-    });
+    return res.json(
+      taskResponse(
+        {
+          ok: true,
+          task: result.task,
+          created_next_task: result.createdNextTask,
+        },
+        calendarSyncWarning,
+      ),
+    );
   } catch (error) {
     console.error("Failed to update task completion", error);
     const message =
@@ -155,14 +154,15 @@ router.patch("/:taskId", requireUser, async (req, res) => {
     if (!result.ok) {
       return res.status(result.code).json({ error: result.error });
     }
-    await queueTaskUpsertBestEffort(
+    const calendarSyncWarning = await queueTaskUpsertBestEffort(
       supabaseAdmin,
       req.user!.id,
       result.task,
       "api_task_update",
     );
-    await drainLiveSyncBestEffort(req.user!.id);
-    return res.json({ ok: true, task: result.task });
+    return res.json(
+      taskResponse({ ok: true, task: result.task }, calendarSyncWarning),
+    );
   } catch (error) {
     console.error("Failed to update task", error);
     const message =
@@ -182,8 +182,9 @@ router.delete("/:taskId", requireUser, async (req, res) => {
     if (!result.ok) {
       return res.status(result.code).json({ error: result.error });
     }
-    await drainLiveSyncBestEffort(req.user!.id);
-    return res.json({ ok: true });
+    return res.json(
+      taskResponse({ ok: true }, result.calendarSyncWarning ?? null),
+    );
   } catch (error) {
     console.error("Failed to delete task", error);
     const message =
